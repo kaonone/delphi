@@ -3,14 +3,13 @@ pragma solidity ^0.5.12;
 import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/IERC20.sol";
 import "../../interfaces/access/IAccessModule.sol";
 import "../../interfaces/curve/IFundsModule.sol";
-import "../../interfaces/curve/ILoanModule.sol";
 import "../../interfaces/curve/ILiquidityModule.sol";
 import "../../common/Module.sol";
 
 contract LiquidityModule is Module, ILiquidityModule {
     struct LiquidityLimits {
         uint256 lDepositMin;     // Minimal amount of liquid tokens for deposit
-        uint256 pWithdrawMin;    // Minimal amount of pTokens for withdraw
+        //uint256 pWithdrawMin;    // Minimal amount of pTokens for withdraw
     }
 
     LiquidityLimits public limits;
@@ -69,25 +68,6 @@ contract LiquidityModule is Module, ILiquidityModule {
         emit Withdraw(_msgSender(), lAmountT, lAmountU, pAmount);
     }
 
-    /**
-     * @notice Withdraw amount of lToken and burn pTokens
-     * @param borrower Address of the borrower
-     * @param pAmount Amount of pTokens to send
-     */
-    function withdrawForRepay(address borrower, uint256 pAmount) public {
-        require(_msgSender() == getModuleAddress(MODULE_LOAN), "LiquidityModule: call only allowed from LoanModule");
-        require(pAmount > 0, "LiquidityModule: pAmount should not be 0");
-        //require(pAmount >= limits.pWithdrawMin, "LiquidityModule: amount should be >= pWithdrawMin"); //Limit disabled, because this is actually repay
-        (uint256 lAmountT, uint256 lAmountU, uint256 lAmountP) = fundsModule().calculatePoolExitInverse(pAmount);
-        address token = fundsModule().getPrefferableTokenForWithdraw(lAmountP);
-        uint256 availableLiquidity = fundsModule().lBalance(token);
-        uint256 denormalizedLAmountP = fundsModule().denormalizeLTokenValue(token, lAmountP);
-        require(denormalizedLAmountP <= availableLiquidity, "LiquidityModule: not enough liquidity");
-        fundsModule().burnPTokens(borrower, pAmount);           //We just burn pTokens, withous sending lTokens to _msgSender()
-        fundsModule().withdrawLTokens(token, borrower, 0, denormalizedLAmountP);   //This call is required to send pool fee
-        emit Withdraw(borrower, lAmountT, lAmountU, pAmount);
-    }
-
     function setLimits(uint256 lDepositMin, uint256 pWithdrawMin) public onlyOwner {
         limits.lDepositMin = lDepositMin;
         limits.pWithdrawMin = pWithdrawMin;
@@ -95,9 +75,5 @@ contract LiquidityModule is Module, ILiquidityModule {
 
     function fundsModule() internal view returns(IFundsModule) {
         return IFundsModule(getModuleAddress(MODULE_FUNDS));
-    }
-
-    function loanModule() internal view returns(ILoanModule) {
-        return ILoanModule(getModuleAddress(MODULE_LOAN));
     }
 }

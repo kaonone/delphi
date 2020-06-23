@@ -2,11 +2,7 @@ pragma solidity ^0.5.12;
 
 import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts-ethereum-package/contracts/math/SafeMath.sol";
-import "../../interfaces/curve/ICurveModule.sol";
 import "../../interfaces/curve/IFundsModule.sol";
-import "../../interfaces/curve/ILoanModule.sol";
-import "../../interfaces/curve/ILoanProposalsModule.sol";
-import "../../interfaces/token/IPToken.sol";
 import "../../common/Module.sol";
 import "./FundsOperatorRole.sol";
 
@@ -21,8 +17,6 @@ contract BaseFundsModule is Module, IFundsModule, FundsOperatorRole {
         uint256 balance;    //Amount of this tokens on Pool balance
     }
 
-    uint256 private __old__lBalance;        // OLD: Tracked balance of liquid token, may be less or equal to lToken.balanceOf(address(this))
-    mapping(address=>uint256) pBalances;    // Stores how many pTokens is locked in FundsModule by user
     address[] public registeredLTokens;     // Array of registered LTokens (oreder is not significant and may change during removals)
     mapping(address=>LTokenData) public lTokens;   // Info about supported lTokens and their balances in Pool
 
@@ -68,83 +62,6 @@ contract BaseFundsModule is Module, IFundsModule, FundsOperatorRole {
             lTransferFromFunds(token, owner(), poolFee);
         }
         emitStatus();
-    }
-
-    /**
-     * @notice Deposit pool tokens to the pool
-     * @param from Address of the user, who sends tokens. Should have enough allowance.
-     * @param amount Amount of tokens to deposit
-     */
-    function depositPTokens(address from, uint256 amount) public onlyFundsOperator {
-        require(pToken().transferFrom(from, address(this), amount), "FundsModule: deposit failed"); //this also runs claimDistributions(from)
-        pBalances[from] = pBalances[from].add(amount);
-    }
-
-    /**
-     * @notice Withdraw pool tokens from the pool
-     * @param to Address of the user, who receivs tokens.
-     * @param amount Amount of tokens to deposit
-     */
-    function withdrawPTokens(address to, uint256 amount) public onlyFundsOperator {
-        require(pToken().transfer(to, amount), "BaseFundsModule: withdraw failed");  //this also runs claimDistributions(to)
-        pBalances[to] = pBalances[to].sub(amount);
-    }
-
-    /**
-     * @notice Mint new PTokens
-     * @param to Address of the user, who sends tokens.
-     * @param amount Amount of tokens to mint
-     */
-    function mintPTokens(address to, uint256 amount) public onlyFundsOperator {
-        assert(to != address(this)); //Use mintAndLockPTokens
-        require(pToken().mint(to, amount), "BaseFundsModule: mint failed");
-    }
-
-    function distributePTokens(uint256 amount) public onlyFundsOperator {
-        pToken().distribute(amount);    // This call will eventually mint new pTokens (with next distribution, which should be once a day)
-    }
-    
-    /**
-     * @notice Burn pool tokens
-     * @param from Address of the user, whos tokens we burning. Should have enough allowance.
-     * @param amount Amount of tokens to burn
-     */
-    function burnPTokens(address from, uint256 amount) public onlyFundsOperator {
-        assert(from != address(this)); //Use burnLockedPTokens
-        pToken().burnFrom(from, amount); // This call will revert if sender has not enough pTokens. Allowance is always unlimited for FundsModule
-    }
-
-    /**
-     * @notice Lock pTokens for a loan
-     * @param from list of addresses to lock tokens from
-     * @param amount list of amounts addresses to lock tokens from
-     */
-    function lockPTokens(address[] calldata from, uint256[] calldata amount) external onlyFundsOperator {
-        require(from.length == amount.length, "BaseFundsModule: from and amount length should match");
-        //pToken().claimDistributions(address(this));
-        pToken().claimDistributions(from);
-        uint256 lockAmount;
-        for (uint256 i=0; i < from.length; i++) {
-            address account = from[i];
-            pBalances[account] = pBalances[account].sub(amount[i]);                
-            lockAmount = lockAmount.add(amount[i]);
-        }
-        pBalances[address(this)] = pBalances[address(this)].add(lockAmount);
-    }
-
-    function mintAndLockPTokens(uint256 amount) public onlyFundsOperator {
-        require(pToken().mint(address(this), amount), "BaseFundsModule: mint failed");
-        pBalances[address(this)] = pBalances[address(this)].add(amount);
-    }
-
-    function unlockAndWithdrawPTokens(address to, uint256 amount) public onlyFundsOperator {
-        require(pToken().transfer(to, amount), "BaseFundsModule: withdraw failed"); //this also runs claimDistributions(to)
-        pBalances[address(this)] = pBalances[address(this)].sub(amount);
-    }
-
-    function burnLockedPTokens(uint256 amount) public onlyFundsOperator {
-        pToken().burn(amount); //This call will revert if something goes wrong
-        pBalances[address(this)] = pBalances[address(this)].sub(amount);
     }
 
     function registerLToken(address lToken, uint256 rate) public onlyOwner {
@@ -233,13 +150,6 @@ contract BaseFundsModule is Module, IFundsModule, FundsOperatorRole {
         return registeredLTokens[0];
     }
 
-    /**
-     * @return Amount of pTokens locked in FundsModule by account
-     */
-    function pBalanceOf(address account) public view returns(uint256){
-        return pBalances[account];
-    }
-
     function isLTokenRegistered(address token) public view returns(bool) {
         return  lTokens[token].rate != 0;
     }
@@ -252,68 +162,6 @@ contract BaseFundsModule is Module, IFundsModule, FundsOperatorRole {
     function denormalizeLTokenValue(address token, uint256 value) public view returns(uint256) {
         LTokenData storage data = lTokens[token];
         return value.mul(MULTIPLIER).div(data.rate);     
-    }
-
-    /**
-     * @notice Calculates how many pTokens should be given to user for increasing liquidity
-     * @param lAmount Amount of liquid tokens which will be put into the pool
-     * @return Amount of pToken which should be sent to sender
-     */
-    function calculatePoolEnter(uint256 lAmount) public view returns(uint256) {
-        uint256 lDebts = loanModule().totalLDebts();
-        return curveModule().calculateEnter(lBalance(), lDebts, lAmount);
-    }
-
-    /**
-     * @notice Calculates how many pTokens should be given to user for increasing liquidity
-     * @param lAmount Amount of liquid tokens which will be put into the pool
-     * @param liquidityCorrection Amount of liquid tokens to remove from liquidity because it was "virtually" withdrawn
-     * @return Amount of pToken which should be sent to sender
-     */
-    function calculatePoolEnter(uint256 lAmount, uint256 liquidityCorrection) public view returns(uint256) {
-        uint256 lDebts = loanModule().totalLDebts();
-        return curveModule().calculateEnter(lBalance().sub(liquidityCorrection), lDebts, lAmount);
-    }
-
-    /**
-     * @notice Calculates how many pTokens should be taken from user for decreasing liquidity
-     * @param lAmount Amount of liquid tokens which will be removed from the pool
-     * @return Amount of pToken which should be taken from sender
-     */
-    function calculatePoolExit(uint256 lAmount) public view returns(uint256) {
-        uint256 lProposals = loanProposalsModule().totalLProposals();
-        return curveModule().calculateExit(lBalance().sub(lProposals), lAmount);
-    }
-
-    /**
-     * @notice Calculates amount of pTokens which should be burned/locked when liquidity removed from pool
-     * @param lAmount Amount of liquid tokens beeing withdrawn. Does NOT include part for pool
-     * @return Amount of pTokens to burn/lock
-     */
-    function calculatePoolExitWithFee(uint256 lAmount) public view returns(uint256) {
-        uint256 lProposals = loanProposalsModule().totalLProposals();
-        return curveModule().calculateExitWithFee(lBalance().sub(lProposals), lAmount);
-    }
-
-    /**
-     * @notice Calculates amount of pTokens which should be burned/locked when liquidity removed from pool
-     * @param lAmount Amount of liquid tokens beeing withdrawn. Does NOT include part for pool
-     * @param liquidityCorrection Amount of liquid tokens to remove from liquidity because it was "virtually" withdrawn
-     * @return Amount of pTokens to burn/lock
-     */
-    function calculatePoolExitWithFee(uint256 lAmount, uint256 liquidityCorrection) public view returns(uint256) {
-        uint256 lProposals = loanProposalsModule().totalLProposals();
-        return curveModule().calculateExitWithFee(lBalance().sub(liquidityCorrection).sub(lProposals), lAmount);
-    }
-
-    /**
-     * @notice Calculates how many liquid tokens should be removed from pool when decreasing liquidity
-     * @param pAmount Amount of pToken which should be taken from sender
-     * @return Amount of liquid tokens which will be removed from the pool: total, part for sender, part for pool
-     */
-    function calculatePoolExitInverse(uint256 pAmount) public view returns(uint256, uint256, uint256) {
-        uint256 lProposals = loanProposalsModule().totalLProposals();
-        return curveModule().calculateExitInverseWithFee(lBalance().sub(lProposals), pAmount);
     }
 
     function lTransferToFunds(address token, address from, uint256 amount) internal {
@@ -336,22 +184,5 @@ contract BaseFundsModule is Module, IFundsModule, FundsOperatorRole {
             pExitPrice = 0;
         }
         emit Status(lBalanc, lDebts, lProposals, pEnterPrice, pExitPrice);
-    }
-
-    function curveModule() private view returns(ICurveModule) {
-        return ICurveModule(getModuleAddress(MODULE_CURVE));
-    }
-    
-    function loanModule() private view returns(ILoanModule) {
-        return ILoanModule(getModuleAddress(MODULE_LOAN));
-    }
-
-    function loanProposalsModule() private view returns(ILoanProposalsModule) {
-        return ILoanProposalsModule(getModuleAddress(MODULE_LOAN_PROPOSALS));
-    }
-
-    function pToken() private view returns(IPToken){
-        return IPToken(getModuleAddress(MODULE_PTOKEN));
-    }
-    
+    } 
 }
