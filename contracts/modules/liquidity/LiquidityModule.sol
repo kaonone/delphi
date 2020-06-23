@@ -9,7 +9,7 @@ import "../../common/Module.sol";
 contract LiquidityModule is Module, ILiquidityModule {
     struct LiquidityLimits {
         uint256 lDepositMin;     // Minimal amount of liquid tokens for deposit
-        //uint256 pWithdrawMin;    // Minimal amount of pTokens for withdraw
+        uint256 lWithdrawMin;    // Minimal amount of pTokens for withdraw
     }
 
     LiquidityLimits public limits;
@@ -26,51 +26,34 @@ contract LiquidityModule is Module, ILiquidityModule {
     }
 
     /**
-     * @notice Deposit amount of lToken and mint pTokens
+     * @notice Deposit amount of lToken
      * @param dnlAmount Amount of liquid tokens to invest
      * @param pAmountMin Minimal amout of pTokens suitable for sender
      */ 
-    function deposit(address token, uint256 dnlAmount, uint256 pAmountMin) public operationAllowed(IAccessModule.Operation.Deposit) {
+    function deposit(address token, uint256 dnlAmount) public operationAllowed(IAccessModule.Operation.Deposit) {
         require(dnlAmount > 0, "LiquidityModule: lAmount should not be 0");
         uint256 lAmount = fundsModule().normalizeLTokenValue(token, dnlAmount);
         require(lAmount >= limits.lDepositMin, "LiquidityModule: amount should be >= lDepositMin");
-        uint pAmount = fundsModule().calculatePoolEnter(lAmount);
-        require(pAmount >= pAmountMin, "LiquidityModule: Minimal amount is too high");
         fundsModule().depositLTokens(token, _msgSender(), lAmount);
         fundsModule().mintPTokens(_msgSender(), pAmount);
-        emit Deposit(_msgSender(), lAmount, pAmount);
+        emit Deposit(_msgSender(), lAmount);
     }
 
     /**
-     * @notice Withdraw amount of lToken and burn pTokens
-     * @dev This operation also repays all interest on all debts
-     * @param pAmount Amount of pTokens to send (this amount does not include pTokens used to pay interest)
-     * @param dnlAmountMin Minimal amount of liquid tokens to withdraw
+     * @notice Withdraw amount of lToken
      */
-    function withdraw(uint256 pAmount, address token, uint256 dnlAmountMin) public operationAllowed(IAccessModule.Operation.Withdraw) {
-        require(pAmount > 0, "LiquidityModule: pAmount should not be 0");
-        require(pAmount >= limits.pWithdrawMin, "LiquidityModule: amount should be >= pWithdrawMin");
-        loanModule().repayAllInterest(_msgSender());
-        (uint256 lAmountT, uint256 lAmountU, uint256 lAmountP) = fundsModule().calculatePoolExitInverse(pAmount);
-        uint256 lAmountMin = fundsModule().normalizeLTokenValue(token, dnlAmountMin);
-        require(lAmountU >= lAmountMin, "LiquidityModule: Minimal amount is too high");
-
-        uint256 dnlAmount = fundsModule().denormalizeLTokenValue(token, lAmountT);
+    function withdraw(uint256 lAmount, address token) public operationAllowed(IAccessModule.Operation.Withdraw) {
+        uint256 dnlAmount = fundsModule().denormalizeLTokenValue(token, lAmount);
 
         uint256 availableLiquidity = fundsModule().lBalance(token);
         require(dnlAmount <= availableLiquidity, "LiquidityModule: not enough liquidity");
-
-        dnlAmount = fundsModule().denormalizeLTokenValue(token, lAmountU);
-        uint256 dnlAmountP = fundsModule().denormalizeLTokenValue(token, lAmountP);
-
-        fundsModule().burnPTokens(_msgSender(), pAmount);
-        fundsModule().withdrawLTokens(token, _msgSender(), dnlAmount, dnlAmountP);
-        emit Withdraw(_msgSender(), lAmountT, lAmountU, pAmount);
+        fundsModule().withdrawLTokens(token, _msgSender(), dnlAmount);
+        emit Withdraw(_msgSender(), dnlAmount);
     }
 
-    function setLimits(uint256 lDepositMin, uint256 pWithdrawMin) public onlyOwner {
+    function setLimits(uint256 lDepositMin, uint256 lWithdrawMin) public onlyOwner {
         limits.lDepositMin = lDepositMin;
-        limits.pWithdrawMin = pWithdrawMin;
+        limits.pWithdrawMin = lWithdrawMin;
     }
 
     function fundsModule() internal view returns(IFundsModule) {
