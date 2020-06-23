@@ -2,8 +2,8 @@ pragma solidity ^0.5.12;
 
 import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/IERC20.sol";
 import "../../interfaces/access/IAccessModule.sol";
-import "../../interfaces/curve/IFundsModule.sol";
-import "../../interfaces/curve/ILiquidityModule.sol";
+import "../../interfaces/funds/IFundsModule.sol";
+import "../../interfaces/liquidity/ILiquidityModule.sol";
 import "../../common/Module.sol";
 
 contract LiquidityModule is Module, ILiquidityModule {
