@@ -20,6 +20,8 @@ contract BaseFundsModule is Module, IFundsModule, FundsOperatorRole {
     address[] public registeredLTokens;     // Array of registered LTokens (oreder is not significant and may change during removals)
     mapping(address=>LTokenData) public lTokens;   // Info about supported lTokens and their balances in Pool
 
+
+    mapping (address => mapping (address => uint256)) accountLTokens;
     function initialize(address _pool) public initializer {
         Module.initialize(_pool);
         FundsOperatorRole.initialize(_msgSender());
@@ -33,6 +35,7 @@ contract BaseFundsModule is Module, IFundsModule, FundsOperatorRole {
      */
     function depositLTokens(address token, address from, uint256 amount) public onlyFundsOperator {
         lTokens[token].balance = lTokens[token].balance.add(amount);
+        accountLTokens[from][token] = accountLTokens[from][token].add(amount);
         lTransferToFunds(token, from, amount);
         emitStatus();
     }
@@ -55,6 +58,7 @@ contract BaseFundsModule is Module, IFundsModule, FundsOperatorRole {
     function withdrawLTokens(address token, address to, uint256 amount, uint256 poolFee) public onlyFundsOperator {
         if (amount > 0) { //This will be false for "fee only" withdrawal in LiquidityModule.withdrawForRepay()
             lTokens[token].balance = lTokens[token].balance.sub(amount);
+            accountLTokens[from][token] = accountLTokens[from][token].sub(amount);
             lTransferFromFunds(token, to, amount);
         }
         if (poolFee > 0) {
@@ -125,6 +129,10 @@ contract BaseFundsModule is Module, IFundsModule, FundsOperatorRole {
 
     function lBalance(address token) public view returns(uint256){
         return lTokens[token].balance;
+    }
+
+    function lBalance(address token, address account) public view returns(uint256) {
+        return accountLTokens[account][token];
     }
     
     /**

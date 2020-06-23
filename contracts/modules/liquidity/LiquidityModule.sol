@@ -35,7 +35,6 @@ contract LiquidityModule is Module, ILiquidityModule {
         uint256 lAmount = fundsModule().normalizeLTokenValue(token, dnlAmount);
         require(lAmount >= limits.lDepositMin, "LiquidityModule: amount should be >= lDepositMin");
         fundsModule().depositLTokens(token, _msgSender(), lAmount);
-        fundsModule().mintPTokens(_msgSender(), pAmount);
         emit Deposit(_msgSender(), lAmount);
     }
 
@@ -45,7 +44,7 @@ contract LiquidityModule is Module, ILiquidityModule {
     function withdraw(uint256 lAmount, address token) public operationAllowed(IAccessModule.Operation.Withdraw) {
         uint256 dnlAmount = fundsModule().denormalizeLTokenValue(token, lAmount);
 
-        uint256 availableLiquidity = fundsModule().lBalance(token);
+        uint256 availableLiquidity = fundsModule().lBalance(token, _msgSender());
         require(dnlAmount <= availableLiquidity, "LiquidityModule: not enough liquidity");
         fundsModule().withdrawLTokens(token, _msgSender(), dnlAmount);
         emit Withdraw(_msgSender(), dnlAmount);
