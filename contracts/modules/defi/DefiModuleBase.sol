@@ -49,14 +49,14 @@ contract DefiModuleBase is Module, DefiOperatorRole, IDefiModule {
     function handleDeposit(address token, address sender, uint256 amount) public onlyDefiOperator {
         depositsSinceLastDistribution[token] = depositsSinceLastDistribution[token].add(amount);
         handleDepositInternal(token, sender, amount);
-        emit Deposit(amount);
+        emit Deposit(token, sender, amount);
     }
 
 
     function withdraw(address token, address beneficiary, uint256 amount) public onlyDefiOperator {
         withdrawalsSinceLastDistribution[token] = withdrawalsSinceLastDistribution.add(amount);
         withdrawInternal(token, beneficiary, amount);
-        emit Withdraw(amount);
+        emit Withdraw(token, beneficiary, amount);
     }
 
     function withdrawInterest(address token) public {
@@ -67,7 +67,7 @@ contract DefiModuleBase is Module, DefiOperatorRole, IDefiModule {
             uint256 amount = ib.availableBalance;
             ib.availableBalance = 0;
             withdrawInternal(token, _msgSender(), amount);
-            emit WithdrawInterest(_msgSender(), amount);
+            emit WithdrawInterest(token, _msgSender(), amount);
         }
     }
 
@@ -81,7 +81,7 @@ contract DefiModuleBase is Module, DefiOperatorRole, IDefiModule {
         _createDistributionIfReady(token);
         _updateUserBalance(token, account, distributions.length);
         balances[token][account].balance = balance;
-        emit UserBalanceUpdated(account, balance);
+        emit UserBalanceUpdated(token, account, balance);
     }
 
      /**
@@ -177,7 +177,7 @@ contract DefiModuleBase is Module, DefiOperatorRole, IDefiModule {
         depositsSinceLastDistribution[token] = 0;
         withdrawalsSinceLastDistribution[token] = 0;
         nextDistributionTimestamp = now.sub(now % DISTRIBUTION_AGGREGATION_PERIOD).add(DISTRIBUTION_AGGREGATION_PERIOD);
-        emit InvestmentDistributionCreated(distributionAmount, currentBalanceOfToken, total);
+        emit InvestmentDistributionCreated(token, distributionAmount, currentBalanceOfToken, total);
     }
 
 
@@ -188,7 +188,7 @@ contract DefiModuleBase is Module, DefiOperatorRole, IDefiModule {
         uint256 interest = _calculateDistributedAmount(token, fromDistribution, toDistribution, ib.balance);
         ib.availableBalance = ib.availableBalance.add(interest);
         ib.nextDistribution = toDistribution;
-        emit InvestmentDistributionsClaimed(account, ib.Balance, interest, fromDistribution, toDistribution);
+        emit InvestmentDistributionsClaimed(token, account, ib.balance, interest, fromDistribution, toDistribution);
     }
 
     function _calculateDistributedAmount(address token, uint256 fromDistribution, uint256 toDistribution, uint256 balance) internal view returns(uint256) {
