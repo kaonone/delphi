@@ -17,13 +17,13 @@ contract DefiModuleBase is Module, DefiOperatorRole, IDefiModule {
     uint256 public constant DISTRIBUTION_AGGREGATION_PERIOD = 24*60*60;
 
     struct Distribution {
-        uint256 totalPTK;                           // Total shares (PTK distribution supply) before distribution
+        uint256 total;                           // Total shares (PTK distribution supply) before distribution
         mapping(address => uint256) amounts;        // Amounts of each token being distributed during the event
         mapping(address => uint256) balances;       // Total amount of each token stored
     }
 
     struct InvestmentBalance {
-        uint256 ptkBalance;                             // User's share of PTK
+        uint256 balance;                             // User's share of PTK
         mapping(address => uint256) availableBalances;  // Amounts of each token available to redeem
         uint256 nextDistribution;                       // First distribution not yet processed
     }
@@ -40,7 +40,7 @@ contract DefiModuleBase is Module, DefiOperatorRole, IDefiModule {
     function handleDepositInternal(address token, address sender, uint256 amount) internal;
     function withdrawInternal(address token, address beneficiary, uint256 amount) internal;
     function poolBalanceOf(address token) internal /*view*/ returns(uint256); //This is not a view function because cheking cDAI balance may update it
-    function totalSupplyOfPTK() internal view returns(uint256);
+    /*function totalSupplyOfPTK() internal view returns(uint256);*/
 
     // == Initialization functions
     function initialize(address _pool) public initializer {
@@ -81,14 +81,14 @@ contract DefiModuleBase is Module, DefiOperatorRole, IDefiModule {
     /**
      * @notice Update state of user balance for next distributions
      * @param account Address of the user
-     * @param ptkBalance New PTK balance of the user
+     * @param balance New balance of the user
      */
-    function updatePTKBalance(address account, uint256 ptkBalance) public {
+    function updateBalance(address account, uint256 balance) public {
         require(_msgSender() == getModuleAddress(MODULE_PTOKEN), "DefiModuleBase: operation only allowed for PToken");
         _createDistributionIfReady();
         _updateUserBalance(account, distributions.length);
         balances[account].ptkBalance = ptkBalance;
-        emit PTKBalanceUpdated(account, ptkBalance);
+        emit UserBalanceUpdated(account, ptkBalance);
     }
 
     /**

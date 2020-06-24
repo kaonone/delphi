@@ -5,7 +5,7 @@ interface IDefiModule {
     event Deposit(uint256 amount);
     event Withdraw(uint256 amount);
     event WithdrawInterest(address indexed account, address indexed token, uint256 amount);
-    event PTKBalanceUpdated(address indexed account, uint256 amount);
+    event UserBalanceUpdated(address indexed account, uint256 amount);
     event InvestmentDistributionCreated(uint256 idx, address indexed token, uint256 amount, uint256 currentBalance, uint256 totalShares);
     event InvestmentDistributionsClaimed(address indexed account, uint256 shares, address indexed token, uint256 amount, uint256 fromDistribution, uint256 toDistribution);
 
@@ -26,5 +26,5 @@ interface IDefiModule {
     function withdraw(address token, address beneficiary, uint256 amount) external;
 
     //Actions for DefiOperator (PToken)
-    function updatePTKBalance(address account, uint256 ptkBalance) external;
+    function updateUserBalance(address account, uint256 balance) external;
 }
