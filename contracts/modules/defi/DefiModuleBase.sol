@@ -77,19 +77,23 @@ contract DefiModuleBase is Module, DefiOperatorRole, IDefiModule {
         }
     }
 
+
+    /***** update distibutions for many tokens */
     /**
      * @notice Update state of user balance for next distributions
      * @param account Address of the user
      * @param balance New balance of the user
      */
-    function updateBalance(address account, uint256 balance) public {
-        require(_msgSender() == getModuleAddress(MODULE_PTOKEN), "DefiModuleBase: operation only allowed for PToken");
+    function updateBalance(address account, address token, uint256 balance) public {
+        //require(_msgSender() == getModuleAddress(MODULE_PTOKEN), "DefiModuleBase: operation only allowed for PToken");
         _createDistributionIfReady();
         _updateUserBalance(account, distributions.length);
-        balances[account].balance = balance;
-        emit UserBalanceUpdated(account, balance);
+        balances[account].balance[token] = balance;
+        emit UserBalanceUpdated(account, token, balance);
     }
 
+
+    /*-------------------------------------------------------------------------------------*/
     /**
      * @notice Full token balance of the pool. Useful to transfer all funds to another module.
      * @dev Note, this call MAY CHANGE state  (internal DAI balance in Compound, for example)
