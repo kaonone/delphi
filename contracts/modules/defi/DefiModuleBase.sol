@@ -7,7 +7,6 @@ import "./DefiOperatorRole.sol";
 
 /**
 * @dev DeFi integration module
-* This module should be initialized only *AFTER* PTK module is available and address
 * of DeFi source is set.
 */
 //solhint-disable func-order
@@ -17,13 +16,13 @@ contract DefiModuleBase is Module, DefiOperatorRole, IDefiModule {
     uint256 public constant DISTRIBUTION_AGGREGATION_PERIOD = 24*60*60;
 
     struct Distribution {
-        uint256 total;                           // Total shares (PTK distribution supply) before distribution
+        uint256 total;                           // Total shares (Stablecoins distribution supply) before distribution
         mapping(address => uint256) amounts;        // Amounts of each token being distributed during the event
         mapping(address => uint256) balances;       // Total amount of each token stored
     }
 
     struct InvestmentBalance {
-        uint256 balance;                             // User's share of PTK
+        uint256 balance;                             // User's share of Stablecoins
         mapping(address => uint256) availableBalances;  // Amounts of each token available to redeem
         uint256 nextDistribution;                       // First distribution not yet processed
     }
@@ -40,7 +39,7 @@ contract DefiModuleBase is Module, DefiOperatorRole, IDefiModule {
     function handleDepositInternal(address token, address sender, uint256 amount) internal;
     function withdrawInternal(address token, address beneficiary, uint256 amount) internal;
     function poolBalanceOf(address token) internal /*view*/ returns(uint256); //This is not a view function because cheking cDAI balance may update it
-    /*function totalSupplyOfPTK() internal view returns(uint256);*/
+    function totalSupplyOfToken() internal view returns(uint256);
 
     // == Initialization functions
     function initialize(address _pool) public initializer {
@@ -87,8 +86,8 @@ contract DefiModuleBase is Module, DefiOperatorRole, IDefiModule {
         require(_msgSender() == getModuleAddress(MODULE_PTOKEN), "DefiModuleBase: operation only allowed for PToken");
         _createDistributionIfReady();
         _updateUserBalance(account, distributions.length);
-        balances[account].ptkBalance = ptkBalance;
-        emit UserBalanceUpdated(account, ptkBalance);
+        balances[account].balance = balance;
+        emit UserBalanceUpdated(account, balance);
     }
 
     /**
@@ -122,12 +121,12 @@ contract DefiModuleBase is Module, DefiOperatorRole, IDefiModule {
         InvestmentBalance storage ib = balances[account];
         tokens = registeredTokens();
 
-        if (ib.ptkBalance == 0) {
+        if (ib.balance == 0) {
             amounts = new uint256[](tokens.length); //Zero-filled array
             return (tokens, amounts);
         }
 
-        amounts = _calculateDistributedAmount(ib.nextDistribution, distributions.length, ib.ptkBalance, tokens);
+        amounts = _calculateDistributedAmount(ib.nextDistribution, distributions.length, ib.balance, tokens);
 
         for (uint256 i=0; i < tokens.length; i++) {
             address token = tokens[i];
@@ -142,8 +141,8 @@ contract DefiModuleBase is Module, DefiOperatorRole, IDefiModule {
     // == Internal functions of DefiModule
     function _createInitialDistribution() internal {
         assert(distributions.length == 0);
-        uint256 totalPTK = 0; //totalSupplyOfPTK();
-        distributions.push(Distribution(totalPTK));
+        uint256 total = 0; //totalSupplyOfToken();
+        distributions.push(Distribution(total));
         //Distribution storage d = distributions[distributions.length-1];
     }
 
@@ -155,7 +154,7 @@ contract DefiModuleBase is Module, DefiOperatorRole, IDefiModule {
     function _createDistribution() internal {
         Distribution storage prev = distributions[distributions.length - 1]; //This is safe because _createInitialDistribution called in initialize.
 
-        uint256 totalPTK = totalSupplyOfPTK();
+        uint256 total = totalSupplyOfToken();
 
         address[] memory tokens = registeredTokens();
 
@@ -172,7 +171,7 @@ contract DefiModuleBase is Module, DefiOperatorRole, IDefiModule {
 
         if (!hasDistributions) return;
 
-        distributions.push(Distribution(totalPTK));
+        distributions.push(Distribution(total));
         uint256 distributionIdx = distributions.length-1;
         Distribution storage d = distributions[distributionIdx];
         for (uint256 i=0; i < tokens.length; i++) {
@@ -184,7 +183,7 @@ contract DefiModuleBase is Module, DefiOperatorRole, IDefiModule {
             withdrawalsSinceLastDistribution[token] = 0;
 
             if (distrAmounts[i] > 0){
-                emit InvestmentDistributionCreated(distributionIdx, token, distrAmounts[i], currBalances[i], totalPTK);
+                emit InvestmentDistributionCreated(distributionIdx, token, distrAmounts[i], currBalances[i], total);
             }
         }        
 
@@ -214,21 +213,21 @@ contract DefiModuleBase is Module, DefiOperatorRole, IDefiModule {
 
     function _updateUserBalance(address account, uint256 toDistribution) internal {
         InvestmentBalance storage ib = balances[account];
-        if (ib.ptkBalance == 0) return;
+        if (ib.balance == 0) return;
 
         uint256 fromDistribution = ib.nextDistribution;
         address[] memory tokens = registeredTokens();
-        uint256[] memory interest = _calculateDistributedAmount(fromDistribution, toDistribution, ib.ptkBalance, tokens);
+        uint256[] memory interest = _calculateDistributedAmount(fromDistribution, toDistribution, ib.balance, tokens);
         ib.nextDistribution = toDistribution;
         for (uint256 i=0; i < tokens.length; i++) {
             address token = tokens[i];
             ib.availableBalances[token] = ib.availableBalances[token].add(interest[i]);
-            emit InvestmentDistributionsClaimed(account, ib.ptkBalance, token, interest[i], fromDistribution, toDistribution);
+            emit InvestmentDistributionsClaimed(account, ib.balance, token, interest[i], fromDistribution, toDistribution);
         }
     }
 
-    function _calculateDistributedAmount(uint256 fromDistribution, uint256 toDistribution, uint256 ptkBalance, address[] memory tokens) internal view returns(uint256[] memory) {
-        assert(ptkBalance != 0); //This conditions should be checked in caller function
+    function _calculateDistributedAmount(uint256 fromDistribution, uint256 toDistribution, uint256 balance, address[] memory tokens) internal view returns(uint256[] memory) {
+        assert(balance != 0); //This conditions should be checked in caller function
         uint256 next = fromDistribution;
         if (next == 0) next = 1; //skip initial distribution as it is always zero
         uint256[] memory totalInterest = new uint256[](tokens.length);
@@ -236,7 +235,7 @@ contract DefiModuleBase is Module, DefiOperatorRole, IDefiModule {
             Distribution storage d = distributions[next];
             for (uint256 i=0; i < tokens.length; i++) {
                 uint256 distrAmount = d.amounts[tokens[i]];
-                totalInterest[i] = totalInterest[i].add(distrAmount.mul(ptkBalance).div(d.totalPTK)); 
+                totalInterest[i] = totalInterest[i].add(distrAmount.mul(balance).div(d.total)); 
             }
             next++;
         }
