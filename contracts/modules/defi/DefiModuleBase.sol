@@ -22,7 +22,7 @@ contract DefiModuleBase is Module, DefiOperatorRole, IDefiModule {
     }
 
     struct InvestmentBalance {
-        uint256 balance;                             // User's share of Stablecoins
+        mapping(address => uint256) balance;
         mapping(address => uint256) availableBalances;  // Amounts of each token available to redeem
         uint256 nextDistribution;                       // First distribution not yet processed
     }
@@ -39,7 +39,7 @@ contract DefiModuleBase is Module, DefiOperatorRole, IDefiModule {
     function handleDepositInternal(address token, address sender, uint256 amount) internal;
     function withdrawInternal(address token, address beneficiary, uint256 amount) internal;
     function poolBalanceOf(address token) internal /*view*/ returns(uint256); //This is not a view function because cheking cDAI balance may update it
-    function totalSupplyOfToken() internal view returns(uint256);
+    function totalSupplyOfToken(address token) internal view returns(uint256);
 
     // == Initialization functions
     function initialize(address _pool) public initializer {
@@ -52,13 +52,13 @@ contract DefiModuleBase is Module, DefiOperatorRole, IDefiModule {
     function handleDeposit(address token, address sender, uint256 amount) public onlyDefiOperator {
         depositsSinceLastDistribution[token] = depositsSinceLastDistribution[token].add(amount);
         handleDepositInternal(token, sender, amount);
-        emit Deposit(amount);
+        emit Deposit(token, sender, amount);
     }
 
     function withdraw(address token, address beneficiary, uint256 amount) public onlyDefiOperator {
         withdrawalsSinceLastDistribution[token] = withdrawalsSinceLastDistribution[token].add(amount);
         withdrawInternal(token, beneficiary, amount);
-        emit Withdraw(amount);
+        emit Withdraw(token, beneficiary, amount);
     }
 
     function withdrawInterest() public {
