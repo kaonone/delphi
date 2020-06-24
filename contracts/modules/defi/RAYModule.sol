@@ -107,8 +107,10 @@ contract RAYModule is DefiModuleBase, IERC721Receiver {
         return amount;
     }
     
-    function totalSupplyOfToken() internal view returns(uint256) {
-        return 0;
+    function totalSupplyOf(address token) internal view returns(uint256);
+    
+    /*function totalSupplyOfPTK() internal view returns(uint256) {
+        return pToken().distributionTotalSupply();
         // this way was used during initialization, when pToken address may be not available, but now initialization makes it always zero
         // (success, result) = pool.staticcall(abi.encodeWithSignature("get(string)", MODULE_PTOKEN));
         // require(success, "RAYModule: Pool error on get(ptoken)");
@@ -116,7 +118,7 @@ contract RAYModule is DefiModuleBase, IERC721Receiver {
         // uint256 totalPTK;
         // if (ptk != ZERO_ADDRESS) totalPTK = IPToken(ptk).distributionTotalSupply(); // else totalPTK == 0;
         // return totalPTK;
-    }
+    }*/
     
     function rayPortfolioManager() private view returns(IRAYPortfolioManager){
         return rayPortfolioManager(rayStorage());
