@@ -16,7 +16,7 @@ contract DefiModuleBase is Module, DefiOperatorRole, IDefiModule {
     uint256 public constant DISTRIBUTION_AGGREGATION_PERIOD = 24*60*60;
 
     struct Distribution {
-        uint256 total;                           // Total shares (Stablecoins distribution supply) before distribution
+        mapping(address => uint256) uint256 totalBalance;                           // Total shares (Stablecoins distribution supply) before distribution
         mapping(address => uint256) amounts;        // Amounts of each token being distributed during the event
         mapping(address => uint256) balances;       // Total amount of each token stored
     }
