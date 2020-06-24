@@ -182,21 +182,21 @@ contract DefiModuleBase is Module, DefiOperatorRole, IDefiModule {
 
 
     /******** refactoring **********/
-    function _updateUserBalance(address account, uint256 toDistribution) internal {
-        InvestmentBalance storage ib = balances[account];
+    function _updateUserBalance(address token, address account, uint256 toDistribution) internal {
+        InvestmentBalance storage ib = balances[token][account];
         uint256 fromDistribution = ib.nextDistribution;
-        uint256 interest = _calculateDistributedAmount(fromDistribution, toDistribution, ib.balance);
+        uint256 interest = _calculateDistributedAmount(token, fromDistribution, toDistribution, ib.balance);
         ib.availableBalance = ib.availableBalance.add(interest);
         ib.nextDistribution = toDistribution;
         emit InvestmentDistributionsClaimed(account, ib.Balance, interest, fromDistribution, toDistribution);
     }
 
-    function _calculateDistributedAmount(uint256 fromDistribution, uint256 toDistribution, uint256 Balance) internal view returns(uint256) {
+    function _calculateDistributedAmount(address token, uint256 fromDistribution, uint256 toDistribution, uint256 balance) internal view returns(uint256) {
         if (balance == 0) return 0;
         uint256 next = fromDistribution;
         uint256 totalInterest;
         while (next < toDistribution) {
-            Distribution storage d = distributions[next];
+            Distribution storage d = distributions[token][next];
             totalInterest = totalInterest.add(d.amount.mul(balance).div(d.total)); 
             next++;
         }
