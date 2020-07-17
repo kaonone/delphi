@@ -16,18 +16,6 @@ interface IDCAToken {
         uint256 indexed tokenId,
     );
 
-
-    event DCAStrategyUpdated(
-        uint256 indexed tokenId,
-        uint256 duration,
-        uint256 minAmount
-    );
-
-
-    event DCAStrategyRemoved(
-        uint256 indexed tokenId
-    );
-
     event Redeem(
         uint256 value, 
         uint256 tokenAddress,
@@ -41,17 +29,10 @@ interface IDCAToken {
         uint256 balance
     );
 
-    function dcaFor(address account) external view returns
+    function dcaTokenFor(address account) external view returns
     (
         uint256 tokenId;
     );
-
-
-    function dcaStrategyFor(address account) external view returns
-    (
-        uint256 tokenId;
-    );
-
 
     function supply(
         uint256 value    
