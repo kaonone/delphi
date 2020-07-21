@@ -1,178 +1,234 @@
 pragma solidity ^0.5.12;
 
-import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC721/ERC721Full.sol";
-import "@openzeppelin/contracts/token/ERC721/ERC721Mintable.sol";
 import "@openzeppelin/contracts/token/ERC721/ERC721Burnable.sol";
 import "@openzeppelin/contracts/drafts/Counters.sol";
 import "@openzeppelin/contracts/math/SafeMath.sol";
-import "../../interfaces/uniswap/IUniswapV2Router02.sol";
 import "../../lib/TransferHelper.sol";
+import "../../test/FakeUniswapRouter.sol";
 
-// import "../../common/Module.sol";
-
-contract DCAModule is ERC721Full, ERC721Mintable, ERC721Burnable {
+contract DCAModule is ERC721Full, ERC721Burnable {
     using SafeMath for uint256;
     using Counters for Counters.Counter;
     using TransferHelper for address;
 
+    event DistributionCreated(
+        address tokenAddress,
+        uint256 amount,
+        uint256 totalSupply
+    );
+
+    event DistributionsClaimed(
+        uint256 tokenId,
+        address distributionTokenAddress,
+        uint256 amount,
+        uint256 distributionIndex
+    );
+
     Counters.Counter private _tokenIds;
 
-    struct BalanceAndBuyAmount {
+    struct Account {
         uint256 balance;
         uint256 buyAmount;
+        uint256 lastDistributionIndex;
     }
 
-    mapping(uint256 => BalanceAndBuyAmount) public _balanceAndBuyAmountOf;
-    mapping(uint256 => bool) public activeTokens;
+    struct Distribution {
+        address tokenAddress;
+        uint256 amount;
+        uint256 totalSupply;
+    }
 
-    enum Strategies {BTC, HALF, ETH}
+    struct DistributionToken {
+        string tokenSymbol;
+        address tokenAddress;
+    }
 
-    IERC20 public sellToken;
-    IERC20 public buyToken;
+    Distribution[] public distributions;
+    DistributionToken[] public distributionTokens;
 
-    IUniswapV2Router02 public router;
-
-    Strategies public currentStrategy;
-
+    uint256 public periodTimestamp;
+    uint256 public nextBuyTimestamp;
     uint256 public globalPeriodBuyAmount;
+
+    address public router;
+
+    mapping(uint256 => Account) private _accountOf;
+    mapping(address => uint256) public distributedAmountOf;
+    mapping(uint256 => uint256) public removeAfterDistribution;
+
+    enum Strategies {ONE, ALL}
+
+    address public tokenToSell;
+
+    Strategies public strategy;
 
     constructor(
         string memory name,
         string memory symbol,
-        address _sellToken,
-        address _buyToken,
+        address _tokenToSell,
         uint256 _strategy,
-        address _router
+        address _router,
+        uint256 _periodTimestamp
     ) public ERC721Full(name, symbol) {
-        sellToken = IERC20(_sellToken);
-        buyToken = IERC20(_buyToken);
-        currentStrategy = Strategies(_strategy);
-        router = IUniswapV2Router02(_router);
+        tokenToSell = _tokenToSell;
+        strategy = Strategies(_strategy);
+        router = _router;
+        periodTimestamp = _periodTimestamp;
+        nextBuyTimestamp = now.add(_periodTimestamp);
     }
 
-    function deposit(uint256 amount, uint256 buyAmount) external {
+    function setDistributionToken(
+        string calldata tokenSymbol,
+        address tokenAddress
+    ) external returns (bool) {
         require(
-            sellToken.transferFrom(_msgSender(), address(this), amount),
-            "DCAModule: transferFrom error"
+            (strategy == Strategies.ONE && distributionTokens.length <= 1) ||
+                strategy == Strategies.ALL,
+            "DCAModule-setDistributionToken: a strategy can contain only one token"
         );
 
-        uint256 tokenId = _tokensOfOwner(msg.sender)[0];
+        distributionTokens.push(
+            DistributionToken({
+                tokenSymbol: tokenSymbol,
+                tokenAddress: tokenAddress
+            })
+        );
 
-        if (!activeTokens[tokenId]) {
-            _tokenIds.increment();
-
-            uint256 newItemId = _tokenIds.current();
-
-            _mint(msg.sender, newItemId);
-
-            _balanceAndBuyAmountOf[newItemId]
-                .balance = _balanceAndBuyAmountOf[newItemId].balance.add(
-                amount
-            );
-
-            _balanceAndBuyAmountOf[newItemId].buyAmount = buyAmount;
-
-            activeTokens[newItemId] = true;
-
-            globalPeriodBuyAmount = globalPeriodBuyAmount
-                .sub(_balanceAndBuyAmountOf[newItemId].buyAmount)
-                .add(buyAmount);
-        } else {
-            _balanceAndBuyAmountOf[tokenId]
-                .balance = _balanceAndBuyAmountOf[tokenId].balance.add(amount);
-
-            globalPeriodBuyAmount = globalPeriodBuyAmount
-                .sub(_balanceAndBuyAmountOf[tokenId].buyAmount)
-                .add(buyAmount);
-        }
+        return true;
     }
 
-    function buyBTC(address[] calldata path, uint256 deadline)
+    function deposit(uint256 amount, uint256 buyAmount)
         external
         returns (bool)
     {
-        require(
-            uint256(currentStrategy) == uint256(Strategies.BTC),
-            "DCAModule-buyBTC: wrong strategy"
-        );
+        tokenToSell.safeTransferFrom(_msgSender(), address(this), amount);
 
-        path[0].safeApprove(router, globalPeriodBuyAmount);
+        if (balanceOf(_msgSender()) == 0) {
+            _tokenIds.increment();
 
-        uint256 amountOutMin = router.getAmountsOut(
-            globalPeriodBuyAmount,
-            path
-        )[1];
+            uint256 newTokenId = _tokenIds.current();
 
-        router.swapExactTokensForTokens(
-            globalPeriodBuyAmount,
-            amountOutMin,
-            path,
-            address(this),
-            deadline
-        );
+            _mint(_msgSender(), newTokenId);
 
-        return true;
-    }
+            _accountOf[newTokenId].balance = amount;
 
-    function buyHALF() external returns (bool) {
-        require(
-            uint256(currentStrategy) == uint256(Strategies.HALF),
-            "DCAModule-buyHALF: wrong strategy"
-        );
+            _accountOf[newTokenId].buyAmount = buyAmount;
 
-        uint256 buyAmount = globalPeriodBuyAmount.div(2);
+            globalPeriodBuyAmount = globalPeriodBuyAmount.add(buyAmount);
 
-        path[0].safeApprove(router, buyAmount);
+            uint256 removalPoint = distributions.length.add(
+                _accountOf[newTokenId].balance.div(buyAmount)
+            );
 
-        uint256 amountOutMin = router.getAmountsOut(
-            globalPeriodBuyAmount,
-            path
-        )[1];
+            removeAfterDistribution[removalPoint -
+                1] = removeAfterDistribution[removalPoint - 1].add(buyAmount);
+        } else {
+            require(
+                claimDistributions(),
+                "DCAModule-deposit: claim distributions error"
+            );
 
-        router.swapExactTokensForTokens(
-            buyAmount,
-            amountOutMin,
-            path,
-            address(this),
-            deadline
-        );
+            uint256 tokenId = _tokensOfOwner(_msgSender())[0];
 
-        path[0].safeApprove(router, buyAmount);
+            _accountOf[tokenId].balance = _accountOf[tokenId].balance.add(
+                amount
+            );
 
-        amountOutMin = router.getAmountsOut(globalPeriodBuyAmount, path)[1];
+            globalPeriodBuyAmount = globalPeriodBuyAmount
+                .sub(_accountOf[tokenId].buyAmount)
+                .add(buyAmount);
 
-        router.swapExactTokensForETH(
-            buyAmount,
-            amountOutMin,
-            path,
-            address(this),
-            deadline
-        );
+            uint256 removalPoint = distributions.length.add(
+                _accountOf[tokenId].balance.div(buyAmount)
+            );
+
+            removeAfterDistribution[removalPoint - 1] = buyAmount;
+        }
 
         return true;
     }
 
-    function buyETH() external returns (bool) {
+    function withdraw(uint256 amount) external returns (bool) {
         require(
-            uint256(currentStrategy) == uint256(Strategies.ETH),
-            "DCAModule-buyETH: wrong strategy"
+            claimDistributions(),
+            "DCAModule-deposit: claim distributions error"
         );
 
-        path[0].safeApprove(router, globalPeriodBuyAmount);
+        uint256 tokenId = _tokensOfOwner(_msgSender())[0];
 
-        uint256 amountOutMin = router.getAmountsOut(
-            globalPeriodBuyAmount,
-            path
-        )[1];
-
-        router.swapExactTokensForETH(
-            globalPeriodBuyAmount,
-            amountOutMin,
-            path,
-            address(this),
-            deadline
+        require(
+            _accountOf[tokenId].balance >= amount,
+            "DCAModule-withdraw: transfer amount exceeds balance"
         );
+
+        _accountOf[tokenId].balance = _accountOf[tokenId].balance.sub(amount);
+
+        tokenToSell.safeTransfer(_msgSender(), amount);
+
+        return true;
+    }
+
+    function buy() external returns (bool) {
+        require(now >= nextBuyTimestamp, "DCAModule-buy: not the time to buy");
+
+        uint256 buyAmount = globalPeriodBuyAmount.div(
+            distributionTokens.length
+        );
+
+        for (uint256 i = 0; i < distributionTokens.length; i++) {
+            require(
+                _swapAndCreateDistribution(
+                    tokenToSell,
+                    distributionTokens[i].tokenAddress,
+                    buyAmount
+                ),
+                "DCAModule-buy: swap error"
+            );
+        }
+
+        nextBuyTimestamp = nextBuyTimestamp.add(periodTimestamp);
+
+        return true;
+    }
+
+    function claimDistributions() public returns (bool) {
+        uint256 tokenId = _tokensOfOwner(_msgSender())[0];
+
+        for (
+            uint256 i = _accountOf[tokenId].lastDistributionIndex + 1;
+            i < distributions.length;
+            i++
+        ) {
+            if (_accountOf[tokenId].balance > 0) {
+                uint256 amount = _accountOf[tokenId]
+                    .buyAmount
+                    .mul(distributions[i].totalSupply)
+                    .div(distributions[i].amount);
+
+                distributions[i].tokenAddress.safeTransfer(
+                    _msgSender(),
+                    amount
+                );
+
+                _accountOf[tokenId].balance = _accountOf[tokenId].balance.sub(
+                    _accountOf[tokenId].buyAmount
+                );
+
+                distributedAmountOf[distributions[i]
+                    .tokenAddress] = distributedAmountOf[distributions[i]
+                    .tokenAddress]
+                    .add(amount);
+
+                _accountOf[tokenId].lastDistributionIndex = i;
+
+                globalPeriodBuyAmount = globalPeriodBuyAmount.sub(
+                    removeAfterDistribution[i]
+                );
+            } else {
+                return true;
+            }
+        }
 
         return true;
     }
@@ -189,17 +245,38 @@ contract DCAModule is ERC721Full, ERC721Mintable, ERC721Burnable {
 
         _burn(from, tokenId);
 
-        uint256 senderBalance = _balanceAndBuyAmountOf[tokenId].balance;
+        uint256 senderBalance = _accountOf[tokenId].balance;
 
-        _balanceAndBuyAmountOf[tokenId].balance = 0;
+        _accountOf[tokenId].balance = 0;
 
         uint256 recipientTokenId = _tokensOfOwner(to)[0];
 
-        _balanceAndBuyAmountOf[recipientTokenId]
-            .balance = _balanceAndBuyAmountOf[recipientTokenId].balance.add(
-            senderBalance
+        _accountOf[recipientTokenId].balance = _accountOf[recipientTokenId]
+            .balance
+            .add(senderBalance);
+    }
+
+    function _swapAndCreateDistribution(
+        address tokenIn,
+        address tokenOut,
+        uint256 amount
+    ) private returns (bool) {
+        tokenIn.safeApprove(router, amount);
+
+        uint256[2] memory amounts = FakeUniswapRouter(router).swap(
+            tokenIn,
+            tokenOut,
+            globalPeriodBuyAmount
         );
 
-        activeTokens[tokenId] = false;
+        distributions.push(
+            Distribution({
+                tokenAddress: tokenOut,
+                amount: amounts[0],
+                totalSupply: amounts[1]
+            })
+        );
+
+        return true;
     }
 }
