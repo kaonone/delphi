@@ -6,13 +6,13 @@ interface IDCAToken {
     event Supply( 
         uint256 value, 
         uint256 tokenAddress,
-        uint256 indexed tokenId,
+        uint256 indexed tokenId
     );
 
     event Redeem(
         uint256 value, 
         uint256 tokenAddress,
-        uint256 indexed tokenId,
+        uint256 indexed tokenId
     );
 
 
@@ -29,7 +29,7 @@ interface IDCAToken {
 
     function dcaTokenFor(address account) external view returns
     (
-        uint256 tokenId;
+        uint256 tokenId
     );
 
     function supply(
