@@ -6,10 +6,10 @@ import "@openzeppelin/contracts/token/ERC721/ERC721Mintable.sol";
 import "@openzeppelin/contracts/token/ERC721/ERC721Burnable.sol";
 import "@openzeppelin/contracts/drafts/Counters.sol";
 import "@openzeppelin/contracts/math/SafeMath.sol";
-import "../../interfaces/IUniswapV2Router02.sol";
-import "../../TransferHelper.sol";
-import "../../common/Module.sol";
+import "../../interfaces/uniswap/IUniswapV2Router02.sol";
+import "../../lib/TransferHelper.sol";
 
+// import "../../common/Module.sol";
 
 contract DCAModule is ERC721Full, ERC721Mintable, ERC721Burnable {
     using SafeMath for uint256;
@@ -37,20 +37,9 @@ contract DCAModule is ERC721Full, ERC721Mintable, ERC721Burnable {
 
     uint256 public globalPeriodBuyAmount;
 
-    //  modifier operationAllowed(IAccessModule.Operation operation) {
-    //     IAccessModule am = IAccessModule(getModuleAddress(MODULE_ACCESS));
-    //     require(am.isOperationAllowed(operation, _msgSender()), "LiquidityModule: operation not allowed");
-    //     _;
-    // }
-
-    // function initialize(address _pool) public initializer {
-    //     Module.initialize(_pool);
-    //     setLimits(10*10**18, 0);    //10 DAI minimal enter
-    // }
-
     constructor(
         string memory name,
-        string memory symbol
+        string memory symbol,
         address _sellToken,
         address _buyToken,
         uint256 _strategy,
@@ -99,7 +88,10 @@ contract DCAModule is ERC721Full, ERC721Mintable, ERC721Burnable {
         }
     }
 
-    function buyBTC(address[] calldata path, uint256 deadline) external returns (bool) {
+    function buyBTC(address[] calldata path, uint256 deadline)
+        external
+        returns (bool)
+    {
         require(
             uint256(currentStrategy) == uint256(Strategies.BTC),
             "DCAModule-buyBTC: wrong strategy"
@@ -139,19 +131,16 @@ contract DCAModule is ERC721Full, ERC721Mintable, ERC721Burnable {
         )[1];
 
         router.swapExactTokensForTokens(
-                buyAmount,
-                amountOutMin,
-                path,
-                address(this),
-                deadline
-            );
+            buyAmount,
+            amountOutMin,
+            path,
+            address(this),
+            deadline
+        );
 
         path[0].safeApprove(router, buyAmount);
 
-        uint256 amountOutMin = router.getAmountsOut(
-            globalPeriodBuyAmount,
-            path
-        )[1];
+        amountOutMin = router.getAmountsOut(globalPeriodBuyAmount, path)[1];
 
         router.swapExactTokensForETH(
             buyAmount,
@@ -161,7 +150,7 @@ contract DCAModule is ERC721Full, ERC721Mintable, ERC721Burnable {
             deadline
         );
 
-        return true
+        return true;
     }
 
     function buyETH() external returns (bool) {
