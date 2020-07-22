@@ -31,6 +31,7 @@ contract DCAModule is ERC721Full, ERC721Burnable {
         uint256 balance;
         uint256 buyAmount;
         uint256 lastDistributionIndex;
+        uint256 lastRemovalPointIndex;
     }
 
     struct Distribution {
@@ -136,6 +137,11 @@ contract DCAModule is ERC721Full, ERC721Burnable {
                 amount
             );
 
+            removeAfterDistribution[_accountOf[tokenId]
+                .lastRemovalPointIndex] = removeAfterDistribution[_accountOf[tokenId]
+                .lastRemovalPointIndex]
+                .sub(_accountOf[tokenId].buyAmount);
+
             _accountOf[tokenId].buyAmount = buyAmount;
 
             globalPeriodBuyAmount = globalPeriodBuyAmount
@@ -146,13 +152,14 @@ contract DCAModule is ERC721Full, ERC721Burnable {
                 _accountOf[tokenId].balance.div(buyAmount)
             );
 
-            removeAfterDistribution[removalPoint - 1] = buyAmount;
+            removeAfterDistribution[removalPoint -
+                1] = removeAfterDistribution[removalPoint - 1].add(buyAmount);
         }
 
         return true;
     }
 
-    function withdraw(uint256 amount) external returns (bool) {
+    function withdraw(uint256 amount, address token) external returns (bool) {
         require(
             claimDistributions(),
             "DCAModule-deposit: claim distributions error"
@@ -165,9 +172,19 @@ contract DCAModule is ERC721Full, ERC721Burnable {
             "DCAModule-withdraw: transfer amount exceeds balance"
         );
 
-        _accountOf[tokenId].balance = _accountOf[tokenId].balance.sub(amount);
+        // ?
+        if (token == tokenToSell) {
+            _accountOf[tokenId].balance = _accountOf[tokenId].balance.sub(
+                amount
+            );
 
-        tokenToSell.safeTransfer(_msgSender(), amount);
+            tokenToSell.safeTransfer(_msgSender(), amount);
+        } else {
+            distributedTokenBalanceOf[token][tokenId] = distributedTokenBalanceOf[token][tokenId]
+                .sub(amount);
+
+            tokenToSell.safeTransfer(_msgSender(), amount);
+        }
 
         return true;
     }
@@ -203,7 +220,7 @@ contract DCAModule is ERC721Full, ERC721Burnable {
             i < distributions.length;
             i++
         ) {
-            if (_accountOf[tokenId].balance > 0) {
+            if (_accountOf[tokenId].balance >= _accountOf[tokenId].buyAmount) {
                 uint256 amount = _accountOf[tokenId]
                     .buyAmount
                     .mul(distributions[i].totalSupply)
@@ -264,7 +281,7 @@ contract DCAModule is ERC721Full, ERC721Burnable {
         uint256[2] memory amounts = FakeUniswapRouter(router).swap(
             tokenIn,
             tokenOut,
-            globalPeriodBuyAmount
+            amount
         );
 
         distributions.push(
