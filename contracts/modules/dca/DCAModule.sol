@@ -54,8 +54,9 @@ contract DCAModule is ERC721Full, ERC721Burnable {
     address public router;
 
     mapping(uint256 => Account) private _accountOf;
-    mapping(address => uint256) public distributedAmountOf;
     mapping(uint256 => uint256) public removeAfterDistribution;
+    mapping(address => mapping(uint256 => uint256))
+        public distributedTokenBalanceOf;
 
     enum Strategies {ONE, ALL}
 
@@ -135,6 +136,8 @@ contract DCAModule is ERC721Full, ERC721Burnable {
                 amount
             );
 
+            _accountOf[tokenId].buyAmount = buyAmount;
+
             globalPeriodBuyAmount = globalPeriodBuyAmount
                 .sub(_accountOf[tokenId].buyAmount)
                 .add(buyAmount);
@@ -206,18 +209,13 @@ contract DCAModule is ERC721Full, ERC721Burnable {
                     .mul(distributions[i].totalSupply)
                     .div(distributions[i].amount);
 
-                distributions[i].tokenAddress.safeTransfer(
-                    _msgSender(),
-                    amount
-                );
-
                 _accountOf[tokenId].balance = _accountOf[tokenId].balance.sub(
                     _accountOf[tokenId].buyAmount
                 );
 
-                distributedAmountOf[distributions[i]
-                    .tokenAddress] = distributedAmountOf[distributions[i]
-                    .tokenAddress]
+                distributedTokenBalanceOf[distributions[i]
+                    .tokenAddress][tokenId] = distributedTokenBalanceOf[distributions[i]
+                    .tokenAddress][tokenId]
                     .add(amount);
 
                 _accountOf[tokenId].lastDistributionIndex = i;
