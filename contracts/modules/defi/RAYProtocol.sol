@@ -1,13 +1,14 @@
 pragma solidity ^0.5.12;
 
 import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/ERC20Detailed.sol";
+import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/SafeERC20.sol";
 import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC721/IERC721Receiver.sol";
+import "@openzeppelin/contracts-ethereum-package/contracts/math/SafeMath.sol";
 import "../../interfaces/defi/IDefiProtocol.sol";
-import "../../interfaces/curve/IFundsModule.sol";
 import "../../interfaces/defi/IRAYStorage.sol";
 import "../../interfaces/defi/IRAYPortfolioManager.sol";
 import "../../interfaces/defi/IRAYNAVCalculator.sol";
-import "../../interfaces/defi/IDefiModule.sol";
 import "../../common/Module.sol";
 import "./DefiOperatorRole.sol";
 
@@ -20,7 +21,11 @@ contract RAYProtocol is Module, DefiOperatorRole, IERC721Receiver, IDefiProtocol
     bytes32 internal constant RAY_TOKEN_CONTRACT = keccak256("RAYTokenContract");
     bytes4 internal constant ERC721_RECEIVER = bytes4(keccak256("onERC721Received(address,address,uint256,bytes)"));
 
+    using SafeMath for uint256;
+    using SafeERC20 for IERC20;
+
     IERC20 baseToken;
+    uint8 decimals;
     bytes32 portfolioId;
     bytes32 rayTokenId;
 
@@ -29,6 +34,7 @@ contract RAYProtocol is Module, DefiOperatorRole, IERC721Receiver, IDefiProtocol
         DefiOperatorRole.initialize(_msgSender());
         baseToken = IERC20(_token);
         portfolioId = _portfolioId;
+        decimals = ERC20Detailed(_token).decimals();
     }
 
     function onERC721Received(address, address, uint256, bytes memory) public returns (bytes4) {
@@ -37,16 +43,21 @@ contract RAYProtocol is Module, DefiOperatorRole, IERC721Receiver, IDefiProtocol
         return ERC721_RECEIVER;
     }
 
-    function deposit(address token, address, uint256 amount) public onlyDefiOperator {
+    function deposit(address token, uint256 amount) public onlyDefiOperator {
         require(token == address(baseToken), "RAYProtocol: token not supported");
-        IERC20(token).transferFrom(_msgSender(), address(this), amount);
+        IERC20(token).safeTransferFrom(_msgSender(), address(this), amount);
         IRAYPortfolioManager pm = rayPortfolioManager();
-        IERC20(token).approve(address(pm), amount);
+        IERC20(token).safeApprove(address(pm), amount);
         if (rayTokenId == 0x0) {
             rayTokenId = pm.mint(portfolioId, address(this), amount);
         } else {
             pm.deposit(rayTokenId, amount);
         }
+    }
+
+    function deposit(address[] memory tokens, uint256[] memory amounts) public onlyDefiOperator {
+        require(tokens.length == 1 && amounts.length == 1, "RAYProtocol: wrong count of tokens or amounts");
+        deposit(tokens[0], amounts[0]);
     }
 
     function withdraw(address beneficiary, address token, uint256 amount) public onlyDefiOperator {
@@ -58,7 +69,7 @@ contract RAYProtocol is Module, DefiOperatorRole, IERC721Receiver, IDefiProtocol
     function withdraw(address beneficiary, uint256[] memory amounts) public onlyDefiOperator {
         require(amounts.length == 1, "RAYProtocol: wrong amounts array length");
         rayPortfolioManager().redeem(rayTokenId, amounts[0], address(0));
-        IERC20(baseToken).transfer(beneficiary, amounts[0]);
+        IERC20(baseToken).safeTransfer(beneficiary, amounts[0]);
     }
 
     function balanceOf(address token) public returns(uint256) {
@@ -92,16 +103,24 @@ contract RAYProtocol is Module, DefiOperatorRole, IERC721Receiver, IDefiProtocol
         return 1;
     }
 
-    function normalizeAmount(address token, uint256 value) internal view returns(uint256) {
-        return fundsModule().normalizeLTokenValue(token, value);
+    function normalizeAmount(address, uint256 amount) internal view returns(uint256) {
+        if (decimals == 18) {
+            return amount;
+        } else if (decimals > 18) {
+            return amount.div(10**(uint256(decimals)-18));
+        } else if (decimals > 18) {
+            return amount.mul(10**(uint256(decimals)-18));
+        }
     }
 
-    function denormalizeAmount(address token, uint256 value) internal view returns(uint256) {
-        return fundsModule().denormalizeLTokenValue(token, value);
-    }
-
-    function fundsModule() internal view returns(IFundsModule) {
-        return IFundsModule(getModuleAddress(MODULE_FUNDS));
+    function denormalizeAmount(address, uint256 amount) internal view returns(uint256) {
+        if (decimals == 18) {
+            return amount;
+        } else if (decimals > 18) {
+            return amount.mul(10**(uint256(decimals)-18));
+        } else if (decimals > 18) {
+            return amount.div(10**(uint256(decimals)-18));
+        }
     }
 
     function rayPortfolioManager() private view returns(IRAYPortfolioManager){
@@ -121,6 +140,6 @@ contract RAYProtocol is Module, DefiOperatorRole, IERC721Receiver, IDefiProtocol
     }
 
     function rayStorage() private view returns(IRAYStorage){
-        return IRAYStorage(getModuleAddress(MODULE_RAY));
+        return IRAYStorage(getModuleAddress(CONTRACT_RAY));
     }
 }

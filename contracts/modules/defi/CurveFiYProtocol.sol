@@ -2,13 +2,13 @@ pragma solidity ^0.5.12;
 
 import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/ERC20Detailed.sol";
-import "@openzeppelin/contracts-ethereum-package/contracts/math/SafeMath.sol";
 import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/SafeERC20.sol";
+import "@openzeppelin/contracts-ethereum-package/contracts/math/SafeMath.sol";
 import "../../interfaces/defi/IDefiProtocol.sol";
 import "../../interfaces/defi/ICurveFiDeposit.sol";
 import "../../interfaces/defi/ICurveFiSwap.sol";
 import "../../interfaces/defi/IYErc20.sol";
-import "./DefiModuleBase.sol";
+import "../../common/Module.sol";
 import "./DefiOperatorRole.sol";
 
 contract CurveFiYProtocol is Module, DefiOperatorRole, IDefiProtocol {
@@ -28,7 +28,7 @@ contract CurveFiYProtocol is Module, DefiOperatorRole, IDefiProtocol {
     ICurveFiSwap public curveFiSwap;
     ICurveFiDeposit public curveFiDeposit;
     address[] _registeredTokens;
-    uint256 public slippageMultiplier; //Multiplier to work-around slippage when witharawing one token
+    uint256 public slippageMultiplier; //Multiplier to work-around slippage & fees when witharawing one token
     mapping(address => uint8) decimals;
 
     function initialize(address _pool) public initializer {
@@ -65,17 +65,6 @@ contract CurveFiYProtocol is Module, DefiOperatorRole, IDefiProtocol {
         slippageMultiplier = _slippageMultiplier;
     }
 
-    function withdrawAll() public onlyOwner {
-        IERC20 curveFiToken = IERC20(curveFiDeposit.token());
-        uint256 curveFiTokenBalance = curveFiToken.balanceOf(address(this));
-        curveFiDeposit.remove_liquidity(curveFiTokenBalance, [uint256(0), uint256(0), uint256(0)]);
-        for (uint256 i=0; i < _registeredTokens.length; i++){
-            IERC20 ltoken = IERC20(_registeredTokens[i]);
-            uint256 amount = ltoken.balanceOf(address(this));
-            ltoken.safeTransfer(getModuleAddress(MODULE_FUNDS), amount);
-        }            
-    }
-
     function deposit(address token, uint256 amount) public onlyDefiOperator {
         uint256[N_COINS] memory amounts = [uint256(0), uint256(0), uint256(0)];
         for (uint256 i=0; i < _registeredTokens.length; i++){
@@ -88,9 +77,9 @@ contract CurveFiYProtocol is Module, DefiOperatorRole, IDefiProtocol {
         curveFiDeposit.add_liquidity(amounts, 0);
     }
 
-    function deposit(address[] calldata tokens, uint256[] memory amounts) public onlyDefiOperator {
+    function deposit(address[] memory tokens, uint256[] memory amounts) public onlyDefiOperator {
         require(tokens.length == amounts.length, "CurveFiYProtocol: count of tokens does not match count of amounts");
-        require(amounts.length = N_COINS, "CurveFiYProtocol: amounts count does not match registered tokens");
+        require(amounts.length == N_COINS, "CurveFiYProtocol: amounts count does not match registered tokens");
         uint256[N_COINS] memory amnts = [uint256(0), uint256(0), uint256(0)];
         for (uint256 i=0; i < _registeredTokens.length; i++){
             uint256 idx = getTokenIndex(tokens[i]);
@@ -107,22 +96,22 @@ contract CurveFiYProtocol is Module, DefiOperatorRole, IDefiProtocol {
     function withdraw(address beneficiary, address token, uint256 amount) public onlyDefiOperator {
         uint256 tokenIdx = getTokenIndex(token);
         uint256 available = IERC20(token).balanceOf(address(this));
-        amount = amount.sub(available); //Count tokens left after previous withdrawal
+        uint256 wAmount = amount.sub(available); //Count tokens left after previous withdrawal
 
         // count shares for proportional withdraw
-        uint256 nAmount = normalizeAmount(token, amount);
+        uint256 nAmount = normalizeAmount(token, wAmount);
         uint256 nBalance = normalizedBalance();
 
         IERC20 curveFiToken = IERC20(curveFiDeposit.token());
         uint256 poolShares = curveFiToken.balanceOf(address(this));
-        uint256 withdrawShares = poolShares.mul(nAmount).div(nBalance);
+        uint256 withdrawShares = poolShares.mul(nAmount).mul(slippageMultiplier).div(nBalance).div(1e18); //Increase required amount to some percent, so that we definitely have enough to withdraw
 
-        uint256 minAmount = amount.mul(1e18).div(slippageMultiplier);
-        curveFiDeposit.remove_liquidity_one_coin(withdrawShares, int128(tokenIdx), minAmount, DONATE_DUST);
+        curveFiDeposit.remove_liquidity_one_coin(withdrawShares, int128(tokenIdx), wAmount, DONATE_DUST);
 
         available = IERC20(token).balanceOf(address(this));
+        require(available >= amount, "CurveFiYProtocol: failed to withdraw required amount");
         IERC20 ltoken = IERC20(token);
-        ltoken.safeTransfer(beneficiary, available);
+        ltoken.safeTransfer(beneficiary, amount);
     }
 
     function withdraw(address beneficiary, uint256[] memory amounts) public onlyDefiOperator {
@@ -204,24 +193,24 @@ contract CurveFiYProtocol is Module, DefiOperatorRole, IDefiProtocol {
     }
 
     function normalizeAmount(address token, uint256 amount) internal view returns(uint256) {
-        uint8 decimals = tokens[token].decimals;
-        if (decimals == 18) {
+        uint256 _decimals = uint256(decimals[token]);
+        if (_decimals == 18) {
             return amount;
-        } else if (decimals > 18) {
-            return amount.div(10**(decimals-18));
-        } else if (decimals > 18) {
-            return amount.mul(10**(decimals-18));
+        } else if (_decimals > 18) {
+            return amount.div(10**(_decimals-18));
+        } else if (_decimals > 18) {
+            return amount.mul(10**(_decimals-18));
         }
     }
 
     function denormalizeAmount(address token, uint256 amount) internal view returns(uint256) {
-        uint8 decimals = tokens[token].decimals;
-        if (decimals == 18) {
+        uint256 _decimals = uint256(decimals[token]);
+        if (_decimals == 18) {
             return amount;
-        } else if (decimals > 18) {
-            return amount.mul(10**(decimals-18));
-        } else if (decimals > 18) {
-            return amount.div(10**(decimals-18));
+        } else if (_decimals > 18) {
+            return amount.mul(10**(_decimals-18));
+        } else if (_decimals > 18) {
+            return amount.div(10**(_decimals-18));
         }
     }
 
@@ -241,7 +230,7 @@ contract CurveFiYProtocol is Module, DefiOperatorRole, IDefiProtocol {
 
         //TODO: ensure there is no interest on this token which is wating to be withdrawn
         if (balance > 0){
-            withdraw(token, getModuleAddress(MODULE_FUNDS), balance);   //This updates withdrawalsSinceLastDistribution
+            withdraw(token, _msgSender(), balance);   //This updates withdrawalsSinceLastDistribution
         }
         emit TokenUnregistered(token);
     }
