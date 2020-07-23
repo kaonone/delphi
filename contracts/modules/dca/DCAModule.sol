@@ -28,7 +28,7 @@ contract DCAModule is ERC721Full, ERC721Burnable {
     Counters.Counter private _tokenIds;
 
     struct Account {
-        uint256 balance;
+        mapping(address => uint256) balance;
         uint256 buyAmount;
         uint256 lastDistributionIndex;
         uint256 lastRemovalPointIndex;
@@ -56,8 +56,6 @@ contract DCAModule is ERC721Full, ERC721Burnable {
 
     mapping(uint256 => Account) private _accountOf;
     mapping(uint256 => uint256) public removeAfterDistribution;
-    mapping(address => mapping(uint256 => uint256))
-        public distributedTokenBalanceOf;
 
     enum Strategies {ONE, ALL}
 
@@ -113,14 +111,14 @@ contract DCAModule is ERC721Full, ERC721Burnable {
 
             _mint(_msgSender(), newTokenId);
 
-            _accountOf[newTokenId].balance = amount;
+            _accountOf[newTokenId].balance[tokenToSell] = amount;
 
             _accountOf[newTokenId].buyAmount = buyAmount;
 
             globalPeriodBuyAmount = globalPeriodBuyAmount.add(buyAmount);
 
             uint256 removalPoint = distributions.length.add(
-                _accountOf[newTokenId].balance.div(buyAmount)
+                _accountOf[newTokenId].balance[tokenToSell].div(buyAmount)
             );
 
             removeAfterDistribution[removalPoint -
@@ -133,23 +131,23 @@ contract DCAModule is ERC721Full, ERC721Burnable {
 
             uint256 tokenId = _tokensOfOwner(_msgSender())[0];
 
-            _accountOf[tokenId].balance = _accountOf[tokenId].balance.add(
-                amount
-            );
+            _accountOf[tokenId].balance[tokenToSell] = _accountOf[tokenId]
+                .balance[tokenToSell]
+                .add(amount);
 
             removeAfterDistribution[_accountOf[tokenId]
                 .lastRemovalPointIndex] = removeAfterDistribution[_accountOf[tokenId]
                 .lastRemovalPointIndex]
                 .sub(_accountOf[tokenId].buyAmount);
 
-            _accountOf[tokenId].buyAmount = buyAmount;
-
             globalPeriodBuyAmount = globalPeriodBuyAmount
                 .sub(_accountOf[tokenId].buyAmount)
                 .add(buyAmount);
 
+            _accountOf[tokenId].buyAmount = buyAmount;
+
             uint256 removalPoint = distributions.length.add(
-                _accountOf[tokenId].balance.div(buyAmount)
+                _accountOf[tokenId].balance[tokenToSell].div(buyAmount)
             );
 
             removeAfterDistribution[removalPoint -
@@ -167,23 +165,44 @@ contract DCAModule is ERC721Full, ERC721Burnable {
 
         uint256 tokenId = _tokensOfOwner(_msgSender())[0];
 
-        require(
-            _accountOf[tokenId].balance >= amount,
-            "DCAModule-withdraw: transfer amount exceeds balance"
-        );
-
-        // ?
         if (token == tokenToSell) {
-            _accountOf[tokenId].balance = _accountOf[tokenId].balance.sub(
-                amount
+            require(
+                _accountOf[tokenId].balance[tokenToSell] >= amount,
+                "DCAModule-withdraw: transfer amount exceeds balance"
+            );
+
+            _accountOf[tokenId].balance[tokenToSell] = _accountOf[tokenId]
+                .balance[tokenToSell]
+                .sub(amount);
+
+            removeAfterDistribution[_accountOf[tokenId]
+                .lastRemovalPointIndex] = removeAfterDistribution[_accountOf[tokenId]
+                .lastRemovalPointIndex]
+                .sub(_accountOf[tokenId].buyAmount);
+
+            uint256 removalPoint = distributions.length.add(
+                _accountOf[tokenId].balance[tokenToSell].div(
+                    _accountOf[tokenId].buyAmount
+                )
+            );
+
+            removeAfterDistribution[removalPoint -
+                1] = removeAfterDistribution[removalPoint - 1].add(
+                _accountOf[tokenId].buyAmount
             );
 
             tokenToSell.safeTransfer(_msgSender(), amount);
         } else {
-            distributedTokenBalanceOf[token][tokenId] = distributedTokenBalanceOf[token][tokenId]
+            require(
+                _accountOf[tokenId].balance[token] >= amount,
+                "DCAModule-withdraw: transfer amount exceeds balance"
+            );
+
+            _accountOf[tokenId].balance[token] = _accountOf[tokenId]
+                .balance[token]
                 .sub(amount);
 
-            tokenToSell.safeTransfer(_msgSender(), amount);
+            token.safeTransfer(_msgSender(), amount);
         }
 
         return true;
@@ -220,19 +239,23 @@ contract DCAModule is ERC721Full, ERC721Burnable {
             i < distributions.length;
             i++
         ) {
-            if (_accountOf[tokenId].balance >= _accountOf[tokenId].buyAmount) {
+            if (
+                _accountOf[tokenId].balance[distributions[i].tokenAddress] >=
+                _accountOf[tokenId].buyAmount
+            ) {
                 uint256 amount = _accountOf[tokenId]
                     .buyAmount
                     .mul(distributions[i].totalSupply)
                     .div(distributions[i].amount);
 
-                _accountOf[tokenId].balance = _accountOf[tokenId].balance.sub(
-                    _accountOf[tokenId].buyAmount
-                );
+                _accountOf[tokenId].balance[distributions[i]
+                    .tokenAddress] = _accountOf[tokenId]
+                    .balance[distributions[i].tokenAddress]
+                    .sub(_accountOf[tokenId].buyAmount);
 
-                distributedTokenBalanceOf[distributions[i]
-                    .tokenAddress][tokenId] = distributedTokenBalanceOf[distributions[i]
-                    .tokenAddress][tokenId]
+                _accountOf[tokenId].balance[distributions[i]
+                    .tokenAddress] = _accountOf[tokenId]
+                    .balance[distributions[i].tokenAddress]
                     .add(amount);
 
                 _accountOf[tokenId].lastDistributionIndex = i;
@@ -260,14 +283,15 @@ contract DCAModule is ERC721Full, ERC721Burnable {
 
         _burn(from, tokenId);
 
-        uint256 senderBalance = _accountOf[tokenId].balance;
+        uint256 senderBalance = _accountOf[tokenId].balance[tokenToSell];
 
-        _accountOf[tokenId].balance = 0;
+        _accountOf[tokenId].balance[tokenToSell] = 0;
 
         uint256 recipientTokenId = _tokensOfOwner(to)[0];
 
-        _accountOf[recipientTokenId].balance = _accountOf[recipientTokenId]
-            .balance
+        _accountOf[recipientTokenId]
+            .balance[tokenToSell] = _accountOf[recipientTokenId]
+            .balance[tokenToSell]
             .add(senderBalance);
     }
 
