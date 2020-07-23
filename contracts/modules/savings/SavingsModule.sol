@@ -171,7 +171,7 @@ contract SavingsModule is Module {
         if(currentBalance > pi.previousBalance) {
             uint256 yeld = currentBalance.sub(pi.previousBalance);
             poolToken.distribute(yeld);
-            YeldDistribution(address(poolToken), yeld);
+            emit YeldDistribution(address(poolToken), yeld);
         }
         return currentBalance;
     }

@@ -4,7 +4,7 @@ import "../modules/defi/CompoundProtocol.sol";
 
 contract CompoundProtocol_DAI is CompoundProtocol {
     function initialize(address _pool, address _token, address _cToken) public initializer {
-        CompoundProtocol_DAI.initialize(
+        CompoundProtocol.initialize(
             _pool, 
             _token,
             _cToken
