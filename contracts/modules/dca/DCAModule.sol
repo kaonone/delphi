@@ -7,6 +7,15 @@ import "@openzeppelin/contracts/math/SafeMath.sol";
 import "../../lib/TransferHelper.sol";
 import "../../test/FakeUniswapRouter.sol";
 
+/**
+ * @dev Implementation of the {DCAModule} interface.
+ *
+ * Dollar-cost averaging (DCA) is an investment strategy
+ * in which an investor divides up the total amount to be
+ * invested across periodic purchases of a target asset in
+ * an effort to reduce the impact of volatility on the overall
+ * purchase.
+ */
 contract DCAModule is ERC721Full, ERC721Burnable {
     using SafeMath for uint256;
     using Counters for Counters.Counter;
@@ -63,6 +72,13 @@ contract DCAModule is ERC721Full, ERC721Burnable {
 
     Strategies public strategy;
 
+    /**
+     * @dev Sets the values for {name}, {symbol}, {tokenToSell},
+     * {strategy}, {router} and {periodTimestamp}
+     *
+     * All three of these values are immutable: they can only be set once during
+     * construction.
+     */
     constructor(
         string memory name,
         string memory symbol,
@@ -78,6 +94,17 @@ contract DCAModule is ERC721Full, ERC721Burnable {
         nextBuyTimestamp = now.add(_periodTimestamp);
     }
 
+    /**
+     * @dev Sets `tokenSymbol` and `tokenAddress` for DistributionToken struct,
+     * that is stored in the `distributionTokens` array.
+     *
+     * @param tokenSymbol Token symbol.
+     * @param tokenAddress Token address.
+     *
+     * @return Boolean value indicating whether the operation succeeded.
+     *
+     * Emits an {DistributionTokenAdded} event.
+     */
     function setDistributionToken(
         string calldata tokenSymbol,
         address tokenAddress
@@ -98,6 +125,19 @@ contract DCAModule is ERC721Full, ERC721Burnable {
         return true;
     }
 
+    /**
+     * @dev Makes a `tokenToSell` deposit and ERC721 token,
+     * which is associated with the account. Increases the `tokenToSell` account balance,
+     * launches `globalPeriodBuyAmount` and `removalPoint` recalculations if the ERC721
+     * token already exist.
+     * @param amount Deposit amount.
+     * @param buyAmount Total amount to be invested across periodic
+     * purchases of a target assets.
+     *
+     * @return Boolean value indicating whether the operation succeeded.
+     *
+     * Emits an {Deposit} event.
+     */
     function deposit(uint256 amount, uint256 buyAmount)
         external
         returns (bool)
@@ -157,6 +197,17 @@ contract DCAModule is ERC721Full, ERC721Burnable {
         return true;
     }
 
+    /**
+     * @dev Makes a `token` withdrawal. Launches `removalPoint` recalculation
+     *  if token address is equal to the `tokenToSell`.
+     *
+     * @param amount Withdrawal amount.
+     * @param token Token address.
+     *
+     * @return Boolean value indicating whether the operation succeeded.
+     *
+     * Emits an {Withdrawal} event.
+     */
     function withdraw(uint256 amount, address token) external returns (bool) {
         require(
             claimDistributions(),
@@ -208,7 +259,14 @@ contract DCAModule is ERC721Full, ERC721Burnable {
         return true;
     }
 
-    function buy() external returns (bool) {
+    /**
+     * @dev Makes a purchase of a target assets.
+     *
+     * @return Boolean value indicating whether the operation succeeded.
+     *
+     * Emits an {Purchase} and {DistributionCreated} events.
+     */
+    function purchase() external returns (bool) {
         require(now >= nextBuyTimestamp, "DCAModule-buy: not the time to buy");
 
         uint256 buyAmount = globalPeriodBuyAmount.div(
@@ -231,6 +289,13 @@ contract DCAModule is ERC721Full, ERC721Burnable {
         return true;
     }
 
+    /**
+     * @dev Makes a target assets shares distribution.
+     *
+     * @return Boolean value indicating whether the operation succeeded.
+     *
+     * Emits an {DistributionsClaimed} event.
+     */
     function claimDistributions() public returns (bool) {
         uint256 tokenId = _tokensOfOwner(_msgSender())[0];
 
@@ -271,6 +336,18 @@ contract DCAModule is ERC721Full, ERC721Burnable {
         return true;
     }
 
+    /**
+     * @dev Transfers `tokenId` token from `from` to `to` and merges accounts data.
+     *
+     * Requirements:
+     *
+     * - `from` cannot be the zero address.
+     * - `to` cannot be the zero address.
+     * - `tokenId` token must be owned by `from`.
+     * - If the caller is not `from`, it must be approved to move this token by either {approve} or {setApprovalForAll}.
+     *
+     * Emits a {Transfer} event.
+     */
     function transferFrom(
         address from,
         address to,
