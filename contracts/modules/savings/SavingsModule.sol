@@ -15,6 +15,8 @@ contract SavingsModule is Module {
 
     event ProtocolRegistered(address protocol, address poolToken);
     event YeldDistribution(address indexed poolToken, uint256 amount);
+    event Deposit(address indexed protocol, address indexed token, uint256 amount);
+    event Withdraw(address indexed protocol, address indexed token, uint256 amount, uint256 fee);
 
     using SafeERC20 for IERC20;
     using SafeMath for uint256;
@@ -103,6 +105,7 @@ contract SavingsModule is Module {
         for (uint256 i=0; i < _tokens.length; i++) {
             address tkn = _tokens[i];
             IERC20(tkn).safeTransferFrom(_msgSender(), _protocol, _dnAmounts[i]);
+            emit Deposit(_protocol, tkn, _dnAmounts[i]);
         }
         IDefiProtocol(_protocol).deposit(_tokens, _dnAmounts);
     }
@@ -118,7 +121,10 @@ contract SavingsModule is Module {
 
         uint256 nBalanceBefore = distributeYeldInternal(_protocol);
         withdrawFromProtocolProportionally(_msgSender(), IDefiProtocol(_protocol), nAmount, nBalanceBefore);
-        updateProtocolBalance(_protocol);
+        uint256 nBalanceAfter = updateProtocolBalance(_protocol);
+
+        uint256 actualAmount = nBalanceBefore.sub(nBalanceAfter);
+        require(actualAmount <= nAmount, "SavingsModule: unexpected withdrawal fee");
     }
 
     /**
@@ -126,9 +132,10 @@ contract SavingsModule is Module {
      * @param _protocol Protocol to withdraw from
      * @param token Token to withdraw
      * @param dnAmount Amount to withdraw (denormalized)
-     * @param maxNAmount Max normalized (to 18 decimals) amount to withdraw
+     * @param maxNAmount Max amount of PoolToken to burn
+     * @return Amount of PoolToken burned from user
      */
-    function withdraw(address _protocol, address token, uint256 dnAmount, uint256 maxNAmount) public {
+    function withdraw(address _protocol, address token, uint256 dnAmount, uint256 maxNAmount) public returns(uint256){
         uint256 nBalanceBefore = distributeYeldInternal(_protocol);
         withdrawFromProtocolOne(_msgSender(), IDefiProtocol(_protocol), token, dnAmount);
         uint256 nBalanceAfter = updateProtocolBalance(_protocol);
@@ -137,6 +144,11 @@ contract SavingsModule is Module {
         require(maxNAmount == 0 || nAmount <= maxNAmount, "SavingsModule: provided maxNAmount is too high");
         PoolToken poolToken = PoolToken(protocols[_protocol].poolToken);
         poolToken.burnFrom(_msgSender(), nAmount);
+
+        uint256 nAmountWithoutFee = denormalizeTokenAmount(token, dnAmount);
+        uint256 fee = (nAmount > nAmountWithoutFee)?(nAmount-nAmountWithoutFee):0;
+        emit Withdraw(_protocol, token, dnAmount, fee);
+        return nAmount;
     }
 
     function distributeYeld() public onlyOwner {
@@ -148,8 +160,10 @@ contract SavingsModule is Module {
     function withdrawFromProtocolProportionally(address beneficiary, IDefiProtocol protocol, uint256 nAmount, uint256 currentProtocolBalance) internal {
         uint256[] memory balances = protocol.balanceOfAll();
         uint256[] memory amounts = new uint256[](balances.length);
+        address[] memory _tokens = protocol.supportedTokens();
         for (uint256 i = 0; i < amounts.length; i++) {
             amounts[i] = balances[i].mul(nAmount).div(currentProtocolBalance);
+            emit Withdraw(address(protocol), _tokens[i], amounts[i], 0);
         }
         protocol.withdraw(beneficiary, amounts);
     }
