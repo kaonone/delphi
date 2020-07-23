@@ -13,6 +13,9 @@ contract SavingsModule is Module {
     uint256 constant MAX_UINT256 = uint256(-1);
     uint256 public constant DISTRIBUTION_AGGREGATION_PERIOD = 24*60*60;
 
+    event ProtocolRegistered(address protocol, address poolToken);
+    event YeldDistribution(address indexed poolToken, uint256 amount);
+
     using SafeERC20 for IERC20;
     using SafeMath for uint256;
 
@@ -59,6 +62,7 @@ contract SavingsModule is Module {
                 poolToken.mint(_msgSender(), normalizedBalance.sub(ts));
             }
         }
+        emit ProtocolRegistered(address(protocol), address(poolToken));
     }
 
     /**
@@ -167,6 +171,7 @@ contract SavingsModule is Module {
         if(currentBalance > pi.previousBalance) {
             uint256 yeld = currentBalance.sub(pi.previousBalance);
             poolToken.distribute(yeld);
+            YeldDistribution(address(poolToken), yeld);
         }
         return currentBalance;
     }
