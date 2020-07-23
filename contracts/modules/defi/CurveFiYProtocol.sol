@@ -216,7 +216,7 @@ contract CurveFiYProtocol is Module, DefiOperatorRole, IDefiProtocol {
 
     function _registerToken(address token) private {
         IERC20 ltoken = IERC20(token);
-        ltoken.approve(address(curveFiDeposit), MAX_UINT256);
+        ltoken.safeApprove(address(curveFiDeposit), MAX_UINT256);
         uint256 currentBalance = ltoken.balanceOf(address(this));
         if (currentBalance > 0) {
             deposit(token, currentBalance); 
