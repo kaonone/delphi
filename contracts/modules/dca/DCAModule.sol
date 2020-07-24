@@ -165,7 +165,7 @@ contract DCAModule is ERC721Full, ERC721Burnable {
                 1] = removeAfterDistribution[removalPoint - 1].add(buyAmount);
         } else {
             require(
-                claimDistributions(),
+                _claimDistributions(),
                 "DCAModule-deposit: claim distributions error"
             );
 
@@ -210,7 +210,7 @@ contract DCAModule is ERC721Full, ERC721Burnable {
      */
     function withdraw(uint256 amount, address token) external returns (bool) {
         require(
-            claimDistributions(),
+            _claimDistributions(),
             "DCAModule-deposit: claim distributions error"
         );
 
@@ -231,7 +231,7 @@ contract DCAModule is ERC721Full, ERC721Burnable {
                 .lastRemovalPointIndex]
                 .sub(_accountOf[tokenId].buyAmount);
 
-            uint256 removalPoint = distributions.length.add(
+            uint256 = distributions.length.add(
                 _accountOf[tokenId].balance[tokenToSell].div(
                     _accountOf[tokenId].buyAmount
                 )
@@ -286,52 +286,9 @@ contract DCAModule is ERC721Full, ERC721Burnable {
 
         nextBuyTimestamp = nextBuyTimestamp.add(periodTimestamp);
 
-        return true;
-    }
-
-    /**
-     * @dev Makes a target assets shares distribution.
-     *
-     * @return Boolean value indicating whether the operation succeeded.
-     *
-     * Emits an {DistributionsClaimed} event.
-     */
-    function claimDistributions() public returns (bool) {
-        uint256 tokenId = _tokensOfOwner(_msgSender())[0];
-
-        for (
-            uint256 i = _accountOf[tokenId].lastDistributionIndex + 1;
-            i < distributions.length;
-            i++
-        ) {
-            if (
-                _accountOf[tokenId].balance[distributions[i].tokenAddress] >=
-                _accountOf[tokenId].buyAmount
-            ) {
-                uint256 amount = _accountOf[tokenId]
-                    .buyAmount
-                    .mul(distributions[i].totalSupply)
-                    .div(distributions[i].amount);
-
-                _accountOf[tokenId].balance[distributions[i]
-                    .tokenAddress] = _accountOf[tokenId]
-                    .balance[distributions[i].tokenAddress]
-                    .sub(_accountOf[tokenId].buyAmount);
-
-                _accountOf[tokenId].balance[distributions[i]
-                    .tokenAddress] = _accountOf[tokenId]
-                    .balance[distributions[i].tokenAddress]
-                    .add(amount);
-
-                _accountOf[tokenId].lastDistributionIndex = i;
-
-                globalPeriodBuyAmount = globalPeriodBuyAmount.sub(
-                    removeAfterDistribution[i]
-                );
-            } else {
-                return true;
-            }
-        }
+        globalPeriodBuyAmount = globalPeriodBuyAmount.sub(
+            removeAfterDistribution[distributions.length]
+        );
 
         return true;
     }
@@ -370,6 +327,48 @@ contract DCAModule is ERC721Full, ERC721Burnable {
             .balance[tokenToSell] = _accountOf[recipientTokenId]
             .balance[tokenToSell]
             .add(senderBalance);
+    }
+
+    /**
+     * @dev Makes a target assets shares distribution.
+     *
+     * @return Boolean value indicating whether the operation succeeded.
+     *
+     * Emits an {DistributionsClaimed} event.
+     */
+    function _claimDistributions() private returns (bool) {
+        uint256 tokenId = _tokensOfOwner(_msgSender())[0];
+
+        for (
+            uint256 i = _accountOf[tokenId].lastDistributionIndex + 1;
+            i < distributions.length;
+            i++
+        ) {
+            if (
+                _accountOf[tokenId].balance[tokenToSell] >=
+                _accountOf[tokenId].buyAmount
+            ) {
+                uint256 amount = _accountOf[tokenId]
+                    .buyAmount
+                    .mul(distributions[i].totalSupply)
+                    .div(distributions[i].amount);
+
+                _accountOf[tokenId].balance[tokenToSell] = _accountOf[tokenId]
+                    .balance[tokenToSell]
+                    .sub(_accountOf[tokenId].buyAmount);
+
+                _accountOf[tokenId].balance[distributions[i]
+                    .tokenAddress] = _accountOf[tokenId]
+                    .balance[distributions[i].tokenAddress]
+                    .add(amount);
+
+                _accountOf[tokenId].lastDistributionIndex = i;
+            } else {
+                return true;
+            }
+        }
+
+        return true;
     }
 
     function _swapAndCreateDistribution(
