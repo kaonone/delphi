@@ -1,11 +1,12 @@
 pragma solidity ^0.5.12;
 
-import "@openzeppelin/contracts/token/ERC721/ERC721Full.sol";
-import "@openzeppelin/contracts/token/ERC721/ERC721Burnable.sol";
-import "@openzeppelin/contracts/drafts/Counters.sol";
-import "@openzeppelin/contracts/math/SafeMath.sol";
+import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC721/ERC721Full.sol";
+import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC721/ERC721Burnable.sol";
+import "@openzeppelin/contracts-ethereum-package/contracts/drafts/Counters.sol";
+import "@openzeppelin/contracts-ethereum-package/contracts/math/SafeMath.sol";
 import "../../lib/TransferHelper.sol";
 import "../../test/FakeUniswapRouter.sol";
+import "../../common/Module.sol";
 
 /**
  * @dev Implementation of the {DCAModule} interface.
@@ -16,7 +17,7 @@ import "../../test/FakeUniswapRouter.sol";
  * an effort to reduce the impact of volatility on the overall
  * purchase.
  */
-contract DCAModule is ERC721Full, ERC721Burnable {
+contract DCAModule is Module, ERC721Full, ERC721Burnable {
     using SafeMath for uint256;
     using Counters for Counters.Counter;
     using TransferHelper for address;
@@ -79,14 +80,21 @@ contract DCAModule is ERC721Full, ERC721Burnable {
      * All three of these values are immutable: they can only be set once during
      * construction.
      */
-    constructor(
+    function initialize(
+        address _pool,
         string memory name,
         string memory symbol,
         address _tokenToSell,
         uint256 _strategy,
         address _router,
         uint256 _periodTimestamp
-    ) public ERC721Full(name, symbol) {
+    ) public initializer {
+        Module.initialize(_pool);
+
+        ERC721.initialize();
+        ERC721Enumerable.initialize();
+        ERC721Metadata.initialize(name, symbol);
+
         tokenToSell = _tokenToSell;
         strategy = Strategies(_strategy);
         router = _router;
@@ -231,7 +239,7 @@ contract DCAModule is ERC721Full, ERC721Burnable {
                 .lastRemovalPointIndex]
                 .sub(_accountOf[tokenId].buyAmount);
 
-            uint256 = distributions.length.add(
+            uint256 removalPoint = distributions.length.add(
                 _accountOf[tokenId].balance[tokenToSell].div(
                     _accountOf[tokenId].buyAmount
                 )
