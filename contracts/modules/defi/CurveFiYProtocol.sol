@@ -91,7 +91,8 @@ contract CurveFiYProtocol is Module, DefiOperatorRole, IDefiProtocol {
 
 
     /** 
-    * @dev With this function beneficiary pays sleepage and fees (he will receive less tokens)
+    * @dev With this function beneficiary will recieve exact amount he asked. 
+    * Slippage + fee is paid from his account in SavingsModule
     */
     function withdraw(address beneficiary, address token, uint256 amount) public onlyDefiOperator {
         uint256 tokenIdx = getTokenIndex(token);
