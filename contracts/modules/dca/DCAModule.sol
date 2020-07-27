@@ -40,7 +40,7 @@ contract DCAModule is Module, ERC721Full, ERC721Burnable {
     struct Account {
         mapping(address => uint256) balance;
         uint256 buyAmount;
-        uint256 lastDistributionIndex;
+        uint256 nextDistributionIndex;
         uint256 lastRemovalPointIndex;
     }
 
@@ -149,12 +149,12 @@ contract DCAModule is Module, ERC721Full, ERC721Burnable {
         return _accountOf[tokenId].buyAmount;
     }
 
-    function getAccountLastDistributionIndex(uint256 tokenId)
+    function getAccountNextDistributionIndex(uint256 tokenId)
         public
         view
         returns (uint256)
     {
-        return _accountOf[tokenId].lastDistributionIndex;
+        return _accountOf[tokenId].nextDistributionIndex;
     }
 
     function getAccountLastRemovalPointIndex(uint256 tokenId)
@@ -332,6 +332,8 @@ contract DCAModule is Module, ERC721Full, ERC721Burnable {
         return true;
     }
 
+    uint256 public testtest;
+
     /**
      * @dev Makes a purchase of a target assets.
      *
@@ -346,6 +348,8 @@ contract DCAModule is Module, ERC721Full, ERC721Burnable {
         uint256 buyAmount = globalPeriodBuyAmount.div(
             distributionTokens.length
         );
+
+        testtest = buyAmount;
 
         tokenToSell.safeApprove(router, globalPeriodBuyAmount);
 
@@ -381,33 +385,31 @@ contract DCAModule is Module, ERC721Full, ERC721Burnable {
     }
 
     function _claimDistributions() private returns (bool) {
-        // nextDist refactoring !!!!
         uint256 tokenId = _tokensOfOwner(_msgSender())[0];
 
-        for (
-            uint256 i = _accountOf[tokenId].lastDistributionIndex + 1;
-            i < distributions.length;
-            i++
-        ) {
-            if (
-                _accountOf[tokenId].balance[tokenToSell] >=
-                _accountOf[tokenId].buyAmount
-            ) {
-                uint256 amount = _accountOf[tokenId]
-                    .buyAmount
+        uint256 nextDistributionIndex = _accountOf[tokenId]
+            .nextDistributionIndex;
+
+        uint256 splitBuyAmount = _accountOf[tokenId].buyAmount.div(
+            distributionTokens.length
+        );
+
+        for (uint256 i = nextDistributionIndex; i < distributions.length; i++) {
+            if (_accountOf[tokenId].balance[tokenToSell] >= splitBuyAmount) {
+                uint256 amount = splitBuyAmount
                     .mul(distributions[i].totalSupply)
                     .div(distributions[i].amount);
 
                 _accountOf[tokenId].balance[tokenToSell] = _accountOf[tokenId]
                     .balance[tokenToSell]
-                    .sub(_accountOf[tokenId].buyAmount);
+                    .sub(splitBuyAmount);
 
                 _accountOf[tokenId].balance[distributions[i]
                     .tokenAddress] = _accountOf[tokenId]
                     .balance[distributions[i].tokenAddress]
                     .add(amount);
 
-                _accountOf[tokenId].lastDistributionIndex = i;
+                _accountOf[tokenId].nextDistributionIndex = i.add(1);
             } else {
                 return true;
             }

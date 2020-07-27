@@ -142,7 +142,7 @@ contract("DCAModule", ([owner, acc1, acc2]) => {
     ).to.be.a.bignumber.that.equals(ether("20"));
   });
 
-  it("should purchase", async () => {
+  it("should purchase and push distribution", async () => {
     await usdcInstance.approve(dcaModuleInstance.address, ether("10"), {
       from: acc1,
     });
@@ -152,53 +152,291 @@ contract("DCAModule", ([owner, acc1, acc2]) => {
     });
 
     await dcaModuleInstance.deposit(ether("10"), ether("2"), { from: acc1 });
-    // await dcaModuleInstance.deposit(ether("10"), ether("2"), { from: acc2 });
+    await dcaModuleInstance.deposit(ether("10"), ether("2"), { from: acc2 });
 
     setTime(PERIOD);
 
     await dcaModuleInstance.purchase();
 
-    // const dAmount0 = await dcaModuleInstance.getDistributionAmount(0);
-    // const sAmount0 = await dcaModuleInstance.getDistributionTotalSupply(0);
-
-    // console.log({
-    //   dAmount0: dAmount0.toString(),
-    //   sAmount0: sAmount0.toString(),
-    // });
-
-    const dTokenAddress = await dcaModuleInstance.getDistributionTokenAddress(
-      0
-    );
-
-    console.log({ dTokenAddress });
-
-    await dcaModuleInstance.checkDistributions({ from: acc1 });
-
-    const tokenIdAcc1 = await dcaModuleInstance.getTokenIdByAddress(acc1);
-
-    const accountLastDist = await dcaModuleInstance.getAccountLastDistributionIndex(
-      tokenIdAcc1
-    );
-
-    console.log({ accountLastDist: accountLastDist.toString() });
-
-    const balanceBTC = await dcaModuleInstance.getAccountBalance(
-      tokenIdAcc1,
-      wbtcInstance.address
-    );
-
-    const balanceETH = await dcaModuleInstance.getAccountBalance(
-      tokenIdAcc1,
-      wethInstance.address
-    );
-
-    console.log({
-      balanceBTC: balanceBTC.toString(),
-      balanceETH: balanceETH.toString(),
-    });
-
     expect(
       await dcaModuleInstance.getDistributionsNumber()
     ).to.be.a.bignumber.that.equals(new BN("2"));
+
+    expect(
+      await dcaModuleInstance.getDistributionAmount(0)
+    ).to.be.a.bignumber.that.equals(ether("2"));
+
+    expect(
+      await dcaModuleInstance.getDistributionTotalSupply(0)
+    ).to.be.a.bignumber.that.equals(ether("2"));
+
+    expect(
+      await dcaModuleInstance.getDistributionAmount(1)
+    ).to.be.a.bignumber.that.equals(ether("2"));
+
+    expect(
+      await dcaModuleInstance.getDistributionTotalSupply(1)
+    ).to.be.a.bignumber.that.equals(ether("2"));
+  });
+
+  it("should claim distributions", async () => {
+    await usdcInstance.approve(dcaModuleInstance.address, ether("10"), {
+      from: acc1,
+    });
+
+    await usdcInstance.approve(dcaModuleInstance.address, ether("10"), {
+      from: acc2,
+    });
+
+    await dcaModuleInstance.deposit(ether("10"), ether("2"), { from: acc1 });
+    await dcaModuleInstance.deposit(ether("10"), ether("2"), { from: acc2 });
+
+    setTime(PERIOD);
+
+    await dcaModuleInstance.purchase();
+
+    await dcaModuleInstance.checkDistributions({ from: acc1 });
+    await dcaModuleInstance.checkDistributions({ from: acc2 });
+
+    const tokenIdAcc1 = await dcaModuleInstance.getTokenIdByAddress(acc1);
+    const tokenIdAcc2 = await dcaModuleInstance.getTokenIdByAddress(acc2);
+
+    expect(
+      await dcaModuleInstance.getAccountBalance(
+        tokenIdAcc1,
+        wbtcInstance.address
+      )
+    ).to.be.a.bignumber.that.equals(ether("1"));
+
+    expect(
+      await dcaModuleInstance.getAccountBalance(
+        tokenIdAcc1,
+        wethInstance.address
+      )
+    ).to.be.a.bignumber.that.equals(ether("1"));
+
+    expect(
+      await dcaModuleInstance.getAccountBalance(
+        tokenIdAcc2,
+        wbtcInstance.address
+      )
+    ).to.be.a.bignumber.that.equals(ether("1"));
+
+    expect(
+      await dcaModuleInstance.getAccountBalance(
+        tokenIdAcc2,
+        wethInstance.address
+      )
+    ).to.be.a.bignumber.that.equals(ether("1"));
+  });
+
+  it("should withdraw `in` token (USDC)", async () => {
+    await usdcInstance.approve(dcaModuleInstance.address, ether("10"), {
+      from: acc1,
+    });
+
+    await usdcInstance.approve(dcaModuleInstance.address, ether("10"), {
+      from: acc2,
+    });
+
+    await dcaModuleInstance.deposit(ether("10"), ether("2"), { from: acc1 });
+    await dcaModuleInstance.deposit(ether("10"), ether("2"), { from: acc2 });
+
+    setTime(PERIOD);
+
+    await dcaModuleInstance.purchase();
+
+    const usdcBeforeBalanceAcc1 = await usdcInstance.balanceOf(acc1);
+    const usdcBeforeBalanceAcc2 = await usdcInstance.balanceOf(acc2);
+
+    await dcaModuleInstance.withdraw(ether("8"), usdcInstance.address, {
+      from: acc1,
+    });
+
+    await dcaModuleInstance.withdraw(ether("8"), usdcInstance.address, {
+      from: acc2,
+    });
+
+    const usdcAfterBalanceAcc1 = await usdcInstance.balanceOf(acc1);
+    const usdcAfterBalanceAcc2 = await usdcInstance.balanceOf(acc2);
+
+    expect(usdcAfterBalanceAcc1).to.be.a.bignumber.that.equals(
+      usdcBeforeBalanceAcc1.add(ether("8"))
+    );
+
+    expect(usdcAfterBalanceAcc2).to.be.a.bignumber.that.equals(
+      usdcBeforeBalanceAcc2.add(ether("8"))
+    );
+
+    const tokenIdAcc1 = await dcaModuleInstance.getTokenIdByAddress(acc1);
+    const tokenIdAcc2 = await dcaModuleInstance.getTokenIdByAddress(acc2);
+
+    expect(
+      await dcaModuleInstance.getAccountBalance(
+        tokenIdAcc1,
+        wbtcInstance.address
+      )
+    ).to.be.a.bignumber.that.equals(ether("1"));
+
+    expect(
+      await dcaModuleInstance.getAccountBalance(
+        tokenIdAcc1,
+        wethInstance.address
+      )
+    ).to.be.a.bignumber.that.equals(ether("1"));
+
+    expect(
+      await dcaModuleInstance.getAccountBalance(
+        tokenIdAcc2,
+        wbtcInstance.address
+      )
+    ).to.be.a.bignumber.that.equals(ether("1"));
+
+    expect(
+      await dcaModuleInstance.getAccountBalance(
+        tokenIdAcc2,
+        wethInstance.address
+      )
+    ).to.be.a.bignumber.that.equals(ether("1"));
+  });
+
+  it("should withdraw `out` token (WBTC)", async () => {
+    await usdcInstance.approve(dcaModuleInstance.address, ether("10"), {
+      from: acc1,
+    });
+
+    await usdcInstance.approve(dcaModuleInstance.address, ether("10"), {
+      from: acc2,
+    });
+
+    await dcaModuleInstance.deposit(ether("10"), ether("2"), { from: acc1 });
+    await dcaModuleInstance.deposit(ether("10"), ether("2"), { from: acc2 });
+
+    setTime(PERIOD);
+
+    await dcaModuleInstance.purchase();
+
+    const wbtcBeforeBalanceAcc1 = await wbtcInstance.balanceOf(acc1);
+    const wbtcBeforeBalanceAcc2 = await wbtcInstance.balanceOf(acc2);
+
+    await dcaModuleInstance.withdraw(ether("1"), wbtcInstance.address, {
+      from: acc1,
+    });
+
+    await dcaModuleInstance.withdraw(ether("1"), wbtcInstance.address, {
+      from: acc2,
+    });
+
+    const wbtcAfterBalanceAcc1 = await wbtcInstance.balanceOf(acc1);
+    const wbtcAfterBalanceAcc2 = await wbtcInstance.balanceOf(acc2);
+
+    expect(wbtcAfterBalanceAcc1).to.be.a.bignumber.that.equals(
+      wbtcBeforeBalanceAcc1.add(ether("1"))
+    );
+
+    expect(wbtcAfterBalanceAcc2).to.be.a.bignumber.that.equals(
+      wbtcBeforeBalanceAcc2.add(ether("1"))
+    );
+
+    const tokenIdAcc1 = await dcaModuleInstance.getTokenIdByAddress(acc1);
+    const tokenIdAcc2 = await dcaModuleInstance.getTokenIdByAddress(acc2);
+
+    expect(
+      await dcaModuleInstance.getAccountBalance(
+        tokenIdAcc1,
+        wbtcInstance.address
+      )
+    ).to.be.a.bignumber.that.equals(ether("0"));
+
+    expect(
+      await dcaModuleInstance.getAccountBalance(
+        tokenIdAcc1,
+        wethInstance.address
+      )
+    ).to.be.a.bignumber.that.equals(ether("1"));
+
+    expect(
+      await dcaModuleInstance.getAccountBalance(
+        tokenIdAcc2,
+        wbtcInstance.address
+      )
+    ).to.be.a.bignumber.that.equals(ether("0"));
+
+    expect(
+      await dcaModuleInstance.getAccountBalance(
+        tokenIdAcc2,
+        wethInstance.address
+      )
+    ).to.be.a.bignumber.that.equals(ether("1"));
+  });
+
+  it("should withdraw `out` token (WETH)", async () => {
+    await usdcInstance.approve(dcaModuleInstance.address, ether("10"), {
+      from: acc1,
+    });
+
+    await usdcInstance.approve(dcaModuleInstance.address, ether("10"), {
+      from: acc2,
+    });
+
+    await dcaModuleInstance.deposit(ether("10"), ether("2"), { from: acc1 });
+    await dcaModuleInstance.deposit(ether("10"), ether("2"), { from: acc2 });
+
+    setTime(PERIOD);
+
+    await dcaModuleInstance.purchase();
+
+    const wethBeforeBalanceAcc1 = await wethInstance.balanceOf(acc1);
+    const wethBeforeBalanceAcc2 = await wethInstance.balanceOf(acc2);
+
+    await dcaModuleInstance.withdraw(ether("1"), wethInstance.address, {
+      from: acc1,
+    });
+
+    await dcaModuleInstance.withdraw(ether("1"), wethInstance.address, {
+      from: acc2,
+    });
+
+    const wethAfterBalanceAcc1 = await wethInstance.balanceOf(acc1);
+    const wethAfterBalanceAcc2 = await wethInstance.balanceOf(acc2);
+
+    expect(wethAfterBalanceAcc1).to.be.a.bignumber.that.equals(
+      wethBeforeBalanceAcc1.add(ether("1"))
+    );
+
+    expect(wethAfterBalanceAcc2).to.be.a.bignumber.that.equals(
+      wethBeforeBalanceAcc2.add(ether("1"))
+    );
+
+    const tokenIdAcc1 = await dcaModuleInstance.getTokenIdByAddress(acc1);
+    const tokenIdAcc2 = await dcaModuleInstance.getTokenIdByAddress(acc2);
+
+    expect(
+      await dcaModuleInstance.getAccountBalance(
+        tokenIdAcc1,
+        wbtcInstance.address
+      )
+    ).to.be.a.bignumber.that.equals(ether("1"));
+
+    expect(
+      await dcaModuleInstance.getAccountBalance(
+        tokenIdAcc1,
+        wethInstance.address
+      )
+    ).to.be.a.bignumber.that.equals(ether("0"));
+
+    expect(
+      await dcaModuleInstance.getAccountBalance(
+        tokenIdAcc2,
+        wbtcInstance.address
+      )
+    ).to.be.a.bignumber.that.equals(ether("1"));
+
+    expect(
+      await dcaModuleInstance.getAccountBalance(
+        tokenIdAcc2,
+        wethInstance.address
+      )
+    ).to.be.a.bignumber.that.equals(ether("0"));
   });
 });

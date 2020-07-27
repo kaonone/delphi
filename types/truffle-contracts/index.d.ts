@@ -825,6 +825,8 @@ export interface DCAModuleInstance extends Truffle.ContractInstance {
 
   symbol(txDetails?: Truffle.TransactionDetails): Promise<string>;
 
+  testtest(txDetails?: Truffle.TransactionDetails): Promise<BN>;
+
   tokenByIndex(
     index: number | BN | string,
     txDetails?: Truffle.TransactionDetails
@@ -967,7 +969,7 @@ export interface DCAModuleInstance extends Truffle.ContractInstance {
     txDetails?: Truffle.TransactionDetails
   ): Promise<BN>;
 
-  getAccountLastDistributionIndex(
+  getAccountNextDistributionIndex(
     tokenId: number | BN | string,
     txDetails?: Truffle.TransactionDetails
   ): Promise<BN>;
