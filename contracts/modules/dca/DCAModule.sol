@@ -5,7 +5,7 @@ import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC721/ERC721Bu
 import "@openzeppelin/contracts-ethereum-package/contracts/drafts/Counters.sol";
 import "@openzeppelin/contracts-ethereum-package/contracts/math/SafeMath.sol";
 import "../../lib/TransferHelper.sol";
-import "../../test/FakeUniswapRouter.sol";
+import "../../interfaces/uniswap/IUniswapV2Router02.sol";
 import "./DCAOperatorRole.sol";
 import "../../common/Module.sol";
 
@@ -343,7 +343,6 @@ contract DCAModule is Module, ERC721Full, ERC721Burnable, DCAOperatorRole {
      * Emits an {Purchase} and {DistributionCreated} events.
      */
     function purchase() external onlyDCAOperator returns (bool) {
-        // ROLE
         require(now >= nextBuyTimestamp, "DCAModule-buy: not the time to buy");
 
         uint256 buyAmount = globalPeriodBuyAmount.div(
@@ -353,12 +352,12 @@ contract DCAModule is Module, ERC721Full, ERC721Burnable, DCAOperatorRole {
         tokenToSell.safeApprove(router, globalPeriodBuyAmount);
 
         for (uint256 i = 0; i < distributionTokens.length; i++) {
+            address[] memory path = new address[](2);
+            path[0] = tokenToSell;
+            path[1] = distributionTokens[i].tokenAddress;
+
             require(
-                _swapAndCreateDistribution(
-                    tokenToSell,
-                    distributionTokens[i].tokenAddress,
-                    buyAmount
-                ),
+                _swapAndCreateDistribution(buyAmount, path),
                 "DCAModule-buy: swap error"
             );
         }
@@ -418,20 +417,27 @@ contract DCAModule is Module, ERC721Full, ERC721Burnable, DCAOperatorRole {
         return true;
     }
 
-    function _swapAndCreateDistribution(
-        address tokenIn,
-        address tokenOut,
-        uint256 amount
-    ) private returns (bool) {
-        uint256[2] memory amounts = FakeUniswapRouter(router).swap(
-            tokenIn,
-            tokenOut,
-            amount
+    function _swapAndCreateDistribution(uint256 amountIn, address[] memory path)
+        private
+        returns (bool)
+    {
+        uint256[] memory amountsOut = IUniswapV2Router02(router).getAmountsOut(
+            amountIn,
+            path
+        );
+
+        uint256[] memory amounts = IUniswapV2Router02(router)
+            .swapExactTokensForTokens(
+            amountIn,
+            amountsOut[1],
+            path,
+            address(this),
+            1000e18
         );
 
         distributions.push(
             Distribution({
-                tokenAddress: tokenOut,
+                tokenAddress: path[1],
                 amount: amounts[0],
                 totalSupply: amounts[1]
             })

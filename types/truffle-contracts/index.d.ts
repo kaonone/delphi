@@ -2035,29 +2035,43 @@ export interface ERC721MintableInstance extends Truffle.ContractInstance {
 }
 
 export interface FakeUniswapRouterInstance extends Truffle.ContractInstance {
-  swap: {
+  getAmountsOut(
+    amountIn: number | BN | string,
+    path: (string | BN)[],
+    txDetails?: Truffle.TransactionDetails
+  ): Promise<BN[]>;
+
+  swapExactTokensForTokens: {
     (
-      tokenIn: string | BN,
-      tokenOut: string | BN,
       amountIn: number | BN | string,
+      amountOutMin: number | BN | string,
+      path: (string | BN)[],
+      to: string | BN,
+      deadline: number | BN | string,
       txDetails?: Truffle.TransactionDetails
     ): Promise<Truffle.TransactionResponse>;
     call(
-      tokenIn: string | BN,
-      tokenOut: string | BN,
       amountIn: number | BN | string,
+      amountOutMin: number | BN | string,
+      path: (string | BN)[],
+      to: string | BN,
+      deadline: number | BN | string,
       txDetails?: Truffle.TransactionDetails
     ): Promise<BN[]>;
     sendTransaction(
-      tokenIn: string | BN,
-      tokenOut: string | BN,
       amountIn: number | BN | string,
+      amountOutMin: number | BN | string,
+      path: (string | BN)[],
+      to: string | BN,
+      deadline: number | BN | string,
       txDetails?: Truffle.TransactionDetails
     ): Promise<string>;
     estimateGas(
-      tokenIn: string | BN,
-      tokenOut: string | BN,
       amountIn: number | BN | string,
+      amountOutMin: number | BN | string,
+      path: (string | BN)[],
+      to: string | BN,
+      deadline: number | BN | string,
       txDetails?: Truffle.TransactionDetails
     ): Promise<number>;
   };

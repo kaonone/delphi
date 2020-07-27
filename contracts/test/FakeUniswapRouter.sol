@@ -1,22 +1,42 @@
 pragma solidity ^0.5.12;
 
+import "../interfaces/uniswap/IUniswapV2Router02.sol";
 import "../lib/TransferHelper.sol";
 
 contract FakeUniswapRouter {
     using TransferHelper for address;
 
-    function swap(
-        address tokenIn,
-        address tokenOut,
-        uint256 amountIn
-    ) external returns (uint256[2] memory) {
-        tokenIn.safeTransferFrom(msg.sender, address(this), amountIn);
-        tokenOut.safeTransfer(msg.sender, amountIn);
+    function getAmountsOut(uint256 amountIn, address[] calldata path)
+        external
+        view
+        returns (uint256[] memory amounts)
+    {
+        (path);
 
-        uint256[2] memory amounts;
+        amounts = new uint256[](2);
 
         amounts[0] = amountIn;
         amounts[1] = amountIn;
+
+        return amounts;
+    }
+
+    function swapExactTokensForTokens(
+        uint256 amountIn,
+        uint256 amountOutMin,
+        address[] calldata path,
+        address to,
+        uint256 deadline
+    ) external returns (uint256[] memory amounts) {
+        (deadline);
+
+        path[0].safeTransferFrom(msg.sender, address(this), amountIn);
+        path[1].safeTransfer(to, amountOutMin);
+
+        amounts = new uint256[](2);
+
+        amounts[0] = amountIn;
+        amounts[1] = amountOutMin;
 
         return amounts;
     }
