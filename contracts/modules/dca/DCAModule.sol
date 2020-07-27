@@ -80,7 +80,7 @@ contract DCAModule is Module, ERC721Full, ERC721Burnable {
      * All three of these values are immutable: they can only be set once during
      * construction.
      */
-    function initialize(
+    function initialize_(
         address _pool,
         string memory name,
         string memory symbol,
@@ -133,6 +133,70 @@ contract DCAModule is Module, ERC721Full, ERC721Burnable {
         return true;
     }
 
+    function getAccountBalance(uint256 tokenId, address tokenAddress)
+        public
+        view
+        returns (uint256)
+    {
+        return _accountOf[tokenId].balance[tokenAddress];
+    }
+
+    function getAccountBuyAmount(uint256 tokenId)
+        public
+        view
+        returns (uint256)
+    {
+        return _accountOf[tokenId].buyAmount;
+    }
+
+    function getAccountLastDistributionIndex(uint256 tokenId)
+        public
+        view
+        returns (uint256)
+    {
+        return _accountOf[tokenId].lastDistributionIndex;
+    }
+
+    function getAccountLastRemovalPointIndex(uint256 tokenId)
+        public
+        view
+        returns (uint256)
+    {
+        return _accountOf[tokenId].lastRemovalPointIndex;
+    }
+
+    function getDistributionsNumber() public view returns (uint256) {
+        return distributions.length;
+    }
+
+    function getDistributionTokenAddress(uint256 id)
+        public
+        view
+        returns (address)
+    {
+        return distributions[id].tokenAddress;
+    }
+
+    function getDistributionAmount(uint256 id) public view returns (uint256) {
+        return distributions[id].amount;
+    }
+
+    function getDistributionTotalSupply(uint256 id)
+        public
+        view
+        returns (uint256)
+    {
+        return distributions[id].totalSupply;
+    }
+
+    function getTokenIdByAddress(address account)
+        public
+        view
+        returns (uint256)
+    {
+        return _tokensOfOwner(account)[0];
+    }
+
     /**
      * @dev Makes a `tokenToSell` deposit and ERC721 token,
      * which is associated with the account. Increases the `tokenToSell` account balance,
@@ -165,17 +229,18 @@ contract DCAModule is Module, ERC721Full, ERC721Burnable {
 
             globalPeriodBuyAmount = globalPeriodBuyAmount.add(buyAmount);
 
-            uint256 removalPoint = distributions.length.add(
-                _accountOf[newTokenId].balance[tokenToSell].div(buyAmount)
-            );
+            uint256 removalPoint = distributions
+                .length
+                .add(_accountOf[newTokenId].balance[tokenToSell].div(buyAmount))
+                .sub(1);
 
-            removeAfterDistribution[removalPoint -
-                1] = removeAfterDistribution[removalPoint - 1].add(buyAmount);
+            removeAfterDistribution[removalPoint] = removeAfterDistribution[removalPoint]
+                .add(buyAmount);
+
+            _accountOf[newTokenId].lastRemovalPointIndex = removalPoint;
+            // NEXT DISTRIBUTION SET!!!
         } else {
-            require(
-                _claimDistributions(),
-                "DCAModule-deposit: claim distributions error"
-            );
+            _claimDistributions();
 
             uint256 tokenId = _tokensOfOwner(_msgSender())[0];
 
@@ -194,12 +259,15 @@ contract DCAModule is Module, ERC721Full, ERC721Burnable {
 
             _accountOf[tokenId].buyAmount = buyAmount;
 
-            uint256 removalPoint = distributions.length.add(
-                _accountOf[tokenId].balance[tokenToSell].div(buyAmount)
-            );
+            uint256 removalPoint = distributions
+                .length
+                .add(_accountOf[tokenId].balance[tokenToSell].div(buyAmount))
+                .sub(1);
 
-            removeAfterDistribution[removalPoint -
-                1] = removeAfterDistribution[removalPoint - 1].add(buyAmount);
+            removeAfterDistribution[removalPoint] = removeAfterDistribution[removalPoint]
+                .add(buyAmount);
+
+            _accountOf[tokenId].lastRemovalPointIndex = removalPoint;
         }
 
         return true;
@@ -217,10 +285,7 @@ contract DCAModule is Module, ERC721Full, ERC721Burnable {
      * Emits an {Withdrawal} event.
      */
     function withdraw(uint256 amount, address token) external returns (bool) {
-        require(
-            _claimDistributions(),
-            "DCAModule-deposit: claim distributions error"
-        );
+        _claimDistributions();
 
         uint256 tokenId = _tokensOfOwner(_msgSender())[0];
 
@@ -275,11 +340,14 @@ contract DCAModule is Module, ERC721Full, ERC721Burnable {
      * Emits an {Purchase} and {DistributionCreated} events.
      */
     function purchase() external returns (bool) {
+        // ROLE
         require(now >= nextBuyTimestamp, "DCAModule-buy: not the time to buy");
 
         uint256 buyAmount = globalPeriodBuyAmount.div(
             distributionTokens.length
         );
+
+        tokenToSell.safeApprove(router, globalPeriodBuyAmount);
 
         for (uint256 i = 0; i < distributionTokens.length; i++) {
             require(
@@ -302,49 +370,18 @@ contract DCAModule is Module, ERC721Full, ERC721Burnable {
     }
 
     /**
-     * @dev Transfers `tokenId` token from `from` to `to` and merges accounts data.
-     *
-     * Requirements:
-     *
-     * - `from` cannot be the zero address.
-     * - `to` cannot be the zero address.
-     * - `tokenId` token must be owned by `from`.
-     * - If the caller is not `from`, it must be approved to move this token by either {approve} or {setApprovalForAll}.
-     *
-     * Emits a {Transfer} event.
-     */
-    function transferFrom(
-        address from,
-        address to,
-        uint256 tokenId
-    ) public {
-        require(
-            _isApprovedOrOwner(_msgSender(), tokenId),
-            "ERC721: transfer caller is not owner or not approved"
-        );
-
-        _burn(from, tokenId);
-
-        uint256 senderBalance = _accountOf[tokenId].balance[tokenToSell];
-
-        _accountOf[tokenId].balance[tokenToSell] = 0;
-
-        uint256 recipientTokenId = _tokensOfOwner(to)[0];
-
-        _accountOf[recipientTokenId]
-            .balance[tokenToSell] = _accountOf[recipientTokenId]
-            .balance[tokenToSell]
-            .add(senderBalance);
-    }
-
-    /**
      * @dev Makes a target assets shares distribution.
      *
      * @return Boolean value indicating whether the operation succeeded.
      *
      * Emits an {DistributionsClaimed} event.
      */
+    function checkDistributions() external returns (bool) {
+        return _claimDistributions();
+    }
+
     function _claimDistributions() private returns (bool) {
+        // nextDist refactoring !!!!
         uint256 tokenId = _tokensOfOwner(_msgSender())[0];
 
         for (
@@ -384,8 +421,6 @@ contract DCAModule is Module, ERC721Full, ERC721Burnable {
         address tokenOut,
         uint256 amount
     ) private returns (bool) {
-        tokenIn.safeApprove(router, amount);
-
         uint256[2] memory amounts = FakeUniswapRouter(router).swap(
             tokenIn,
             tokenOut,
