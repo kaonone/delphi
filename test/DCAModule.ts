@@ -30,7 +30,7 @@ const BN1E18 = new BN("10").pow(new BN(18));
 
 const PERIOD = 84600;
 
-contract("DCAModule", ([owner, acc1, acc2]) => {
+contract("DCAModule", ([owner, bot, acc1, acc2]) => {
   let poolInstance: PoolInstance;
   let dcaModuleInstance: DCAModuleInstance;
   let fakeUniswapRouterInstance: FakeUniswapRouterInstance;
@@ -57,7 +57,8 @@ contract("DCAModule", ([owner, acc1, acc2]) => {
       usdcInstance.address,
       1,
       fakeUniswapRouterInstance.address,
-      PERIOD
+      PERIOD,
+      bot
     );
 
     dcaModuleInstance.setDistributionToken("wbtc", wbtcInstance.address);
@@ -156,7 +157,7 @@ contract("DCAModule", ([owner, acc1, acc2]) => {
 
     setTime(PERIOD);
 
-    await dcaModuleInstance.purchase();
+    await dcaModuleInstance.purchase({ from: bot });
 
     expect(
       await dcaModuleInstance.getDistributionsNumber()
@@ -193,7 +194,7 @@ contract("DCAModule", ([owner, acc1, acc2]) => {
 
     setTime(PERIOD);
 
-    await dcaModuleInstance.purchase();
+    await dcaModuleInstance.purchase({ from: bot });
 
     await dcaModuleInstance.checkDistributions({ from: acc1 });
     await dcaModuleInstance.checkDistributions({ from: acc2 });
@@ -244,7 +245,7 @@ contract("DCAModule", ([owner, acc1, acc2]) => {
 
     setTime(PERIOD);
 
-    await dcaModuleInstance.purchase();
+    await dcaModuleInstance.purchase({ from: bot });
 
     const usdcBeforeBalanceAcc1 = await usdcInstance.balanceOf(acc1);
     const usdcBeforeBalanceAcc2 = await usdcInstance.balanceOf(acc2);
@@ -314,7 +315,7 @@ contract("DCAModule", ([owner, acc1, acc2]) => {
 
     setTime(PERIOD);
 
-    await dcaModuleInstance.purchase();
+    await dcaModuleInstance.purchase({ from: bot });
 
     const wbtcBeforeBalanceAcc1 = await wbtcInstance.balanceOf(acc1);
     const wbtcBeforeBalanceAcc2 = await wbtcInstance.balanceOf(acc2);
@@ -384,7 +385,7 @@ contract("DCAModule", ([owner, acc1, acc2]) => {
 
     setTime(PERIOD);
 
-    await dcaModuleInstance.purchase();
+    await dcaModuleInstance.purchase({ from: bot });
 
     const wethBeforeBalanceAcc1 = await wethInstance.balanceOf(acc1);
     const wethBeforeBalanceAcc2 = await wethInstance.balanceOf(acc2);

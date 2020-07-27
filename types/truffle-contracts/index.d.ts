@@ -31,6 +31,11 @@ export interface DCAModuleContract extends Truffle.Contract<DCAModuleInstance> {
   "new"(meta?: Truffle.TransactionDetails): Promise<DCAModuleInstance>;
 }
 
+export interface DCAOperatorRoleContract
+  extends Truffle.Contract<DCAOperatorRoleInstance> {
+  "new"(meta?: Truffle.TransactionDetails): Promise<DCAOperatorRoleInstance>;
+}
+
 export interface ERC165Contract extends Truffle.Contract<ERC165Instance> {
   "new"(meta?: Truffle.TransactionDetails): Promise<ERC165Instance>;
 }
@@ -617,6 +622,24 @@ export interface CoreInterfaceInstance extends Truffle.ContractInstance {
 }
 
 export interface DCAModuleInstance extends Truffle.ContractInstance {
+  addDCAOperator: {
+    (account: string | BN, txDetails?: Truffle.TransactionDetails): Promise<
+      Truffle.TransactionResponse
+    >;
+    call(
+      account: string | BN,
+      txDetails?: Truffle.TransactionDetails
+    ): Promise<void>;
+    sendTransaction(
+      account: string | BN,
+      txDetails?: Truffle.TransactionDetails
+    ): Promise<string>;
+    estimateGas(
+      account: string | BN,
+      txDetails?: Truffle.TransactionDetails
+    ): Promise<number>;
+  };
+
   approve: {
     (
       to: string | BN,
@@ -715,6 +738,11 @@ export interface DCAModuleInstance extends Truffle.ContractInstance {
     txDetails?: Truffle.TransactionDetails
   ): Promise<boolean>;
 
+  isDCAOperator(
+    account: string | BN,
+    txDetails?: Truffle.TransactionDetails
+  ): Promise<boolean>;
+
   isOwner(txDetails?: Truffle.TransactionDetails): Promise<boolean>;
 
   name(txDetails?: Truffle.TransactionDetails): Promise<string>;
@@ -736,6 +764,15 @@ export interface DCAModuleInstance extends Truffle.ContractInstance {
     arg0: number | BN | string,
     txDetails?: Truffle.TransactionDetails
   ): Promise<BN>;
+
+  renounceDCAOperator: {
+    (txDetails?: Truffle.TransactionDetails): Promise<
+      Truffle.TransactionResponse
+    >;
+    call(txDetails?: Truffle.TransactionDetails): Promise<void>;
+    sendTransaction(txDetails?: Truffle.TransactionDetails): Promise<string>;
+    estimateGas(txDetails?: Truffle.TransactionDetails): Promise<number>;
+  };
 
   renounceOwnership: {
     (txDetails?: Truffle.TransactionDetails): Promise<
@@ -899,6 +936,7 @@ export interface DCAModuleInstance extends Truffle.ContractInstance {
       _strategy: number | BN | string,
       _router: string | BN,
       _periodTimestamp: number | BN | string,
+      bot: string | BN,
       txDetails?: Truffle.TransactionDetails
     ): Promise<Truffle.TransactionResponse>;
     call(
@@ -909,6 +947,7 @@ export interface DCAModuleInstance extends Truffle.ContractInstance {
       _strategy: number | BN | string,
       _router: string | BN,
       _periodTimestamp: number | BN | string,
+      bot: string | BN,
       txDetails?: Truffle.TransactionDetails
     ): Promise<void>;
     sendTransaction(
@@ -919,6 +958,7 @@ export interface DCAModuleInstance extends Truffle.ContractInstance {
       _strategy: number | BN | string,
       _router: string | BN,
       _periodTimestamp: number | BN | string,
+      bot: string | BN,
       txDetails?: Truffle.TransactionDetails
     ): Promise<string>;
     estimateGas(
@@ -929,6 +969,7 @@ export interface DCAModuleInstance extends Truffle.ContractInstance {
       _strategy: number | BN | string,
       _router: string | BN,
       _periodTimestamp: number | BN | string,
+      bot: string | BN,
       txDetails?: Truffle.TransactionDetails
     ): Promise<number>;
   };
@@ -1062,6 +1103,58 @@ export interface DCAModuleInstance extends Truffle.ContractInstance {
     sendTransaction(txDetails?: Truffle.TransactionDetails): Promise<string>;
     estimateGas(txDetails?: Truffle.TransactionDetails): Promise<number>;
   };
+}
+
+export interface DCAOperatorRoleInstance extends Truffle.ContractInstance {
+  initialize: {
+    (sender: string | BN, txDetails?: Truffle.TransactionDetails): Promise<
+      Truffle.TransactionResponse
+    >;
+    call(
+      sender: string | BN,
+      txDetails?: Truffle.TransactionDetails
+    ): Promise<void>;
+    sendTransaction(
+      sender: string | BN,
+      txDetails?: Truffle.TransactionDetails
+    ): Promise<string>;
+    estimateGas(
+      sender: string | BN,
+      txDetails?: Truffle.TransactionDetails
+    ): Promise<number>;
+  };
+
+  addDCAOperator: {
+    (account: string | BN, txDetails?: Truffle.TransactionDetails): Promise<
+      Truffle.TransactionResponse
+    >;
+    call(
+      account: string | BN,
+      txDetails?: Truffle.TransactionDetails
+    ): Promise<void>;
+    sendTransaction(
+      account: string | BN,
+      txDetails?: Truffle.TransactionDetails
+    ): Promise<string>;
+    estimateGas(
+      account: string | BN,
+      txDetails?: Truffle.TransactionDetails
+    ): Promise<number>;
+  };
+
+  renounceDCAOperator: {
+    (txDetails?: Truffle.TransactionDetails): Promise<
+      Truffle.TransactionResponse
+    >;
+    call(txDetails?: Truffle.TransactionDetails): Promise<void>;
+    sendTransaction(txDetails?: Truffle.TransactionDetails): Promise<string>;
+    estimateGas(txDetails?: Truffle.TransactionDetails): Promise<number>;
+  };
+
+  isDCAOperator(
+    account: string | BN,
+    txDetails?: Truffle.TransactionDetails
+  ): Promise<boolean>;
 }
 
 export interface ERC165Instance extends Truffle.ContractInstance {

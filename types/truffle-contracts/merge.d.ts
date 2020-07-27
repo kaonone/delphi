@@ -14,6 +14,9 @@ declare global {
       require(name: "Context"): TruffleContracts.ContextContract;
       require(name: "CoreInterface"): TruffleContracts.CoreInterfaceContract;
       require(name: "DCAModule"): TruffleContracts.DCAModuleContract;
+      require(
+        name: "DCAOperatorRole"
+      ): TruffleContracts.DCAOperatorRoleContract;
       require(name: "ERC165"): TruffleContracts.ERC165Contract;
       require(name: "ERC721"): TruffleContracts.ERC721Contract;
       require(name: "ERC721Burnable"): TruffleContracts.ERC721BurnableContract;

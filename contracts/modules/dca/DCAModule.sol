@@ -6,6 +6,7 @@ import "@openzeppelin/contracts-ethereum-package/contracts/drafts/Counters.sol";
 import "@openzeppelin/contracts-ethereum-package/contracts/math/SafeMath.sol";
 import "../../lib/TransferHelper.sol";
 import "../../test/FakeUniswapRouter.sol";
+import "./DCAOperatorRole.sol";
 import "../../common/Module.sol";
 
 /**
@@ -17,7 +18,7 @@ import "../../common/Module.sol";
  * an effort to reduce the impact of volatility on the overall
  * purchase.
  */
-contract DCAModule is Module, ERC721Full, ERC721Burnable {
+contract DCAModule is Module, ERC721Full, ERC721Burnable, DCAOperatorRole {
     using SafeMath for uint256;
     using Counters for Counters.Counter;
     using TransferHelper for address;
@@ -87,8 +88,10 @@ contract DCAModule is Module, ERC721Full, ERC721Burnable {
         address _tokenToSell,
         uint256 _strategy,
         address _router,
-        uint256 _periodTimestamp
+        uint256 _periodTimestamp,
+        address bot
     ) public initializer {
+        DCAOperatorRole.initialize(bot);
         Module.initialize(_pool);
 
         ERC721.initialize();
@@ -339,7 +342,7 @@ contract DCAModule is Module, ERC721Full, ERC721Burnable {
      *
      * Emits an {Purchase} and {DistributionCreated} events.
      */
-    function purchase() external returns (bool) {
+    function purchase() external onlyDCAOperator returns (bool) {
         // ROLE
         require(now >= nextBuyTimestamp, "DCAModule-buy: not the time to buy");
 
@@ -382,9 +385,6 @@ contract DCAModule is Module, ERC721Full, ERC721Burnable {
 
     function _claimDistributions() private returns (bool) {
         uint256 tokenId = _tokensOfOwner(_msgSender())[0];
-
-        // uint256 nextDistributionIndex = _accountOf[tokenId]
-        //     .nextDistributionIndex;
 
         uint256 splitBuyAmount = _accountOf[tokenId].buyAmount.div(
             distributionTokens.length
