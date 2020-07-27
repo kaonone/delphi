@@ -5,7 +5,7 @@ import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC721/ERC721Bu
 import "@openzeppelin/contracts-ethereum-package/contracts/drafts/Counters.sol";
 import "@openzeppelin/contracts-ethereum-package/contracts/math/SafeMath.sol";
 import "../../lib/TransferHelper.sol";
-import "../../interfaces/uniswap/IUniswapV2Router02.sol";
+import "OneSplit/contracts/IOneSplit.sol";
 import "./DCAOperatorRole.sol";
 import "../../common/Module.sol";
 
@@ -358,13 +358,12 @@ contract DCAModule is Module, ERC721Full, ERC721Burnable, DCAOperatorRole {
         tokenToSell.safeApprove(router, globalPeriodBuyAmount);
 
         for (uint256 i = 0; i < distributionTokens.length; i++) {
-            address[] memory path = new address[](2);
-            path[0] = tokenToSell;
-            path[1] = distributionTokens[i].tokenAddress;
-
             require(
-                _swapAndCreateDistribution(buyAmount, path),
-                "DCAModule-buy: swap error"
+                _swapAndCreateDistribution(
+                    buyAmount,
+                    distributionTokens[i].tokenAddress
+                ),
+                "DCAModule-purchase: swap error"
             );
         }
 
@@ -423,29 +422,35 @@ contract DCAModule is Module, ERC721Full, ERC721Burnable, DCAOperatorRole {
         return true;
     }
 
-    function _swapAndCreateDistribution(uint256 amountIn, address[] memory path)
-        private
+    function _swapAndCreateDistribution(uint256 amount, address destToken)
+        internal
         returns (bool)
     {
-        uint256[] memory amountsOut = IUniswapV2Router02(router).getAmountsOut(
-            amountIn,
-            path
+        (uint256 returnAmount, uint256[] memory distribution) = IOneSplit(
+            router
+        )
+            .getExpectedReturn(
+            IERC20(tokenToSell),
+            IERC20(destToken),
+            amount,
+            0x0001,
+            0x0000
         );
 
-        uint256[] memory amounts = IUniswapV2Router02(router)
-            .swapExactTokensForTokens(
-            amountIn,
-            amountsOut[1],
-            path,
-            address(this),
-            deadline
+        uint256 amountOut = IOneSplit(router).swap(
+            IERC20(tokenToSell),
+            IERC20(destToken),
+            amount,
+            returnAmount,
+            distribution,
+            0x0000
         );
 
         distributions.push(
             Distribution({
-                tokenAddress: path[1],
-                amount: amounts[0],
-                totalSupply: amounts[1]
+                tokenAddress: destToken,
+                amount: amount,
+                totalSupply: amountOut
             })
         );
 

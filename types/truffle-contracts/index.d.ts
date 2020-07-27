@@ -77,6 +77,11 @@ export interface ERC721MintableContract
   "new"(meta?: Truffle.TransactionDetails): Promise<ERC721MintableInstance>;
 }
 
+export interface Fake1InchRouterContract
+  extends Truffle.Contract<Fake1InchRouterInstance> {
+  "new"(meta?: Truffle.TransactionDetails): Promise<Fake1InchRouterInstance>;
+}
+
 export interface FakeUniswapRouterContract
   extends Truffle.Contract<FakeUniswapRouterInstance> {
   "new"(meta?: Truffle.TransactionDetails): Promise<FakeUniswapRouterInstance>;
@@ -2050,6 +2055,56 @@ export interface ERC721MintableInstance extends Truffle.ContractInstance {
       to: string | BN,
       tokenId: number | BN | string,
       _data: string,
+      txDetails?: Truffle.TransactionDetails
+    ): Promise<number>;
+  };
+}
+
+export interface Fake1InchRouterInstance extends Truffle.ContractInstance {
+  getExpectedReturn(
+    fromToken: string | BN,
+    destToken: string | BN,
+    amount: number | BN | string,
+    parts: number | BN | string,
+    flags: number | BN | string,
+    txDetails?: Truffle.TransactionDetails
+  ): Promise<[BN, BN[]]>;
+
+  swap: {
+    (
+      fromToken: string | BN,
+      destToken: string | BN,
+      amount: number | BN | string,
+      minReturn: number | BN | string,
+      distribution: (number | BN | string)[],
+      flags: number | BN | string,
+      txDetails?: Truffle.TransactionDetails
+    ): Promise<Truffle.TransactionResponse>;
+    call(
+      fromToken: string | BN,
+      destToken: string | BN,
+      amount: number | BN | string,
+      minReturn: number | BN | string,
+      distribution: (number | BN | string)[],
+      flags: number | BN | string,
+      txDetails?: Truffle.TransactionDetails
+    ): Promise<BN>;
+    sendTransaction(
+      fromToken: string | BN,
+      destToken: string | BN,
+      amount: number | BN | string,
+      minReturn: number | BN | string,
+      distribution: (number | BN | string)[],
+      flags: number | BN | string,
+      txDetails?: Truffle.TransactionDetails
+    ): Promise<string>;
+    estimateGas(
+      fromToken: string | BN,
+      destToken: string | BN,
+      amount: number | BN | string,
+      minReturn: number | BN | string,
+      distribution: (number | BN | string)[],
+      flags: number | BN | string,
       txDetails?: Truffle.TransactionDetails
     ): Promise<number>;
   };

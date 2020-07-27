@@ -1,12 +1,12 @@
 import {
   DCAModuleInstance,
-  FakeUniswapRouterInstance,
+  Fake1InchRouterInstance,
   FreeERC20Instance,
   PoolInstance,
 } from "../types/truffle-contracts/index";
 
 const FreeERC20 = artifacts.require("FreeERC20");
-const FakeUniswapRouter = artifacts.require("FakeUniswapRouter");
+const Fake1InchRouter = artifacts.require("Fake1InchRouter");
 const Pool = artifacts.require("Pool");
 const DCAModule = artifacts.require("DCAModule");
 
@@ -33,7 +33,7 @@ const PERIOD = 84600;
 contract("DCAModule", ([owner, bot, acc1, acc2]) => {
   let poolInstance: PoolInstance;
   let dcaModuleInstance: DCAModuleInstance;
-  let fakeUniswapRouterInstance: FakeUniswapRouterInstance;
+  let Fake1InchRouterInstance: Fake1InchRouterInstance;
   let usdcInstance: FreeERC20Instance;
   let wbtcInstance: FreeERC20Instance;
   let wethInstance: FreeERC20Instance;
@@ -43,7 +43,7 @@ contract("DCAModule", ([owner, bot, acc1, acc2]) => {
     wbtcInstance = await FreeERC20.new();
     wethInstance = await FreeERC20.new();
 
-    fakeUniswapRouterInstance = await FakeUniswapRouter.new();
+    Fake1InchRouterInstance = await Fake1InchRouter.new();
 
     poolInstance = await Pool.new();
     dcaModuleInstance = await DCAModule.new();
@@ -57,7 +57,7 @@ contract("DCAModule", ([owner, bot, acc1, acc2]) => {
       // @ts-ignore
       usdcInstance.address,
       1,
-      fakeUniswapRouterInstance.address,
+      Fake1InchRouterInstance.address,
       PERIOD,
       bot
     );
@@ -79,11 +79,11 @@ contract("DCAModule", ([owner, bot, acc1, acc2]) => {
       from: owner,
     });
 
-    wbtcInstance.transfer(fakeUniswapRouterInstance.address, ether("1000"), {
+    wbtcInstance.transfer(Fake1InchRouterInstance.address, ether("1000"), {
       from: owner,
     });
 
-    wethInstance.transfer(fakeUniswapRouterInstance.address, ether("1000"), {
+    wethInstance.transfer(Fake1InchRouterInstance.address, ether("1000"), {
       from: owner,
     });
   });
