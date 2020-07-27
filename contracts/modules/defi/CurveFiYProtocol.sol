@@ -57,6 +57,7 @@ contract CurveFiYProtocol is Module, DefiOperatorRole, IDefiProtocol {
             address token = curveFiDeposit.underlying_coins(int128(i));
             _registeredTokens[i] = token;
             _registerToken(token);
+            IERC20(token).safeApprove(address(curveFiDeposit), MAX_UINT256);
         }
     }
 
@@ -65,7 +66,7 @@ contract CurveFiYProtocol is Module, DefiOperatorRole, IDefiProtocol {
         slippageMultiplier = _slippageMultiplier;
     }
 
-    function deposit(address token, uint256 amount) public onlyDefiOperator {
+    function handleDeposit(address token, uint256 amount) public onlyDefiOperator {
         uint256[N_COINS] memory amounts = [uint256(0), uint256(0), uint256(0)];
         for (uint256 i=0; i < _registeredTokens.length; i++){
             amounts[i] = IERC20(_registeredTokens[i]).balanceOf(address(this)); // Check balance which is left after previous withdrawal
@@ -77,7 +78,7 @@ contract CurveFiYProtocol is Module, DefiOperatorRole, IDefiProtocol {
         curveFiDeposit.add_liquidity(amounts, 0);
     }
 
-    function deposit(address[] memory tokens, uint256[] memory amounts) public onlyDefiOperator {
+    function handleDeposit(address[] memory tokens, uint256[] memory amounts) public onlyDefiOperator {
         require(tokens.length == amounts.length, "CurveFiYProtocol: count of tokens does not match count of amounts");
         require(amounts.length == N_COINS, "CurveFiYProtocol: amounts count does not match registered tokens");
         uint256[N_COINS] memory amnts = [uint256(0), uint256(0), uint256(0)];
@@ -217,10 +218,9 @@ contract CurveFiYProtocol is Module, DefiOperatorRole, IDefiProtocol {
 
     function _registerToken(address token) private {
         IERC20 ltoken = IERC20(token);
-        ltoken.safeApprove(address(curveFiDeposit), MAX_UINT256);
         uint256 currentBalance = ltoken.balanceOf(address(this));
         if (currentBalance > 0) {
-            deposit(token, currentBalance); 
+            handleDeposit(token, currentBalance); 
         }
         decimals[token] = ERC20Detailed(token).decimals();
         emit TokenRegistered(token);

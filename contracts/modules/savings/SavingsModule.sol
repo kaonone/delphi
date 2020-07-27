@@ -107,7 +107,7 @@ contract SavingsModule is Module {
             IERC20(tkn).safeTransferFrom(_msgSender(), _protocol, _dnAmounts[i]);
             emit Deposit(_protocol, tkn, _dnAmounts[i]);
         }
-        IDefiProtocol(_protocol).deposit(_tokens, _dnAmounts);
+        IDefiProtocol(_protocol).handleDeposit(_tokens, _dnAmounts);
     }
 
     /**

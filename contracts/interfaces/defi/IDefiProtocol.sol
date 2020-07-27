@@ -7,9 +7,9 @@ interface IDefiProtocol {
      * @param amount Value of token to deposit
      * @return new balances of each token
      */
-    function deposit(address token, uint256 amount) external;
+    function handleDeposit(address token, uint256 amount) external;
 
-    function deposit(address[] calldata tokens, uint256[] calldata amounts) external;
+    function handleDeposit(address[] calldata tokens, uint256[] calldata amounts) external;
 
     /**
      * @notice Transfer tokens from DeFi protocol to beneficiary

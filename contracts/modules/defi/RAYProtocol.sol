@@ -20,6 +20,7 @@ contract RAYProtocol is Module, DefiOperatorRole, IERC721Receiver, IDefiProtocol
     bytes32 internal constant NAV_CALCULATOR_CONTRACT = keccak256("NAVCalculatorContract");
     bytes32 internal constant RAY_TOKEN_CONTRACT = keccak256("RAYTokenContract");
     bytes4 internal constant ERC721_RECEIVER = bytes4(keccak256("onERC721Received(address,address,uint256,bytes)"));
+    uint256 constant MAX_UINT256 = uint256(-1);
 
     using SafeMath for uint256;
     using SafeERC20 for IERC20;
@@ -35,6 +36,9 @@ contract RAYProtocol is Module, DefiOperatorRole, IERC721Receiver, IDefiProtocol
         baseToken = IERC20(_token);
         portfolioId = _portfolioId;
         decimals = ERC20Detailed(_token).decimals();
+
+        IRAYPortfolioManager pm = rayPortfolioManager();
+        IERC20(_token).safeApprove(address(pm), MAX_UINT256);
     }
 
     function onERC721Received(address, address, uint256, bytes memory) public returns (bytes4) {
@@ -43,11 +47,9 @@ contract RAYProtocol is Module, DefiOperatorRole, IERC721Receiver, IDefiProtocol
         return ERC721_RECEIVER;
     }
 
-    function deposit(address token, uint256 amount) public onlyDefiOperator {
+    function handleDeposit(address token, uint256 amount) public onlyDefiOperator {
         require(token == address(baseToken), "RAYProtocol: token not supported");
-        IERC20(token).safeTransferFrom(_msgSender(), address(this), amount);
         IRAYPortfolioManager pm = rayPortfolioManager();
-        IERC20(token).safeApprove(address(pm), amount);
         if (rayTokenId == 0x0) {
             rayTokenId = pm.mint(portfolioId, address(this), amount);
         } else {
@@ -55,9 +57,9 @@ contract RAYProtocol is Module, DefiOperatorRole, IERC721Receiver, IDefiProtocol
         }
     }
 
-    function deposit(address[] memory tokens, uint256[] memory amounts) public onlyDefiOperator {
+    function handleDeposit(address[] memory tokens, uint256[] memory amounts) public onlyDefiOperator {
         require(tokens.length == 1 && amounts.length == 1, "RAYProtocol: wrong count of tokens or amounts");
-        deposit(tokens[0], amounts[0]);
+        handleDeposit(tokens[0], amounts[0]);
     }
 
     function withdraw(address beneficiary, address token, uint256 amount) public onlyDefiOperator {
