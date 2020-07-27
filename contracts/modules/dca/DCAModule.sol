@@ -332,8 +332,6 @@ contract DCAModule is Module, ERC721Full, ERC721Burnable {
         return true;
     }
 
-    uint256 public testtest;
-
     /**
      * @dev Makes a purchase of a target assets.
      *
@@ -348,8 +346,6 @@ contract DCAModule is Module, ERC721Full, ERC721Burnable {
         uint256 buyAmount = globalPeriodBuyAmount.div(
             distributionTokens.length
         );
-
-        testtest = buyAmount;
 
         tokenToSell.safeApprove(router, globalPeriodBuyAmount);
 
@@ -387,14 +383,18 @@ contract DCAModule is Module, ERC721Full, ERC721Burnable {
     function _claimDistributions() private returns (bool) {
         uint256 tokenId = _tokensOfOwner(_msgSender())[0];
 
-        uint256 nextDistributionIndex = _accountOf[tokenId]
-            .nextDistributionIndex;
+        // uint256 nextDistributionIndex = _accountOf[tokenId]
+        //     .nextDistributionIndex;
 
         uint256 splitBuyAmount = _accountOf[tokenId].buyAmount.div(
             distributionTokens.length
         );
 
-        for (uint256 i = nextDistributionIndex; i < distributions.length; i++) {
+        for (
+            uint256 i = _accountOf[tokenId].nextDistributionIndex;
+            i < distributions.length;
+            i++
+        ) {
             if (_accountOf[tokenId].balance[tokenToSell] >= splitBuyAmount) {
                 uint256 amount = splitBuyAmount
                     .mul(distributions[i].totalSupply)
