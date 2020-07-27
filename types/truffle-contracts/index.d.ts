@@ -709,29 +709,6 @@ export interface DCAModuleInstance extends Truffle.ContractInstance {
 
   globalPeriodBuyAmount(txDetails?: Truffle.TransactionDetails): Promise<BN>;
 
-  initialize: {
-    (
-      name: string,
-      symbol: string,
-      txDetails?: Truffle.TransactionDetails
-    ): Promise<Truffle.TransactionResponse>;
-    call(
-      name: string,
-      symbol: string,
-      txDetails?: Truffle.TransactionDetails
-    ): Promise<void>;
-    sendTransaction(
-      name: string,
-      symbol: string,
-      txDetails?: Truffle.TransactionDetails
-    ): Promise<string>;
-    estimateGas(
-      name: string,
-      symbol: string,
-      txDetails?: Truffle.TransactionDetails
-    ): Promise<number>;
-  };
-
   isApprovedForAll(
     owner: string | BN,
     operator: string | BN,
@@ -927,49 +904,25 @@ export interface DCAModuleInstance extends Truffle.ContractInstance {
     ): Promise<number>;
   };
 
-  initialize_: {
+  initialize: {
     (
-      _pool: string | BN,
       name: string,
       symbol: string,
-      _tokenToSell: string | BN,
-      _strategy: number | BN | string,
-      _router: string | BN,
-      _periodTimestamp: number | BN | string,
-      bot: string | BN,
       txDetails?: Truffle.TransactionDetails
     ): Promise<Truffle.TransactionResponse>;
     call(
-      _pool: string | BN,
       name: string,
       symbol: string,
-      _tokenToSell: string | BN,
-      _strategy: number | BN | string,
-      _router: string | BN,
-      _periodTimestamp: number | BN | string,
-      bot: string | BN,
       txDetails?: Truffle.TransactionDetails
     ): Promise<void>;
     sendTransaction(
-      _pool: string | BN,
       name: string,
       symbol: string,
-      _tokenToSell: string | BN,
-      _strategy: number | BN | string,
-      _router: string | BN,
-      _periodTimestamp: number | BN | string,
-      bot: string | BN,
       txDetails?: Truffle.TransactionDetails
     ): Promise<string>;
     estimateGas(
-      _pool: string | BN,
       name: string,
       symbol: string,
-      _tokenToSell: string | BN,
-      _strategy: number | BN | string,
-      _router: string | BN,
-      _periodTimestamp: number | BN | string,
-      bot: string | BN,
       txDetails?: Truffle.TransactionDetails
     ): Promise<number>;
   };
@@ -4234,6 +4187,527 @@ export interface IUniswapV2Router01Instance extends Truffle.ContractInstance {
 }
 
 export interface IUniswapV2Router02Instance extends Truffle.ContractInstance {
+  factory(txDetails?: Truffle.TransactionDetails): Promise<string>;
+
+  WETH(txDetails?: Truffle.TransactionDetails): Promise<string>;
+
+  addLiquidity: {
+    (
+      tokenA: string | BN,
+      tokenB: string | BN,
+      amountADesired: number | BN | string,
+      amountBDesired: number | BN | string,
+      amountAMin: number | BN | string,
+      amountBMin: number | BN | string,
+      to: string | BN,
+      deadline: number | BN | string,
+      txDetails?: Truffle.TransactionDetails
+    ): Promise<Truffle.TransactionResponse>;
+    call(
+      tokenA: string | BN,
+      tokenB: string | BN,
+      amountADesired: number | BN | string,
+      amountBDesired: number | BN | string,
+      amountAMin: number | BN | string,
+      amountBMin: number | BN | string,
+      to: string | BN,
+      deadline: number | BN | string,
+      txDetails?: Truffle.TransactionDetails
+    ): Promise<[BN, BN, BN]>;
+    sendTransaction(
+      tokenA: string | BN,
+      tokenB: string | BN,
+      amountADesired: number | BN | string,
+      amountBDesired: number | BN | string,
+      amountAMin: number | BN | string,
+      amountBMin: number | BN | string,
+      to: string | BN,
+      deadline: number | BN | string,
+      txDetails?: Truffle.TransactionDetails
+    ): Promise<string>;
+    estimateGas(
+      tokenA: string | BN,
+      tokenB: string | BN,
+      amountADesired: number | BN | string,
+      amountBDesired: number | BN | string,
+      amountAMin: number | BN | string,
+      amountBMin: number | BN | string,
+      to: string | BN,
+      deadline: number | BN | string,
+      txDetails?: Truffle.TransactionDetails
+    ): Promise<number>;
+  };
+
+  addLiquidityETH: {
+    (
+      token: string | BN,
+      amountTokenDesired: number | BN | string,
+      amountTokenMin: number | BN | string,
+      amountETHMin: number | BN | string,
+      to: string | BN,
+      deadline: number | BN | string,
+      txDetails?: Truffle.TransactionDetails
+    ): Promise<Truffle.TransactionResponse>;
+    call(
+      token: string | BN,
+      amountTokenDesired: number | BN | string,
+      amountTokenMin: number | BN | string,
+      amountETHMin: number | BN | string,
+      to: string | BN,
+      deadline: number | BN | string,
+      txDetails?: Truffle.TransactionDetails
+    ): Promise<[BN, BN, BN]>;
+    sendTransaction(
+      token: string | BN,
+      amountTokenDesired: number | BN | string,
+      amountTokenMin: number | BN | string,
+      amountETHMin: number | BN | string,
+      to: string | BN,
+      deadline: number | BN | string,
+      txDetails?: Truffle.TransactionDetails
+    ): Promise<string>;
+    estimateGas(
+      token: string | BN,
+      amountTokenDesired: number | BN | string,
+      amountTokenMin: number | BN | string,
+      amountETHMin: number | BN | string,
+      to: string | BN,
+      deadline: number | BN | string,
+      txDetails?: Truffle.TransactionDetails
+    ): Promise<number>;
+  };
+
+  removeLiquidity: {
+    (
+      tokenA: string | BN,
+      tokenB: string | BN,
+      liquidity: number | BN | string,
+      amountAMin: number | BN | string,
+      amountBMin: number | BN | string,
+      to: string | BN,
+      deadline: number | BN | string,
+      txDetails?: Truffle.TransactionDetails
+    ): Promise<Truffle.TransactionResponse>;
+    call(
+      tokenA: string | BN,
+      tokenB: string | BN,
+      liquidity: number | BN | string,
+      amountAMin: number | BN | string,
+      amountBMin: number | BN | string,
+      to: string | BN,
+      deadline: number | BN | string,
+      txDetails?: Truffle.TransactionDetails
+    ): Promise<[BN, BN]>;
+    sendTransaction(
+      tokenA: string | BN,
+      tokenB: string | BN,
+      liquidity: number | BN | string,
+      amountAMin: number | BN | string,
+      amountBMin: number | BN | string,
+      to: string | BN,
+      deadline: number | BN | string,
+      txDetails?: Truffle.TransactionDetails
+    ): Promise<string>;
+    estimateGas(
+      tokenA: string | BN,
+      tokenB: string | BN,
+      liquidity: number | BN | string,
+      amountAMin: number | BN | string,
+      amountBMin: number | BN | string,
+      to: string | BN,
+      deadline: number | BN | string,
+      txDetails?: Truffle.TransactionDetails
+    ): Promise<number>;
+  };
+
+  removeLiquidityETH: {
+    (
+      token: string | BN,
+      liquidity: number | BN | string,
+      amountTokenMin: number | BN | string,
+      amountETHMin: number | BN | string,
+      to: string | BN,
+      deadline: number | BN | string,
+      txDetails?: Truffle.TransactionDetails
+    ): Promise<Truffle.TransactionResponse>;
+    call(
+      token: string | BN,
+      liquidity: number | BN | string,
+      amountTokenMin: number | BN | string,
+      amountETHMin: number | BN | string,
+      to: string | BN,
+      deadline: number | BN | string,
+      txDetails?: Truffle.TransactionDetails
+    ): Promise<[BN, BN]>;
+    sendTransaction(
+      token: string | BN,
+      liquidity: number | BN | string,
+      amountTokenMin: number | BN | string,
+      amountETHMin: number | BN | string,
+      to: string | BN,
+      deadline: number | BN | string,
+      txDetails?: Truffle.TransactionDetails
+    ): Promise<string>;
+    estimateGas(
+      token: string | BN,
+      liquidity: number | BN | string,
+      amountTokenMin: number | BN | string,
+      amountETHMin: number | BN | string,
+      to: string | BN,
+      deadline: number | BN | string,
+      txDetails?: Truffle.TransactionDetails
+    ): Promise<number>;
+  };
+
+  removeLiquidityWithPermit: {
+    (
+      tokenA: string | BN,
+      tokenB: string | BN,
+      liquidity: number | BN | string,
+      amountAMin: number | BN | string,
+      amountBMin: number | BN | string,
+      to: string | BN,
+      deadline: number | BN | string,
+      approveMax: boolean,
+      v: number | BN | string,
+      r: string | BN,
+      s: string | BN,
+      txDetails?: Truffle.TransactionDetails
+    ): Promise<Truffle.TransactionResponse>;
+    call(
+      tokenA: string | BN,
+      tokenB: string | BN,
+      liquidity: number | BN | string,
+      amountAMin: number | BN | string,
+      amountBMin: number | BN | string,
+      to: string | BN,
+      deadline: number | BN | string,
+      approveMax: boolean,
+      v: number | BN | string,
+      r: string | BN,
+      s: string | BN,
+      txDetails?: Truffle.TransactionDetails
+    ): Promise<[BN, BN]>;
+    sendTransaction(
+      tokenA: string | BN,
+      tokenB: string | BN,
+      liquidity: number | BN | string,
+      amountAMin: number | BN | string,
+      amountBMin: number | BN | string,
+      to: string | BN,
+      deadline: number | BN | string,
+      approveMax: boolean,
+      v: number | BN | string,
+      r: string | BN,
+      s: string | BN,
+      txDetails?: Truffle.TransactionDetails
+    ): Promise<string>;
+    estimateGas(
+      tokenA: string | BN,
+      tokenB: string | BN,
+      liquidity: number | BN | string,
+      amountAMin: number | BN | string,
+      amountBMin: number | BN | string,
+      to: string | BN,
+      deadline: number | BN | string,
+      approveMax: boolean,
+      v: number | BN | string,
+      r: string | BN,
+      s: string | BN,
+      txDetails?: Truffle.TransactionDetails
+    ): Promise<number>;
+  };
+
+  removeLiquidityETHWithPermit: {
+    (
+      token: string | BN,
+      liquidity: number | BN | string,
+      amountTokenMin: number | BN | string,
+      amountETHMin: number | BN | string,
+      to: string | BN,
+      deadline: number | BN | string,
+      approveMax: boolean,
+      v: number | BN | string,
+      r: string | BN,
+      s: string | BN,
+      txDetails?: Truffle.TransactionDetails
+    ): Promise<Truffle.TransactionResponse>;
+    call(
+      token: string | BN,
+      liquidity: number | BN | string,
+      amountTokenMin: number | BN | string,
+      amountETHMin: number | BN | string,
+      to: string | BN,
+      deadline: number | BN | string,
+      approveMax: boolean,
+      v: number | BN | string,
+      r: string | BN,
+      s: string | BN,
+      txDetails?: Truffle.TransactionDetails
+    ): Promise<[BN, BN]>;
+    sendTransaction(
+      token: string | BN,
+      liquidity: number | BN | string,
+      amountTokenMin: number | BN | string,
+      amountETHMin: number | BN | string,
+      to: string | BN,
+      deadline: number | BN | string,
+      approveMax: boolean,
+      v: number | BN | string,
+      r: string | BN,
+      s: string | BN,
+      txDetails?: Truffle.TransactionDetails
+    ): Promise<string>;
+    estimateGas(
+      token: string | BN,
+      liquidity: number | BN | string,
+      amountTokenMin: number | BN | string,
+      amountETHMin: number | BN | string,
+      to: string | BN,
+      deadline: number | BN | string,
+      approveMax: boolean,
+      v: number | BN | string,
+      r: string | BN,
+      s: string | BN,
+      txDetails?: Truffle.TransactionDetails
+    ): Promise<number>;
+  };
+
+  swapExactTokensForTokens: {
+    (
+      amountIn: number | BN | string,
+      amountOutMin: number | BN | string,
+      path: (string | BN)[],
+      to: string | BN,
+      deadline: number | BN | string,
+      txDetails?: Truffle.TransactionDetails
+    ): Promise<Truffle.TransactionResponse>;
+    call(
+      amountIn: number | BN | string,
+      amountOutMin: number | BN | string,
+      path: (string | BN)[],
+      to: string | BN,
+      deadline: number | BN | string,
+      txDetails?: Truffle.TransactionDetails
+    ): Promise<BN[]>;
+    sendTransaction(
+      amountIn: number | BN | string,
+      amountOutMin: number | BN | string,
+      path: (string | BN)[],
+      to: string | BN,
+      deadline: number | BN | string,
+      txDetails?: Truffle.TransactionDetails
+    ): Promise<string>;
+    estimateGas(
+      amountIn: number | BN | string,
+      amountOutMin: number | BN | string,
+      path: (string | BN)[],
+      to: string | BN,
+      deadline: number | BN | string,
+      txDetails?: Truffle.TransactionDetails
+    ): Promise<number>;
+  };
+
+  swapTokensForExactTokens: {
+    (
+      amountOut: number | BN | string,
+      amountInMax: number | BN | string,
+      path: (string | BN)[],
+      to: string | BN,
+      deadline: number | BN | string,
+      txDetails?: Truffle.TransactionDetails
+    ): Promise<Truffle.TransactionResponse>;
+    call(
+      amountOut: number | BN | string,
+      amountInMax: number | BN | string,
+      path: (string | BN)[],
+      to: string | BN,
+      deadline: number | BN | string,
+      txDetails?: Truffle.TransactionDetails
+    ): Promise<BN[]>;
+    sendTransaction(
+      amountOut: number | BN | string,
+      amountInMax: number | BN | string,
+      path: (string | BN)[],
+      to: string | BN,
+      deadline: number | BN | string,
+      txDetails?: Truffle.TransactionDetails
+    ): Promise<string>;
+    estimateGas(
+      amountOut: number | BN | string,
+      amountInMax: number | BN | string,
+      path: (string | BN)[],
+      to: string | BN,
+      deadline: number | BN | string,
+      txDetails?: Truffle.TransactionDetails
+    ): Promise<number>;
+  };
+
+  swapExactETHForTokens: {
+    (
+      amountOutMin: number | BN | string,
+      path: (string | BN)[],
+      to: string | BN,
+      deadline: number | BN | string,
+      txDetails?: Truffle.TransactionDetails
+    ): Promise<Truffle.TransactionResponse>;
+    call(
+      amountOutMin: number | BN | string,
+      path: (string | BN)[],
+      to: string | BN,
+      deadline: number | BN | string,
+      txDetails?: Truffle.TransactionDetails
+    ): Promise<BN[]>;
+    sendTransaction(
+      amountOutMin: number | BN | string,
+      path: (string | BN)[],
+      to: string | BN,
+      deadline: number | BN | string,
+      txDetails?: Truffle.TransactionDetails
+    ): Promise<string>;
+    estimateGas(
+      amountOutMin: number | BN | string,
+      path: (string | BN)[],
+      to: string | BN,
+      deadline: number | BN | string,
+      txDetails?: Truffle.TransactionDetails
+    ): Promise<number>;
+  };
+
+  swapTokensForExactETH: {
+    (
+      amountOut: number | BN | string,
+      amountInMax: number | BN | string,
+      path: (string | BN)[],
+      to: string | BN,
+      deadline: number | BN | string,
+      txDetails?: Truffle.TransactionDetails
+    ): Promise<Truffle.TransactionResponse>;
+    call(
+      amountOut: number | BN | string,
+      amountInMax: number | BN | string,
+      path: (string | BN)[],
+      to: string | BN,
+      deadline: number | BN | string,
+      txDetails?: Truffle.TransactionDetails
+    ): Promise<BN[]>;
+    sendTransaction(
+      amountOut: number | BN | string,
+      amountInMax: number | BN | string,
+      path: (string | BN)[],
+      to: string | BN,
+      deadline: number | BN | string,
+      txDetails?: Truffle.TransactionDetails
+    ): Promise<string>;
+    estimateGas(
+      amountOut: number | BN | string,
+      amountInMax: number | BN | string,
+      path: (string | BN)[],
+      to: string | BN,
+      deadline: number | BN | string,
+      txDetails?: Truffle.TransactionDetails
+    ): Promise<number>;
+  };
+
+  swapExactTokensForETH: {
+    (
+      amountIn: number | BN | string,
+      amountOutMin: number | BN | string,
+      path: (string | BN)[],
+      to: string | BN,
+      deadline: number | BN | string,
+      txDetails?: Truffle.TransactionDetails
+    ): Promise<Truffle.TransactionResponse>;
+    call(
+      amountIn: number | BN | string,
+      amountOutMin: number | BN | string,
+      path: (string | BN)[],
+      to: string | BN,
+      deadline: number | BN | string,
+      txDetails?: Truffle.TransactionDetails
+    ): Promise<BN[]>;
+    sendTransaction(
+      amountIn: number | BN | string,
+      amountOutMin: number | BN | string,
+      path: (string | BN)[],
+      to: string | BN,
+      deadline: number | BN | string,
+      txDetails?: Truffle.TransactionDetails
+    ): Promise<string>;
+    estimateGas(
+      amountIn: number | BN | string,
+      amountOutMin: number | BN | string,
+      path: (string | BN)[],
+      to: string | BN,
+      deadline: number | BN | string,
+      txDetails?: Truffle.TransactionDetails
+    ): Promise<number>;
+  };
+
+  swapETHForExactTokens: {
+    (
+      amountOut: number | BN | string,
+      path: (string | BN)[],
+      to: string | BN,
+      deadline: number | BN | string,
+      txDetails?: Truffle.TransactionDetails
+    ): Promise<Truffle.TransactionResponse>;
+    call(
+      amountOut: number | BN | string,
+      path: (string | BN)[],
+      to: string | BN,
+      deadline: number | BN | string,
+      txDetails?: Truffle.TransactionDetails
+    ): Promise<BN[]>;
+    sendTransaction(
+      amountOut: number | BN | string,
+      path: (string | BN)[],
+      to: string | BN,
+      deadline: number | BN | string,
+      txDetails?: Truffle.TransactionDetails
+    ): Promise<string>;
+    estimateGas(
+      amountOut: number | BN | string,
+      path: (string | BN)[],
+      to: string | BN,
+      deadline: number | BN | string,
+      txDetails?: Truffle.TransactionDetails
+    ): Promise<number>;
+  };
+
+  quote(
+    amountA: number | BN | string,
+    reserveA: number | BN | string,
+    reserveB: number | BN | string,
+    txDetails?: Truffle.TransactionDetails
+  ): Promise<BN>;
+
+  getAmountOut(
+    amountIn: number | BN | string,
+    reserveIn: number | BN | string,
+    reserveOut: number | BN | string,
+    txDetails?: Truffle.TransactionDetails
+  ): Promise<BN>;
+
+  getAmountIn(
+    amountOut: number | BN | string,
+    reserveIn: number | BN | string,
+    reserveOut: number | BN | string,
+    txDetails?: Truffle.TransactionDetails
+  ): Promise<BN>;
+
+  getAmountsOut(
+    amountIn: number | BN | string,
+    path: (string | BN)[],
+    txDetails?: Truffle.TransactionDetails
+  ): Promise<BN[]>;
+
+  getAmountsIn(
+    amountOut: number | BN | string,
+    path: (string | BN)[],
+    txDetails?: Truffle.TransactionDetails
+  ): Promise<BN[]>;
+
   removeLiquidityETHSupportingFeeOnTransferTokens: {
     (
       token: string | BN,

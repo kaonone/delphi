@@ -50,10 +50,11 @@ contract("DCAModule", ([owner, bot, acc1, acc2]) => {
 
     await poolInstance.initialize({ from: owner });
 
-    await dcaModuleInstance.initialize_(
+    await dcaModuleInstance.initialize(
       poolInstance.address,
       "DCA Token",
       "DTK",
+      // @ts-ignore
       usdcInstance.address,
       1,
       fakeUniswapRouterInstance.address,

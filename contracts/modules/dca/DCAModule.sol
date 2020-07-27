@@ -81,7 +81,7 @@ contract DCAModule is Module, ERC721Full, ERC721Burnable, DCAOperatorRole {
      * All three of these values are immutable: they can only be set once during
      * construction.
      */
-    function initialize_(
+    function initialize(
         address _pool,
         string memory name,
         string memory symbol,
