@@ -65,6 +65,8 @@ contract("DCAModule", ([owner, bot, acc1, acc2]) => {
     dcaModuleInstance.setDistributionToken("wbtc", wbtcInstance.address);
     dcaModuleInstance.setDistributionToken("weth", wethInstance.address);
 
+    dcaModuleInstance.setDeadline(ether("1000"), { from: bot });
+
     await poolInstance.set("dca", dcaModuleInstance.address, true, {
       from: owner,
     });

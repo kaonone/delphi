@@ -687,6 +687,8 @@ export interface DCAModuleInstance extends Truffle.ContractInstance {
     ): Promise<number>;
   };
 
+  deadline(txDetails?: Truffle.TransactionDetails): Promise<BN>;
+
   distributionTokens(
     arg0: number | BN | string,
     txDetails?: Truffle.TransactionDetails
@@ -927,29 +929,6 @@ export interface DCAModuleInstance extends Truffle.ContractInstance {
     ): Promise<number>;
   };
 
-  setDistributionToken: {
-    (
-      tokenSymbol: string,
-      tokenAddress: string | BN,
-      txDetails?: Truffle.TransactionDetails
-    ): Promise<Truffle.TransactionResponse>;
-    call(
-      tokenSymbol: string,
-      tokenAddress: string | BN,
-      txDetails?: Truffle.TransactionDetails
-    ): Promise<boolean>;
-    sendTransaction(
-      tokenSymbol: string,
-      tokenAddress: string | BN,
-      txDetails?: Truffle.TransactionDetails
-    ): Promise<string>;
-    estimateGas(
-      tokenSymbol: string,
-      tokenAddress: string | BN,
-      txDetails?: Truffle.TransactionDetails
-    ): Promise<number>;
-  };
-
   getAccountBalance(
     tokenId: number | BN | string,
     tokenAddress: string | BN,
@@ -992,6 +971,48 @@ export interface DCAModuleInstance extends Truffle.ContractInstance {
     account: string | BN,
     txDetails?: Truffle.TransactionDetails
   ): Promise<BN>;
+
+  setDistributionToken: {
+    (
+      tokenSymbol: string,
+      tokenAddress: string | BN,
+      txDetails?: Truffle.TransactionDetails
+    ): Promise<Truffle.TransactionResponse>;
+    call(
+      tokenSymbol: string,
+      tokenAddress: string | BN,
+      txDetails?: Truffle.TransactionDetails
+    ): Promise<boolean>;
+    sendTransaction(
+      tokenSymbol: string,
+      tokenAddress: string | BN,
+      txDetails?: Truffle.TransactionDetails
+    ): Promise<string>;
+    estimateGas(
+      tokenSymbol: string,
+      tokenAddress: string | BN,
+      txDetails?: Truffle.TransactionDetails
+    ): Promise<number>;
+  };
+
+  setDeadline: {
+    (
+      newDeadline: number | BN | string,
+      txDetails?: Truffle.TransactionDetails
+    ): Promise<Truffle.TransactionResponse>;
+    call(
+      newDeadline: number | BN | string,
+      txDetails?: Truffle.TransactionDetails
+    ): Promise<boolean>;
+    sendTransaction(
+      newDeadline: number | BN | string,
+      txDetails?: Truffle.TransactionDetails
+    ): Promise<string>;
+    estimateGas(
+      newDeadline: number | BN | string,
+      txDetails?: Truffle.TransactionDetails
+    ): Promise<number>;
+  };
 
   deposit: {
     (

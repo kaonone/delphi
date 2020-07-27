@@ -23,19 +23,6 @@ contract DCAModule is Module, ERC721Full, ERC721Burnable, DCAOperatorRole {
     using Counters for Counters.Counter;
     using TransferHelper for address;
 
-    event DistributionCreated(
-        address tokenAddress,
-        uint256 amount,
-        uint256 totalSupply
-    );
-
-    event DistributionsClaimed(
-        uint256 tokenId,
-        address distributionTokenAddress,
-        uint256 amount,
-        uint256 distributionIndex
-    );
-
     Counters.Counter private _tokenIds;
 
     struct Account {
@@ -62,6 +49,7 @@ contract DCAModule is Module, ERC721Full, ERC721Burnable, DCAOperatorRole {
     uint256 public periodTimestamp;
     uint256 public nextBuyTimestamp;
     uint256 public globalPeriodBuyAmount;
+    uint256 public deadline;
 
     address public router;
 
@@ -103,37 +91,6 @@ contract DCAModule is Module, ERC721Full, ERC721Burnable, DCAOperatorRole {
         router = _router;
         periodTimestamp = _periodTimestamp;
         nextBuyTimestamp = now.add(_periodTimestamp);
-    }
-
-    /**
-     * @dev Sets `tokenSymbol` and `tokenAddress` for DistributionToken struct,
-     * that is stored in the `distributionTokens` array.
-     *
-     * @param tokenSymbol Token symbol.
-     * @param tokenAddress Token address.
-     *
-     * @return Boolean value indicating whether the operation succeeded.
-     *
-     * Emits an {DistributionTokenAdded} event.
-     */
-    function setDistributionToken(
-        string calldata tokenSymbol,
-        address tokenAddress
-    ) external returns (bool) {
-        require(
-            (strategy == Strategies.ONE && distributionTokens.length <= 1) ||
-                strategy == Strategies.ALL,
-            "DCAModule-setDistributionToken: a strategy can contain only one token"
-        );
-
-        distributionTokens.push(
-            DistributionToken({
-                tokenSymbol: tokenSymbol,
-                tokenAddress: tokenAddress
-            })
-        );
-
-        return true;
     }
 
     function getAccountBalance(uint256 tokenId, address tokenAddress)
@@ -198,6 +155,55 @@ contract DCAModule is Module, ERC721Full, ERC721Burnable, DCAOperatorRole {
         returns (uint256)
     {
         return _tokensOfOwner(account)[0];
+    }
+
+    /**
+     * @dev Sets `tokenSymbol` and `tokenAddress` for DistributionToken struct,
+     * that is stored in the `distributionTokens` array.
+     *
+     * @param tokenSymbol Token symbol.
+     * @param tokenAddress Token address.
+     *
+     * @return Boolean value indicating whether the operation succeeded.
+     *
+     * Emits an {DistributionTokenAdded} event.
+     */
+    function setDistributionToken(
+        string calldata tokenSymbol,
+        address tokenAddress
+    ) external returns (bool) {
+        require(
+            (strategy == Strategies.ONE && distributionTokens.length <= 1) ||
+                strategy == Strategies.ALL,
+            "DCAModule-setDistributionToken: a strategy can contain only one token"
+        );
+
+        distributionTokens.push(
+            DistributionToken({
+                tokenSymbol: tokenSymbol,
+                tokenAddress: tokenAddress
+            })
+        );
+
+        return true;
+    }
+
+    /**
+     * @dev Sets `deadline` for uniswap purchase.
+     *
+     * @param newDeadline New uniswap deadline.
+     *
+     * @return Boolean value indicating whether the operation succeeded.
+     *
+     * Emits an {NewDeadline} event.
+     */
+    function setDeadline(uint256 newDeadline)
+        external
+        onlyDCAOperator
+        returns (bool)
+    {
+        deadline = newDeadline;
+        return true;
     }
 
     /**
@@ -432,7 +438,7 @@ contract DCAModule is Module, ERC721Full, ERC721Burnable, DCAOperatorRole {
             amountsOut[1],
             path,
             address(this),
-            1000e18
+            deadline
         );
 
         distributions.push(
