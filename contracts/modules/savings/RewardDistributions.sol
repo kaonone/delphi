@@ -63,21 +63,20 @@ contract RewardDistributions is Base, IPoolTokenBalanceChangeRecipient {
     }
 
 
-    function updateRewardBalance(uint256 fromDistribution, uint256 toDistribution, RewardBalance storage rb) internal view returns(uint256[] memory) {
+    function updateRewardBalance(uint256 fromDistribution, uint256 toDistribution, RewardBalance storage rb) internal {
         uint256 next = fromDistribution;
         while (next < toDistribution) {
             RewardTokenDistribution storage d = rewardDistributions[next];
             uint256 sh = rb.shares[d.poolToken];
             if (sh == 0) continue;
             for (uint256 i=0; i < d.rewardTokens.length; i++) {
-                address rToken = tokens[i];
+                address rToken = d.rewardTokens[i];
                 uint256 distrAmount = d.amounts[rToken];
                 rb.rewards[rToken] = rb.rewards[rToken].add(distrAmount.mul(sh).div(d.totalShares));
                 //event RewardClaim(address indexed user, address indexed rewardToken, uint256 amount);
             }
             next++;
         }
-        return totalInterest;
     }
 
     function isPoolToken(address token) internal view returns(bool);
