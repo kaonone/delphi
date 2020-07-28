@@ -1,15 +1,15 @@
 pragma solidity ^0.5.12;
 
 import "@openzeppelin/contracts-ethereum-package/contracts/math/SafeMath.sol";
-import "@openzeppelin/contracts-ethereum-package/contracts/lifecycle/Pausable.sol";
 import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/ERC20Detailed.sol";
 import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/SafeERC20.sol";
 import "../../interfaces/defi/IDefiProtocol.sol";
 import "../../common/Module.sol";
 import "../token/PoolToken.sol";
+import "./RewardDistributions.sol";
 
-contract SavingsModule is Module {
+contract SavingsModule is Module, RewardDistributions {
     uint256 constant MAX_UINT256 = uint256(-1);
     uint256 public constant DISTRIBUTION_AGGREGATION_PERIOD = 24*60*60;
 
@@ -208,6 +208,15 @@ contract SavingsModule is Module {
         }
         return false;
     }
+
+    function isPoolToken(address token) internal view returns(bool) {
+        for (uint256 i = 0; i < registeredProtocols.length; i++){
+            IDefiProtocol protocol = registeredProtocols[i];
+            if (address(protocols[address(protocol)].poolToken) == token) return true;
+        }
+        return false;
+    }
+
 
     function normalizeTokenAmount(address token, uint256 amount) private view returns(uint256) {
         uint256 decimals = tokens[token].decimals;

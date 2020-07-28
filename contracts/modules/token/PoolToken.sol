@@ -4,6 +4,7 @@ import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/ERC20.sol
 import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/ERC20Detailed.sol";
 import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/ERC20Mintable.sol";
 import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/ERC20Burnable.sol";
+import "../../interfaces/token/IPoolTokenBalanceChangeRecipient.sol";
 import "../../common/Module.sol";
 import "./DistributionToken.sol";
 
@@ -38,6 +39,11 @@ contract PoolToken is Module, ERC20, ERC20Detailed, ERC20Mintable, ERC20Burnable
         } else {
             super.burnFrom(account, amount);
         }
+    }
+
+    function userBalanceChanged(address account) internal {
+        IPoolTokenBalanceChangeRecipient savings = IPoolTokenBalanceChangeRecipient(getModuleAddress(MODULE_SAVINGS));
+        savings.poolTokenBalanceChanged(account, balanceOf(account));
     }
 
 }
