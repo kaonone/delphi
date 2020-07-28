@@ -105,9 +105,9 @@ contract SavingsModule is Module, RewardDistributions {
         for (uint256 i=0; i < _tokens.length; i++) {
             address tkn = _tokens[i];
             IERC20(tkn).safeTransferFrom(_msgSender(), _protocol, _dnAmounts[i]);
+            IDefiProtocol(_protocol).handleDeposit(tkn, _dnAmounts[i]);
             emit Deposit(_protocol, tkn, _dnAmounts[i]);
         }
-        IDefiProtocol(_protocol).handleDeposit(_tokens, _dnAmounts);
     }
 
     /**
