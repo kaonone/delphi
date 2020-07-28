@@ -5,9 +5,10 @@ import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/SafeERC20
 import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/IERC20.sol";
 import "../../common/Base.sol";
 import "../../interfaces/token/IPoolTokenBalanceChangeRecipient.sol";
+import "../token/PoolToken.sol";
 
 contract RewardDistributions is Base, IPoolTokenBalanceChangeRecipient {
-    event RewardDistribution(address indexed rewardRoken, address indexed poolToken, uint256 amount, uint256 totalShares);
+    event RewardDistribution(address indexed poolToken, address indexed rewardRoken, uint256 amount, uint256 totalShares);
     event RewardClaim(address indexed user, address indexed rewardToken, uint256 amount);
     event RewardWithdraw(address indexed user, address indexed rewardToken, uint256 amount);
 
@@ -30,10 +31,11 @@ contract RewardDistributions is Base, IPoolTokenBalanceChangeRecipient {
     RewardTokenDistribution[] rewardDistributions;
     mapping(address=>RewardBalance) rewardBalances; //Mapping users to their RewardBalance
 
-    function poolTokenBalanceChanged(address user, uint256 newAmount) public {
+    function poolTokenBalanceChanged(address user) public {
         address token = _msgSender();
         require(isPoolToken(token), "PoolToken is not registered");
         claimDistributions(user);
+        uint256 newAmount = PoolToken(token).distributionBalanceOf(user);
         rewardBalances[user].shares[token] = newAmount;
     }
 
@@ -57,13 +59,22 @@ contract RewardDistributions is Base, IPoolTokenBalanceChangeRecipient {
         emit RewardWithdraw(user, rewardToken, amount);
     }
 
-    function distributeReward(address[] memory rewardTokens, uint256[] memory amounts) internal {
+    function distributeReward(address poolToken, address[] memory rewardTokens, uint256[] memory amounts) internal {
+        uint256 totalShares = PoolToken(poolToken).distributionTotalSupply();
+        rewardDistributions.push(RewardDistribution({
+            poolToken: poolToken,
+            totalShares: 
+
+        });
         //TODO
-        //emit RewardDistribution(address indexed rewardRoken, address indexed poolToken, uint256 amount, uint256 totalShares)
+        //event RewardDistribution(address indexed poolToken, address indexed rewardRoken, uint256 amount, uint256 totalShares);
+
     }
 
+    function updateRewardBalance(uint256 fromDistribution, uint256 toDistribution) internal {
 
-    function updateRewardBalance(uint256 fromDistribution, uint256 toDistribution, RewardBalance storage rb) internal {
+    function updateRewardBalance(address user, uint256 fromDistribution, uint256 toDistribution) internal {
+        RewardBalance storage rb = rewardBalances[user];
         uint256 next = fromDistribution;
         while (next < toDistribution) {
             RewardTokenDistribution storage d = rewardDistributions[next];

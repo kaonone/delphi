@@ -224,8 +224,8 @@ contract SavingsModule is Module, RewardDistributions {
             return amount;
         } else if (decimals > 18) {
             return amount.div(10**(decimals-18));
-        } else if (decimals > 18) {
-            return amount.mul(10**(decimals-18));
+        } else if (decimals < 18) {
+            return amount.mul(10**(18 - decimals));
         }
     }
 
@@ -235,8 +235,8 @@ contract SavingsModule is Module, RewardDistributions {
             return amount;
         } else if (decimals > 18) {
             return amount.mul(10**(decimals-18));
-        } else if (decimals > 18) {
-            return amount.div(10**(decimals-18));
+        } else if (decimals < 18) {
+            return amount.div(10**(18 - decimals));
         }
     }
 

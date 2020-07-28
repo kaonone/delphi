@@ -43,7 +43,7 @@ contract PoolToken is Module, ERC20, ERC20Detailed, ERC20Mintable, ERC20Burnable
 
     function userBalanceChanged(address account) internal {
         IPoolTokenBalanceChangeRecipient savings = IPoolTokenBalanceChangeRecipient(getModuleAddress(MODULE_SAVINGS));
-        savings.poolTokenBalanceChanged(account, balanceOf(account));
+        savings.poolTokenBalanceChanged(account);
     }
 
 }
