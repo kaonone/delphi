@@ -26,6 +26,8 @@ interface IDefiProtocol {
      */
     function withdraw(address beneficiary, uint256[] calldata amounts) external;
 
+    function withdrawRewards(address to) external returns(address[] memory tokens, uint256[] memory amounts);
+
     /**
      * @dev This function is not view because on some protocols 
      * (Compound, RAY with Compound oportunity) it may cause storage writes

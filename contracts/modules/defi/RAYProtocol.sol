@@ -74,6 +74,11 @@ contract RAYProtocol is Module, DefiOperatorRole, IERC721Receiver, IDefiProtocol
         IERC20(baseToken).safeTransfer(beneficiary, amounts[0]);
     }
 
+    function withdrawRewards(address) external returns(address[] memory tokens, uint256[] memory amounts){
+        tokens = new address[](0);
+        amounts = new uint256[](0);
+    }
+
     function balanceOf(address token) public returns(uint256) {
         if (token != address(baseToken)) return 0;
         if (rayTokenId == 0x0) return 0;

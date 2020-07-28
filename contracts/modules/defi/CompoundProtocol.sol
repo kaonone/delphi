@@ -6,6 +6,7 @@ import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/SafeERC20
 import "@openzeppelin/contracts-ethereum-package/contracts/math/SafeMath.sol";
 import "../../interfaces/defi/IDefiProtocol.sol";
 import "../../interfaces/defi/ICErc20.sol";
+import "../../interfaces/defi/IComptroller.sol";
 import "../../common/Module.sol";
 import "./DefiOperatorRole.sol";
 
@@ -21,14 +22,18 @@ contract CompoundProtocol is Module, DefiOperatorRole, IDefiProtocol {
     IERC20 baseToken;
     uint8 decimals;
     ICErc20 cToken;
+    IComptroller comptroller;
+    IERC20 compToken;
 
-    function initialize(address _pool, address _token, address _cToken) public initializer {
+    function initialize(address _pool, address _token, address _cToken, address _comptroller) public initializer {
         Module.initialize(_pool);
         DefiOperatorRole.initialize(_msgSender());
         baseToken = IERC20(_token);
         cToken = ICErc20(_cToken);
         decimals = ERC20Detailed(_token).decimals();
         baseToken.safeApprove(_cToken, MAX_UINT256);
+        comptroller = IComptroller(_comptroller);
+        compToken = IERC20(comptroller.getCompAddress());
     }
 
     function handleDeposit(address token, uint256 amount) public onlyDefiOperator {
@@ -53,6 +58,15 @@ contract CompoundProtocol is Module, DefiOperatorRole, IDefiProtocol {
 
         cToken.redeemUnderlying(amounts[0]);
         baseToken.safeTransfer(beneficiary, amounts[0]);
+    }
+
+    function withdrawRewards(address to) public onlyDefiOperator returns(address[] memory tokens, uint256[] memory amounts){
+        comptroller.claimComp(address(this));
+        tokens = new address[](1);
+        tokens[0] = address(compToken);
+        amounts = new uint256[](1);
+        amounts[0] = compToken.balanceOf(address(this));
+        compToken.safeTransfer(to, amounts[0]);
     }
 
     function balanceOf(address token) public returns(uint256) {

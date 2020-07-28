@@ -24,6 +24,7 @@ contract SavingsModule is Module, RewardDistributions {
     struct ProtocolInfo {
         PoolToken poolToken;
         uint256 previousBalance;
+        uint256 lastRewardDistribution;
     }
 
     struct TokenData {
@@ -47,7 +48,8 @@ contract SavingsModule is Module, RewardDistributions {
         registeredProtocols.push(protocol);
         protocols[address(protocol)] = ProtocolInfo({
             poolToken: poolToken,
-            previousBalance: protocol.normalizedBalance()
+            previousBalance: protocol.normalizedBalance(),
+            lastRewardDistribution: 0
         });
         address[] memory supportedTokens = protocol.supportedTokens();
         for (i = 0; i < supportedTokens.length; i++) {
@@ -91,6 +93,8 @@ contract SavingsModule is Module, RewardDistributions {
      * @param _dnAmounts Array of amounts (denormalized to token decimals)
      */
     function deposit(address _protocol, address[] memory _tokens, uint256[] memory _dnAmounts) public {
+        distributeRewardIfRequired(_protocol);
+
         uint256 nBalanceBefore = distributeYeldInternal(_protocol);
         depositToProtocol(_protocol, _tokens, _dnAmounts);
         uint256 nBalanceAfter = updateProtocolBalance(_protocol);
@@ -116,6 +120,8 @@ contract SavingsModule is Module, RewardDistributions {
      * @param nAmount Normalized (to 18 decimals) amount to withdraw
      */
     function withdraw(address _protocol, uint256 nAmount) public {
+        distributeRewardIfRequired(_protocol);
+
         PoolToken poolToken = PoolToken(protocols[_protocol].poolToken);
         poolToken.burnFrom(_msgSender(), nAmount);
 
@@ -136,6 +142,8 @@ contract SavingsModule is Module, RewardDistributions {
      * @return Amount of PoolToken burned from user
      */
     function withdraw(address _protocol, address token, uint256 dnAmount, uint256 maxNAmount) public returns(uint256){
+        distributeRewardIfRequired(_protocol);
+
         uint256 nBalanceBefore = distributeYeldInternal(_protocol);
         withdrawFromProtocolOne(_msgSender(), IDefiProtocol(_protocol), token, dnAmount);
         uint256 nBalanceAfter = updateProtocolBalance(_protocol);
@@ -151,9 +159,21 @@ contract SavingsModule is Module, RewardDistributions {
         return nAmount;
     }
 
-    function distributeYeld() public onlyOwner {
+    /** 
+     * @notice Distributes yeld. May be called by bot, if there was no deposits/withdrawals
+     */
+    function distributeYeld() public {
         for(uint256 i=0; i<registeredProtocols.length; i++) {
             distributeYeldInternal(address(registeredProtocols[i]));
+        }
+    }
+
+    /** 
+     * @notice Distributes reward tokens. May be called by bot, if there was no deposits/withdrawals
+     */
+    function distributeRewards() public {
+        for(uint256 i=0; i<registeredProtocols.length; i++) {
+            distributeRewardIfRequired(address(registeredProtocols[i]));
         }
     }
 
@@ -190,6 +210,17 @@ contract SavingsModule is Module, RewardDistributions {
         return currentBalance;
     }
 
+    function distributeRewardIfRequired(address _protocol) internal {
+        if(!isRewardDistributionRequired(_protocol)) return;
+        ProtocolInfo storage pi = protocols[_protocol];
+        pi.lastRewardDistribution = now;
+
+        (address[] memory _tokens, uint256[] memory _amounts) = IDefiProtocol(_protocol).withdrawRewards(address(this));
+        if((_tokens.length > 0) && _amounts[0] > 0) {
+            distributeReward(address(pi.poolToken), _tokens, _amounts);
+        }
+    }
+
     /**
      * @notice Updates balance with result of deposit/withdraw
      * @dev MUST call this AFTER deposit/withdraw from protocol
@@ -217,6 +248,9 @@ contract SavingsModule is Module, RewardDistributions {
         return false;
     }
 
+    function isRewardDistributionRequired(address _protocol) internal view returns(bool) {
+        return now.sub(protocols[_protocol].lastRewardDistribution) > DISTRIBUTION_AGGREGATION_PERIOD;
+    }
 
     function normalizeTokenAmount(address token, uint256 amount) private view returns(uint256) {
         uint256 decimals = tokens[token].decimals;
