@@ -7,17 +7,22 @@ import "../../common/Base.sol";
 import "../../interfaces/token/IPoolTokenBalanceChangeRecipient.sol";
 
 contract RewardDistributions is Base, IPoolTokenBalanceChangeRecipient {
-    event RewardWithdraw(address indexed user, address indexed token, uint256 amount);
+    event RewardDistribution(address indexed rewardRoken, address indexed poolToken, uint256 amount, uint256 totalShares);
+    event RewardClaim(address indexed user, address indexed rewardToken, uint256 amount);
+    event RewardWithdraw(address indexed user, address indexed rewardToken, uint256 amount);
 
     using SafeERC20 for IERC20;
     using SafeMath for uint256;
 
     struct RewardTokenDistribution {
+        address poolToken;                  // PoolToken which holders will receive reward
         uint256 totalShares;                // Total shares of PoolToken participating in this distribution
+        address[] rewardTokens;             // List of reward tokens being distributed 
         mapping(address=>uint256) amounts;  // Maps address of reward token to amount beeing distributed
     }
 
     struct RewardBalance {
+        uint256 nextDistribution;
         mapping(address => uint256) shares;     // Maps PoolToken to amount of user shares participating in distributions
         mapping(address => uint256) rewards;    // Maps Reward tokens to user balances of this reward tokens
     }
@@ -40,7 +45,8 @@ contract RewardDistributions is Base, IPoolTokenBalanceChangeRecipient {
     }
 
     /**
-     * Withdraw reward tokens for user
+     * @notice Withdraw reward tokens for user
+     * @param rewardToken Token to withdraw
      */
     function withdrawReward(address rewardToken) public {
         address user = _msgSender();
@@ -51,9 +57,30 @@ contract RewardDistributions is Base, IPoolTokenBalanceChangeRecipient {
         emit RewardWithdraw(user, rewardToken, amount);
     }
 
-    function distributeReward(address rewardToken, uint256 amount) public {
+    function distributeReward(address[] memory rewardTokens, uint256[] memory amounts) internal {
         //TODO
+        //emit RewardDistribution(address indexed rewardRoken, address indexed poolToken, uint256 amount, uint256 totalShares)
+    }
+
+
+    function updateRewardBalance(uint256 fromDistribution, uint256 toDistribution, RewardBalance storage rb) internal view returns(uint256[] memory) {
+        uint256 next = fromDistribution;
+        while (next < toDistribution) {
+            RewardTokenDistribution storage d = rewardDistributions[next];
+            uint256 sh = rb.shares[d.poolToken];
+            if (sh == 0) continue;
+            for (uint256 i=0; i < d.rewardTokens.length; i++) {
+                address rToken = tokens[i];
+                uint256 distrAmount = d.amounts[rToken];
+                rb.rewards[rToken] = rb.rewards[rToken].add(distrAmount.mul(sh).div(d.totalShares));
+                //event RewardClaim(address indexed user, address indexed rewardToken, uint256 amount);
+            }
+            next++;
+        }
+        return totalInterest;
     }
 
     function isPoolToken(address token) internal view returns(bool);
+    function registeredPoolTokens() internal view returns(address[] memory);
+    
 }
