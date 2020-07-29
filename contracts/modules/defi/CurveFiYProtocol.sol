@@ -8,6 +8,8 @@ import "../../interfaces/defi/IDefiProtocol.sol";
 import "../../interfaces/defi/ICurveFiDeposit.sol";
 import "../../interfaces/defi/ICurveFiSwap.sol";
 import "../../interfaces/defi/IYErc20.sol";
+import "../../interfaces/defi/ICurveFiRewards.sol";
+import "../../interfaces/defi/ICurveFiYRewards.sol";
 import "../../common/Module.sol";
 import "./DefiOperatorRole.sol";
 
@@ -27,9 +29,12 @@ contract CurveFiYProtocol is Module, DefiOperatorRole, IDefiProtocol {
 
     ICurveFiSwap public curveFiSwap;
     ICurveFiDeposit public curveFiDeposit;
-    address[] _registeredTokens;
+    ICurveFiRewards public curveFiRewards;
+    IERC20 public curveFiYRewardToken;
+    IERC20 public curveFiToken;
+    address[] private _registeredTokens;
     uint256 public slippageMultiplier; //Multiplier to work-around slippage & fees when witharawing one token
-    mapping(address => uint8) decimals;
+    mapping(address => uint8) public decimals;
 
     function initialize(address _pool) public initializer {
         Module.initialize(_pool);
@@ -38,7 +43,7 @@ contract CurveFiYProtocol is Module, DefiOperatorRole, IDefiProtocol {
         slippageMultiplier = 1.01*1e18;     //Max slippage - 1%, if more - tx will fail
     }
 
-    function setCurveFi(address deposit) public onlyDefiOperator {
+    function setCurveFi(address deposit, address rewardsController) public onlyDefiOperator {
         if (address(curveFiDeposit) != address(0)) {
             //We need to unregister tokens first
             for (uint256 i=0; i < _registeredTokens.length; i++){
@@ -50,8 +55,11 @@ contract CurveFiYProtocol is Module, DefiOperatorRole, IDefiProtocol {
         }
         curveFiDeposit = ICurveFiDeposit(deposit);
         curveFiSwap = ICurveFiSwap(curveFiDeposit.curve());
-        address curveFiToken = curveFiDeposit.token();
+        curveFiToken = IERC20(curveFiDeposit.token());
+        curveFiRewards = ICurveFiRewards(rewardsController);
+        curveFiYRewardToken = IERC20(ICurveFiYRewards(rewardsController).yfi());
         IERC20(curveFiToken).safeApprove(address(curveFiDeposit), MAX_UINT256);
+        IERC20(curveFiToken).safeApprove(address(curveFiRewards), MAX_UINT256);
         emit CurveFiYSetup(address(curveFiSwap), address(curveFiDeposit));
         for (uint256 i=0; i < _registeredTokens.length; i++){
             address token = curveFiDeposit.underlying_coins(int128(i));
@@ -76,6 +84,7 @@ contract CurveFiYProtocol is Module, DefiOperatorRole, IDefiProtocol {
             }
         }
         curveFiDeposit.add_liquidity(amounts, 0);
+        stakeCurveFiToken();
     }
 
     function handleDeposit(address[] memory tokens, uint256[] memory amounts) public onlyDefiOperator {
@@ -88,8 +97,8 @@ contract CurveFiYProtocol is Module, DefiOperatorRole, IDefiProtocol {
             require(amnts[idx] >= amounts[i], "CurveFiYProtocol: requested amount is not deposited");
         }
         curveFiDeposit.add_liquidity(amnts, 0);
+        stakeCurveFiToken();
     }
-
 
     /** 
     * @dev With this function beneficiary will recieve exact amount he asked. 
@@ -104,10 +113,10 @@ contract CurveFiYProtocol is Module, DefiOperatorRole, IDefiProtocol {
         uint256 nAmount = normalizeAmount(token, wAmount);
         uint256 nBalance = normalizedBalance();
 
-        IERC20 curveFiToken = IERC20(curveFiDeposit.token());
-        uint256 poolShares = curveFiToken.balanceOf(address(this));
+        uint256 poolShares = curveFiTokenBalance();
         uint256 withdrawShares = poolShares.mul(nAmount).mul(slippageMultiplier).div(nBalance).div(1e18); //Increase required amount to some percent, so that we definitely have enough to withdraw
 
+        unstakeCurveFiToken(withdrawShares);
         curveFiDeposit.remove_liquidity_one_coin(withdrawShares, int128(tokenIdx), wAmount, DONATE_DUST);
 
         available = IERC20(token).balanceOf(address(this));
@@ -123,7 +132,9 @@ contract CurveFiYProtocol is Module, DefiOperatorRole, IDefiProtocol {
         for (i = 0; i < _registeredTokens.length; i++){
             amnts[i] = amounts[i];
         }
+        unstakeCurveFiToken();
         curveFiDeposit.remove_liquidity_imbalance(amnts, MAX_UINT256);
+        stakeCurveFiToken();
         for (i = 0; i < _registeredTokens.length; i++){
             IERC20 ltoken = IERC20(_registeredTokens[i]);
             ltoken.safeTransfer(beneficiary, amounts[i]);
@@ -138,8 +149,7 @@ contract CurveFiYProtocol is Module, DefiOperatorRole, IDefiProtocol {
     function balanceOf(address token) public returns(uint256) {
         uint256 tokenIdx = getTokenIndex(token);
 
-        IERC20 curveFiToken = IERC20(curveFiDeposit.token());
-        uint256 curveFiTokenBalance = curveFiToken.balanceOf(address(this));
+        uint256 curveFiTokenBalance = curveFiTokenBalance();
         uint256 curveFiTokenTotalSupply = curveFiToken.totalSupply();
         uint256 yTokenCurveFiBalance = curveFiSwap.balances(int128(tokenIdx));
         
@@ -221,6 +231,20 @@ contract CurveFiYProtocol is Module, DefiOperatorRole, IDefiProtocol {
         }
     }
 
+    function stakeCurveFiToken() private {
+        uint256 cftBalance = curveFiToken.balanceOf(address(this));
+        curveFiRewards.stake(cftBalance);
+    }
+
+    function unstakeCurveFiToken(uint256 amount) private {
+        curveFiRewards.withdraw(amount);
+    }
+
+    function unstakeCurveFiToken() private {
+        uint256 balance = curveFiRewards.balanceOf(address(this));
+        curveFiRewards.withdraw(balance);
+    }
+
     function _registerToken(address token) private {
         IERC20 ltoken = IERC20(token);
         uint256 currentBalance = ltoken.balanceOf(address(this));
@@ -239,6 +263,10 @@ contract CurveFiYProtocol is Module, DefiOperatorRole, IDefiProtocol {
             withdraw(token, _msgSender(), balance);   //This updates withdrawalsSinceLastDistribution
         }
         emit TokenUnregistered(token);
+    }
+
+    function curveFiTokenBalance() private view returns(uint256) {
+        return curveFiRewards.balanceOf(address(this));
     }
 
 }
