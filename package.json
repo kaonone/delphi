@@ -6,8 +6,9 @@
   "scripts": {
     "generate": "npx truffle compile && typechain --target truffle './build/**/*.json'",
     "prepare": "yarn generate",
+    "ganache-fork": "npx ganache-cli -f https://cloudflare-eth.com/ -i 999",
     "test": "yarn generate && scripts/test.sh",
-    "test-classic": "npx truffle test",
+    "test-fork": "scripts/test-fork.sh",
     "test-gas": "GAS_REPORTER=true yarn test && npx codechecks",
     "tsc": "tsc --noEmit",
     "lint": "solhint -c .solhint.json contracts/**/*.sol",

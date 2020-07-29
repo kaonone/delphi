@@ -18,6 +18,8 @@ declare global {
         name: "DCAOperatorRole"
       ): TruffleContracts.DCAOperatorRoleContract;
       require(name: "ERC165"): TruffleContracts.ERC165Contract;
+      require(name: "ERC20"): TruffleContracts.ERC20Contract;
+      require(name: "ERC20Detailed"): TruffleContracts.ERC20DetailedContract;
       require(name: "ERC721"): TruffleContracts.ERC721Contract;
       require(name: "ERC721Burnable"): TruffleContracts.ERC721BurnableContract;
       require(
@@ -25,12 +27,10 @@ declare global {
       ): TruffleContracts.ERC721EnumerableContract;
       require(name: "ERC721Full"): TruffleContracts.ERC721FullContract;
       require(name: "ERC721Metadata"): TruffleContracts.ERC721MetadataContract;
-      require(name: "ERC721Mintable"): TruffleContracts.ERC721MintableContract;
       require(
         name: "FakeUniswapRouter"
       ): TruffleContracts.FakeUniswapRouterContract;
       require(name: "FreeERC20"): TruffleContracts.FreeERC20Contract;
-      require(name: "GLDToken"): TruffleContracts.GLDTokenContract;
       require(name: "IAccessModule"): TruffleContracts.IAccessModuleContract;
       require(name: "ICErc20"): TruffleContracts.ICErc20Contract;
       require(name: "IDefiModule"): TruffleContracts.IDefiModuleContract;
@@ -58,12 +58,8 @@ declare global {
         name: "ITestnetCompoundDAI"
       ): TruffleContracts.ITestnetCompoundDAIContract;
       require(
-        name: "IUniswapV2Router01"
-      ): TruffleContracts.IUniswapV2Router01Contract;
-      require(
         name: "IUniswapV2Router02"
       ): TruffleContracts.IUniswapV2Router02Contract;
-      require(name: "MinterRole"): TruffleContracts.MinterRoleContract;
       require(name: "Module"): TruffleContracts.ModuleContract;
       require(name: "Ownable"): TruffleContracts.OwnableContract;
       require(name: "Pausable"): TruffleContracts.PausableContract;

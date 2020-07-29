@@ -1,30 +1,27 @@
 {
   "manifestVersion": "2.2",
-  "contracts": {
-    "PToken": "PToken",
-    "Pool": "Pool",
-    "RAYModule": "RAYModule",
-    "DefiFundsModule": "DefiFundsModule",
-    "CurveModule": "CurveModule",
-    "AccessModule": "AccessModule",
-    "LiquidityModule": "LiquidityModule",
-    "LoanLimitsModule": "LoanLimitsModule",
-    "LoanProposalsModule": "LoanProposalsModule",
-    "LoanModule": "LoanModule"
-  },
   "dependencies": {},
   "name": "akropolis-pool",
   "version": "1.0.0",
   "compiler": {
-    "manager": "truffle",
+    "manager": "openzeppelin",
     "compilerSettings": {
       "optimizer": {
         "enabled": true,
         "runs": "200"
       }
     },
-    "artifactsDir": "build\\contracts",
-    "contractsDir": "contracts"
+    "artifactsDir": "build/contracts",
+    "contractsDir": "contracts",
+    "solcVersion": "0.5.17",
+    "typechain": {
+      "enabled": true,
+      "outDir": "./types/truffle-contracts",
+      "target": "truffle"
+    }
   },
-  "telemetryOptIn": true
+  "telemetryOptIn": true,
+  "contracts": {
+    "DCAModule": "DCAModule"
+  }
 }
