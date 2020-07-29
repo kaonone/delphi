@@ -3,20 +3,22 @@ rem === DEFINE MODULES ===
 
 SET EXT_TOKEN_DAI=0x5592EC0cfb4dbc12D3aB100b257153436a1f0FEa
 SET EXT_COMPOUND_CTOKEN_DAI=0x6D7F0754FFeb405d23C51CE938289d4835bE3b14
+SET EXT_COMPOUND_COMPTROLLER=0x75B96C27d3330b1bBFc5059A5819A0E17DDa4013
 SET EXT_CURVEFY_Y_DEPOSIT=0x31191Ad863e842C212A40CFaa47D8108Ad35C8B2
+SET EXT_CURVEFY_Y_REWARDS=0xf89fA9449058C1802eAf9d544A4a7c06585C4D0A
 
-SET MODULE_POOL=0x7F157C18D9b74fD6DC1792F905812C97d4eD1C4D
-SET MODULE_ACCESS=0x25F80Ae760F8555EDF3a42fB3043b73C6A78D920
-SET MODULE_SAVINGS=0xEbc77a8542Afd7340eAa584f5048c3045A11Dadf
+SET MODULE_POOL=0x1A37Ecaff088011697C7E6C30E9D6ab5A466e5eF
+SET MODULE_ACCESS=0x2F04a1Ed74a24c6168bB746a2403c06a3Fe3E17F
+SET MODULE_SAVINGS=0x2C6c379F44e9e929F206D115C9d1cd9c2be41562
 
-SET PROTOCOL_CURVEFY_Y=0x675F893610c799Dd92d43BF6e793BbC68DC8d679
-SET POOL_TOKEN_CURVEFY_Y=0x7766C241236690c0abCa88e2758a5C4395B59831
+SET PROTOCOL_CURVEFY_Y=0x0c2F04439B94d0558a76FaAd119e42c64dd7952C
+SET POOL_TOKEN_CURVEFY_Y=0xD958eC02c08388AfBdf26C876F0f8F7826dE9f27
 
-SET PROTOCOL_COMPOUND_DAI=0x53Cd3DB8AA9739B92C26779A4F6D67405B444657
-SET POOL_TOKEN_COMPOUND_DAI=0xAdb69BAEE6514be4ba6d20376c5EFCDd72111Cb2
+SET PROTOCOL_COMPOUND_DAI=0xf5D9a6780e2efdB33241488ceE9D4cde50DFA439
+SET POOL_TOKEN_COMPOUND_DAI=0x9C0edE89952C74aC818439c6862573f7Ba04041B
 
 rem === ACTION ===
-goto :done
+goto :setupOperators
 
 :init
 echo INIT PROJECT, ADD CONTRACTS
@@ -40,7 +42,7 @@ echo CREATE Curve.Fi Y
 call npx oz create CurveFiYProtocol --network rinkeby --init "initialize(address _pool)" --args %MODULE_POOL%
 call npx oz create PoolToken_CurveFiY --network rinkeby --init "initialize(address _pool)" --args %MODULE_POOL%
 echo CREATE Compound DAI
-call npx oz create CompoundProtocol_DAI --network rinkeby --init "initialize(address _pool, address _token, address _cToken)" --args "%MODULE_POOL%, %EXT_TOKEN_DAI%, %EXT_COMPOUND_CTOKEN_DAI%"
+call npx oz create CompoundProtocol_DAI --network rinkeby --init "initialize(address _pool, address _token, address _cToken, address _comptroller)" --args "%MODULE_POOL%, %EXT_TOKEN_DAI%, %EXT_COMPOUND_CTOKEN_DAI%, %EXT_COMPOUND_COMPTROLLER%"
 call npx oz create PoolToken_Compound_DAI --network rinkeby --init "initialize(address _pool)" --args %MODULE_POOL%
 goto :done
 
@@ -49,7 +51,7 @@ echo SETUP POOL: CALL FOR ALL MODULES (set)
 call npx oz send-tx --to %MODULE_POOL% --network rinkeby --method set --args "access, %MODULE_ACCESS%, false"
 call npx oz send-tx --to %MODULE_POOL% --network rinkeby --method set --args "savings, %MODULE_SAVINGS%, false"
 echo SETUP OTHER CONTRACTS
-call npx oz send-tx --to %PROTOCOL_CURVEFY_Y% --network rinkeby --method setCurveFi --args %EXT_CURVEFY_Y_DEPOSIT%
+call npx oz send-tx --to %PROTOCOL_CURVEFY_Y% --network rinkeby --method setCurveFi --args "%EXT_CURVEFY_Y_DEPOSIT%, %EXT_CURVEFY_Y_REWARDS%"
 call npx oz send-tx --to %MODULE_SAVINGS% --network rinkeby --method registerProtocol --args "%PROTOCOL_CURVEFY_Y%, %POOL_TOKEN_CURVEFY_Y%"
 call npx oz send-tx --to %MODULE_SAVINGS% --network rinkeby --method registerProtocol --args "%PROTOCOL_COMPOUND_DAI%, %POOL_TOKEN_COMPOUND_DAI%"
 goto :done
