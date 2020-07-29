@@ -61,12 +61,14 @@ contract CompoundProtocol is Module, DefiOperatorRole, IDefiProtocol {
     }
 
     function withdrawRewards(address to) public onlyDefiOperator returns(address[] memory tokens, uint256[] memory amounts){
-        comptroller.claimComp(address(this));
+        //comptroller.claimComp(address(this)); //Temporary disable
         tokens = new address[](1);
         tokens[0] = address(compToken);
         amounts = new uint256[](1);
         amounts[0] = compToken.balanceOf(address(this));
-        compToken.safeTransfer(to, amounts[0]);
+        if(amounts[0] > 0){
+            compToken.safeTransfer(to, amounts[0]);
+        }
     }
 
     function balanceOf(address token) public returns(uint256) {
