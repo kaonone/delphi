@@ -129,7 +129,7 @@ contract SavingsModule is Module, RewardDistributions {
      * @param nAmount Normalized (to 18 decimals) amount to withdraw
      * @return Amount of PoolToken burned from user
      */
-    function withdraw(address _protocol, uint256 nAmount) public returns(uint256) {
+    function withdrawAll(address _protocol, uint256 nAmount) public returns(uint256) {
         distributeRewardIfRequired(_protocol);
 
         PoolToken poolToken = PoolToken(protocols[_protocol].poolToken);
