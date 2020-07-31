@@ -141,9 +141,14 @@ contract CurveFiYProtocol is Module, DefiOperatorRole, IDefiProtocol {
         }
     }
 
-    function withdrawRewards(address) external returns(address[] memory tokens, uint256[] memory amounts){
-        tokens = new address[](0);
-        amounts = new uint256[](0);
+    function supportedRewardTokens() public view returns(address[] memory) {
+        address[] memory rtokens = new address[](1);
+        rtokens[0] = address(curveFiYRewardToken);
+        return rtokens;
+    }
+
+    function isSupportedRewardToken(address token) public view returns(bool) {
+        return(token == address(curveFiYRewardToken));
     }
 
     function balanceOf(address token) public returns(uint256) {

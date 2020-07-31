@@ -68,6 +68,7 @@ contract SavingsModule is Module, RewardDistributions {
                 poolToken.mint(_msgSender(), normalizedBalance.sub(ts));
             }
         }
+        registerRewardTokensForProtocol(protocol);
         emit ProtocolRegistered(address(protocol), address(poolToken));
     }
 
@@ -193,6 +194,10 @@ contract SavingsModule is Module, RewardDistributions {
         }
     }
 
+    function getPoolTokenByProtocol(address _protocol) public view returns(address poolToken) {
+        return address(protocols[_protocol].poolToken);
+    }
+
     function withdrawFromProtocolProportionally(address beneficiary, IDefiProtocol protocol, uint256 nAmount, uint256 currentProtocolBalance) internal {
         uint256[] memory balances = protocol.balanceOfAll();
         uint256[] memory amounts = new uint256[](balances.length);
@@ -230,11 +235,7 @@ contract SavingsModule is Module, RewardDistributions {
         if(!isRewardDistributionRequired(_protocol)) return;
         ProtocolInfo storage pi = protocols[_protocol];
         pi.lastRewardDistribution = now;
-
-        (address[] memory _tokens, uint256[] memory _amounts) = IDefiProtocol(_protocol).withdrawRewards(address(this));
-        if((_tokens.length > 0) && _amounts[0] > 0) {
-            distributeReward(address(pi.poolToken), _tokens, _amounts);
-        }
+        distributeReward(_protocol);
     }
 
     /**

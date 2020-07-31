@@ -5,6 +5,7 @@ import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/SafeERC20
 import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/IERC20.sol";
 import "../../common/Base.sol";
 import "../../interfaces/token/IPoolTokenBalanceChangeRecipient.sol";
+import "../../interfaces/defi/IDefiProtocol.sol";
 import "../token/PoolToken.sol";
 
 contract RewardDistributions is Base, IPoolTokenBalanceChangeRecipient {
@@ -27,8 +28,12 @@ contract RewardDistributions is Base, IPoolTokenBalanceChangeRecipient {
         mapping(address => uint256) rewards;    // Maps Reward tokens to user balances of this reward tokens
     }
 
+    address[] public supportedRewardTokens;
+    mapping(address=>address) public rewardTokenToProtocol;
     RewardTokenDistribution[] rewardDistributions;
     mapping(address=>RewardBalance) rewardBalances; //Mapping users to their RewardBalance
+
+    function getPoolTokenByProtocol(address _protocol) public view returns(address poolToken);
 
     function poolTokenBalanceChanged(address user) public {
         address token = _msgSender();
@@ -36,6 +41,10 @@ contract RewardDistributions is Base, IPoolTokenBalanceChangeRecipient {
         _updateRewardBalance(user, rewardDistributions.length);
         uint256 newAmount = PoolToken(token).distributionBalanceOf(user);
         rewardBalances[user].shares[token] = newAmount;
+    }
+
+    function withdrawReward() public returns(uint256[] memory){
+        return withdrawReward(supportedRewardTokens);
     }
 
     /**
@@ -102,6 +111,24 @@ contract RewardDistributions is Base, IPoolTokenBalanceChangeRecipient {
         _updateRewardBalance(user, toDistribution);
     }
 
+    function registerRewardTokensForProtocol(IDefiProtocol protocol) internal {
+        address[] memory rtkns = protocol.supportedRewardTokens();
+        for(uint256 i = 0; i < rtkns.length; i++){
+            address token = rtkns[i];
+            require(rewardTokenToProtocol[token] == address(0), "RewardDistributions: token already added");
+            rewardTokenToProtocol[token] = address(protocol);
+            supportedRewardTokens.push(token);
+        }
+    }
+
+
+    function distributeReward(address _protocol) internal {
+        (address[] memory _tokens, uint256[] memory _amounts) = IDefiProtocol(_protocol).claimRewards();
+        if((_tokens.length > 0) && _amounts[0] > 0) {
+            address poolToken = getPoolTokenByProtocol(_protocol);
+            distributeReward(poolToken, _tokens, _amounts);
+        }
+    }
 
     /**
     * @notice Create reward distribution
@@ -114,16 +141,19 @@ contract RewardDistributions is Base, IPoolTokenBalanceChangeRecipient {
         }));
         uint256 idx = rewardDistributions.length - 1;
         RewardTokenDistribution storage rd = rewardDistributions[idx];
-        for(uint256 i=0; i < rewardTokens.length; i++) {
+        for(uint256 i = 0; i < rewardTokens.length; i++) {
             rd.amounts[rewardTokens[i]] = amounts[i];  
             emit RewardDistribution(poolToken, rewardTokens[i], amounts[i], rd.totalShares);
         }
     }
 
     function _withdrawReward(address user, address rewardToken) internal returns(uint256) {
+        address protocol = rewardTokenToProtocol[rewardToken];
+        require(protocol != address(0), "RewardDistributions: token not supported");
+
         uint256 amount = rewardBalances[user].rewards[rewardToken];
         require(amount > 0, "RewardDistributions: nothing to withdraw");
-        IERC20(rewardToken).safeTransfer(user, amount);
+        IDefiProtocol(protocol).withdrawReward(rewardToken, user, amount);
         rewardBalances[user].rewards[rewardToken] = 0;
         emit RewardWithdraw(user, rewardToken, amount);
         return amount;

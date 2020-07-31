@@ -9,11 +9,12 @@ import "../../interfaces/defi/ICErc20.sol";
 import "../../interfaces/defi/IComptroller.sol";
 import "../../common/Module.sol";
 import "./DefiOperatorRole.sol";
+import "./ProtocolBase.sol";
 
 /**
  * RAY Protocol support module which works with only one base token
  */
-contract CompoundProtocol is Module, DefiOperatorRole, IDefiProtocol {
+contract CompoundProtocol is ProtocolBase {
     uint256 constant MAX_UINT256 = uint256(-1);
 
     using SafeMath for uint256;
@@ -26,8 +27,7 @@ contract CompoundProtocol is Module, DefiOperatorRole, IDefiProtocol {
     IERC20 compToken;
 
     function initialize(address _pool, address _token, address _cToken, address _comptroller) public initializer {
-        Module.initialize(_pool);
-        DefiOperatorRole.initialize(_msgSender());
+        ProtocolBase.initialize(_pool);
         baseToken = IERC20(_token);
         cToken = ICErc20(_cToken);
         decimals = ERC20Detailed(_token).decimals();
@@ -60,17 +60,6 @@ contract CompoundProtocol is Module, DefiOperatorRole, IDefiProtocol {
         baseToken.safeTransfer(beneficiary, amounts[0]);
     }
 
-    function withdrawRewards(address to) public onlyDefiOperator returns(address[] memory tokens, uint256[] memory amounts){
-        comptroller.claimComp(address(this));
-        tokens = new address[](1);
-        tokens[0] = address(compToken);
-        amounts = new uint256[](1);
-        amounts[0] = compToken.balanceOf(address(this));
-        if(amounts[0] > 0){
-            compToken.safeTransfer(to, amounts[0]);
-        }
-    }
-
     function balanceOf(address token) public returns(uint256) {
         if (token != address(baseToken)) return 0;
         return cToken.balanceOfUnderlying(address(this));
@@ -98,6 +87,16 @@ contract CompoundProtocol is Module, DefiOperatorRole, IDefiProtocol {
 
     function supportedTokensCount() public view returns(uint256) {
         return 1;
+    }
+
+    function supportedRewardTokens() public view returns(address[] memory) {
+        address[] memory rtokens = new address[](1);
+        rtokens[0] = address(compToken);
+        return rtokens;
+    }
+
+    function isSupportedRewardToken(address token) public view returns(bool) {
+        return(token == address(compToken));
     }
 
     function normalizeAmount(address, uint256 amount) internal view returns(uint256) {
