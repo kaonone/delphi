@@ -77,15 +77,17 @@ contract SavingsModule is Module, RewardDistributions {
      * @param _tokens Array of tokens to deposit
      * @param _dnAmounts Array of amounts (denormalized to token decimals)
      */
-    function deposit(address[] memory _protocols, address[] memory _tokens, uint256[] memory _dnAmounts) public {
+    function deposit(address[] memory _protocols, address[] memory _tokens, uint256[] memory _dnAmounts) public returns(uint256[] memory) {
         require(_protocols.length == _tokens.length && _tokens.length == _dnAmounts.length, "SavingsModule: size of arrays does not match");
+        uint256[] memory ptAmounts = new uint256[](_protocols.length);
         for (uint256 i=0; i < _protocols.length; i++) {
             address[] memory tkns = new address[](1);
             tkns[0] = _tokens[i];
             uint256[] memory amnts = new uint256[](1);
             amnts[0] = _dnAmounts[i];
-            deposit(_protocols[i], tkns, amnts);
+            ptAmounts[i] = deposit(_protocols[i], tkns, amnts);
         }
+        return ptAmounts;
     }
 
     /**
@@ -94,7 +96,7 @@ contract SavingsModule is Module, RewardDistributions {
      * @param _tokens Array of tokens to deposit
      * @param _dnAmounts Array of amounts (denormalized to token decimals)
      */
-    function deposit(address _protocol, address[] memory _tokens, uint256[] memory _dnAmounts) public {
+    function deposit(address _protocol, address[] memory _tokens, uint256[] memory _dnAmounts) public returns(uint256) {
         distributeRewardIfRequired(_protocol);
 
         uint256 nBalanceBefore = distributeYeldInternal(_protocol);
@@ -111,6 +113,7 @@ contract SavingsModule is Module, RewardDistributions {
         }
         uint256 fee = (nAmount > nDeposit)?nAmount.sub(nDeposit):0;
         emit Deposit(_protocol, _msgSender(), nAmount, fee);
+        return nDeposit;
     }
 
     function depositToProtocol(address _protocol, address[] memory _tokens, uint256[] memory _dnAmounts) internal {

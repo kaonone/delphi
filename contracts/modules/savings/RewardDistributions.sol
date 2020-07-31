@@ -42,22 +42,24 @@ contract RewardDistributions is Base, IPoolTokenBalanceChangeRecipient {
      * @notice Withdraw reward tokens for user
      * @param rewardTokens Array of tokens to withdraw
      */
-    function withdrawReward(address[] memory rewardTokens) public {
+    function withdrawReward(address[] memory rewardTokens) public returns(uint256[] memory){
         address user = _msgSender();
+        uint256[] memory rAmounts = new uint256[](rewardTokens.length);
         updateRewardBalance(user);
         for(uint256 i=0; i < rewardTokens.length; i++) {
-            _withdrawReward(user, rewardTokens[i]);
+            rAmounts[i] = _withdrawReward(user, rewardTokens[i]);
         }
+        return rAmounts;
     }
 
     /**
      * @notice Withdraw reward tokens for user
      * @param rewardToken Token to withdraw
      */
-    function withdrawReward(address rewardToken) public {
+    function withdrawReward(address rewardToken) public returns(uint256){
         address user = _msgSender();
         updateRewardBalance(user);
-        _withdrawReward(user, rewardToken);
+        return _withdrawReward(user, rewardToken);
     }
 
     function rewardBalanceOf(address user, address[] memory rewardTokens) public view returns(uint256[] memory) {
@@ -118,12 +120,13 @@ contract RewardDistributions is Base, IPoolTokenBalanceChangeRecipient {
         }
     }
 
-    function _withdrawReward(address user, address rewardToken) internal {
+    function _withdrawReward(address user, address rewardToken) internal returns(uint256) {
         uint256 amount = rewardBalances[user].rewards[rewardToken];
         require(amount > 0, "RewardDistributions: nothing to withdraw");
         IERC20(rewardToken).safeTransfer(user, amount);
         rewardBalances[user].rewards[rewardToken] = 0;
         emit RewardWithdraw(user, rewardToken, amount);
+        return amount;
     }
 
     function _updateRewardBalance(address user, uint256 toDistribution) internal {
