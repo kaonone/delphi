@@ -162,7 +162,7 @@ contract CurveFiYProtocol is Module, DefiOperatorRole, IDefiProtocol {
     
     function balanceOfAll() public returns(uint256[] memory balances) {
         IERC20 cfToken = IERC20(curveFiDeposit.token());
-        uint256 cfBalance = cfToken.balanceOf(address(this));
+        uint256 cfBalance = curveFiRewards.balanceOf(address(this));
         uint256 cfTotalSupply = cfToken.totalSupply();
 
         balances = new uint256[](_registeredTokens.length);
