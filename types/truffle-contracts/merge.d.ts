@@ -28,6 +28,9 @@ declare global {
       require(name: "ERC721Full"): TruffleContracts.ERC721FullContract;
       require(name: "ERC721Metadata"): TruffleContracts.ERC721MetadataContract;
       require(
+        name: "FakeSavingsModule"
+      ): TruffleContracts.FakeSavingsModuleContract;
+      require(
         name: "FakeUniswapRouter"
       ): TruffleContracts.FakeUniswapRouterContract;
       require(name: "FreeERC20"): TruffleContracts.FreeERC20Contract;

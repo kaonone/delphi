@@ -52,13 +52,12 @@ contract DCAModule is Module, ERC721Full, ERC721Burnable, DCAOperatorRole {
     uint256 public deadline;
 
     address public router;
+    address public tokenToSell;
 
     mapping(uint256 => Account) private _accountOf;
     mapping(uint256 => uint256) public removeAfterDistribution;
 
     enum Strategies {ONE, ALL}
-
-    address public tokenToSell;
 
     Strategies public strategy;
 
@@ -247,7 +246,8 @@ contract DCAModule is Module, ERC721Full, ERC721Burnable, DCAOperatorRole {
                 .add(buyAmount);
 
             _accountOf[newTokenId].lastRemovalPointIndex = removalPoint;
-            // NEXT DISTRIBUTION SET!!!
+
+            _accountOf[newTokenId].nextDistributionIndex = distributions.length;
         } else {
             _claimDistributions();
 
