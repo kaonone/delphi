@@ -6,6 +6,7 @@ import "@openzeppelin/contracts-ethereum-package/contracts/drafts/Counters.sol";
 import "@openzeppelin/contracts-ethereum-package/contracts/math/SafeMath.sol";
 import "../../lib/TransferHelper.sol";
 import "../../interfaces/uniswap/IUniswapV2Router02.sol";
+import "../../interfaces/savings/ISavingsModule.sol";
 import "./DCAOperatorRole.sol";
 import "../../common/Module.sol";
 
@@ -34,17 +35,13 @@ contract DCAModule is Module, ERC721Full, ERC721Burnable, DCAOperatorRole {
 
     struct Distribution {
         address tokenAddress;
-        uint256 amount;
-        uint256 totalSupply;
-    }
-
-    struct DistributionToken {
-        string tokenSymbol;
-        address tokenAddress;
+        uint256 yield;
+        uint256 amountIn;
+        uint256 amountOut;
     }
 
     Distribution[] public distributions;
-    DistributionToken[] public distributionTokens;
+    address[] public distributionTokens;
 
     uint256 public periodTimestamp;
     uint256 public nextBuyTimestamp;
@@ -52,6 +49,8 @@ contract DCAModule is Module, ERC721Full, ERC721Burnable, DCAOperatorRole {
     uint256 public deadline;
 
     address public router;
+    address public savingsPool;
+    address public stakingProtocol;
     address public tokenToSell;
 
     mapping(uint256 => Account) private _accountOf;
@@ -75,6 +74,7 @@ contract DCAModule is Module, ERC721Full, ERC721Burnable, DCAOperatorRole {
         address _tokenToSell,
         uint256 _strategy,
         address _router,
+        address _savingsPool,
         uint256 _periodTimestamp,
         address bot
     ) public initializer {
@@ -88,6 +88,7 @@ contract DCAModule is Module, ERC721Full, ERC721Burnable, DCAOperatorRole {
         tokenToSell = _tokenToSell;
         strategy = Strategies(_strategy);
         router = _router;
+        savingsPool = _savingsPool;
         periodTimestamp = _periodTimestamp;
         nextBuyTimestamp = now.add(_periodTimestamp);
     }
@@ -136,16 +137,20 @@ contract DCAModule is Module, ERC721Full, ERC721Burnable, DCAOperatorRole {
         return distributions[id].tokenAddress;
     }
 
-    function getDistributionAmount(uint256 id) public view returns (uint256) {
-        return distributions[id].amount;
+    function getDistributionYield(uint256 id) public view returns (uint256) {
+        return distributions[id].yield;
     }
 
-    function getDistributionTotalSupply(uint256 id)
+    function getDistributionAmountIn(uint256 id) public view returns (uint256) {
+        return distributions[id].amountIn;
+    }
+
+    function getDistributionAmountOut(uint256 id)
         public
         view
         returns (uint256)
     {
-        return distributions[id].totalSupply;
+        return distributions[id].amountOut;
     }
 
     function getTokenIdByAddress(address account)
@@ -157,32 +162,26 @@ contract DCAModule is Module, ERC721Full, ERC721Burnable, DCAOperatorRole {
     }
 
     /**
-     * @dev Sets `tokenSymbol` and `tokenAddress` for DistributionToken struct,
-     * that is stored in the `distributionTokens` array.
+     * @dev Sets `tokenAddress`, that is stored in the
+     * `distributionTokens` array.
      *
-     * @param tokenSymbol Token symbol.
      * @param tokenAddress Token address.
      *
      * @return Boolean value indicating whether the operation succeeded.
      *
      * Emits an {DistributionTokenAdded} event.
      */
-    function setDistributionToken(
-        string calldata tokenSymbol,
-        address tokenAddress
-    ) external returns (bool) {
+    function setDistributionToken(address tokenAddress)
+        external
+        returns (bool)
+    {
         require(
             (strategy == Strategies.ONE && distributionTokens.length <= 1) ||
                 strategy == Strategies.ALL,
             "DCAModule-setDistributionToken: a strategy can contain only one token"
         );
 
-        distributionTokens.push(
-            DistributionToken({
-                tokenSymbol: tokenSymbol,
-                tokenAddress: tokenAddress
-            })
-        );
+        distributionTokens.push(tokenAddress);
 
         return true;
     }
@@ -248,6 +247,8 @@ contract DCAModule is Module, ERC721Full, ERC721Burnable, DCAOperatorRole {
             _accountOf[newTokenId].lastRemovalPointIndex = removalPoint;
 
             _accountOf[newTokenId].nextDistributionIndex = distributions.length;
+
+            _depositToSavingsPool(tokenToSell, amount);
         } else {
             _claimDistributions();
 
@@ -277,6 +278,8 @@ contract DCAModule is Module, ERC721Full, ERC721Burnable, DCAOperatorRole {
                 .add(buyAmount);
 
             _accountOf[tokenId].lastRemovalPointIndex = removalPoint;
+
+            _depositToSavingsPool(tokenToSell, amount);
         }
 
         return true;
@@ -324,7 +327,7 @@ contract DCAModule is Module, ERC721Full, ERC721Burnable, DCAOperatorRole {
                 _accountOf[tokenId].buyAmount
             );
 
-            tokenToSell.safeTransfer(_msgSender(), amount);
+            _withdrawFromSavingsPool(token, amount);
         } else {
             require(
                 _accountOf[tokenId].balance[token] >= amount,
@@ -335,7 +338,7 @@ contract DCAModule is Module, ERC721Full, ERC721Burnable, DCAOperatorRole {
                 .balance[token]
                 .sub(amount);
 
-            token.safeTransfer(_msgSender(), amount);
+            _withdrawFromSavingsPool(token, amount);
         }
 
         return true;
@@ -351,19 +354,28 @@ contract DCAModule is Module, ERC721Full, ERC721Burnable, DCAOperatorRole {
     function purchase() external onlyDCAOperator returns (bool) {
         require(now >= nextBuyTimestamp, "DCAModule-buy: not the time to buy");
 
-        uint256 buyAmount = globalPeriodBuyAmount.div(
+        uint256 amountWithYield = ISavingsModule(savingsPool).withdraw(
+            stakingProtocol,
+            tokenToSell,
+            globalPeriodBuyAmount,
+            globalPeriodBuyAmount
+        );
+
+        uint256 splitYield = amountWithYield.sub(globalPeriodBuyAmount).div(
             distributionTokens.length
         );
 
-        tokenToSell.safeApprove(router, globalPeriodBuyAmount);
+        uint256 buyAmount = amountWithYield.div(distributionTokens.length);
+
+        tokenToSell.safeApprove(router, amountWithYield);
 
         for (uint256 i = 0; i < distributionTokens.length; i++) {
             address[] memory path = new address[](2);
             path[0] = tokenToSell;
-            path[1] = distributionTokens[i].tokenAddress;
+            path[1] = distributionTokens[i];
 
             require(
-                _swapAndCreateDistribution(buyAmount, path),
+                _swapAndCreateDistribution(buyAmount, splitYield, path),
                 "DCAModule-buy: swap error"
             );
         }
@@ -375,6 +387,36 @@ contract DCAModule is Module, ERC721Full, ERC721Burnable, DCAOperatorRole {
         );
 
         return true;
+    }
+
+    /**
+     * @dev Makes a reward withdraw of a target assets.
+     *
+     * @param rewardToken Token to withdraw.
+     *
+     * @return value represents the amount of reward.
+     *
+     * Emits an {WithdrawReward} event.
+     */
+    function withdrawRewardAndCreateDistribution(address rewardToken)
+        external
+        onlyDCAOperator
+        returns (uint256)
+    {
+        uint256 amount = ISavingsModule(savingsPool).withdrawReward(
+            rewardToken
+        );
+
+        distributions.push(
+            Distribution({
+                tokenAddress: rewardToken,
+                yield: 0,
+                amountIn: globalPeriodBuyAmount,
+                amountOut: amount
+            })
+        );
+
+        return amount;
     }
 
     /**
@@ -402,8 +444,8 @@ contract DCAModule is Module, ERC721Full, ERC721Burnable, DCAOperatorRole {
         ) {
             if (_accountOf[tokenId].balance[tokenToSell] >= splitBuyAmount) {
                 uint256 amount = splitBuyAmount
-                    .mul(distributions[i].totalSupply)
-                    .div(distributions[i].amount);
+                    .mul(distributions[i].amountOut)
+                    .div(distributions[i].amountIn);
 
                 _accountOf[tokenId].balance[tokenToSell] = _accountOf[tokenId]
                     .balance[tokenToSell]
@@ -423,10 +465,11 @@ contract DCAModule is Module, ERC721Full, ERC721Burnable, DCAOperatorRole {
         return true;
     }
 
-    function _swapAndCreateDistribution(uint256 amountIn, address[] memory path)
-        private
-        returns (bool)
-    {
+    function _swapAndCreateDistribution(
+        uint256 amountIn,
+        uint256 splitYield,
+        address[] memory path
+    ) private returns (bool) {
         uint256[] memory amountsOut = IUniswapV2Router02(router).getAmountsOut(
             amountIn,
             path
@@ -444,11 +487,35 @@ contract DCAModule is Module, ERC721Full, ERC721Burnable, DCAOperatorRole {
         distributions.push(
             Distribution({
                 tokenAddress: path[1],
-                amount: amounts[0],
-                totalSupply: amounts[1]
+                yield: splitYield,
+                amountIn: amounts[0],
+                amountOut: amounts[1]
             })
         );
 
+        _depositToSavingsPool(path[1], amounts[1]);
+
         return true;
+    }
+
+    function _depositToSavingsPool(address token, uint256 amount) private {
+        address[] memory tokens = new address[](1);
+        uint256[] memory amounts = new uint256[](1);
+
+        tokens[0] = token;
+        amounts[0] = amount;
+
+        ISavingsModule(savingsPool).deposit(stakingProtocol, tokens, amounts);
+    }
+
+    function _withdrawFromSavingsPool(address token, uint256 amount) private {
+        uint256 amountWithYield = ISavingsModule(savingsPool).withdraw(
+            stakingProtocol,
+            token,
+            amount,
+            amount
+        );
+
+        token.safeTransfer(_msgSender(), amountWithYield);
     }
 }

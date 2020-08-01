@@ -29,10 +29,8 @@ interface FakeSavingsModule {
     ) external returns (uint256);
 
     /**
-     * @notice Withdraw reward tokens for user
-     * @param rewardTokens Array of tokens to withdraw
+     * @notice Withdraw reward tokens for user.
+     * @param rewardToken Token to withdraw.
      */
-    function withdrawReward(address[] calldata rewardTokens)
-        external
-        returns (uint256[] memory);
+    function withdrawReward(address rewardToken) external returns (uint256);
 }

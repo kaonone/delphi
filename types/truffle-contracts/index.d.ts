@@ -696,12 +696,12 @@ export interface DCAModuleInstance extends Truffle.ContractInstance {
   distributionTokens(
     arg0: number | BN | string,
     txDetails?: Truffle.TransactionDetails
-  ): Promise<[string, string]>;
+  ): Promise<string>;
 
   distributions(
     arg0: number | BN | string,
     txDetails?: Truffle.TransactionDetails
-  ): Promise<[string, BN, BN]>;
+  ): Promise<[string, BN, BN, BN]>;
 
   getApproved(
     tokenId: number | BN | string,
@@ -794,6 +794,8 @@ export interface DCAModuleInstance extends Truffle.ContractInstance {
       txDetails?: Truffle.TransactionDetails
     ): Promise<number>;
   };
+
+  savingsPool(txDetails?: Truffle.TransactionDetails): Promise<string>;
 
   setApprovalForAll: {
     (
@@ -961,12 +963,17 @@ export interface DCAModuleInstance extends Truffle.ContractInstance {
     txDetails?: Truffle.TransactionDetails
   ): Promise<string>;
 
-  getDistributionAmount(
+  getDistributionYield(
     id: number | BN | string,
     txDetails?: Truffle.TransactionDetails
   ): Promise<BN>;
 
-  getDistributionTotalSupply(
+  getDistributionAmountIn(
+    id: number | BN | string,
+    txDetails?: Truffle.TransactionDetails
+  ): Promise<BN>;
+
+  getDistributionAmountOut(
     id: number | BN | string,
     txDetails?: Truffle.TransactionDetails
   ): Promise<BN>;
@@ -978,22 +985,18 @@ export interface DCAModuleInstance extends Truffle.ContractInstance {
 
   setDistributionToken: {
     (
-      tokenSymbol: string,
       tokenAddress: string | BN,
       txDetails?: Truffle.TransactionDetails
     ): Promise<Truffle.TransactionResponse>;
     call(
-      tokenSymbol: string,
       tokenAddress: string | BN,
       txDetails?: Truffle.TransactionDetails
     ): Promise<boolean>;
     sendTransaction(
-      tokenSymbol: string,
       tokenAddress: string | BN,
       txDetails?: Truffle.TransactionDetails
     ): Promise<string>;
     estimateGas(
-      tokenSymbol: string,
       tokenAddress: string | BN,
       txDetails?: Truffle.TransactionDetails
     ): Promise<number>;

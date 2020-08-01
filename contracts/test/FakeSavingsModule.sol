@@ -37,7 +37,7 @@ contract FakeSavingsModule {
         address _protocol,
         address[] memory _tokens,
         uint256[] memory _dnAmounts
-    ) public returns (uint256) {
+    ) public returns (uint256[] memory) {
         (_protocol);
 
         for (uint256 i = 0; i < _tokens.length; i++) {
@@ -52,7 +52,7 @@ contract FakeSavingsModule {
                 _dnAmounts[i]
             );
         }
-        return 0;
+        return _dnAmounts;
     }
 
     /**
@@ -81,22 +81,14 @@ contract FakeSavingsModule {
     }
 
     /**
-     * @notice Withdraw reward tokens for user
-     * @param rewardTokens Array of tokens to withdraw
+     * @notice Withdraw reward tokens for user.
+     * @param rewardToken Token to withdraw.
      */
-    function withdrawReward(address[] memory rewardTokens)
-        public
-        returns (uint256[] memory)
-    {
-        uint256[] memory rAmounts = new uint256[](rewardTokens.length);
-
+    function withdrawReward(address rewardToken) public returns (uint256) {
         uint256 rewardAmount = 100e18;
 
-        for (uint256 i = 0; i < rewardTokens.length; i++) {
-            rewardTokens[i].safeTransfer(msg.sender, rewardAmount);
-            rAmounts[i] = rAmounts[i].add(rewardAmount);
-        }
+        rewardToken.safeTransfer(msg.sender, rewardAmount);
 
-        return rAmounts;
+        return rewardAmount;
     }
 }

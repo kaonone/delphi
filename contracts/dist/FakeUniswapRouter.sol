@@ -1,4 +1,3 @@
-
 // File: contracts/lib/TransferHelper.sol
 
 pragma solidity ^0.5.12;
@@ -61,13 +60,12 @@ library TransferHelper {
 
 pragma solidity ^0.5.12;
 
-
 contract FakeUniswapRouter {
     using TransferHelper for address;
 
     function getAmountsOut(uint256 amountIn, address[] calldata path)
         external
-        view
+        pure
         returns (uint256[] memory amounts)
     {
         (path);
