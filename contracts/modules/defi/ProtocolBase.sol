@@ -65,6 +65,4 @@ contract ProtocolBase is Module, DefiOperatorRole, IDefiProtocol {
         rewardBalances[token] = rewardBalances[token].sub(amount);
         IERC20(token).safeTransfer(user, amount);
     }
-
-
 }

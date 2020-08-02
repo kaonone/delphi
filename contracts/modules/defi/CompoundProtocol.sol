@@ -99,6 +99,10 @@ contract CompoundProtocol is ProtocolBase {
         return(token == address(compToken));
     }
 
+    function cliamRewardsFromProtocol() internal {
+        comptroller.claimComp(address(this));
+    }
+
     function normalizeAmount(address, uint256 amount) internal view returns(uint256) {
         if (decimals == 18) {
             return amount;
