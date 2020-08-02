@@ -27,6 +27,7 @@ contract SavingsModule is Module, RewardDistributions {
         PoolToken poolToken;
         uint256 previousBalance;
         uint256 lastRewardDistribution;
+        address[] supportedRewardTokens;
     }
 
     struct TokenData {
@@ -68,7 +69,6 @@ contract SavingsModule is Module, RewardDistributions {
                 poolToken.mint(_msgSender(), normalizedBalance.sub(ts));
             }
         }
-        registerRewardTokensForProtocol(protocol);
         emit ProtocolRegistered(address(protocol), address(poolToken));
     }
 
@@ -194,8 +194,11 @@ contract SavingsModule is Module, RewardDistributions {
         }
     }
 
-    function getPoolTokenByProtocol(address _protocol) public view returns(address poolToken) {
+    function getPoolTokenByProtocol(address _protocol) public view returns(address) {
         return address(protocols[_protocol].poolToken);
+    }
+    function getRewardTokensByProtocol(address _protocol) public view returns(address[] memory) {
+        return protocols[_protocol].supportedRewardTokens;
     }
 
     function withdrawFromProtocolProportionally(address beneficiary, IDefiProtocol protocol, uint256 nAmount, uint256 currentProtocolBalance) internal {

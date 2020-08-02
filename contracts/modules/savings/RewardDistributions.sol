@@ -19,21 +19,24 @@ contract RewardDistributions is Base, IPoolTokenBalanceChangeRecipient {
         address poolToken;                  // PoolToken which holders will receive reward
         uint256 totalShares;                // Total shares of PoolToken participating in this distribution
         address[] rewardTokens;             // List of reward tokens being distributed 
+        mapping(address=>uint256) amounts; 
+    }
+
+    struct UserProtocolRewards {
         mapping(address=>uint256) amounts;  // Maps address of reward token to amount beeing distributed
     }
 
     struct RewardBalance {
         uint256 nextDistribution;
         mapping(address => uint256) shares;     // Maps PoolToken to amount of user shares participating in distributions
-        mapping(address => uint256) rewards;    // Maps Reward tokens to user balances of this reward tokens
+        mapping(address => UserProtocolRewards) rewardsByProtocol; //Maps protocols to ProtocolRewards struct (map of reward tokens to their balances);
     }
 
-    address[] public supportedRewardTokens;
-    mapping(address=>address) public rewardTokenToProtocol;
     RewardTokenDistribution[] rewardDistributions;
     mapping(address=>RewardBalance) rewardBalances; //Mapping users to their RewardBalance
 
     function getPoolTokenByProtocol(address _protocol) public view returns(address poolToken);
+    function getRewardTokensByProtocol(address _protocol) public view returns(address[] memory rewardTokens);
 
     function poolTokenBalanceChanged(address user) public {
         address token = _msgSender();
@@ -79,7 +82,7 @@ contract RewardDistributions is Base, IPoolTokenBalanceChangeRecipient {
         return amounts;
     }
 
-    function rewardBalanceOf(address user, address rewardToken) public view returns(uint256 amounts) {
+    function rewardBalanceOf(address user, address protocol, address rewardToken) public view returns(uint256 amounts) {
         RewardBalance storage rb = rewardBalances[user];
         uint256 balance = rb.rewards[rewardToken];
         uint256 next = rb.nextDistribution;
@@ -110,17 +113,6 @@ contract RewardDistributions is Base, IPoolTokenBalanceChangeRecipient {
     function updateRewardBalance(address user, uint256 toDistribution) public {
         _updateRewardBalance(user, toDistribution);
     }
-
-    function registerRewardTokensForProtocol(IDefiProtocol protocol) internal {
-        address[] memory rtkns = protocol.supportedRewardTokens();
-        for(uint256 i = 0; i < rtkns.length; i++){
-            address token = rtkns[i];
-            require(rewardTokenToProtocol[token] == address(0), "RewardDistributions: token already added");
-            rewardTokenToProtocol[token] = address(protocol);
-            supportedRewardTokens.push(token);
-        }
-    }
-
 
     function distributeReward(address _protocol) internal {
         (address[] memory _tokens, uint256[] memory _amounts) = IDefiProtocol(_protocol).claimRewards();
