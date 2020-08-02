@@ -1,6 +1,6 @@
 pragma solidity ^0.5.0;
 
-interface FakeSavingsModule {
+contract ISavingsModule {
     /**
      * @notice Deposit tokens to a protocol
      * @param _protocol Protocol to deposit tokens
@@ -9,9 +9,9 @@ interface FakeSavingsModule {
      */
     function deposit(
         address _protocol,
-        address[] calldata _tokens,
-        uint256[] calldata _dnAmounts
-    ) external returns (uint256);
+        address[] memory _tokens,
+        uint256[] memory _dnAmounts
+    ) public returns (uint256);
 
     /**
      * Withdraw token from protocol
@@ -26,11 +26,13 @@ interface FakeSavingsModule {
         address token,
         uint256 dnAmount,
         uint256 maxNAmount
-    ) external returns (uint256);
+    ) public returns (uint256);
 
     /**
-     * @notice Withdraw reward tokens for user.
-     * @param rewardToken Token to withdraw.
+     * @notice Withdraw reward tokens for user
+     * @param rewardTokens Array of tokens to withdraw
      */
-    function withdrawReward(address rewardToken) external returns (uint256);
+    function withdrawReward(address[] memory rewardTokens)
+        public
+        returns (uint256[] memory);
 }

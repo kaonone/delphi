@@ -1,6 +1,6 @@
 pragma solidity ^0.5.0;
 
-import "contracts/lib/TransferHelper.sol";
+import "contracts/utils/TransferHelper.sol";
 import "@openzeppelin/contracts-ethereum-package/contracts/math/SafeMath.sol";
 
 contract FakeSavingsModule {
@@ -81,14 +81,23 @@ contract FakeSavingsModule {
     }
 
     /**
-     * @notice Withdraw reward tokens for user.
-     * @param rewardToken Token to withdraw.
+     * @notice Withdraw reward tokens for user
+     * @param rewardTokens Array of tokens to withdraw
      */
-    function withdrawReward(address rewardToken) public returns (uint256) {
+    function withdrawReward(address[] memory rewardTokens)
+        public
+        returns (uint256[] memory)
+    {
         uint256 rewardAmount = 100e18;
 
-        rewardToken.safeTransfer(msg.sender, rewardAmount);
+        uint256[] memory rAmounts = new uint256[](rewardTokens.length);
 
-        return rewardAmount;
+        for (uint256 i = 0; i < rewardTokens.length; i++) {
+            rewardTokens[i].safeTransfer(msg.sender, rewardAmount);
+
+            rAmounts[i] = rewardAmount;
+        }
+
+        return rAmounts;
     }
 }
