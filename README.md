@@ -98,6 +98,7 @@ Deleting data from removeAfterDistribution connected to last distribution index 
 
 
 _CLAIM DISTRIBUTIONS
+
 Getting tokenId (ERC721).
 Starting the cycle for distribution array with the initial index equal to accountOf[tokenId].nextDistributionIndex.
 Calculating splitBuyAmount: _accountOf[tokenId].buyAmount / distributionTokens.length
