@@ -7,7 +7,6 @@ contract FakeUniswapRouter {
 
     function getAmountsOut(uint256 amountIn, address[] calldata path)
         external
-        pure
         returns (uint256[] memory amounts)
     {
         (path);
