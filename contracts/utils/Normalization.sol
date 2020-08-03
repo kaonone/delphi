@@ -8,6 +8,7 @@ import "@openzeppelin/contracts-ethereum-package/contracts/math/SafeMath.sol";
 library Normalization {
     using SafeMath for uint256;
 
+    // decimal  - original decimals
     function normalize(uint256 amount, uint256 decimals)
         internal
         pure
@@ -22,6 +23,7 @@ library Normalization {
         }
     }
 
+    // decimal  - final decimals
     function denormalize(uint256 amount, uint256 decimals)
         internal
         pure

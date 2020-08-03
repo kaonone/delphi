@@ -1,5 +1,6 @@
 pragma solidity ^0.5.12;
 
+import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC721/ERC721Full.sol";
 import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC721/ERC721Burnable.sol";
 import "@openzeppelin/contracts-ethereum-package/contracts/drafts/Counters.sol";
@@ -43,8 +44,9 @@ contract DCAModule is Module, ERC721Full, ERC721Burnable, DCAOperatorRole {
 
     struct TokenData {
         uint256 decimals;
-        address pool;
+        address pool; // Reward
         address protocol;
+        address poolToken;
     }
 
     Distribution[] public distributions;
@@ -55,12 +57,10 @@ contract DCAModule is Module, ERC721Full, ERC721Burnable, DCAOperatorRole {
     uint256 public globalPeriodBuyAmount;
     uint256 public deadline;
     uint256 public protocolMaxFee;
-
-    uint256 public constant FEE_FOUNDATION = 1000;
+    uint256 public feeFoundation;
 
     address public router;
     address public tokenToSell;
-    address public rewardPool;
 
     mapping(uint256 => Account) private _accountOf;
     mapping(uint256 => uint256) public removeAfterDistribution;
@@ -85,6 +85,7 @@ contract DCAModule is Module, ERC721Full, ERC721Burnable, DCAOperatorRole {
         uint256 _tokenToSellDecimals,
         address _tokenToSellPool,
         address _tokenToSellProtocol,
+        address _tokenToSellPoolToken,
         uint256 _strategy,
         address _router,
         address _rewardPool,
@@ -103,7 +104,8 @@ contract DCAModule is Module, ERC721Full, ERC721Burnable, DCAOperatorRole {
         tokenDataOf[_tokenToSell] = TokenData({
             decimals: _tokenToSellDecimals,
             pool: _tokenToSellPool,
-            protocol: _tokenToSellProtocol
+            protocol: _tokenToSellProtocol,
+            poolToken: _tokenToSellPoolToken
         });
 
         strategy = Strategies(_strategy);
@@ -111,6 +113,7 @@ contract DCAModule is Module, ERC721Full, ERC721Burnable, DCAOperatorRole {
         rewardPool = _rewardPool;
         periodTimestamp = _periodTimestamp;
         nextBuyTimestamp = now.add(_periodTimestamp);
+        feeFoundation = 1e18;
     }
 
     /**
@@ -127,7 +130,8 @@ contract DCAModule is Module, ERC721Full, ERC721Burnable, DCAOperatorRole {
         address tokenAddress,
         uint256 decimals,
         address pool,
-        address protocol
+        address protocol,
+        address poolToken
     ) external returns (bool) {
         require(
             (strategy == Strategies.ONE && distributionTokens.length <= 1) ||
@@ -140,7 +144,25 @@ contract DCAModule is Module, ERC721Full, ERC721Burnable, DCAOperatorRole {
         tokenDataOf[tokenAddress] = TokenData({
             decimals: decimals,
             pool: pool,
-            protocol: protocol
+            protocol: protocol,
+            poolToken: poolToken
+        });
+
+        return true;
+    }
+
+    function setRewardToken(
+        address tokenAddress,
+        uint256 decimals,
+        address pool,
+        address protocol,
+        address poolToken
+    ) external returns (bool) {
+        tokenDataOf[tokenAddress] = TokenData({
+            decimals: decimals,
+            pool: pool,
+            protocol: protocol,
+            poolToken: poolToken
         });
 
         return true;
@@ -162,6 +184,79 @@ contract DCAModule is Module, ERC721Full, ERC721Burnable, DCAOperatorRole {
     {
         deadline = newDeadline;
         return true;
+    }
+
+    function setProtocolMaxFee(uint256 maxFee)
+        external
+        onlyDCAOperator
+        returns (bool)
+    {
+        protocolMaxFee = maxFee;
+        return true;
+    }
+
+    function getAccountBalance(uint256 tokenId, address tokenAddress)
+        public
+        view
+        returns (uint256)
+    {
+        return _accountOf[tokenId].balance[tokenAddress];
+    }
+
+    function getAccountBuyAmount(uint256 tokenId)
+        public
+        view
+        returns (uint256)
+    {
+        return _accountOf[tokenId].buyAmount;
+    }
+
+    function getAccountNextDistributionIndex(uint256 tokenId)
+        public
+        view
+        returns (uint256)
+    {
+        return _accountOf[tokenId].nextDistributionIndex;
+    }
+
+    function getAccountLastRemovalPointIndex(uint256 tokenId)
+        public
+        view
+        returns (uint256)
+    {
+        return _accountOf[tokenId].lastRemovalPointIndex;
+    }
+
+    function getDistributionsNumber() public view returns (uint256) {
+        return distributions.length;
+    }
+
+    function getDistributionTokenAddress(uint256 id)
+        public
+        view
+        returns (address)
+    {
+        return distributions[id].tokenAddress;
+    }
+
+    function getDistributionAmountIn(uint256 id) public view returns (uint256) {
+        return distributions[id].amountIn;
+    }
+
+    function getDistributionAmountInOut(uint256 id)
+        public
+        view
+        returns (uint256)
+    {
+        return distributions[id].amountOut;
+    }
+
+    function getTokenIdByAddress(address account)
+        public
+        view
+        returns (uint256)
+    {
+        return _tokensOfOwner(account)[0];
     }
 
     /**
@@ -322,9 +417,12 @@ contract DCAModule is Module, ERC721Full, ERC721Burnable, DCAOperatorRole {
             distributionTokens.length
         );
 
-        _withdrawFromPool(tokenToSell, globalPeriodBuyAmount);
+        uint256 amountIn = _withdrawFromPool(
+            tokenToSell,
+            globalPeriodBuyAmount
+        );
 
-        tokenToSell.safeApprove(router, globalPeriodBuyAmount);
+        tokenToSell.safeApprove(router, amountIn);
 
         for (uint256 i = 0; i < distributionTokens.length; i++) {
             address[] memory path = new address[](2);
@@ -360,9 +458,12 @@ contract DCAModule is Module, ERC721Full, ERC721Burnable, DCAOperatorRole {
         onlyDCAOperator
         returns (uint256[] memory)
     {
-        uint256[] memory rAmounts = ISavingsModule(rewardPool).withdrawReward(
-            rewardTokens
-        );
+        // DIFFERENT REWARD POOLS - STRUCT
+        uint256[] memory rAmounts = ISavingsModule(
+            tokenDataOf[rewardTokens[0]]
+                .pool
+        )
+            .withdrawReward(rewardTokens);
 
         for (uint256 i = 0; i < rewardTokens.length; i++) {
             distributions.push(
@@ -401,6 +502,17 @@ contract DCAModule is Module, ERC721Full, ERC721Burnable, DCAOperatorRole {
             i++
         ) {
             if (distributions[i].tokenAddress == tokenToSell) {
+                uint256 amount = splitBuyAmount
+                    .mul(distributions[i].amountOut)
+                    .div(distributions[i].amountIn);
+
+                _accountOf[tokenId].balance[distributions[i]
+                    .tokenAddress] = _accountOf[tokenId]
+                    .balance[distributions[i].tokenAddress]
+                    .add(amount);
+
+                _accountOf[tokenId].nextDistributionIndex = i.add(0x0001);
+
                 removeAfterDistribution[_accountOf[tokenId]
                     .lastRemovalPointIndex] = removeAfterDistribution[_accountOf[tokenId]
                     .lastRemovalPointIndex]
@@ -413,7 +525,7 @@ contract DCAModule is Module, ERC721Full, ERC721Burnable, DCAOperatorRole {
                         _accountOf[tokenId].buyAmount
                     )
                 )
-                    .sub(1);
+                    .sub(0x0001);
 
                 removeAfterDistribution[removalPoint] = removeAfterDistribution[removalPoint]
                     .add(_accountOf[tokenId].buyAmount);
@@ -475,16 +587,6 @@ contract DCAModule is Module, ERC721Full, ERC721Burnable, DCAOperatorRole {
 
         _depositToPool(path[1], amounts[1]);
 
-        // PoolToken(<ADDRESS>).claimDistributions(address(this));
-
-        // distributions.push(
-        //     Distribution({
-        //         tokenAddress: tokenTosell,
-        //         amountIn: globalPeriodByAmount,
-        //         amountOut: ?
-        //     })
-        // );
-
         return true;
     }
 
@@ -506,29 +608,60 @@ contract DCAModule is Module, ERC721Full, ERC721Burnable, DCAOperatorRole {
         );
     }
 
-    function _withdrawFromPool(address token, uint256 amount) private {
-        uint256 nAmount = amount.normalize(18);
+    function _withdrawFromPool(address token, uint256 amount)
+        private
+        returns (uint256)
+    {
+        uint256 prevBalance = IERC20(tokenDataOf[token].poolToken).balanceOf(
+            address(this)
+        );
+
+        uint256 nAmount = amount.normalize(tokenDataOf[token].decimals);
 
         // DIFFERENT PROTOCOLS
         uint256 nAmountOut = ISavingsModule(tokenDataOf[token].pool).withdraw(
             tokenDataOf[token].protocol,
             token,
             amount,
-            // NORMALIZE + FEE
-            nAmount.add(nAmount.mul(protocolMaxFee).div(FEE_FOUNDATION))
+            // NORMALIZE + FEE; fee 1e16, foundation 1e18
+            nAmount.add(nAmount.mul(protocolMaxFee).div(feeFoundation))
         );
+
+        uint256 dAmountOut = nAmountOut.denormalize(
+            tokenDataOf[token].decimals
+        );
+
+        uint256 yield = _calculateYield(
+            tokenDataOf[token].poolToken,
+            prevBalance,
+            nAmountOut
+        );
+
+        if (yield > 0) {
+            distributions.push(
+                Distribution({
+                    tokenAddress: token,
+                    amountIn: globalPeriodBuyAmount,
+                    amountOut: yield.denormalize(tokenDataOf[token].decimals)
+                })
+            );
+        }
 
         // DENORMALIZE nAmountOut
-        token.safeTransfer(
-            _msgSender(),
-            nAmountOut.denormalize(tokenDataOf[token].decimals)
-        );
+        token.safeTransfer(_msgSender(), dAmountOut);
+
+        return dAmountOut;
     }
 
-    // function calculateYield(address poolToken, uint256 prevBalance)
-    //     internal
-    //     returns (uint256)
-    // {
-    //     return IERC20(poolToken).balanceOf(address(this)).sub(prevBalance);
-    // }
+    // MAPPING YIELD BALANCES
+    function _calculateYield(
+        address poolToken,
+        uint256 prevBalance,
+        uint256 amountIn
+    ) internal view returns (uint256) {
+        return
+            IERC20(poolToken).balanceOf(address(this)).sub(prevBalance).sub(
+                amountIn
+            );
+    }
 }

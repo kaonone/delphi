@@ -57,6 +57,7 @@ declare global {
         name: "IRAYPortfolioManager"
       ): TruffleContracts.IRAYPortfolioManagerContract;
       require(name: "IRAYStorage"): TruffleContracts.IRAYStorageContract;
+      require(name: "ISavingsModule"): TruffleContracts.ISavingsModuleContract;
       require(
         name: "ITestnetCompoundDAI"
       ): TruffleContracts.ITestnetCompoundDAIContract;
