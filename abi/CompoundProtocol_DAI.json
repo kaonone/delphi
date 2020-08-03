@@ -58,6 +58,25 @@
     "type": "event"
   },
   {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "token",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
+      }
+    ],
+    "name": "RewardTokenClaimed",
+    "type": "event"
+  },
+  {
     "constant": false,
     "inputs": [
       {
@@ -127,6 +146,26 @@
     ],
     "payable": false,
     "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [],
+    "name": "claimRewards",
+    "outputs": [
+      {
+        "internalType": "address[]",
+        "name": "tokens",
+        "type": "address[]"
+      },
+      {
+        "internalType": "uint256[]",
+        "name": "amounts",
+        "type": "uint256[]"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "nonpayable",
     "type": "function"
   },
   {
@@ -227,6 +266,27 @@
     "type": "function"
   },
   {
+    "constant": true,
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "token",
+        "type": "address"
+      }
+    ],
+    "name": "isSupportedRewardToken",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "constant": false,
     "inputs": [],
     "name": "normalizedBalance",
@@ -302,6 +362,21 @@
     "outputs": [],
     "payable": false,
     "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [],
+    "name": "supportedRewardTokens",
+    "outputs": [
+      {
+        "internalType": "address[]",
+        "name": "",
+        "type": "address[]"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
     "type": "function"
   },
   {
@@ -399,23 +474,22 @@
     "inputs": [
       {
         "internalType": "address",
-        "name": "to",
+        "name": "token",
         "type": "address"
-      }
-    ],
-    "name": "withdrawRewards",
-    "outputs": [
-      {
-        "internalType": "address[]",
-        "name": "tokens",
-        "type": "address[]"
       },
       {
-        "internalType": "uint256[]",
-        "name": "amounts",
-        "type": "uint256[]"
+        "internalType": "address",
+        "name": "user",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
       }
     ],
+    "name": "withdrawReward",
+    "outputs": [],
     "payable": false,
     "stateMutability": "nonpayable",
     "type": "function"
@@ -434,7 +508,7 @@
     "inputs": [
       {
         "internalType": "address",
-        "name": "sender",
+        "name": "_pool",
         "type": "address"
       }
     ],
