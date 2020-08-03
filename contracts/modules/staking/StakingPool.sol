@@ -4,13 +4,13 @@ import "openzeppelin-solidity/contracts/token/ERC20/ERC20.sol";
 import "openzeppelin-solidity/contracts/math/SafeMath.sol";
 
 import "./IERC900.sol";
-
+import "../../common/Module.sol";
 
 /**
  * @title ERC900 Simple Staking Interface basic implementation
  * @dev See https://github.com/ethereum/EIPs/blob/master/EIPS/eip-900.md
  */
-contract StakingPool is IERC900 {
+contract StakingPool is is Module, IERC900 {
   // @TODO: deploy this separately so we don't have to deploy it multiple times for each contract
   using SafeMath for uint256;
 
@@ -67,13 +67,11 @@ contract StakingPool is IERC900 {
     _;
   }
 
-  /**
-   * @dev Constructor function
-   * @param _stakingToken ERC20 The address of the token contract used for staking
-   */
-  constructor(ERC20 _stakingToken) public {
-    stakingToken = _stakingToken;
-  }
+
+  function initialize(address _pool, ERC20 _stakingToken) public initializer {
+        stakingToken = _stakingToken;
+        Module.initialize(_pool);
+    }
 
   /**
    * @dev Returns the timestamps for when active personal stakes for an address will unlock
@@ -122,7 +120,7 @@ contract StakingPool is IERC900 {
    */
   function stake(uint256 _amount, bytes _data) public {
     createStake(
-      msg.sender,
+      _msgSender(),
       _amount,
       defaultLockInDuration,
       _data);
@@ -239,14 +237,14 @@ contract StakingPool is IERC900 {
     bytes _data
   )
     internal
-    canStake(msg.sender, _amount)
+    canStake(_msgSender(), _amount)
   {
-    if (!stakeHolders[msg.sender].exists) {
-      stakeHolders[msg.sender].exists = true;
+    if (!stakeHolders[_msgSender()].exists) {
+      stakeHolders[_msgSender()].exists = true;
     }
 
     stakeHolders[_address].totalStakedFor = stakeHolders[_address].totalStakedFor.add(_amount);
-    stakeHolders[msg.sender].personalStakes.push(
+    stakeHolders[_msgSender()].personalStakes.push(
       Stake(
         block.timestamp.add(_lockInDuration),
         _amount,
@@ -261,7 +259,7 @@ contract StakingPool is IERC900 {
   }
 
   /**
-   * @dev Helper function to withdraw stakes for the msg.sender
+   * @dev Helper function to withdraw stakes for the _msgSender()
    * @param _amount uint256 The amount to withdraw. MUST match the stake amount for the
    *  stake at personalStakeIndex.
    * @param _data bytes optional data to include in the Unstake event
@@ -272,7 +270,7 @@ contract StakingPool is IERC900 {
   )
     internal
   {
-    Stake storage personalStake = stakeHolders[msg.sender].personalStakes[stakeHolders[msg.sender].personalStakeIndex];
+    Stake storage personalStake = stakeHolders[_msgSender()].personalStakes[stakeHolders[_msgSender()].personalStakeIndex];
 
     // Check that the current stake has unlocked & matches the unstake amount
     require(
@@ -287,14 +285,14 @@ contract StakingPool is IERC900 {
     // Notice that we are using transfer instead of transferFrom here, so
     //  no approval is needed beforehand.
     require(
-      stakingToken.transfer(msg.sender, _amount),
+      stakingToken.transfer(_msgSender(), _amount),
       "Unable to withdraw stake");
 
     stakeHolders[personalStake.stakedFor].totalStakedFor = stakeHolders[personalStake.stakedFor]
       .totalStakedFor.sub(personalStake.actualAmount);
 
     personalStake.actualAmount = 0;
-    stakeHolders[msg.sender].personalStakeIndex++;
+    stakeHolders[_msgSender()].personalStakeIndex++;
 
     emit Unstaked(
       personalStake.stakedFor,
