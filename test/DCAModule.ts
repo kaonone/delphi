@@ -39,9 +39,9 @@ contract("DCAModule", ([owner, bot, acc1, acc2]) => {
   let wethInstance: FreeERC20Instance;
 
   beforeEach(async () => {
-    usdcInstance = await FreeERC20.new();
-    wbtcInstance = await FreeERC20.new();
-    wethInstance = await FreeERC20.new();
+    usdcInstance = await FreeERC20.new("Coinbase USD", "USDC");
+    wbtcInstance = await FreeERC20.new("Wrapped BTC", "BTC");
+    wethInstance = await FreeERC20.new("Wrapped ETH", "WETH");
 
     fakeUniswapRouterInstance = await FakeUniswapRouter.new();
 

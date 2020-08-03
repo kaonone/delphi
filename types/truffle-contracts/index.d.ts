@@ -78,6 +78,19 @@ export interface ERC721MetadataContract
   "new"(meta?: Truffle.TransactionDetails): Promise<ERC721MetadataInstance>;
 }
 
+export interface FakeSavingsModuleContract
+  extends Truffle.Contract<FakeSavingsModuleInstance> {
+  "new"(
+    _usdc: string | BigNumber,
+    _wbtc: string | BigNumber,
+    _weth: string | BigNumber,
+    _usdcPool: string | BigNumber,
+    _wbtcPool: string | BigNumber,
+    _wethPool: string | BigNumber,
+    meta?: Truffle.TransactionDetails
+  ): Promise<FakeSavingsModuleInstance>;
+}
+
 export interface FakeUniswapRouterContract
   extends Truffle.Contract<FakeUniswapRouterInstance> {
   "new"(meta?: Truffle.TransactionDetails): Promise<FakeUniswapRouterInstance>;
@@ -151,6 +164,11 @@ export interface IRAYPortfolioManagerContract
 export interface IRAYStorageContract
   extends Truffle.Contract<IRAYStorageInstance> {
   "new"(meta?: Truffle.TransactionDetails): Promise<IRAYStorageInstance>;
+}
+
+export interface ISavingsModuleContract
+  extends Truffle.Contract<ISavingsModuleInstance> {
+  "new"(meta?: Truffle.TransactionDetails): Promise<ISavingsModuleInstance>;
 }
 
 export interface ITestnetCompoundDAIContract
@@ -2159,6 +2177,90 @@ export interface ERC721MetadataInstance extends Truffle.ContractInstance {
   };
 }
 
+export interface FakeSavingsModuleInstance extends Truffle.ContractInstance {
+  deposit: {
+    (
+      _protocol: string | BigNumber,
+      _tokens: (string | BigNumber)[],
+      _dnAmounts: (number | BigNumber | string)[],
+      txDetails?: Truffle.TransactionDetails
+    ): Promise<Truffle.TransactionResponse>;
+    call(
+      _protocol: string | BigNumber,
+      _tokens: (string | BigNumber)[],
+      _dnAmounts: (number | BigNumber | string)[],
+      txDetails?: Truffle.TransactionDetails
+    ): Promise<BigNumber[]>;
+    sendTransaction(
+      _protocol: string | BigNumber,
+      _tokens: (string | BigNumber)[],
+      _dnAmounts: (number | BigNumber | string)[],
+      txDetails?: Truffle.TransactionDetails
+    ): Promise<string>;
+    estimateGas(
+      _protocol: string | BigNumber,
+      _tokens: (string | BigNumber)[],
+      _dnAmounts: (number | BigNumber | string)[],
+      txDetails?: Truffle.TransactionDetails
+    ): Promise<number>;
+  };
+
+  tokens(
+    arg0: string | BigNumber,
+    txDetails?: Truffle.TransactionDetails
+  ): Promise<[string, string]>;
+
+  withdraw: {
+    (
+      _protocol: string | BigNumber,
+      token: string | BigNumber,
+      dnAmount: number | BigNumber | string,
+      maxNAmount: number | BigNumber | string,
+      txDetails?: Truffle.TransactionDetails
+    ): Promise<Truffle.TransactionResponse>;
+    call(
+      _protocol: string | BigNumber,
+      token: string | BigNumber,
+      dnAmount: number | BigNumber | string,
+      maxNAmount: number | BigNumber | string,
+      txDetails?: Truffle.TransactionDetails
+    ): Promise<BigNumber>;
+    sendTransaction(
+      _protocol: string | BigNumber,
+      token: string | BigNumber,
+      dnAmount: number | BigNumber | string,
+      maxNAmount: number | BigNumber | string,
+      txDetails?: Truffle.TransactionDetails
+    ): Promise<string>;
+    estimateGas(
+      _protocol: string | BigNumber,
+      token: string | BigNumber,
+      dnAmount: number | BigNumber | string,
+      maxNAmount: number | BigNumber | string,
+      txDetails?: Truffle.TransactionDetails
+    ): Promise<number>;
+  };
+
+  withdrawReward: {
+    (
+      rewardTokens: (string | BigNumber)[],
+      txDetails?: Truffle.TransactionDetails
+    ): Promise<Truffle.TransactionResponse>;
+    call(
+      rewardTokens: (string | BigNumber)[],
+      txDetails?: Truffle.TransactionDetails
+    ): Promise<BigNumber[]>;
+    sendTransaction(
+      rewardTokens: (string | BigNumber)[],
+      txDetails?: Truffle.TransactionDetails
+    ): Promise<string>;
+    estimateGas(
+      rewardTokens: (string | BigNumber)[],
+      txDetails?: Truffle.TransactionDetails
+    ): Promise<number>;
+  };
+}
+
 export interface FakeUniswapRouterInstance extends Truffle.ContractInstance {
   getAmountsOut(
     amountIn: number | BigNumber | string,
@@ -3557,6 +3659,85 @@ export interface IRAYStorageInstance extends Truffle.ContractInstance {
     rayTokenId: string | BigNumber,
     txDetails?: Truffle.TransactionDetails
   ): Promise<BigNumber>;
+}
+
+export interface ISavingsModuleInstance extends Truffle.ContractInstance {
+  deposit: {
+    (
+      _protocol: string | BigNumber,
+      _tokens: (string | BigNumber)[],
+      _dnAmounts: (number | BigNumber | string)[],
+      txDetails?: Truffle.TransactionDetails
+    ): Promise<Truffle.TransactionResponse>;
+    call(
+      _protocol: string | BigNumber,
+      _tokens: (string | BigNumber)[],
+      _dnAmounts: (number | BigNumber | string)[],
+      txDetails?: Truffle.TransactionDetails
+    ): Promise<BigNumber>;
+    sendTransaction(
+      _protocol: string | BigNumber,
+      _tokens: (string | BigNumber)[],
+      _dnAmounts: (number | BigNumber | string)[],
+      txDetails?: Truffle.TransactionDetails
+    ): Promise<string>;
+    estimateGas(
+      _protocol: string | BigNumber,
+      _tokens: (string | BigNumber)[],
+      _dnAmounts: (number | BigNumber | string)[],
+      txDetails?: Truffle.TransactionDetails
+    ): Promise<number>;
+  };
+
+  withdraw: {
+    (
+      _protocol: string | BigNumber,
+      token: string | BigNumber,
+      dnAmount: number | BigNumber | string,
+      maxNAmount: number | BigNumber | string,
+      txDetails?: Truffle.TransactionDetails
+    ): Promise<Truffle.TransactionResponse>;
+    call(
+      _protocol: string | BigNumber,
+      token: string | BigNumber,
+      dnAmount: number | BigNumber | string,
+      maxNAmount: number | BigNumber | string,
+      txDetails?: Truffle.TransactionDetails
+    ): Promise<BigNumber>;
+    sendTransaction(
+      _protocol: string | BigNumber,
+      token: string | BigNumber,
+      dnAmount: number | BigNumber | string,
+      maxNAmount: number | BigNumber | string,
+      txDetails?: Truffle.TransactionDetails
+    ): Promise<string>;
+    estimateGas(
+      _protocol: string | BigNumber,
+      token: string | BigNumber,
+      dnAmount: number | BigNumber | string,
+      maxNAmount: number | BigNumber | string,
+      txDetails?: Truffle.TransactionDetails
+    ): Promise<number>;
+  };
+
+  withdrawReward: {
+    (
+      rewardTokens: (string | BigNumber)[],
+      txDetails?: Truffle.TransactionDetails
+    ): Promise<Truffle.TransactionResponse>;
+    call(
+      rewardTokens: (string | BigNumber)[],
+      txDetails?: Truffle.TransactionDetails
+    ): Promise<BigNumber[]>;
+    sendTransaction(
+      rewardTokens: (string | BigNumber)[],
+      txDetails?: Truffle.TransactionDetails
+    ): Promise<string>;
+    estimateGas(
+      rewardTokens: (string | BigNumber)[],
+      txDetails?: Truffle.TransactionDetails
+    ): Promise<number>;
+  };
 }
 
 export interface ITestnetCompoundDAIInstance extends Truffle.ContractInstance {
