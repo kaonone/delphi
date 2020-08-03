@@ -1,7 +1,7 @@
 pragma solidity ^0.5.12;
 
-import "openzeppelin-solidity/contracts/token/ERC20/ERC20.sol";
-import "openzeppelin-solidity/contracts/math/SafeMath.sol";
+import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/ERC20.sol";
+import "@openzeppelin/contracts-ethereum-package/contracts/math/SafeMath.sol";
 
 import "./IERC900.sol";
 import "../../common/Module.sol";
@@ -10,7 +10,7 @@ import "../../common/Module.sol";
  * @title ERC900 Simple Staking Interface basic implementation
  * @dev See https://github.com/ethereum/EIPs/blob/master/EIPS/eip-900.md
  */
-contract StakingPool is is Module, IERC900 {
+contract StakingPool is Module, IERC900 {
   // @TODO: deploy this separately so we don't have to deploy it multiple times for each contract
   using SafeMath for uint256;
 
@@ -61,7 +61,7 @@ contract StakingPool is is Module, IERC900 {
    */
   modifier canStake(address _address, uint256 _amount) {
     require(
-      stakingToken.transferFrom(_address, this, _amount),
+      stakingToken.transferFrom(_address, address(this), _amount),
       "Stake required");
 
     _;
@@ -79,7 +79,7 @@ contract StakingPool is is Module, IERC900 {
    * @param _address address that created the stakes
    * @return uint256[] array of timestamps
    */
-  function getPersonalStakeUnlockedTimestamps(address _address) external view returns (uint256[]) {
+  function getPersonalStakeUnlockedTimestamps(address _address) external view returns (uint256[] memory) {
     uint256[] memory timestamps;
     (timestamps,,) = getPersonalStakes(_address);
 
@@ -92,7 +92,7 @@ contract StakingPool is is Module, IERC900 {
    * @param _address address that created the stakes
    * @return uint256[] array of actualAmounts
    */
-  function getPersonalStakeActualAmounts(address _address) external view returns (uint256[]) {
+  function getPersonalStakeActualAmounts(address _address) external view returns (uint256[] memory) {
     uint256[] memory actualAmounts;
     (,actualAmounts,) = getPersonalStakes(_address);
 
@@ -105,7 +105,7 @@ contract StakingPool is is Module, IERC900 {
    * @param _address address that created the stakes
    * @return address[] array of amounts
    */
-  function getPersonalStakeForAddresses(address _address) external view returns (address[]) {
+  function getPersonalStakeForAddresses(address _address) external view returns (address[] memory) {
     address[] memory stakedFor;
     (,,stakedFor) = getPersonalStakes(_address);
 
@@ -118,7 +118,7 @@ contract StakingPool is is Module, IERC900 {
    * @param _amount uint256 the amount of tokens to stake
    * @param _data bytes optional data to include in the Stake event
    */
-  function stake(uint256 _amount, bytes _data) public {
+  function stake(uint256 _amount, bytes memory _data) public {
     createStake(
       _msgSender(),
       _amount,
@@ -133,7 +133,7 @@ contract StakingPool is is Module, IERC900 {
    * @param _amount uint256 the amount of tokens to stake
    * @param _data bytes optional data to include in the Stake event
    */
-  function stakeFor(address _user, uint256 _amount, bytes _data) public {
+  function stakeFor(address _user, uint256 _amount, bytes memory _data) public {
     createStake(
       _user,
       _amount,
@@ -150,7 +150,7 @@ contract StakingPool is is Module, IERC900 {
    * @param _amount uint256 the amount of tokens to unstake
    * @param _data bytes optional data to include in the Unstake event
    */
-  function unstake(uint256 _amount, bytes _data) public {
+  function unstake(uint256 _amount, bytes memory _data) public {
     withdrawStake(
       _amount,
       _data);
@@ -170,7 +170,7 @@ contract StakingPool is is Module, IERC900 {
    * @return uint256 The number of tokens staked in the contract
    */
   function totalStaked() public view returns (uint256) {
-    return stakingToken.balanceOf(this);
+    return stakingToken.balanceOf(address(this));
   }
 
   /**
@@ -178,7 +178,7 @@ contract StakingPool is is Module, IERC900 {
    * @return address The address of the ERC20 token used for staking
    */
   function token() public view returns (address) {
-    return stakingToken;
+    return address(stakingToken);
   }
 
   /**
@@ -200,7 +200,7 @@ contract StakingPool is is Module, IERC900 {
     address _address
   )
     public view
-    returns(uint256[], uint256[], address[])
+    returns(uint256[] memory, uint256[] memory, address[] memory)
   {
     StakeContract storage stakeContract = stakeHolders[_address];
 
@@ -234,8 +234,7 @@ contract StakingPool is is Module, IERC900 {
     address _address,
     uint256 _amount,
     uint256 _lockInDuration,
-    bytes _data
-  )
+    bytes memory _data)
     internal
     canStake(_msgSender(), _amount)
   {
@@ -266,8 +265,7 @@ contract StakingPool is is Module, IERC900 {
    */
   function withdrawStake(
     uint256 _amount,
-    bytes _data
-  )
+    bytes memory _data)
     internal
   {
     Stake storage personalStake = stakeHolders[_msgSender()].personalStakes[stakeHolders[_msgSender()].personalStakeIndex];
