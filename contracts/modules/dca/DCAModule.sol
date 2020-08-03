@@ -658,7 +658,7 @@ contract DCAModule is Module, ERC721Full, ERC721Burnable, DCAOperatorRole {
         address poolToken,
         uint256 prevBalance,
         uint256 amountIn
-    ) internal view returns (uint256) {
+    ) private view returns (uint256) {
         return
             IERC20(poolToken).balanceOf(address(this)).sub(prevBalance).sub(
                 amountIn
