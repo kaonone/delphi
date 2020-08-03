@@ -6,11 +6,12 @@ import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/ERC20Mint
 import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/ERC20Burnable.sol";
 import "@openzeppelin/contracts-ethereum-package/contracts/math/SafeMath.sol";
 import "../interfaces/defi/IYErc20.sol";
+import "../interfaces/defi/ICurveFiSwap.sol";
 import "../interfaces/defi/ICurveFiSwap_Y.sol";
 import "../common/Base.sol";
 import "./CurveFiTokenStub_Y.sol";
 
-contract CurveFiSwapStub_Y is Base, ICurveFiSwap_Y {
+contract CurveFiSwapStub_Y is Base, ICurveFiSwap, ICurveFiSwap_Y {
     using SafeMath for uint256;
     uint256 public constant N_COINS = 4;
     uint256 constant MAX_EXCHANGE_FEE = 0.05*1e18;
