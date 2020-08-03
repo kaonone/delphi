@@ -1,21 +1,24 @@
 pragma solidity ^0.5.12;
 
-/**
- * Interface for special functions of testnet DAI used by Compound protocol
- * Rinkeby Compound DAI: 0x5592ec0cfb4dbc12d3ab100b257153436a1f0fea
- */
 //solhint-disable func-order
-interface ITestnetCompoundDAI {
-    /**
-     * @notice Mints new Comound DAI to recipient
-     */
-    function allocateTo(address recipient, uint256 value) external;
+contract IYErc20 { 
 
-    // ERC20
+    //ERC20 functions
     function totalSupply() external view returns (uint256);
     function balanceOf(address account) external view returns (uint256);
     function transfer(address recipient, uint256 amount) external returns (bool);
     function allowance(address owner, address spender) external view returns (uint256);
     function approve(address spender, uint256 amount) external returns (bool);
     function transferFrom(address sender, address recipient, uint256 amount) external returns (bool);
+    function name() external view returns (string memory);
+    function symbol() external view returns (string memory);
+    function decimals() external view returns (uint8);
+
+    //yToken functions
+    function deposit(uint256 amount) external;
+    function withdraw(uint256 shares) external;
+    function getPricePerFullShare() external view returns (uint256);
+
+    function token() external returns(address);
+
 }
