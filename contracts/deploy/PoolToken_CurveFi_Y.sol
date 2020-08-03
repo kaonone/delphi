@@ -6,8 +6,8 @@ contract PoolToken_CurveFi_Y is PoolToken {
     function initialize(address _pool) public initializer {
         PoolToken.initialize(
             _pool, 
-            "Akropolis Delpi Savings - CurveFi - yDAI/yUSDC/yUSDT/yTUSD",
-            "ADST-CF-Y"
+            "Delphi Curve yPool",
+            "dyPool"
         );
     }    
 }
