@@ -9,13 +9,12 @@ import "../../interfaces/defi/IDefiProtocol.sol";
 import "../../interfaces/defi/IRAYStorage.sol";
 import "../../interfaces/defi/IRAYPortfolioManager.sol";
 import "../../interfaces/defi/IRAYNAVCalculator.sol";
-import "../../common/Module.sol";
-import "./DefiOperatorRole.sol";
+import "./ProtocolBase.sol";
 
 /**
  * RAY Protocol support module which works with only one base token
  */
-contract RAYProtocol is Module, DefiOperatorRole, IERC721Receiver, IDefiProtocol {
+contract RAYProtocol is ProtocolBase {
     bytes32 internal constant PORTFOLIO_MANAGER_CONTRACT = keccak256("PortfolioManagerContract");
     bytes32 internal constant NAV_CALCULATOR_CONTRACT = keccak256("NAVCalculatorContract");
     bytes32 internal constant RAY_TOKEN_CONTRACT = keccak256("RAYTokenContract");
@@ -31,8 +30,7 @@ contract RAYProtocol is Module, DefiOperatorRole, IERC721Receiver, IDefiProtocol
     bytes32 rayTokenId;
 
     function initialize(address _pool, address _token, bytes32 _portfolioId) public initializer {
-        Module.initialize(_pool);
-        DefiOperatorRole.initialize(_msgSender());
+        ProtocolBase.initialize(_pool);
         baseToken = IERC20(_token);
         portfolioId = _portfolioId;
         decimals = ERC20Detailed(_token).decimals();
@@ -41,7 +39,7 @@ contract RAYProtocol is Module, DefiOperatorRole, IERC721Receiver, IDefiProtocol
         IERC20(_token).safeApprove(address(pm), MAX_UINT256);
     }
 
-    function onERC721Received(address, address, uint256, bytes memory) public returns (bytes4) {
+    function onERC721Received(address, address, uint256, bytes memory) public view returns (bytes4) {
         address rayTokenContract = rayStorage().getContractAddress(RAY_TOKEN_CONTRACT);
         require(_msgSender() == rayTokenContract, "RAYModule: only accept RAY Token transfers");
         return ERC721_RECEIVER;
@@ -74,11 +72,6 @@ contract RAYProtocol is Module, DefiOperatorRole, IERC721Receiver, IDefiProtocol
         IERC20(baseToken).safeTransfer(beneficiary, amounts[0]);
     }
 
-    function withdrawRewards(address) external returns(address[] memory tokens, uint256[] memory amounts){
-        tokens = new address[](0);
-        amounts = new uint256[](0);
-    }
-
     function balanceOf(address token) public returns(uint256) {
         if (token != address(baseToken)) return 0;
         if (rayTokenId == 0x0) return 0;
@@ -108,6 +101,19 @@ contract RAYProtocol is Module, DefiOperatorRole, IERC721Receiver, IDefiProtocol
 
     function supportedTokensCount() public view returns(uint256) {
         return 1;
+    }
+
+    function supportedRewardTokens() public view returns(address[] memory) {
+        address[] memory rtokens = new address[](0);
+        return rtokens;
+    }
+
+    function isSupportedRewardToken(address) public view returns(bool) {
+        return false;
+    }
+
+    function cliamRewardsFromProtocol() internal {
+        this; //do nothing
     }
 
     function normalizeAmount(address, uint256 amount) internal view returns(uint256) {

@@ -5,6 +5,7 @@ import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/SafeERC20
 import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/IERC20.sol";
 import "../../common/Base.sol";
 import "../../interfaces/token/IPoolTokenBalanceChangeRecipient.sol";
+import "../../interfaces/defi/IDefiProtocol.sol";
 import "../token/PoolToken.sol";
 
 contract RewardDistributions is Base, IPoolTokenBalanceChangeRecipient {
@@ -18,17 +19,25 @@ contract RewardDistributions is Base, IPoolTokenBalanceChangeRecipient {
         address poolToken;                  // PoolToken which holders will receive reward
         uint256 totalShares;                // Total shares of PoolToken participating in this distribution
         address[] rewardTokens;             // List of reward tokens being distributed 
-        mapping(address=>uint256) amounts;  // Maps address of reward token to amount beeing distributed
+        mapping(address=>uint256) amounts; 
     }
 
+    struct UserProtocolRewards {
+        mapping(address=>uint256) amounts;  // Maps address of reward token to amount beeing distributed
+    }
     struct RewardBalance {
         uint256 nextDistribution;
         mapping(address => uint256) shares;     // Maps PoolToken to amount of user shares participating in distributions
-        mapping(address => uint256) rewards;    // Maps Reward tokens to user balances of this reward tokens
+        mapping(address => UserProtocolRewards) rewardsByProtocol; //Maps PoolToken to ProtocolRewards struct (map of reward tokens to their balances);
     }
 
     RewardTokenDistribution[] rewardDistributions;
     mapping(address=>RewardBalance) rewardBalances; //Mapping users to their RewardBalance
+
+    function poolTokenByProtocol(address _protocol) public view returns(address);
+    function protocolByPoolToken(address _protocol) public view returns(address);
+    function registeredPoolTokens() public view returns(address[] memory);
+    function supportedRewardTokens() public view returns(address[] memory);
 
     function poolTokenBalanceChanged(address user) public {
         address token = _msgSender();
@@ -38,39 +47,63 @@ contract RewardDistributions is Base, IPoolTokenBalanceChangeRecipient {
         rewardBalances[user].shares[token] = newAmount;
     }
 
+    function withdrawReward() public returns(uint256[] memory){
+        return withdrawReward(supportedRewardTokens());
+    }
+
     /**
      * @notice Withdraw reward tokens for user
      * @param rewardTokens Array of tokens to withdraw
      */
-    function withdrawReward(address[] memory rewardTokens) public {
+    function withdrawReward(address[] memory rewardTokens) public returns(uint256[] memory){
         address user = _msgSender();
+        uint256[] memory rAmounts = new uint256[](rewardTokens.length);
         updateRewardBalance(user);
         for(uint256 i=0; i < rewardTokens.length; i++) {
-            _withdrawReward(user, rewardTokens[i]);
+            rAmounts[i] = _withdrawReward(user, rewardTokens[i]);
         }
+        return rAmounts;
     }
 
     /**
      * @notice Withdraw reward tokens for user
      * @param rewardToken Token to withdraw
      */
-    function withdrawReward(address rewardToken) public {
+    function withdrawReward(address rewardToken) public returns(uint256){
         address user = _msgSender();
         updateRewardBalance(user);
-        _withdrawReward(user, rewardToken);
+        return _withdrawReward(user, rewardToken);
+    }
+
+    function withdrawReward(address poolToken, address rewardToken) public returns(uint256){
+        address user = _msgSender();
+        updateRewardBalance(user);
+        return _withdrawReward(user, poolToken, rewardToken);
     }
 
     function rewardBalanceOf(address user, address[] memory rewardTokens) public view returns(uint256[] memory) {
         uint256[] memory amounts = new uint256[](rewardTokens.length);
+        address[] memory poolTokens = registeredPoolTokens();
         for(uint256 i=0; i < rewardTokens.length; i++) {
-            amounts[i] = rewardBalanceOf(user, rewardTokens[i]);
+            for(uint256 j=0; j < poolTokens.length; i++) {
+                amounts[i] = amounts[i].add(rewardBalanceOf(user, poolTokens[j], rewardTokens[i]));
+            }
         }
         return amounts;
     }
 
-    function rewardBalanceOf(address user, address rewardToken) public view returns(uint256 amounts) {
+    function rewardBalanceOf(address user, address poolToken, address[] memory rewardTokens) public view returns(uint256[] memory) {
+        uint256[] memory amounts = new uint256[](rewardTokens.length);
+        for(uint256 i=0; i < rewardTokens.length; i++) {
+            amounts[i] = rewardBalanceOf(user, poolToken, rewardTokens[i]);
+        }
+        return amounts;
+    }
+
+    function rewardBalanceOf(address user, address poolToken, address rewardToken) public view returns(uint256 amounts) {
         RewardBalance storage rb = rewardBalances[user];
-        uint256 balance = rb.rewards[rewardToken];
+        UserProtocolRewards storage upr = rb.rewardsByProtocol[poolToken];
+        uint256 balance = upr.amounts[rewardToken];
         uint256 next = rb.nextDistribution;
         while (next < rewardDistributions.length) {
             RewardTokenDistribution storage d = rewardDistributions[next];
@@ -100,6 +133,13 @@ contract RewardDistributions is Base, IPoolTokenBalanceChangeRecipient {
         _updateRewardBalance(user, toDistribution);
     }
 
+    function distributeReward(address _protocol) internal {
+        (address[] memory _tokens, uint256[] memory _amounts) = IDefiProtocol(_protocol).claimRewards();
+        if((_tokens.length > 0) && _amounts[0] > 0) {
+            address poolToken = poolTokenByProtocol(_protocol);
+            distributeReward(poolToken, _tokens, _amounts);
+        }
+    }
 
     /**
     * @notice Create reward distribution
@@ -112,18 +152,38 @@ contract RewardDistributions is Base, IPoolTokenBalanceChangeRecipient {
         }));
         uint256 idx = rewardDistributions.length - 1;
         RewardTokenDistribution storage rd = rewardDistributions[idx];
-        for(uint256 i=0; i < rewardTokens.length; i++) {
+        for(uint256 i = 0; i < rewardTokens.length; i++) {
             rd.amounts[rewardTokens[i]] = amounts[i];  
             emit RewardDistribution(poolToken, rewardTokens[i], amounts[i], rd.totalShares);
         }
     }
 
-    function _withdrawReward(address user, address rewardToken) internal {
-        uint256 amount = rewardBalances[user].rewards[rewardToken];
+    function _withdrawReward(address user, address rewardToken) internal returns(uint256) {
+        address[] memory poolTokens = registeredPoolTokens();
+        uint256 totalAmount;
+        for(uint256 i=0; i < poolTokens.length; i++) {
+            address poolToken = poolTokens[i];
+            uint256 amount = rewardBalances[user].rewardsByProtocol[poolToken].amounts[rewardToken];
+            if(amount > 0){
+                totalAmount = totalAmount.add(amount);
+                rewardBalances[user].rewardsByProtocol[poolToken].amounts[rewardToken] = 0;
+                IDefiProtocol protocol = IDefiProtocol(protocolByPoolToken(poolToken));
+                protocol.withdrawReward(rewardToken, user, totalAmount);
+            }
+        }
+        require(totalAmount > 0, "RewardDistributions: nothing to withdraw");
+        emit RewardWithdraw(user, rewardToken, totalAmount);
+        return totalAmount;
+    }
+
+    function _withdrawReward(address user, address poolToken, address rewardToken) internal returns(uint256) {
+        uint256 amount = rewardBalances[user].rewardsByProtocol[poolToken].amounts[rewardToken];
         require(amount > 0, "RewardDistributions: nothing to withdraw");
-        IERC20(rewardToken).safeTransfer(user, amount);
-        rewardBalances[user].rewards[rewardToken] = 0;
+        rewardBalances[user].rewardsByProtocol[poolToken].amounts[rewardToken] = 0;
+        IDefiProtocol protocol = IDefiProtocol(protocolByPoolToken(poolToken));
+        protocol.withdrawReward(rewardToken, user, amount);
         emit RewardWithdraw(user, rewardToken, amount);
+        return amount;
     }
 
     function _updateRewardBalance(address user, uint256 toDistribution) internal {
@@ -135,10 +195,12 @@ contract RewardDistributions is Base, IPoolTokenBalanceChangeRecipient {
             RewardTokenDistribution storage d = rewardDistributions[next];
             uint256 sh = rb.shares[d.poolToken];
             if (sh == 0) continue;
+            UserProtocolRewards storage upr = rb.rewardsByProtocol[d.poolToken]; 
             for (uint256 i=0; i < d.rewardTokens.length; i++) {
                 address rToken = d.rewardTokens[i];
                 uint256 distrAmount = d.amounts[rToken];
-                rb.rewards[rToken] = rb.rewards[rToken].add(distrAmount.mul(sh).div(d.totalShares));
+                upr.amounts[rToken] = upr.amounts[rToken].add(distrAmount.mul(sh).div(d.totalShares));
+
             }
             next++;
         }
