@@ -36,8 +36,11 @@ contract SavingsModule is Module, RewardDistributions {
 
     address[] registeredTokens;
     IDefiProtocol[] registeredProtocols;
+    address[] registeredRewardTokens;
     mapping(address => TokenData) tokens;
     mapping(address => ProtocolInfo) protocols; //Mapping of protocol to data we need to calculate APY and do distributions
+    mapping(address => address) poolTokenToProtocol;    //Mapping of pool tokens to protocols
+    mapping(address => bool) private rewardTokenRegistered;     //marks registered reward tokens
 
     function initialize(address _pool) public initializer {
         Module.initialize(_pool);
@@ -52,8 +55,17 @@ contract SavingsModule is Module, RewardDistributions {
         protocols[address(protocol)] = ProtocolInfo({
             poolToken: poolToken,
             previousBalance: protocol.normalizedBalance(),
-            lastRewardDistribution: 0
+            lastRewardDistribution: 0,
+            supportedRewardTokens: protocol.supportedRewardTokens()
         });
+        for(i=0; i < protocols[address(protocol)].supportedRewardTokens.length; i++) {
+            address rtkn = protocols[address(protocol)].supportedRewardTokens[i];
+            if(!rewardTokenRegistered[rtkn]){
+                rewardTokenRegistered[rtkn] = true;
+                registeredRewardTokens.push(rtkn);
+            }
+        }
+        poolTokenToProtocol[address(poolToken)] = address(protocol);
         address[] memory supportedTokens = protocol.supportedTokens();
         for (i = 0; i < supportedTokens.length; i++) {
             address tkn = supportedTokens[i];
@@ -194,11 +206,27 @@ contract SavingsModule is Module, RewardDistributions {
         }
     }
 
-    function getPoolTokenByProtocol(address _protocol) public view returns(address) {
+    function poolTokenByProtocol(address _protocol) public view returns(address) {
         return address(protocols[_protocol].poolToken);
     }
-    function getRewardTokensByProtocol(address _protocol) public view returns(address[] memory) {
+
+    function protocolByPoolToken(address _protocol) public view returns(address) {
+        return poolTokenToProtocol[_protocol];
+    }
+
+    function rewardTokensByProtocol(address _protocol) public view returns(address[] memory) {
         return protocols[_protocol].supportedRewardTokens;
+    }
+
+    function registeredPoolTokens() public view returns(address[] memory poolTokens) {
+        poolTokens = new address[](registeredProtocols.length);
+        for(uint256 i=0; i<poolTokens.length; i++){
+            poolTokens[i] = address(protocols[address(registeredProtocols[i])].poolToken);
+        }
+    }
+
+    function supportedRewardTokens() public view returns(address[] memory) {
+        return registeredRewardTokens;
     }
 
     function withdrawFromProtocolProportionally(address beneficiary, IDefiProtocol protocol, uint256 nAmount, uint256 currentProtocolBalance) internal {
