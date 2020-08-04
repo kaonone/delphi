@@ -168,7 +168,7 @@ contract RewardDistributions is Base, IPoolTokenBalanceChangeRecipient {
                 totalAmount = totalAmount.add(amount);
                 rewardBalances[user].rewardsByProtocol[poolToken].amounts[rewardToken] = 0;
                 IDefiProtocol protocol = IDefiProtocol(protocolByPoolToken(poolToken));
-                protocol.withdrawReward(rewardToken, user, totalAmount);
+                protocol.withdrawReward(rewardToken, user, amount);
             }
         }
         require(totalAmount > 0, "RewardDistributions: nothing to withdraw");
