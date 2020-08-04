@@ -7,16 +7,16 @@ import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/ERC20Burn
 import "@openzeppelin/contracts-ethereum-package/contracts/math/SafeMath.sol";
 import "../interfaces/defi/IYErc20.sol";
 import "../interfaces/defi/ICurveFiSwap.sol";
-import "../interfaces/defi/ICurveFiSwap_SBTC.sol";
+import "../interfaces/defi/ICurveFiSwap_SUSD.sol";
 import "../common/Base.sol";
-import "./CurveFiTokenStub_SBTC.sol";
+import "./CurveFiTokenStub_SUSD.sol";
 
-contract CurveFiSwapStub_SBTC is Base, ICurveFiSwap, ICurveFiSwap_SBTC {
+contract CurveFiSwapStub_SUSD is Base, ICurveFiSwap, ICurveFiSwap_SUSD {
     using SafeMath for uint256;
-    uint256 public constant N_COINS = 3;
+    uint256 public constant N_COINS = 4;
     uint256 constant MAX_EXCHANGE_FEE = 0.05*1e18;
 
-    CurveFiTokenStub_SBTC public token;
+    CurveFiTokenStub_SUSD public token;
     address[N_COINS] _coins;
 
     function initialize(address[N_COINS] memory __coins) public initializer {
@@ -96,8 +96,8 @@ contract CurveFiSwapStub_SBTC is Base, ICurveFiSwap, ICurveFiSwap_SBTC {
         return _coins[uint256(i)];
     }
 
-    function deployToken() internal returns(CurveFiTokenStub_SBTC){ 
-        CurveFiTokenStub_SBTC tkn = new CurveFiTokenStub_SBTC();
+    function deployToken() internal returns(CurveFiTokenStub_SUSD){ 
+        CurveFiTokenStub_SUSD tkn = new CurveFiTokenStub_SUSD();
         tkn.initialize();
         return tkn;
     }    
