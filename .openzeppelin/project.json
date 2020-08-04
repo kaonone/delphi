@@ -1,27 +1,24 @@
 {
   "manifestVersion": "2.2",
+  "contracts": {
+    "DCAModule": "DCAModule"
+  },
   "dependencies": {},
-  "name": "akropolis-pool",
+  "name": "akropolis-dca-pool",
   "version": "1.0.0",
   "compiler": {
-    "manager": "openzeppelin",
     "compilerSettings": {
       "optimizer": {
         "enabled": true,
-        "runs": "200"
+        "runs": "10000"
       }
     },
-    "artifactsDir": "build/contracts",
-    "contractsDir": "contracts",
-    "solcVersion": "0.5.17",
     "typechain": {
-      "enabled": true,
-      "outDir": "./types/truffle-contracts",
-      "target": "truffle"
-    }
+      "enabled": false
+    },
+    "manager": "truffle",
+    "artifactsDir": "build\\contracts",
+    "contractsDir": "contracts"
   },
-  "telemetryOptIn": true,
-  "contracts": {
-    "DCAModule": "DCAModule"
-  }
+  "telemetryOptIn": true
 }

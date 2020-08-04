@@ -82,17 +82,12 @@ contract DCAModule is Module, ERC721Full, ERC721Burnable, DCAOperatorRole {
         string memory name,
         string memory symbol,
         address _tokenToSell,
-        uint256 _tokenToSellDecimals,
-        address _tokenToSellPool,
-        address _tokenToSellProtocol,
-        address _tokenToSellPoolToken,
         uint256 _strategy,
         address _router,
-        address _rewardPool,
         uint256 _periodTimestamp,
         address bot
     ) public initializer {
-        DCAOperatorRole.initialize(bot);
+        DCAOperatorRole.initialize(_msgSender());
         Module.initialize(_pool);
 
         ERC721.initialize();
@@ -100,17 +95,8 @@ contract DCAModule is Module, ERC721Full, ERC721Burnable, DCAOperatorRole {
         ERC721Metadata.initialize(name, symbol);
 
         tokenToSell = _tokenToSell;
-
-        tokenDataOf[_tokenToSell] = TokenData({
-            decimals: _tokenToSellDecimals,
-            pool: _tokenToSellPool,
-            protocol: _tokenToSellProtocol,
-            poolToken: _tokenToSellPoolToken
-        });
-
         strategy = Strategies(_strategy);
         router = _router;
-        rewardPool = _rewardPool;
         periodTimestamp = _periodTimestamp;
         nextBuyTimestamp = now.add(_periodTimestamp);
         feeFoundation = 1e18;
@@ -132,7 +118,7 @@ contract DCAModule is Module, ERC721Full, ERC721Burnable, DCAOperatorRole {
         address pool,
         address protocol,
         address poolToken
-    ) external returns (bool) {
+    ) external onlyDCAOperator returns (bool) {
         require(
             (strategy == Strategies.ONE && distributionTokens.length <= 1) ||
                 strategy == Strategies.ALL,
@@ -151,13 +137,13 @@ contract DCAModule is Module, ERC721Full, ERC721Burnable, DCAOperatorRole {
         return true;
     }
 
-    function setRewardToken(
+    function setTokenData(
         address tokenAddress,
         uint256 decimals,
         address pool,
         address protocol,
         address poolToken
-    ) external returns (bool) {
+    ) external onlyDCAOperator returns (bool) {
         tokenDataOf[tokenAddress] = TokenData({
             decimals: decimals,
             pool: pool,
@@ -203,52 +189,20 @@ contract DCAModule is Module, ERC721Full, ERC721Burnable, DCAOperatorRole {
         return _accountOf[tokenId].balance[tokenAddress];
     }
 
-    function getAccountBuyAmount(uint256 tokenId)
-        public
-        view
-        returns (uint256)
-    {
-        return _accountOf[tokenId].buyAmount;
+    function getTokenDataPool(address token) public view returns (address) {
+        return tokenDataOf[token].pool;
     }
 
-    function getAccountNextDistributionIndex(uint256 tokenId)
-        public
-        view
-        returns (uint256)
-    {
-        return _accountOf[tokenId].nextDistributionIndex;
+    function getTokenDataProtocol(address token) public view returns (address) {
+        return tokenDataOf[token].protocol;
     }
 
-    function getAccountLastRemovalPointIndex(uint256 tokenId)
-        public
-        view
-        returns (uint256)
-    {
-        return _accountOf[tokenId].lastRemovalPointIndex;
-    }
-
-    function getDistributionsNumber() public view returns (uint256) {
-        return distributions.length;
-    }
-
-    function getDistributionTokenAddress(uint256 id)
+    function getTokenDataPoolToken(address token)
         public
         view
         returns (address)
     {
-        return distributions[id].tokenAddress;
-    }
-
-    function getDistributionAmountIn(uint256 id) public view returns (uint256) {
-        return distributions[id].amountIn;
-    }
-
-    function getDistributionAmountInOut(uint256 id)
-        public
-        view
-        returns (uint256)
-    {
-        return distributions[id].amountOut;
+        return tokenDataOf[token].poolToken;
     }
 
     function getTokenIdByAddress(address account)
@@ -373,18 +327,18 @@ contract DCAModule is Module, ERC721Full, ERC721Burnable, DCAOperatorRole {
                 .lastRemovalPointIndex]
                 .sub(_accountOf[tokenId].buyAmount);
 
-            uint256 removalPoint = distributions.length.add(
+            uint256 removalPoint = distributions
+                .length
+                .add(
                 _accountOf[tokenId].balance[tokenToSell].div(
                     _accountOf[tokenId].buyAmount
                 )
-            );
+            )
+                .sub(0x0001);
 
             // REFACTORING
-            removeAfterDistribution[removalPoint.sub(
-                0x0001
-            )] = removeAfterDistribution[removalPoint.sub(0x0001)].add(
-                _accountOf[tokenId].buyAmount
-            );
+            removeAfterDistribution[removalPoint] = removeAfterDistribution[removalPoint]
+                .add(_accountOf[tokenId].buyAmount);
 
             _withdrawFromPool(token, amount);
         } else {
