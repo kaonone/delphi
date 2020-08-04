@@ -135,7 +135,7 @@ contract RewardDistributions is Base, IPoolTokenBalanceChangeRecipient {
 
     function distributeReward(address _protocol) internal {
         (address[] memory _tokens, uint256[] memory _amounts) = IDefiProtocol(_protocol).claimRewards();
-        if((_tokens.length > 0) && _amounts[0] > 0) {
+        if(_tokens.length > 0) {
             address poolToken = poolTokenByProtocol(_protocol);
             distributeReward(poolToken, _tokens, _amounts);
         }
