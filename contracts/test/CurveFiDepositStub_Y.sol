@@ -28,12 +28,14 @@ contract CurveFiDepositStub_Y is Base, ICurveFiDeposit_Y {
             _coins[i] = curveFiSwap.coins(int128(i));
             underlying[i] = IYErc20(_coins[i]).token();
             IYErc20(_coins[i]).approve(_curveFiSwap, MAX_UINT256);
+            IERC20(underlying[i]).approve(_coins[i], MAX_UINT256);
         }
     }
 
     function add_liquidity (uint256[N_COINS] memory uamounts, uint256 min_mint_amount) public {
         uint256[N_COINS] memory amounts = [uint256(0), uint256(0), uint256(0), uint256(0)];
         for (uint256 i=0; i < uamounts.length; i++){
+            if(uamounts[i] == 0) continue;
             require(IERC20(underlying[i]).transferFrom(_msgSender(), address(this), uamounts[i]), "CurveFiDepositStub: failed to transfer underlying");
             IYErc20(_coins[i]).deposit(uamounts[i]);
             amounts[i] = IYErc20(_coins[i]).balanceOf(address(this));
