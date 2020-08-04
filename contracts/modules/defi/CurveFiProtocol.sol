@@ -7,7 +7,6 @@ import "@openzeppelin/contracts-ethereum-package/contracts/math/SafeMath.sol";
 import "../../interfaces/defi/IDefiProtocol.sol";
 import "../../interfaces/defi/ICurveFiDeposit.sol";
 import "../../interfaces/defi/ICurveFiSwap.sol";
-import "../../interfaces/defi/IYErc20.sol";
 import "../../interfaces/defi/ICurveFiRewards.sol";
 import "./ProtocolBase.sol";
 
@@ -30,7 +29,7 @@ contract CurveFiProtocol is ProtocolBase {
     ICurveFiRewards public curveFiRewards;
     IERC20 public curveFiRewardToken;
     IERC20 public curveFiToken;
-    address[] private _registeredTokens;
+    address[] internal _registeredTokens;
     uint256 public slippageMultiplier; //Multiplier to work-around slippage & fees when witharawing one token
     mapping(address => uint8) public decimals;
 
@@ -160,15 +159,11 @@ contract CurveFiProtocol is ProtocolBase {
     function balanceOf(address token) public returns(uint256) {
         uint256 tokenIdx = getTokenIndex(token);
 
-        uint256 curveFiTokenBalance = curveFiTokenBalance();
-        uint256 curveFiTokenTotalSupply = curveFiToken.totalSupply();
-        uint256 yTokenCurveFiBalance = curveFiSwap.balances(int128(tokenIdx));
+        uint256 cfBalance = curveFiTokenBalance();
+        uint256 cfTotalSupply = curveFiToken.totalSupply();
+        uint256 tokenCurveFiBalance = curveFiSwap.balances(int128(tokenIdx));
         
-        uint256 yTokenShares = yTokenCurveFiBalance.mul(curveFiTokenBalance).div(curveFiTokenTotalSupply);
-        IYErc20 yToken = IYErc20(curveFiDeposit.coins(int128(tokenIdx)));
-        uint256 tokenBalance = yToken.getPricePerFullShare().mul(yTokenShares).div(1e18); //getPricePerFullShare() returns balance of underlying token multiplied by 1e18
-
-        return tokenBalance;
+        return tokenCurveFiBalance.mul(cfBalance).div(cfTotalSupply);
     }
     
     function balanceOfAll() public returns(uint256[] memory balances) {
@@ -178,10 +173,8 @@ contract CurveFiProtocol is ProtocolBase {
 
         balances = new uint256[](_registeredTokens.length);
         for (uint256 i=0; i < _registeredTokens.length; i++){
-            uint256 ycfBalance = curveFiSwap.balances(int128(i));
-            uint256 yShares = ycfBalance.mul(cfBalance).div(cfTotalSupply);
-            IYErc20 yToken = IYErc20(curveFiDeposit.coins(int128(i)));
-            balances[i] = yToken.getPricePerFullShare().mul(yShares).div(1e18); //getPricePerFullShare() returns balance of underlying token multiplied by 1e18
+            uint256 tcfBalance = curveFiSwap.balances(int128(i));
+            balances[i] = tcfBalance.mul(cfBalance).div(cfTotalSupply);
         }
     }
 
@@ -242,6 +235,10 @@ contract CurveFiProtocol is ProtocolBase {
         }
     }
 
+    function curveFiTokenBalance() internal view returns(uint256) {
+        return curveFiRewards.balanceOf(address(this));
+    }
+
     function stakeCurveFiToken() private {
         uint256 cftBalance = curveFiToken.balanceOf(address(this));
         curveFiRewards.stake(cftBalance);
@@ -274,10 +271,6 @@ contract CurveFiProtocol is ProtocolBase {
             withdraw(token, _msgSender(), balance);   //This updates withdrawalsSinceLastDistribution
         }
         emit TokenUnregistered(token);
-    }
-
-    function curveFiTokenBalance() private view returns(uint256) {
-        return curveFiRewards.balanceOf(address(this));
     }
 
 }
