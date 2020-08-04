@@ -88,7 +88,6 @@ contract DCAModule is Module, ERC721Full, ERC721Burnable, DCAOperatorRole {
         address _tokenToSellPoolToken,
         uint256 _strategy,
         address _router,
-        address _rewardPool,
         uint256 _periodTimestamp,
         address bot
     ) public initializer {
@@ -110,7 +109,6 @@ contract DCAModule is Module, ERC721Full, ERC721Burnable, DCAOperatorRole {
 
         strategy = Strategies(_strategy);
         router = _router;
-        rewardPool = _rewardPool;
         periodTimestamp = _periodTimestamp;
         nextBuyTimestamp = now.add(_periodTimestamp);
         feeFoundation = 1e18;

@@ -7,8 +7,10 @@ contract FakeUniswapRouter {
 
     function getAmountsOut(uint256 amountIn, address[] calldata path)
         external
+		view
         returns (uint256[] memory amounts)
     {
+		this;
         (path);
 
         amounts = new uint256[](2);

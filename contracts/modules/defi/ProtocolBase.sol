@@ -50,12 +50,14 @@ contract ProtocolBase is Module, DefiOperatorRole, IDefiProtocol {
         //Fill result arrays
         tokens = new address[](receivedRewardTokensCount);
         amounts = new uint256[](receivedRewardTokensCount);
-        uint256 j;
-        for(uint256 i = 0; i < rewardTokens.length; i++) {
-            if(rewardAmounts[i] > 0) {
-                tokens[j] = rewardTokens[i];
-                amounts[j] = rewardAmounts[i];
-                j++;
+        if(receivedRewardTokensCount > 0) {
+            uint256 j;
+            for(uint256 i = 0; i < rewardTokens.length; i++) {
+                if(rewardAmounts[i] > 0) {
+                    tokens[j] = rewardTokens[i];
+                    amounts[j] = rewardAmounts[i];
+                    j++;
+                }
             }
         }
     }
