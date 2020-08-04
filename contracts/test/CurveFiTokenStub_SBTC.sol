@@ -11,7 +11,7 @@ import "../common/Base.sol";
 contract CurveFiTokenStub_SBTC is Base, ERC20, ERC20Detailed, ERC20Mintable, ERC20Burnable {
     function initialize() public initializer {
         Base.initialize();
-        ERC20Mintable.initialize(address(this));
+        ERC20Mintable.initialize(_msgSender());
         ERC20Detailed.initialize("Curve.fi renBTC/wBTC/sBTC", "crvRenWSBTC", 18);
     }
 }

@@ -13,11 +13,12 @@ contract CurveFiDepositStub_Y is Base, ICurveFiDeposit_Y {
     using SafeMath for uint256;
     uint256 constant EXP_SCALE = 1e18;  //Exponential scale (see Compound Exponential)
     uint256 public constant N_COINS = 4;
+    uint256 constant MAX_UINT256 = uint256(-1);
 
     CurveFiSwapStub_Y public curveFiSwap;
     IERC20 public token;
-    address[3] _coins;
-    address[3] underlying;
+    address[N_COINS] _coins;
+    address[N_COINS] underlying;
 
     function initialize(address _curveFiSwap) public initializer {
         Base.initialize();
@@ -26,6 +27,7 @@ contract CurveFiDepositStub_Y is Base, ICurveFiDeposit_Y {
         for (uint256 i=0; i < N_COINS; i++){
             _coins[i] = curveFiSwap.coins(int128(i));
             underlying[i] = IYErc20(_coins[i]).token();
+            IYErc20(_coins[i]).approve(_curveFiSwap, MAX_UINT256);
         }
     }
 

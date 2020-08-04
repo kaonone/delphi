@@ -107,7 +107,7 @@ contract CurveFiSwapStub_Y is Base, ICurveFiSwap, ICurveFiSwap_Y {
         uint256[] memory _balances = new uint256[](_coins.length);
         for (uint256 i=0; i < _coins.length; i++){
             _balances[i] = balances(int128(i));
-            averageAmount = averageAmount.add(_balances[i]);
+            averageAmount = averageAmount.add(normalizeAmount(_coins[i], _balances[i]));
         }
         averageAmount = averageAmount.div(_coins.length);
         int256 totalFee;
