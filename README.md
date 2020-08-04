@@ -3,14 +3,6 @@
 ## Deployed contracts (Rinkeby)
 ### External contracts
 
-#### Stablecoins with ERC20 wrapers
-| Token Name | Base token                                   | Compound Wraper - c***                        | iEarn Wraper -y***                            |
-|---         |---                                           |---                                            |---                                            |
-| DAI        | 0x5592EC0cfb4dbc12D3aB100b257153436a1f0FEa   | 0x6D7F0754FFeb405d23C51CE938289d4835bE3b14    | 0xC9e4713C332E07FdC821a6738dd9fc906153eFD6    |
-| USDC       | 0x5B281A6DdA0B271e91ae35DE655Ad301C976edb1   | 0x5B281A6DdA0B271e91ae35DE655Ad301C976edb1    | 0x232dA19534032CBfE838e5f620C495D52061e947    |
-| USDT       | 0x5B281A6DdA0B271e91ae35DE655Ad301C976edb1   | 0x2fB298BDbeF468638AD6653FF8376575ea41e768    | 0x6C0b17593c0cc5BbC71fF955deF41fcad0b05C11    |
-| TUSD       | 0xe7dB8abd6e2c15a39C4AA15A136E48F9B7f8F1d0   |                                               | 0x3510CEe0FaDf01d2188fDE9368ac58897a970620    |
-
 * DAI `0x5592EC0cfb4dbc12D3aB100b257153436a1f0FEa`
 * cDAI `0x6D7F0754FFeb405d23C51CE938289d4835bE3b14`
 * yDAI `0xC9e4713C332E07FdC821a6738dd9fc906153eFD6`
