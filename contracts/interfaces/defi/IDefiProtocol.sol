@@ -26,7 +26,20 @@ interface IDefiProtocol {
      */
     function withdraw(address beneficiary, uint256[] calldata amounts) external;
 
-    function withdrawRewards(address to) external returns(address[] memory tokens, uint256[] memory amounts);
+    /**
+     * @notice Claim rewards. Reward tokens will be stored on protocol balance.
+     * @return tokens and their amounts received
+     */
+    function claimRewards() external returns(address[] memory tokens, uint256[] memory amounts);
+
+    /**
+     * @notice Withdraw reward tokens to user
+     * @dev called by SavingsModule
+     * @param token Reward token to withdraw
+     * @param user Who should receive tokens
+     * @param amount How many tokens to send
+     */
+    function withdrawReward(address token, address user, uint256 amount) external;
 
     /**
      * @dev This function is not view because on some protocols 
@@ -50,6 +63,10 @@ interface IDefiProtocol {
     function supportedTokens() external view returns(address[] memory);
 
     function supportedTokensCount() external view returns(uint256);
+
+    function supportedRewardTokens() external view returns(address[] memory);
+
+    function isSupportedRewardToken(address token) external view returns(bool);
 
     /**
      * @notice Returns if this protocol can swap all it's normalizedBalance() to specified token

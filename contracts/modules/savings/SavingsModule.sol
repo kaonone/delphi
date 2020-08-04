@@ -27,6 +27,7 @@ contract SavingsModule is Module, RewardDistributions {
         PoolToken poolToken;
         uint256 previousBalance;
         uint256 lastRewardDistribution;
+        address[] supportedRewardTokens;
     }
 
     struct TokenData {
@@ -35,8 +36,11 @@ contract SavingsModule is Module, RewardDistributions {
 
     address[] registeredTokens;
     IDefiProtocol[] registeredProtocols;
+    address[] registeredRewardTokens;
     mapping(address => TokenData) tokens;
     mapping(address => ProtocolInfo) protocols; //Mapping of protocol to data we need to calculate APY and do distributions
+    mapping(address => address) poolTokenToProtocol;    //Mapping of pool tokens to protocols
+    mapping(address => bool) private rewardTokenRegistered;     //marks registered reward tokens
 
     function initialize(address _pool) public initializer {
         Module.initialize(_pool);
@@ -51,8 +55,17 @@ contract SavingsModule is Module, RewardDistributions {
         protocols[address(protocol)] = ProtocolInfo({
             poolToken: poolToken,
             previousBalance: protocol.normalizedBalance(),
-            lastRewardDistribution: 0
+            lastRewardDistribution: 0,
+            supportedRewardTokens: protocol.supportedRewardTokens()
         });
+        for(i=0; i < protocols[address(protocol)].supportedRewardTokens.length; i++) {
+            address rtkn = protocols[address(protocol)].supportedRewardTokens[i];
+            if(!rewardTokenRegistered[rtkn]){
+                rewardTokenRegistered[rtkn] = true;
+                registeredRewardTokens.push(rtkn);
+            }
+        }
+        poolTokenToProtocol[address(poolToken)] = address(protocol);
         address[] memory supportedTokens = protocol.supportedTokens();
         for (i = 0; i < supportedTokens.length; i++) {
             address tkn = supportedTokens[i];
@@ -77,15 +90,17 @@ contract SavingsModule is Module, RewardDistributions {
      * @param _tokens Array of tokens to deposit
      * @param _dnAmounts Array of amounts (denormalized to token decimals)
      */
-    function deposit(address[] memory _protocols, address[] memory _tokens, uint256[] memory _dnAmounts) public {
+    function deposit(address[] memory _protocols, address[] memory _tokens, uint256[] memory _dnAmounts) public returns(uint256[] memory) {
         require(_protocols.length == _tokens.length && _tokens.length == _dnAmounts.length, "SavingsModule: size of arrays does not match");
+        uint256[] memory ptAmounts = new uint256[](_protocols.length);
         for (uint256 i=0; i < _protocols.length; i++) {
             address[] memory tkns = new address[](1);
             tkns[0] = _tokens[i];
             uint256[] memory amnts = new uint256[](1);
             amnts[0] = _dnAmounts[i];
-            deposit(_protocols[i], tkns, amnts);
+            ptAmounts[i] = deposit(_protocols[i], tkns, amnts);
         }
+        return ptAmounts;
     }
 
     /**
@@ -94,7 +109,7 @@ contract SavingsModule is Module, RewardDistributions {
      * @param _tokens Array of tokens to deposit
      * @param _dnAmounts Array of amounts (denormalized to token decimals)
      */
-    function deposit(address _protocol, address[] memory _tokens, uint256[] memory _dnAmounts) public {
+    function deposit(address _protocol, address[] memory _tokens, uint256[] memory _dnAmounts) public returns(uint256) {
         distributeRewardIfRequired(_protocol);
 
         uint256 nBalanceBefore = distributeYeldInternal(_protocol);
@@ -111,6 +126,7 @@ contract SavingsModule is Module, RewardDistributions {
         }
         uint256 fee = (nAmount > nDeposit)?nAmount.sub(nDeposit):0;
         emit Deposit(_protocol, _msgSender(), nAmount, fee);
+        return nDeposit;
     }
 
     function depositToProtocol(address _protocol, address[] memory _tokens, uint256[] memory _dnAmounts) internal {
@@ -129,7 +145,7 @@ contract SavingsModule is Module, RewardDistributions {
      * @param nAmount Normalized (to 18 decimals) amount to withdraw
      * @return Amount of PoolToken burned from user
      */
-    function withdraw(address _protocol, uint256 nAmount) public returns(uint256) {
+    function withdrawAll(address _protocol, uint256 nAmount) public returns(uint256) {
         distributeRewardIfRequired(_protocol);
 
         PoolToken poolToken = PoolToken(protocols[_protocol].poolToken);
@@ -190,6 +206,29 @@ contract SavingsModule is Module, RewardDistributions {
         }
     }
 
+    function poolTokenByProtocol(address _protocol) public view returns(address) {
+        return address(protocols[_protocol].poolToken);
+    }
+
+    function protocolByPoolToken(address _protocol) public view returns(address) {
+        return poolTokenToProtocol[_protocol];
+    }
+
+    function rewardTokensByProtocol(address _protocol) public view returns(address[] memory) {
+        return protocols[_protocol].supportedRewardTokens;
+    }
+
+    function registeredPoolTokens() public view returns(address[] memory poolTokens) {
+        poolTokens = new address[](registeredProtocols.length);
+        for(uint256 i=0; i<poolTokens.length; i++){
+            poolTokens[i] = address(protocols[address(registeredProtocols[i])].poolToken);
+        }
+    }
+
+    function supportedRewardTokens() public view returns(address[] memory) {
+        return registeredRewardTokens;
+    }
+
     function withdrawFromProtocolProportionally(address beneficiary, IDefiProtocol protocol, uint256 nAmount, uint256 currentProtocolBalance) internal {
         uint256[] memory balances = protocol.balanceOfAll();
         uint256[] memory amounts = new uint256[](balances.length);
@@ -227,11 +266,7 @@ contract SavingsModule is Module, RewardDistributions {
         if(!isRewardDistributionRequired(_protocol)) return;
         ProtocolInfo storage pi = protocols[_protocol];
         pi.lastRewardDistribution = now;
-
-        (address[] memory _tokens, uint256[] memory _amounts) = IDefiProtocol(_protocol).withdrawRewards(address(this));
-        if((_tokens.length > 0) && _amounts[0] > 0) {
-            distributeReward(address(pi.poolToken), _tokens, _amounts);
-        }
+        distributeReward(_protocol);
     }
 
     /**

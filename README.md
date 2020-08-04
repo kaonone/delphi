@@ -1,204 +1,148 @@
-# akropolisOS
-
-[![Build Status](https://travis-ci.org/akropolisio/akropolisOS.svg?branch=develop)](https://travis-ci.org/akropolisio/akropolisOS) [![Coverage Status](https://coveralls.io/repos/github/akropolisio/akropolisOS/badge.svg?branch=develop)](https://coveralls.io/github/akropolisio/akropolisOS?branch=develop)
-
-AkropolisOS is A Solidity framework for building complex dApps and protocols (savings, pensions, loans, investments).
-
-Akropolis Pool is undercollaterized credit pool based on AkropolisOS,  where members of which can earn high-interest rates by providing undercollateralized loans to other members and by pooling and investing capital through various liquid DeFi instruments.
-
-Description of Akropolis Pool can be found in our [wiki](https://wiki.akropolis.io/pool/).
-
-# Testnet (Rinkeby) deployment 
-
-## External contracts
-* DAI: `0x5592EC0cfb4dbc12D3aB100b257153436a1f0FEa`
-* cDAI: `0x6D7F0754FFeb405d23C51CE938289d4835bE3b14`
-* RAY Storage: `0x21091e9DACac70A9E511a26CE538Ad27Ddb92AcD`
-
-## Pool contracts
-* Pool: `0xaddF2d0C18a1989b800e9a4a8D496d856bBd0413`
-* AccessModule: `0xdE833D434856a6Ba58C4De2C235C9da777e4a8B3`
-* PToken: `0xB0E4aF12900380337D6D2b85063f2b791DCAc895`
-* CompoundModule: _not deployed_
-* RAYModule: `0xBc3426D4Cf4DFe01cCc088F61b59EDb3BA099Af5`
-* FundsModule: `0x2fC82FF38325e6A4D5eD587aAfb90827c1b0FCb4`
-* CurveModule: `0x4eB5f040CEE9425516fD1930cDCE3682D9379f26`
-* LiquidityModule: `0x88c6D8073a9f4f92c503397F33C4587537a6FA7B`
-* LoanLimitsModule: `0xB2EA6fE10925d521B44a652c39982837A58B9DfC`
-* LoanProposalsModule: `0x53668dA77ddaB3D90aC0c46AdE11Ebc1f9ADCf76`
-* LoanModule: `0xf72ecaD9F29CC99F59aE3862c8948E20E7Ee1062`
-
-## Developer tools
-* [Openzeppelin SDK](https://openzeppelin.com/sdk/)
-* [Openzepplin Contracts](https://openzeppelin.com/contracts/)
-* [Truffle](https://www.trufflesuite.com/)
-
-## Diagrams
-### Modules
-![Modules](/docs/diagram_modules.jpg)
-### User Interactions
-![User Interactions](/docs/diagram_user_interactions.jpg)
-
-## Deployment
-
-### Required data:
-* Address of liquidity token (`LToken.address`)
-* Address of cDAI contract (`cDAI.address`)
-
-### Deployment sequence:
-1. Initialize OpenZeppelin project & add modules
-    1. `npx oz init`
-    1. `npx oz add Pool AccessModule PToken CompoundModule DefiFundsModule CurveModule LiquidityModule LoanLimitsModule LoanProposalsModule LoanModule`
-1. Deploy & initialize Pool
-    1. `npx oz create Pool --network rinkeby --init`
-    1. Save address of the pool (`Pool.address`)
-1. Deploy modules
-    1. `npx oz create AccessModule --network rinkeby --init "initialize(address _pool)" --args Pool.address`
-    1. `npx oz create PToken --network rinkeby --init "initialize(address _pool)" --args Pool.address`
-    1. `npx oz create CompoundModule --network rinkeby --init "initialize(address _pool)" --args Pool.address`
-    1. `npx oz create CurveModule --network rinkeby --init "initialize(address _pool)" --args Pool.address`
-    1. `npx oz create DefiFundsModule --network rinkeby --init "initialize(address _pool)" --args Pool.address`
-    1. `npx oz create LiquidityModule --network rinkeby --init "initialize(address _pool)" --args Pool.address`
-    1. `npx oz create LoanLimitsModule --network rinkeby --init "initialize(address _pool)" --args Pool.address`
-    1. `npx oz create LoanProposalsModule --network rinkeby --init "initialize(address _pool)" --args Pool.address`
-    1. `npx oz create LoanModule --network rinkeby --init "initialize(address _pool)" --args Pool.address`
-    1. Save address of each module: `AccessModule.address`, `PToken.address`, `CompoundModule.address`, `CurveModule.address`, `DefiFundsModule.address`, `LiquidityModule.address`, `LoanLimitsModule.address`, `LoanProposalsModule.address`, `LoanModule.address`
-1. Register external contracts in Pool
-    1. `npx oz send-tx --to Pool.address --network rinkeby --method set --args "ltoken, LToken.address, true"`
-    1. `npx oz send-tx --to Pool.address --network rinkeby --method set --args "cdai, cDAI.address, true"`
-1. Register modules in pool
-    1. `npx oz send-tx --to Pool.address --network rinkeby --method set --args "access, AccessModule.address, false"`
-    1. `npx oz send-tx --to Pool.address --network rinkeby --method set --args "ptoken, PToken.address, false"`
-    1. `npx oz send-tx --to Pool.address --network rinkeby --method set --args "defi, CompoundModule.address, false"`
-    1. `npx oz send-tx --to Pool.address --network rinkeby --method set --args "curve, CurveModule.address, false"`
-    1. `npx oz send-tx --to Pool.address --network rinkeby --method set --args "funds, DefiFundsModule.address, false"`
-    1. `npx oz send-tx --to Pool.address --network rinkeby --method set --args "liquidity, LiquidityModule.address`
-    1. `npx oz send-tx --to Pool.address --network rinkeby --method set --args "loan_limits, LoanLimitsModule.address, false`
-    1. `npx oz send-tx --to Pool.address --network rinkeby --method set --args "loan_proposals, LoanProposalsModule.address, false"`
-    1. `npx oz send-tx --to Pool.address --network rinkeby --method set --args "loan, LoanModule.address, false, false"`
-1. Configure modules
-    1. `npx oz send-tx --to DefiFundsModule.address --network rinkeby --method addFundsOperator --args LiquidityModule.address`
-    1. `npx oz send-tx --to DefiFundsModule.address --network rinkeby --method addFundsOperator --args LoanModule.address`
-    1. `npx oz send-tx --to PToken.address --network rinkeby --method addMinter --args DefiFundsModule.address`
-    1. `npx oz send-tx --to CompoundModule.address --network rinkeby --method addDefiOperator --args DefiFundsModule.address`
-
-## Liquidity
-
-### Deposit
-#### Required data:
-* `lAmount`: Deposit amount, DAI
-#### Required conditions:
-* All contracts are deployed
-#### Workflow:
-1. Call `FundsModule.calculatePoolEnter(lAmount)` to determine expected PTK amount (`pAmount`)
-1. Determine minimum acceptable amount of PTK `pAmountMin <= pAmount`, which user expects to get when deposit `lAmount` of DAI. Zero value is allowed.
-1. Call `LToken.approve(FundsModule.address, lAmount)` to allow exchange
-1. Call `LiquidityModule.deposit(lAmount, pAmountMin)` to execute exchange
-
-### Withdraw
-#### Required data:
-* `pAmount`: Withdraw amount, PTK
-#### Required conditions:
-* Available liquidity `LToken.balanceOf(FundsModule.address)` is greater than expected amount of DAI
-* User has enough PTK: `PToken.balanceOf(userAddress) >= pAmount`
-#### Workflow:
-1. Call `FundsModule.calculatePoolExitInverse(pAmount)` to determine expected amount of DAI (`lAmount`). The response has 3 values, use the second one.
-1. Determine minimum acceptable amount `lAmountMin <= lAmount` of DAI , which user expects to get when deposit `pAmount` of PTK. Zero value is allowed.
-1. Call `PToken.approve(FundsModule.address, pAmount)` to allow exchange
-1. Call `LiquidityModule.withdraw(pAmount, lAmountMin)` to execute exchange
+# Delphi
 
 
-## Credits
-### Create Loan Request
-#### Required data:
-* `debtLAmount`: Loan amount, DAI
-* `interest`: Interest rate, percents
-* `pAmountMax`: Maximal amount of PTK to use as borrower's own pledge
-* `descriptionHash`: Hash of loan description stored in Swarm
-#### Required conditions:
-* User has enough PTK: `PToken.balanceOf(userAddress) >= pAmount`
-#### Workflow:
-1. Call `FundsModule.calculatePoolExitInverse(pAmount)` to determine expected pledge in DAI (`lAmount`). The response has 3 values, use the first one.
-1. Determine minimum acceptable amount `lAmountMin <= lAmount` of DAI, which user expects to lock as a pledge, sending `pAmount` of PTK. Zero value is allowed.
-1. Call `PToken.approve(FundsModule.address, pAmount)` to allow operation.
-1. Call `LoanModule.createDebtProposal(debtLAmount, interest, pAmountMax, descriptionHash)` to create loan proposal.
-#### Data required for future calls:
-* Proposal index: `proposalIndex` from event `DebtProposalCreated`.
+# DCA Pool
+VARS
 
-### Add Pledge
-#### Required data:
-* Loan proposal identifiers:
-    * `borrower` Address of borrower
-    * `proposal` Proposal index
-* `pAmount`  Pledge amount, PTK
-#### Required conditions:
-* Loan proposal created
-* Loan proposal not yet executed
-* Loan proposal is not yet fully filled: `LoanModule.getRequiredPledge(borrower, proposal) > 0`
-* User has enough PTK: `PToken.balanceOf(userAddress) >= pAmount`
+uint256 periodTimestamp – purchase period delta
+uint256 nextBuyTimestamp – next purchase time
+uint256 globalPeriodBuyAmount – global purchase amount for the period 
+uint256 deadline - exchange protocol deadline
+uint256 protocolMaxFee - maximum pool fee 
+uint256 feeFoundation - basis for fee calculation
 
-#### Workflow:
-1. Call `FundsModule.calculatePoolExitInverse(pAmount)` to determine expected pledge in DAI (`lAmount`). The response has 3 values, use the first one.
-1. Determine minimum acceptable amount `lAmountMin <= lAmount` of DAI, which user expects to lock as a pledge, sending `pAmount` of PTK. Zero value is allowed.
-1. Call `PToken.approve(FundsModule.address, pAmount)` to allow operation.
-1. Call `LoanModule.addPledge(borrower, proposal, pAmount, lAmountMin)` to execute operation.
+address router – exchange protocol address
+address tokenToSell (USDC) – token to sell address 
 
-### Withdraw Pledge
-#### Required data:
-* Loan proposal identifiers:
-    * `borrower` Address of borrower
-    * `proposal` Proposal index
-* `pAmount`  Amount to withdraw, PTK
-#### Required conditions:
-* Loan proposal created
-* Loan proposal not yet executed
-* User pledge amount >= `pAmount`
-#### Workflow:
-1. Call `LoanModule.withdrawPledge(borrower, proposal, pAmount)` to execute operation.
+Distribution[] distributions – distribution array
+address[] distributionTokens – tokens to buy array 
+mapping(uint256 => Account) _accountOf – accounts mapping
+mapping(uint256 => uint256) removeAfterDistribution – mapping of amounts to adjust globalPeriodBuyAmount;
+mapping(address => TokenData) public tokenDataOf – mapping of tokens data 
 
-### Loan issuance
-#### Required data:
-`proposal` Proposal index
-#### Required conditions:
-* Loan proposal created, user (transaction sender) is the `borrower`
-* Loan proposal not yet executed
-* Loan proposal is fully funded: `LoanModule.getRequiredPledge(borrower, proposal) == 0`
-* Pool has enough liquidity
-#### Workflow:
-1. Call `LoanModule.executeDebtProposal(proposal)` to execute operation.
-#### Data required for future calls:
-* Loan index: `debtIdx` from event `DebtProposalExecuted`.
+Strategies strategy - strategy from enum (enum Strategies {ONE, ALL});
 
-### Loan repayment (partial or full) 
-#### Required data:
-* `debt` Loan index
-* `lAmount` Repayable amount, DAI
-#### Required conditions:
-* User (transaction sender) is the borrower
-* Loan is not yet fully repaid
-#### Workflow:
-1. Call `LToken.approve(FundsModule.address, lAmount)` to allow operation.
-1. Call `LoanModule.repay(debt, lAmount)` to execute operation.
 
-## PTK Distributions
-When borrower repays some part of his loan, he uses some PTK (either from his balance or minted when he sends DAI to the pool).
-This PTKs are distributed to supporters, proportionally to the part of the loan they covered. The borrower himself also covered half of the loan, and his part is distributed over the whole pool.
-All users of the pool receive part of this distributions proportional to the amount of PTK they hold on their balance and in loan proposals, PTK locked as collateral for loans is not counted.
-![PTK Distributions](/docs/diagram_distributions.jpg)
-### Distribution mechanics
-When you need to distribute some amount of tokens over all token holders one's first straight-forward idea might be to iterate through all token holders, check their balance and increase it by their part of the distribution.
-Unfortunately, this approach can hardly be used in Ethereum blockchain. All operations in EVM cost some gas. If we have a lot of token holders, gas cost for iteration through all may be higher than a gas limit for transaction (which is currently equal to gas limit for block).
-Instead, during distribution we just store amount of PTK to be distributed and current amount of all PTK qualified for distribution. And user balance is only updated by separate request or when it is going to be changed by transfer, mint or burn. During this "lazy" update we go through all distributions occured between previous and current update.
-Now, one may ask what if there is too much distributions occurred in the pool between this updated and the gas usage to iterate through all of them is too high again? Obvious solution would be to allow split such transaction to several smaller ones, and we've implemented this approach.
-But we also decided to aggregate all distributions during a day. This way we can protect ourself from dust attacks, when somebody may do a lot of small repays which cause a lot of small distributions.
-When a distribution request is received by PToken we check if it's time to actually create new distribution. If it's not, we just add distribution amount to the accumulator.
-When time comes (and this condition is also checked by transfers, mints and burns), actual distribution is created using accumulated amount of PTK and total supply of qualified PTK.
+STRUCTS
 
-## Defi module distributions
-Defi module transfers funds to some underlying protocol, Compound in current version. Exchange rate of DAI to Compound DAI is icreased over time. So while amount of Compound DAI stays same, amount of underlying DAI available is continiously increased.
-During distributions Defi module calculates this additional ammount, so that PTK holders can widhraw their share at any time.
-![Compound Distributions](/docs/diagram_compound_distributions.jpg)
-### Distribution mechanics
-Defi module is configured to create distributions once a day. It stores time of next distribution and when time comes, any change of PTK balance or withdraw request will trigger a new distribution.
-With this distribution event Defi module stores how many additional DAI it can distribute, current balances of DAI and PTK.
-When one decides to withdraw (claim) his share of this additional DAI, Defi module iterates through all unclaimed distributions and calculates user's share of that distribution accroding to user's PTK balance and total amount of PTK at that time.
+Account
+mapping(address => uint256) balance – balances of all user tokens;
+uint256 buyAmount – amount to buy during period;
+uint256 nextDistributionIndex – next distribution index in which account would participate if minimum balance threshold is passed.
+uint256 lastRemovalPointIndex – distribution index after which a certain amount should be excluded from `globalPeriodBuyAmount`
+
+Distribution
+address tokenAddress - token address;
+uint256 amountIn – amount in tokenToSell, which was used to buy assets;
+uint256 amountOut – amount of tokens (wBTC, wETH, ...) received from exchange protocol;
+
+TokenData
+uint256 decimals – token decimal;
+address pool - pool address;
+address protocol - address of the protocol interacting with the pool;
+address poolToken – pool token address;
+
+
+DEPOSIT
+
+
+User sets up amount (amount of tokens for deposit) and buyAmount (amount of tokens to sell during period). 
+After approval, tokens are transferred from user account. .
+If user is interacting with the pool for the first time and don’t have an authentication token than ERC721 token is created with all the parameters in it. Any further account interactions are done via token identificator. 
+Balance is set == amount.
+buyAmount is set.
+globalPeriodBuyAmount is increased by amount
+removalPoint index is calculated and saved in the removeAfterDistribution mapping. This index shows when and which amount should be excluded from globalPeriodBuyAmount. It is stored in lastRemovalPointIndex.
+nextDistributionIndex is set.
+Tokens (amount) are sent to Savings Pool.
+
+
+If the user already had an identification token (erc721), then call _claimDistributions().
+Account balance increases. 
+Excluding removeAfterDistribution from lastRemovalPointIndex.
+Recalculating globalPeriodBuyAmount by removing previous у buyAmount and adding new one.
+Calculating new removalPoint and saving it in removeAfterDistribution.
+Tokens (amount) are sent to Savings pool. 
+
+WITHDRAW
+
+User sets up an amount (amount of tokens for topping up the balance) and token (token address for withdrawal).
+Calling _claimDistributions().
+Getting tokenId (ERC721)
+Make parameters recalculation.
+If (token == tokenToSell), then checking whether there is enough funds on the balance.
+Decreasing balance by amount.
+Clearing removeAfterDistribution.
+Calculating new removalPoint and saving it in removeAfterDistribution.
+Changing token to the corresponding token in the SavingsPool and creating  yield distribution for tokenToSell. (getting all yield with withdrawal).
+Transfering tokenToSell to the user.
+
+
+
+If (token != tokenToSell), then check whether there is enough funds on the balance.
+Changing token to the corresponding token in the and create yield distribution for this token. (getting all yield with withdrawal). 
+Decreasing balance by amount.
+Transfering token to the user.
+
+
+PURCHASE
+
+Checking (now >= nextBuyTimestamp).
+Calculating buyAmount. Dividing globalPeriodBuyAmount by the number of tokens in distributionTokens array.
+Withdrawing tokenToSell (USDC) from SavingsPool and creating yield distribution for tokenToSell. (getting all yield with withdrawal).
+Making Approve
+Starting the cycle for all tokens in distributionTokens.
+On each cycle step calling _swapAndCreateDistribution() with UniswapV2 parameters.
+Updating nextBuyTimestamp 
+Deleting data from removeAfterDistribution connected to last distribution index from globalPeriodBuyAmount
+
+
+_CLAIM DISTRIBUTIONS
+
+Getting tokenId (ERC721).
+Starting the cycle for distribution array with the initial index equal to accountOf[tokenId].nextDistributionIndex.
+Calculating splitBuyAmount: _accountOf[tokenId].buyAmount / distributionTokens.length
+At the each step of the cycle checking whether tokenToSell balance of account is lower than splitBuyAmount.
+Calculating (amount), how much account can claim from accrued distributions. Using the following proportion: 
+buyAmount * amountOut / amountIn
+, whereas  buyAmount - purchasing amount of user for the period
+, amountIn – joint amount to purchase from all users 
+, amountOut – amount of tokens received during distribution after exchanging.
+Decreasing tokenToSell balance of the account by buyAmount.
+Increasing token balance (specific cycle step) by amount received earlier.
+Fixing nextDistributionIndex.
+
+* In case when distribution token == tokenToSell, following the algorithm from above + recalculating removeAfterDistribution for the user (same as deposit()).
+
+_SWAP AND CREATE DISTRIBUTION
+When swapping, we deposit token bought to the SavingsPool.
+Creating distribution on the projection (pool token) of the token bought.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
