@@ -14,7 +14,7 @@ contract SavingsModule is Module, RewardDistributions {
     uint256 public constant DISTRIBUTION_AGGREGATION_PERIOD = 24*60*60;
 
     event ProtocolRegistered(address protocol, address poolToken);
-    event YeldDistribution(address indexed poolToken, uint256 amount);
+    event YieldDistribution(address indexed poolToken, uint256 amount);
     event DepositToken(address indexed protocol, address indexed token, uint256 dnAmount);
     event Deposit(address indexed protocol, address indexed user, uint256 nAmount, uint256 nFee);
     event WithdrawToken(address indexed protocol, address indexed token, uint256 dnAmount);
@@ -112,7 +112,7 @@ contract SavingsModule is Module, RewardDistributions {
     function deposit(address _protocol, address[] memory _tokens, uint256[] memory _dnAmounts) public returns(uint256) {
         distributeRewardIfRequired(_protocol);
 
-        uint256 nBalanceBefore = distributeYeldInternal(_protocol);
+        uint256 nBalanceBefore = distributeYieldInternal(_protocol);
         depositToProtocol(_protocol, _tokens, _dnAmounts);
         uint256 nBalanceAfter = updateProtocolBalance(_protocol);
 
@@ -150,7 +150,7 @@ contract SavingsModule is Module, RewardDistributions {
 
         PoolToken poolToken = PoolToken(protocols[_protocol].poolToken);
 
-        uint256 nBalanceBefore = distributeYeldInternal(_protocol);
+        uint256 nBalanceBefore = distributeYieldInternal(_protocol);
         withdrawFromProtocolProportionally(_msgSender(), IDefiProtocol(_protocol), nAmount, nBalanceBefore);
         uint256 nBalanceAfter = updateProtocolBalance(_protocol);
 
@@ -172,7 +172,7 @@ contract SavingsModule is Module, RewardDistributions {
     function withdraw(address _protocol, address token, uint256 dnAmount, uint256 maxNAmount) public returns(uint256){
         distributeRewardIfRequired(_protocol);
 
-        uint256 nBalanceBefore = distributeYeldInternal(_protocol);
+        uint256 nBalanceBefore = distributeYieldInternal(_protocol);
         withdrawFromProtocolOne(_msgSender(), IDefiProtocol(_protocol), token, dnAmount);
         uint256 nBalanceAfter = updateProtocolBalance(_protocol);
 
@@ -189,11 +189,11 @@ contract SavingsModule is Module, RewardDistributions {
     }
 
     /** 
-     * @notice Distributes yeld. May be called by bot, if there was no deposits/withdrawals
+     * @notice Distributes yield. May be called by bot, if there was no deposits/withdrawals
      */
-    function distributeYeld() public {
+    function distributeYield() public {
         for(uint256 i=0; i<registeredProtocols.length; i++) {
-            distributeYeldInternal(address(registeredProtocols[i]));
+            distributeYieldInternal(address(registeredProtocols[i]));
         }
     }
 
@@ -245,19 +245,19 @@ contract SavingsModule is Module, RewardDistributions {
     }
 
     /**
-     * @notice Calculates difference from previous action with a protocol and distributes yeld
+     * @notice Calculates difference from previous action with a protocol and distributes yield
      * @dev MUST call this BEFORE deposit/withdraw from protocol
      * @param _protocol to check
      * @return Current balance of the protocol
      */
-    function distributeYeldInternal(address _protocol) internal returns(uint256){
+    function distributeYieldInternal(address _protocol) internal returns(uint256){
         uint256 currentBalance = IDefiProtocol(_protocol).normalizedBalance();
         ProtocolInfo storage pi = protocols[_protocol];
         PoolToken poolToken = PoolToken(pi.poolToken);
         if(currentBalance > pi.previousBalance) {
-            uint256 yeld = currentBalance.sub(pi.previousBalance);
-            poolToken.distribute(yeld);
-            emit YeldDistribution(address(poolToken), yeld);
+            uint256 yield = currentBalance.sub(pi.previousBalance);
+            poolToken.distribute(yield);
+            emit YieldDistribution(address(poolToken), yield);
         }
         return currentBalance;
     }
