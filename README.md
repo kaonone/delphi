@@ -2,7 +2,7 @@
 
 ## Deployed contracts (Rinkeby)
 ### External contracts
-
+#### ERC20 tokens
 * DAI `0x5592EC0cfb4dbc12D3aB100b257153436a1f0FEa`
 * cDAI `0x6D7F0754FFeb405d23C51CE938289d4835bE3b14`
 * yDAI `0xC9e4713C332E07FdC821a6738dd9fc906153eFD6`
@@ -28,7 +28,9 @@
 * YFI `0xf35e4fc0875bd38cbe84ab5fad9d9f98f1a4d70b`
 * SNX `0xE273680550b3A34179f6f8e5B790fE943B79D8d1`
 * BPT `0xcc6bb6d7bfc547561a79fe77d9b8df79288e1b06`
+* BAL `0x4cd10e4410299fc8abcdd222ace14eae0a313433`
 
+#### Other contracts
 * Comptroller `0xD9580ad2bE0013A3a8187Dc29B3F63CDC522Bde7`
 
 * CurveFi Y Token `0x6015c7c97ec346e7dae0602f4ff6b5fae3ebde4e`
