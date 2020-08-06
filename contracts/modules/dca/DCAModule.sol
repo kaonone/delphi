@@ -62,7 +62,7 @@ contract DCAModule is Module, ERC721Full, ERC721Burnable, DCAOperatorRole {
     address public router;
     address public tokenToSell;
 
-    mapping(uint256 => Account) private _accountOf;
+    mapping(uint256 => Account) public _accountOf;
     mapping(uint256 => uint256) public removeAfterDistribution;
     mapping(address => TokenData) public tokenDataOf;
 
@@ -84,8 +84,7 @@ contract DCAModule is Module, ERC721Full, ERC721Burnable, DCAOperatorRole {
         address _tokenToSell,
         uint256 _strategy,
         address _router,
-        uint256 _periodTimestamp,
-        address bot
+        uint256 _periodTimestamp
     ) public initializer {
         DCAOperatorRole.initialize(_msgSender());
         Module.initialize(_pool);
@@ -224,7 +223,7 @@ contract DCAModule is Module, ERC721Full, ERC721Burnable, DCAOperatorRole {
      *
      * @return Boolean value indicating whether the operation succeeded.
      *
-     * Emits an {Deposit} event.
+     * Emits an {Deposit} event. Deposit(address user, uint256 amount, uint256 buyAmount, uint256 poolTokenAmount);
      */
     function deposit(uint256 amount, uint256 buyAmount)
         external
@@ -239,6 +238,7 @@ contract DCAModule is Module, ERC721Full, ERC721Burnable, DCAOperatorRole {
 
             _mint(_msgSender(), newTokenId);
 
+            // return actual amount after pool deposit
             _accountOf[newTokenId].balance[tokenToSell] = amount;
 
             _accountOf[newTokenId].buyAmount = buyAmount;
@@ -305,13 +305,14 @@ contract DCAModule is Module, ERC721Full, ERC721Burnable, DCAOperatorRole {
      *
      * @return Boolean value indicating whether the operation succeeded.
      *
-     * Emits an {Withdrawal} event.
+     * Emits an {Withdrawal} event. Withdrawal(address user, uint256 amount, address token, uint256 dWithdrawAmount);
      */
     function withdraw(uint256 amount, address token) external returns (bool) {
         _claimDistributions();
 
         uint256 tokenId = _tokensOfOwner(_msgSender())[0];
 
+        // rebance in poolTokens
         if (token == tokenToSell) {
             require(
                 _accountOf[tokenId].balance[tokenToSell] >= amount,
@@ -365,7 +366,10 @@ contract DCAModule is Module, ERC721Full, ERC721Burnable, DCAOperatorRole {
      * Emits an {Purchase} and {DistributionCreated} events.
      */
     function purchase() external onlyDCAOperator returns (bool) {
-        require(now >= nextBuyTimestamp, "DCAModule-buy: not the time to buy");
+        require(
+            now >= nextBuyTimestamp,
+            "DCAModule-purchase: not the time to buy"
+        );
 
         uint256 buyAmount = globalPeriodBuyAmount.div(
             distributionTokens.length
@@ -554,7 +558,7 @@ contract DCAModule is Module, ERC721Full, ERC721Burnable, DCAOperatorRole {
         // APPROVE
         token.safeApprove(tokenDataOf[token].pool, amount);
 
-        // DIFFERENT PROTOCOLS
+        // DIFFERENT PROTOCOLS // return poolTokenAmount
         ISavingsModule(tokenDataOf[token].pool).deposit(
             tokenDataOf[token].protocol,
             tokens,
