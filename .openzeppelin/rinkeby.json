@@ -1,11 +1,11 @@
 {
   "contracts": {
     "DCAModule": {
-      "address": "0xF99b130078bEf4f158DBdc0D1B82Beb954B96feA",
-      "constructorCode": "6080604052614cbc806100136000396000f3fe",
-      "bodyBytecodeHash": "832a353653f50f4fda74218d2a0858e535924d02057e2ce05f5d4c1675fc41a3",
-      "localBytecodeHash": "78879183c9ef2611d0635ef767ba90c4261708a7b2c924420e6ed8a32c494dd8",
-      "deployedBytecodeHash": "78879183c9ef2611d0635ef767ba90c4261708a7b2c924420e6ed8a32c494dd8",
+      "address": "0x53C2EECA0B3AfB1D004526fe0F18B45A501F1C36",
+      "constructorCode": "6080604052615f67806100136000396000f3fe",
+      "bodyBytecodeHash": "9cab88a6f8841915528f7a95255c121ad5933fd2f15e5bd8a9f4ff70512adce4",
+      "localBytecodeHash": "4199e3497307ec6f839540c76588176d453439275ff885ae6aabd7233f519c77",
+      "deployedBytecodeHash": "4199e3497307ec6f839540c76588176d453439275ff885ae6aabd7233f519c77",
       "types": {
         "t_bool": {
           "id": "t_bool",
@@ -48,9 +48,9 @@
           "members": [
             {
               "label": "_value",
-              "astId": 4304,
+              "astId": 621,
               "type": "t_uint256",
-              "src": "16999:14:32"
+              "src": "1024:14:6"
             }
           ]
         },
@@ -90,6 +90,13 @@
           "label": "mapping(key => string)",
           "kind": "mapping"
         },
+        "t_array:49<t_uint256>": {
+          "id": "t_array:49<t_uint256>",
+          "valueType": "t_uint256",
+          "length": "49",
+          "kind": "array",
+          "label": "uint256[49]"
+        },
         "t_struct<Roles.Role>": {
           "id": "t_struct<Roles.Role>",
           "kind": "struct",
@@ -97,9 +104,9 @@
           "members": [
             {
               "label": "bearer",
-              "astId": 6211,
+              "astId": 35,
               "type": "t_mapping<t_bool>",
-              "src": "56036:32:32"
+              "src": "150:32:1"
             }
           ]
         },
@@ -110,21 +117,21 @@
           "members": [
             {
               "label": "tokenAddress",
-              "astId": 6715,
+              "astId": 5637,
               "type": "t_address",
-              "src": "63957:20:32"
+              "src": "1504:20:64"
             },
             {
-              "label": "amount",
-              "astId": 6717,
+              "label": "amountIn",
+              "astId": 5639,
               "type": "t_uint256",
-              "src": "63987:14:32"
+              "src": "1534:16:64"
             },
             {
-              "label": "totalSupply",
-              "astId": 6719,
+              "label": "amountOut",
+              "astId": 5641,
               "type": "t_uint256",
-              "src": "64011:19:32"
+              "src": "1560:17:64"
             }
           ]
         },
@@ -135,31 +142,12 @@
           "kind": "array",
           "label": "DCAModule.Distribution[]"
         },
-        "t_struct<DCAModule.DistributionToken>": {
-          "id": "t_struct<DCAModule.DistributionToken>",
-          "kind": "struct",
-          "label": "DCAModule.DistributionToken",
-          "members": [
-            {
-              "label": "tokenSymbol",
-              "astId": 6722,
-              "type": "t_string",
-              "src": "64078:18:32"
-            },
-            {
-              "label": "tokenAddress",
-              "astId": 6724,
-              "type": "t_address",
-              "src": "64106:20:32"
-            }
-          ]
-        },
-        "t_array:dyn<t_struct<DCAModule.DistributionToken>>": {
-          "id": "t_array:dyn<t_struct<DCAModule.DistributionToken>>",
-          "valueType": "t_struct<DCAModule.DistributionToken>",
+        "t_array:dyn<t_address>": {
+          "id": "t_array:dyn<t_address>",
+          "valueType": "t_address",
           "length": "dyn",
           "kind": "array",
-          "label": "DCAModule.DistributionToken[]"
+          "label": "address[]"
         },
         "t_struct<DCAModule.Account>": {
           "id": "t_struct<DCAModule.Account>",
@@ -168,27 +156,27 @@
           "members": [
             {
               "label": "balance",
-              "astId": 6706,
+              "astId": 5628,
               "type": "t_mapping<t_uint256>",
-              "src": "63774:35:32"
+              "src": "1321:35:64"
             },
             {
               "label": "buyAmount",
-              "astId": 6708,
+              "astId": 5630,
               "type": "t_uint256",
-              "src": "63819:17:32"
+              "src": "1366:17:64"
             },
             {
               "label": "nextDistributionIndex",
-              "astId": 6710,
+              "astId": 5632,
               "type": "t_uint256",
-              "src": "63846:29:32"
+              "src": "1393:29:64"
             },
             {
               "label": "lastRemovalPointIndex",
-              "astId": 6712,
+              "astId": 5634,
               "type": "t_uint256",
-              "src": "63885:29:32"
+              "src": "1432:29:64"
             }
           ]
         },
@@ -196,6 +184,43 @@
           "id": "t_mapping<t_struct<DCAModule.Account>>",
           "valueType": "t_struct<DCAModule.Account>",
           "label": "mapping(key => DCAModule.Account)",
+          "kind": "mapping"
+        },
+        "t_struct<DCAModule.TokenData>": {
+          "id": "t_struct<DCAModule.TokenData>",
+          "kind": "struct",
+          "label": "DCAModule.TokenData",
+          "members": [
+            {
+              "label": "decimals",
+              "astId": 5644,
+              "type": "t_uint256",
+              "src": "1617:16:64"
+            },
+            {
+              "label": "pool",
+              "astId": 5646,
+              "type": "t_address",
+              "src": "1643:12:64"
+            },
+            {
+              "label": "protocol",
+              "astId": 5648,
+              "type": "t_address",
+              "src": "1675:16:64"
+            },
+            {
+              "label": "poolToken",
+              "astId": 5650,
+              "type": "t_address",
+              "src": "1701:17:64"
+            }
+          ]
+        },
+        "t_mapping<t_struct<DCAModule.TokenData>>": {
+          "id": "t_mapping<t_struct<DCAModule.TokenData>>",
+          "valueType": "t_struct<DCAModule.TokenData>",
+          "label": "mapping(key => DCAModule.TokenData)",
           "kind": "mapping"
         },
         "t_enum<DCAModule.Strategies>": {
@@ -211,299 +236,331 @@
       "storage": [
         {
           "contract": "Initializable",
-          "path": "contracts/dist/DCAModule.sol",
+          "path": "@openzeppelin/upgrades/contracts/Initializable.sol",
           "label": "initialized",
-          "astId": 3818,
+          "astId": 3576,
           "type": "t_bool",
-          "src": "819:24:32"
+          "src": "757:24:28"
         },
         {
           "contract": "Initializable",
-          "path": "contracts/dist/DCAModule.sol",
+          "path": "@openzeppelin/upgrades/contracts/Initializable.sol",
           "label": "initializing",
-          "astId": 3820,
+          "astId": 3578,
           "type": "t_bool",
-          "src": "938:25:32"
+          "src": "876:25:28"
         },
         {
           "contract": "Initializable",
-          "path": "contracts/dist/DCAModule.sol",
+          "path": "@openzeppelin/upgrades/contracts/Initializable.sol",
           "label": "______gap",
-          "astId": 3882,
+          "astId": 3640,
           "type": "t_array:50<t_uint256>",
-          "src": "2044:29:32"
+          "src": "1982:29:28"
         },
         {
           "contract": "Ownable",
-          "path": "contracts/dist/DCAModule.sol",
+          "path": "@openzeppelin/contracts-ethereum-package/contracts/ownership/Ownable.sol",
           "label": "_owner",
-          "astId": 6408,
+          "astId": 1035,
           "type": "t_address",
-          "src": "58654:22:32"
+          "src": "526:22:11"
         },
         {
           "contract": "Ownable",
-          "path": "contracts/dist/DCAModule.sol",
+          "path": "@openzeppelin/contracts-ethereum-package/contracts/ownership/Ownable.sol",
           "label": "______gap",
-          "astId": 6521,
+          "astId": 1148,
           "type": "t_array:50<t_uint256>",
-          "src": "60599:29:32"
+          "src": "2471:29:11"
         },
         {
           "contract": "Module",
-          "path": "contracts/dist/DCAModule.sol",
+          "path": "contracts/common/Module.sol",
           "label": "pool",
-          "astId": 6591,
+          "astId": 3685,
           "type": "t_address",
-          "src": "62026:19:32"
+          "src": "214:19:30"
         },
         {
           "contract": "ERC165",
-          "path": "contracts/dist/DCAModule.sol",
+          "path": "@openzeppelin/contracts-ethereum-package/contracts/introspection/ERC165.sol",
           "label": "_supportedInterfaces",
-          "astId": 4357,
+          "astId": 677,
           "type": "t_mapping<t_bool>",
-          "src": "17932:52:32"
+          "src": "565:52:7"
         },
         {
           "contract": "ERC165",
-          "path": "contracts/dist/DCAModule.sol",
+          "path": "@openzeppelin/contracts-ethereum-package/contracts/introspection/ERC165.sol",
           "label": "______gap",
-          "astId": 4402,
+          "astId": 722,
           "type": "t_array:50<t_uint256>",
-          "src": "19096:29:32"
+          "src": "1729:29:7"
         },
         {
           "contract": "ERC721",
-          "path": "contracts/dist/DCAModule.sol",
+          "path": "@openzeppelin/contracts-ethereum-package/contracts/token/ERC721/ERC721.sol",
           "label": "_tokenOwner",
-          "astId": 4428,
+          "astId": 2041,
           "type": "t_mapping<t_address>",
-          "src": "19813:48:32"
+          "src": "886:48:18"
         },
         {
           "contract": "ERC721",
-          "path": "contracts/dist/DCAModule.sol",
+          "path": "@openzeppelin/contracts-ethereum-package/contracts/token/ERC721/ERC721.sol",
           "label": "_tokenApprovals",
-          "astId": 4432,
+          "astId": 2045,
           "type": "t_mapping<t_address>",
-          "src": "19917:52:32"
+          "src": "990:52:18"
         },
         {
           "contract": "ERC721",
-          "path": "contracts/dist/DCAModule.sol",
+          "path": "@openzeppelin/contracts-ethereum-package/contracts/token/ERC721/ERC721.sol",
           "label": "_ownedTokensCount",
-          "astId": 4436,
+          "astId": 2049,
           "type": "t_mapping<t_struct<Counters.Counter>>",
-          "src": "20027:63:32"
+          "src": "1100:63:18"
         },
         {
           "contract": "ERC721",
-          "path": "contracts/dist/DCAModule.sol",
+          "path": "@openzeppelin/contracts-ethereum-package/contracts/token/ERC721/ERC721.sol",
           "label": "_operatorApprovals",
-          "astId": 4442,
+          "astId": 2055,
           "type": "t_mapping<t_bool>",
-          "src": "20145:73:32"
+          "src": "1218:73:18"
         },
         {
           "contract": "ERC721",
-          "path": "contracts/dist/DCAModule.sol",
+          "path": "@openzeppelin/contracts-ethereum-package/contracts/token/ERC721/ERC721.sol",
           "label": "______gap",
-          "astId": 5054,
+          "astId": 2701,
           "type": "t_array:50<t_uint256>",
-          "src": "34189:29:32"
+          "src": "16014:29:18"
         },
         {
           "contract": "ERC721Enumerable",
-          "path": "contracts/dist/DCAModule.sol",
+          "path": "@openzeppelin/contracts-ethereum-package/contracts/token/ERC721/ERC721Enumerable.sol",
           "label": "_ownedTokens",
-          "astId": 5098,
+          "astId": 2759,
           "type": "t_mapping<t_array:dyn<t_uint256>>",
-          "src": "35183:50:32"
+          "src": "502:50:20"
         },
         {
           "contract": "ERC721Enumerable",
-          "path": "contracts/dist/DCAModule.sol",
+          "path": "@openzeppelin/contracts-ethereum-package/contracts/token/ERC721/ERC721Enumerable.sol",
           "label": "_ownedTokensIndex",
-          "astId": 5102,
+          "astId": 2763,
           "type": "t_mapping<t_uint256>",
-          "src": "35303:53:32"
+          "src": "622:53:20"
         },
         {
           "contract": "ERC721Enumerable",
-          "path": "contracts/dist/DCAModule.sol",
+          "path": "@openzeppelin/contracts-ethereum-package/contracts/token/ERC721/ERC721Enumerable.sol",
           "label": "_allTokens",
-          "astId": 5105,
+          "astId": 2766,
           "type": "t_array:dyn<t_uint256>",
-          "src": "35417:28:32"
+          "src": "736:28:20"
         },
         {
           "contract": "ERC721Enumerable",
-          "path": "contracts/dist/DCAModule.sol",
+          "path": "@openzeppelin/contracts-ethereum-package/contracts/token/ERC721/ERC721Enumerable.sol",
           "label": "_allTokensIndex",
-          "astId": 5109,
+          "astId": 2770,
           "type": "t_mapping<t_uint256>",
-          "src": "35516:51:32"
+          "src": "835:51:20"
         },
         {
           "contract": "ERC721Enumerable",
-          "path": "contracts/dist/DCAModule.sol",
+          "path": "@openzeppelin/contracts-ethereum-package/contracts/token/ERC721/ERC721Enumerable.sol",
           "label": "______gap",
-          "astId": 5440,
+          "astId": 3101,
           "type": "t_array:50<t_uint256>",
-          "src": "43734:29:32"
+          "src": "9053:29:20"
         },
         {
           "contract": "ERC721Metadata",
-          "path": "contracts/dist/DCAModule.sol",
+          "path": "@openzeppelin/contracts-ethereum-package/contracts/token/ERC721/ERC721Metadata.sol",
           "label": "_name",
-          "astId": 5477,
+          "astId": 3140,
           "type": "t_string",
-          "src": "44507:20:32"
+          "src": "323:20:22"
         },
         {
           "contract": "ERC721Metadata",
-          "path": "contracts/dist/DCAModule.sol",
+          "path": "@openzeppelin/contracts-ethereum-package/contracts/token/ERC721/ERC721Metadata.sol",
           "label": "_symbol",
-          "astId": 5479,
+          "astId": 3142,
           "type": "t_string",
-          "src": "44554:22:32"
+          "src": "370:22:22"
         },
         {
           "contract": "ERC721Metadata",
-          "path": "contracts/dist/DCAModule.sol",
+          "path": "@openzeppelin/contracts-ethereum-package/contracts/token/ERC721/ERC721Metadata.sol",
           "label": "_tokenURIs",
-          "astId": 5483,
+          "astId": 3146,
           "type": "t_mapping<t_string>",
-          "src": "44622:45:32"
+          "src": "438:45:22"
         },
         {
           "contract": "ERC721Metadata",
-          "path": "contracts/dist/DCAModule.sol",
+          "path": "@openzeppelin/contracts-ethereum-package/contracts/token/ERC721/ERC721Metadata.sol",
+          "label": "_baseURI",
+          "astId": 3148,
+          "type": "t_string",
+          "src": "506:23:22"
+        },
+        {
+          "contract": "ERC721Metadata",
+          "path": "@openzeppelin/contracts-ethereum-package/contracts/token/ERC721/ERC721Metadata.sol",
           "label": "______gap",
-          "astId": 5614,
-          "type": "t_array:50<t_uint256>",
-          "src": "47270:29:32"
+          "astId": 3318,
+          "type": "t_array:49<t_uint256>",
+          "src": "4297:29:22"
         },
         {
           "contract": "ERC721Full",
-          "path": "contracts/dist/DCAModule.sol",
+          "path": "@openzeppelin/contracts-ethereum-package/contracts/token/ERC721/ERC721Full.sol",
           "label": "______gap",
-          "astId": 5628,
+          "astId": 3120,
           "type": "t_array:50<t_uint256>",
-          "src": "47780:29:32"
+          "src": "532:29:21"
         },
         {
           "contract": "ERC721Burnable",
-          "path": "contracts/dist/DCAModule.sol",
+          "path": "@openzeppelin/contracts-ethereum-package/contracts/token/ERC721/ERC721Burnable.sol",
           "label": "______gap",
-          "astId": 5659,
+          "astId": 2736,
           "type": "t_array:50<t_uint256>",
-          "src": "48470:29:32"
+          "src": "678:29:19"
         },
         {
           "contract": "DCAOperatorRole",
-          "path": "contracts/dist/DCAModule.sol",
+          "path": "contracts/modules/dca/DCAOperatorRole.sol",
           "label": "_operators",
-          "astId": 6304,
+          "astId": 7053,
           "type": "t_struct<Roles.Role>",
-          "src": "57149:29:32"
+          "src": "442:29:65"
         },
         {
           "contract": "DCAModule",
-          "path": "contracts/dist/DCAModule.sol",
+          "path": "contracts/modules/dca/DCAModule.sol",
           "label": "_tokenIds",
-          "astId": 6702,
+          "astId": 5624,
           "type": "t_struct<Counters.Counter>",
-          "src": "63708:34:32"
+          "src": "1255:34:64"
         },
         {
           "contract": "DCAModule",
-          "path": "contracts/dist/DCAModule.sol",
+          "path": "contracts/modules/dca/DCAModule.sol",
           "label": "distributions",
-          "astId": 6728,
+          "astId": 5654,
           "type": "t_array:dyn<t_struct<DCAModule.Distribution>>",
-          "src": "64139:35:32"
+          "src": "1731:35:64"
         },
         {
           "contract": "DCAModule",
-          "path": "contracts/dist/DCAModule.sol",
+          "path": "contracts/modules/dca/DCAModule.sol",
           "label": "distributionTokens",
-          "astId": 6731,
-          "type": "t_array:dyn<t_struct<DCAModule.DistributionToken>>",
-          "src": "64180:45:32"
+          "astId": 5657,
+          "type": "t_array:dyn<t_address>",
+          "src": "1772:35:64"
         },
         {
           "contract": "DCAModule",
-          "path": "contracts/dist/DCAModule.sol",
+          "path": "contracts/modules/dca/DCAModule.sol",
           "label": "periodTimestamp",
-          "astId": 6733,
+          "astId": 5659,
           "type": "t_uint256",
-          "src": "64232:30:32"
+          "src": "1814:30:64"
         },
         {
           "contract": "DCAModule",
-          "path": "contracts/dist/DCAModule.sol",
+          "path": "contracts/modules/dca/DCAModule.sol",
           "label": "nextBuyTimestamp",
-          "astId": 6735,
+          "astId": 5661,
           "type": "t_uint256",
-          "src": "64268:31:32"
+          "src": "1850:31:64"
         },
         {
           "contract": "DCAModule",
-          "path": "contracts/dist/DCAModule.sol",
+          "path": "contracts/modules/dca/DCAModule.sol",
           "label": "globalPeriodBuyAmount",
-          "astId": 6737,
+          "astId": 5663,
           "type": "t_uint256",
-          "src": "64305:36:32"
+          "src": "1887:36:64"
         },
         {
           "contract": "DCAModule",
-          "path": "contracts/dist/DCAModule.sol",
+          "path": "contracts/modules/dca/DCAModule.sol",
           "label": "deadline",
-          "astId": 6739,
+          "astId": 5665,
           "type": "t_uint256",
-          "src": "64347:23:32"
+          "src": "1929:23:64"
         },
         {
           "contract": "DCAModule",
-          "path": "contracts/dist/DCAModule.sol",
+          "path": "contracts/modules/dca/DCAModule.sol",
+          "label": "protocolMaxFee",
+          "astId": 5667,
+          "type": "t_uint256",
+          "src": "1958:29:64"
+        },
+        {
+          "contract": "DCAModule",
+          "path": "contracts/modules/dca/DCAModule.sol",
+          "label": "feeFoundation",
+          "astId": 5669,
+          "type": "t_uint256",
+          "src": "1993:28:64"
+        },
+        {
+          "contract": "DCAModule",
+          "path": "contracts/modules/dca/DCAModule.sol",
           "label": "router",
-          "astId": 6741,
+          "astId": 5671,
           "type": "t_address",
-          "src": "64377:21:32"
+          "src": "2028:21:64"
         },
         {
           "contract": "DCAModule",
-          "path": "contracts/dist/DCAModule.sol",
-          "label": "_accountOf",
-          "astId": 6745,
-          "type": "t_mapping<t_struct<DCAModule.Account>>",
-          "src": "64405:46:32"
-        },
-        {
-          "contract": "DCAModule",
-          "path": "contracts/dist/DCAModule.sol",
-          "label": "removeAfterDistribution",
-          "astId": 6749,
-          "type": "t_mapping<t_uint256>",
-          "src": "64457:58:32"
-        },
-        {
-          "contract": "DCAModule",
-          "path": "contracts/dist/DCAModule.sol",
+          "path": "contracts/modules/dca/DCAModule.sol",
           "label": "tokenToSell",
-          "astId": 6754,
+          "astId": 5673,
           "type": "t_address",
-          "src": "64554:26:32"
+          "src": "2055:26:64"
         },
         {
           "contract": "DCAModule",
-          "path": "contracts/dist/DCAModule.sol",
+          "path": "contracts/modules/dca/DCAModule.sol",
+          "label": "_accountOf",
+          "astId": 5677,
+          "type": "t_mapping<t_struct<DCAModule.Account>>",
+          "src": "2088:45:64"
+        },
+        {
+          "contract": "DCAModule",
+          "path": "contracts/modules/dca/DCAModule.sol",
+          "label": "removeAfterDistribution",
+          "astId": 5681,
+          "type": "t_mapping<t_uint256>",
+          "src": "2139:58:64"
+        },
+        {
+          "contract": "DCAModule",
+          "path": "contracts/modules/dca/DCAModule.sol",
+          "label": "tokenDataOf",
+          "astId": 5685,
+          "type": "t_mapping<t_struct<DCAModule.TokenData>>",
+          "src": "2203:48:64"
+        },
+        {
+          "contract": "DCAModule",
+          "path": "contracts/modules/dca/DCAModule.sol",
           "label": "strategy",
-          "astId": 6756,
+          "astId": 5690,
           "type": "t_enum<DCAModule.Strategies>",
-          "src": "64587:26:32"
+          "src": "2290:26:64"
         }
       ],
       "warnings": {
@@ -516,7 +573,20 @@
     }
   },
   "solidityLibs": {},
-  "proxies": {},
+  "proxies": {
+    "akropolis-dca-pool/DCAModule": [
+      {
+        "address": "0x6710F8d5e25Cd4CE40309a009e2b89118aad8B60",
+        "version": "1.0.0",
+        "implementation": "0x53C2EECA0B3AfB1D004526fe0F18B45A501F1C36",
+        "admin": "0xD849A09926BF6742bB3a43D8c892fBe0724F80f1",
+        "kind": "Upgradeable"
+      }
+    ]
+  },
   "manifestVersion": "2.2",
-  "version": "1.0.0"
+  "version": "1.0.0",
+  "proxyAdmin": {
+    "address": "0xD849A09926BF6742bB3a43D8c892fBe0724F80f1"
+  }
 }

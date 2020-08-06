@@ -1,6 +1,5 @@
 pragma solidity ^0.5.12;
 
-
 /**
  * @title ERC900 Simple Staking Interface
  * @dev See https://github.com/ethereum/EIPs/blob/master/EIPS/eip-900.md

@@ -1,6 +1,6 @@
 pragma solidity ^0.5.12;
 
-import "contracts/utils/TransferHelper.sol";
+import "../utils/TransferHelper.sol";
 
 contract FakeUniswapRouter {
     using TransferHelper for address;
