@@ -181,7 +181,7 @@ contract SavingsModule is Module, RewardDistributions {
         PoolToken poolToken = PoolToken(protocols[_protocol].poolToken);
         poolToken.burnFrom(_msgSender(), nAmount);
 
-        uint256 nAmountWithoutFee = denormalizeTokenAmount(token, dnAmount);
+        uint256 nAmountWithoutFee = normalizeTokenAmount(token, dnAmount);
         uint256 fee = (nAmount > nAmountWithoutFee)?(nAmount-nAmountWithoutFee):0;
         emit WithdrawToken(_protocol, token, dnAmount);
         emit Withdraw(_protocol, _msgSender(), nAmount, fee);
