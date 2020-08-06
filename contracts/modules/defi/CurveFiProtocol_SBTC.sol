@@ -7,9 +7,35 @@ import "../../interfaces/defi/ICurveFiRewards_SBTC.sol";
 contract CurveFiProtocol_SBTC is CurveFiProtocol {
     uint256 private constant N_COINS = 3;
 
+    address balRewardToken;
+
     function nCoins() internal returns(uint256) {
         return N_COINS;
     }
+
+    function setBalRewardToken(address _balRewardToken) public onlyDefiOperator {
+        balRewardToken = _balRewardToken;
+    }
+
+    function supportedRewardTokens() public view returns(address[] memory) {
+        require(balRewardToken != address(0), "CurveFiProtocol_SBTC: not yet fully initialized");
+        address[] memory rtokens = new address[](2);
+        rtokens[0] = address(curveFiRewardToken);
+        rtokens[1] = balRewardToken;
+        return rtokens;
+    }
+
+    function isSupportedRewardToken(address token) public view returns(bool) {
+        return(
+            (token == address(curveFiRewardToken)) ||
+            (token == balRewardToken)
+        );
+    }
+
+    // Nothing needed to claim BAL, so original implementaion will work
+    // function cliamRewardsFromProtocol() internal {
+    //     curveFiRewards.getReward();
+    // }
 
     function reward_rewardToken(address rewardsController) internal returns(address){
         return ICurveFiRewards_SBTC(rewardsController).rewardsToken();
