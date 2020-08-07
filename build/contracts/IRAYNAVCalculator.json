@@ -1,0 +1,418 @@
+{
+  "contractName": "IRAYNAVCalculator",
+  "abi": [
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "internalType": "bytes32",
+          "name": "portfolioId",
+          "type": "bytes32"
+        },
+        {
+          "internalType": "bytes32",
+          "name": "tokenId",
+          "type": "bytes32"
+        }
+      ],
+      "name": "getTokenValue",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    }
+  ],
+  "metadata": "{\"compiler\":{\"version\":\"0.5.17+commit.d19bba13\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"constant\":false,\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"portfolioId\",\"type\":\"bytes32\"},{\"internalType\":\"bytes32\",\"name\":\"tokenId\",\"type\":\"bytes32\"}],\"name\":\"getTokenValue\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"}],\"devdoc\":{\"methods\":{\"getTokenValue(bytes32,bytes32)\":{\"details\":\"The implementation of this function exists in NAVCalculator \",\"params\":{\"portfolioId\":\"- the id of the portfolio associated with the RAY token\",\"tokenId\":\"- the id of the RAY token to get the value of \"},\"return\":\"an array of two, the first value is the current token value, the          second value is the current price per share of the portfolio\"}}},\"userdoc\":{\"methods\":{\"getTokenValue(bytes32,bytes32)\":{\"notice\":\"Get the underlying value of a RAY token (principal + yield earnt) \"}},\"notice\":\"Basic interface for integration with RAY - The Robo-Advisor for Yield.  /// Author:   Devan Purhar Version:  1.0.0\"}},\"settings\":{\"compilationTarget\":{\"/Users/ilya/Documents/Akropolis/dca-strategy-bot/contracts/interfaces/defi/IRAYNAVCalculator.sol\":\"IRAYNAVCalculator\"},\"evmVersion\":\"istanbul\",\"libraries\":{},\"optimizer\":{\"enabled\":true,\"runs\":10000},\"remappings\":[]},\"sources\":{\"/Users/ilya/Documents/Akropolis/dca-strategy-bot/contracts/interfaces/defi/IRAYNAVCalculator.sol\":{\"keccak256\":\"0x307f63129509a40c045b137b23c28e67763dc6531ee4eb9b479a6d0fae2adb1f\",\"urls\":[\"bzz-raw://8152c6a48ebc1fcb825681be2c58230333ce34024a38fc255c27a830079f4473\",\"dweb:/ipfs/QmR8X44JuyxBiKEWkeFQJNSpWd939jMqxJJstTtR84MMds\"]}},\"version\":1}",
+  "bytecode": "0x",
+  "deployedBytecode": "0x",
+  "sourceMap": "",
+  "deployedSourceMap": "",
+  "source": "pragma solidity ^0.5.12;\n\n/**\n\n        The software and documentation available in this repository (the \"Software\") is\n        protected by copyright law and accessible pursuant to the license set forth below.\n\n        Copyright © 2019 Staked Securely, Inc. All rights reserved.\n\n        Permission is hereby granted, free of charge, to any person or organization\n        obtaining the Software (the “Licensee”) to privately study, review, and analyze\n        the Software. Licensee shall not use the Software for any other purpose. Licensee\n        shall not modify, transfer, assign, share, or sub-license the Software or any\n        derivative works of the Software.\n\n        THE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,\n        INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A\n        PARTICULAR PURPOSE, TITLE, AND NON-INFRINGEMENT. IN NO EVENT SHALL THE COPYRIGHT\n        HOLDERS BE LIABLE FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT,\n        OR OTHERWISE, ARISING FROM, OUT OF, OR IN CONNECTION WITH THE SOFTWARE.\n\n*/\n\n/// @notice  Basic interface for integration with RAY - The Robo-Advisor for Yield.\n///\n/// Author:   Devan Purhar\n/// Version:  1.0.0\n\ninterface IRAYNAVCalculator {\n    /// @notice  Get the underlying value of a RAY token (principal + yield earnt)\n    ///\n    /// @dev     The implementation of this function exists in NAVCalculator\n    ///\n    /// @param   portfolioId - the id of the portfolio associated with the RAY token\n    /// @param   tokenId - the id of the RAY token to get the value of\n    ///\n    /// @return  an array of two, the first value is the current token value, the\n    ///          second value is the current price per share of the portfolio\n    function getTokenValue(bytes32 portfolioId, bytes32 tokenId) external returns(uint, uint);\n}\n",
+  "sourcePath": "/Users/ilya/Documents/Akropolis/dca-strategy-bot/contracts/interfaces/defi/IRAYNAVCalculator.sol",
+  "ast": {
+    "absolutePath": "/Users/ilya/Documents/Akropolis/dca-strategy-bot/contracts/interfaces/defi/IRAYNAVCalculator.sol",
+    "exportedSymbols": {
+      "IRAYNAVCalculator": [
+        5773
+      ]
+    },
+    "id": 5774,
+    "nodeType": "SourceUnit",
+    "nodes": [
+      {
+        "id": 5761,
+        "literals": [
+          "solidity",
+          "^",
+          "0.5",
+          ".12"
+        ],
+        "nodeType": "PragmaDirective",
+        "src": "0:24:28"
+      },
+      {
+        "baseContracts": [],
+        "contractDependencies": [],
+        "contractKind": "interface",
+        "documentation": "@notice  Basic interface for integration with RAY - The Robo-Advisor for Yield.\n\n/// Author:   Devan Purhar\n Version:  1.0.0",
+        "fullyImplemented": false,
+        "id": 5773,
+        "linearizedBaseContracts": [
+          5773
+        ],
+        "name": "IRAYNAVCalculator",
+        "nodeType": "ContractDefinition",
+        "nodes": [
+          {
+            "body": null,
+            "documentation": "@notice  Get the underlying value of a RAY token (principal + yield earnt)\n\n    /// @dev     The implementation of this function exists in NAVCalculator\n\n    /// @param   portfolioId - the id of the portfolio associated with the RAY token\n @param   tokenId - the id of the RAY token to get the value of\n\n    /// @return  an array of two, the first value is the current token value, the\n          second value is the current price per share of the portfolio",
+            "id": 5772,
+            "implemented": false,
+            "kind": "function",
+            "modifiers": [],
+            "name": "getTokenValue",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 5766,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 5763,
+                  "name": "portfolioId",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 5772,
+                  "src": "1810:19:28",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bytes32",
+                    "typeString": "bytes32"
+                  },
+                  "typeName": {
+                    "id": 5762,
+                    "name": "bytes32",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "1810:7:28",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bytes32",
+                      "typeString": "bytes32"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 5765,
+                  "name": "tokenId",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 5772,
+                  "src": "1831:15:28",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bytes32",
+                    "typeString": "bytes32"
+                  },
+                  "typeName": {
+                    "id": 5764,
+                    "name": "bytes32",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "1831:7:28",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bytes32",
+                      "typeString": "bytes32"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "1809:38:28"
+            },
+            "returnParameters": {
+              "id": 5771,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 5768,
+                  "name": "",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 5772,
+                  "src": "1865:4:28",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  },
+                  "typeName": {
+                    "id": 5767,
+                    "name": "uint",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "1865:4:28",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 5770,
+                  "name": "",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 5772,
+                  "src": "1871:4:28",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  },
+                  "typeName": {
+                    "id": 5769,
+                    "name": "uint",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "1871:4:28",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "1864:12:28"
+            },
+            "scope": 5773,
+            "src": "1787:90:28",
+            "stateMutability": "nonpayable",
+            "superFunction": null,
+            "visibility": "external"
+          }
+        ],
+        "scope": 5774,
+        "src": "1253:626:28"
+      }
+    ],
+    "src": "0:1880:28"
+  },
+  "legacyAST": {
+    "absolutePath": "/Users/ilya/Documents/Akropolis/dca-strategy-bot/contracts/interfaces/defi/IRAYNAVCalculator.sol",
+    "exportedSymbols": {
+      "IRAYNAVCalculator": [
+        5773
+      ]
+    },
+    "id": 5774,
+    "nodeType": "SourceUnit",
+    "nodes": [
+      {
+        "id": 5761,
+        "literals": [
+          "solidity",
+          "^",
+          "0.5",
+          ".12"
+        ],
+        "nodeType": "PragmaDirective",
+        "src": "0:24:28"
+      },
+      {
+        "baseContracts": [],
+        "contractDependencies": [],
+        "contractKind": "interface",
+        "documentation": "@notice  Basic interface for integration with RAY - The Robo-Advisor for Yield.\n\n/// Author:   Devan Purhar\n Version:  1.0.0",
+        "fullyImplemented": false,
+        "id": 5773,
+        "linearizedBaseContracts": [
+          5773
+        ],
+        "name": "IRAYNAVCalculator",
+        "nodeType": "ContractDefinition",
+        "nodes": [
+          {
+            "body": null,
+            "documentation": "@notice  Get the underlying value of a RAY token (principal + yield earnt)\n\n    /// @dev     The implementation of this function exists in NAVCalculator\n\n    /// @param   portfolioId - the id of the portfolio associated with the RAY token\n @param   tokenId - the id of the RAY token to get the value of\n\n    /// @return  an array of two, the first value is the current token value, the\n          second value is the current price per share of the portfolio",
+            "id": 5772,
+            "implemented": false,
+            "kind": "function",
+            "modifiers": [],
+            "name": "getTokenValue",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 5766,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 5763,
+                  "name": "portfolioId",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 5772,
+                  "src": "1810:19:28",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bytes32",
+                    "typeString": "bytes32"
+                  },
+                  "typeName": {
+                    "id": 5762,
+                    "name": "bytes32",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "1810:7:28",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bytes32",
+                      "typeString": "bytes32"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 5765,
+                  "name": "tokenId",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 5772,
+                  "src": "1831:15:28",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bytes32",
+                    "typeString": "bytes32"
+                  },
+                  "typeName": {
+                    "id": 5764,
+                    "name": "bytes32",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "1831:7:28",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bytes32",
+                      "typeString": "bytes32"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "1809:38:28"
+            },
+            "returnParameters": {
+              "id": 5771,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 5768,
+                  "name": "",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 5772,
+                  "src": "1865:4:28",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  },
+                  "typeName": {
+                    "id": 5767,
+                    "name": "uint",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "1865:4:28",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 5770,
+                  "name": "",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 5772,
+                  "src": "1871:4:28",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  },
+                  "typeName": {
+                    "id": 5769,
+                    "name": "uint",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "1871:4:28",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "1864:12:28"
+            },
+            "scope": 5773,
+            "src": "1787:90:28",
+            "stateMutability": "nonpayable",
+            "superFunction": null,
+            "visibility": "external"
+          }
+        ],
+        "scope": 5774,
+        "src": "1253:626:28"
+      }
+    ],
+    "src": "0:1880:28"
+  },
+  "compiler": {
+    "name": "solc",
+    "version": "0.5.17+commit.d19bba13.Emscripten.clang"
+  },
+  "networks": {},
+  "schemaVersion": "3.2.3",
+  "updatedAt": "2020-08-07T09:48:49.894Z",
+  "devdoc": {
+    "methods": {
+      "getTokenValue(bytes32,bytes32)": {
+        "details": "The implementation of this function exists in NAVCalculator ",
+        "params": {
+          "portfolioId": "- the id of the portfolio associated with the RAY token",
+          "tokenId": "- the id of the RAY token to get the value of "
+        },
+        "return": "an array of two, the first value is the current token value, the          second value is the current price per share of the portfolio"
+      }
+    }
+  },
+  "userdoc": {
+    "methods": {
+      "getTokenValue(bytes32,bytes32)": {
+        "notice": "Get the underlying value of a RAY token (principal + yield earnt) "
+      }
+    },
+    "notice": "Basic interface for integration with RAY - The Robo-Advisor for Yield.  /// Author:   Devan Purhar Version:  1.0.0"
+  }
+}

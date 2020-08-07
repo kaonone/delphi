@@ -1,0 +1,232 @@
+{
+  "contractName": "IPoolTokenBalanceChangeRecipient",
+  "abi": [
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "user",
+          "type": "address"
+        }
+      ],
+      "name": "poolTokenBalanceChanged",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    }
+  ],
+  "metadata": "{\"compiler\":{\"version\":\"0.5.17+commit.d19bba13\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"constant\":false,\"inputs\":[{\"internalType\":\"address\",\"name\":\"user\",\"type\":\"address\"}],\"name\":\"poolTokenBalanceChanged\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"}],\"devdoc\":{\"methods\":{}},\"userdoc\":{\"methods\":{}}},\"settings\":{\"compilationTarget\":{\"/Users/ilya/Documents/Akropolis/dca-strategy-bot/contracts/interfaces/token/IPoolTokenBalanceChangeRecipient.sol\":\"IPoolTokenBalanceChangeRecipient\"},\"evmVersion\":\"istanbul\",\"libraries\":{},\"optimizer\":{\"enabled\":true,\"runs\":10000},\"remappings\":[]},\"sources\":{\"/Users/ilya/Documents/Akropolis/dca-strategy-bot/contracts/interfaces/token/IPoolTokenBalanceChangeRecipient.sol\":{\"keccak256\":\"0xb0979ad16640822e1a79541b5937f5ef98965979e5ef5b613ae84951b11ff8ab\",\"urls\":[\"bzz-raw://2a9e6baaf7720101ed7521d49d0085b18239880f50182e10860d047feccfaa85\",\"dweb:/ipfs/QmR5b2zFE9mMm5MUeERMftbBZALpD95a4DSojfmSqdG2bR\"]}},\"version\":1}",
+  "bytecode": "0x",
+  "deployedBytecode": "0x",
+  "sourceMap": "",
+  "deployedSourceMap": "",
+  "source": "pragma solidity ^0.5.12;\n\ninterface IPoolTokenBalanceChangeRecipient {\n    function poolTokenBalanceChanged(address user) external; \n}",
+  "sourcePath": "/Users/ilya/Documents/Akropolis/dca-strategy-bot/contracts/interfaces/token/IPoolTokenBalanceChangeRecipient.sol",
+  "ast": {
+    "absolutePath": "/Users/ilya/Documents/Akropolis/dca-strategy-bot/contracts/interfaces/token/IPoolTokenBalanceChangeRecipient.sol",
+    "exportedSymbols": {
+      "IPoolTokenBalanceChangeRecipient": [
+        5997
+      ]
+    },
+    "id": 5998,
+    "nodeType": "SourceUnit",
+    "nodes": [
+      {
+        "id": 5991,
+        "literals": [
+          "solidity",
+          "^",
+          "0.5",
+          ".12"
+        ],
+        "nodeType": "PragmaDirective",
+        "src": "0:24:33"
+      },
+      {
+        "baseContracts": [],
+        "contractDependencies": [],
+        "contractKind": "interface",
+        "documentation": null,
+        "fullyImplemented": false,
+        "id": 5997,
+        "linearizedBaseContracts": [
+          5997
+        ],
+        "name": "IPoolTokenBalanceChangeRecipient",
+        "nodeType": "ContractDefinition",
+        "nodes": [
+          {
+            "body": null,
+            "documentation": null,
+            "id": 5996,
+            "implemented": false,
+            "kind": "function",
+            "modifiers": [],
+            "name": "poolTokenBalanceChanged",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 5994,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 5993,
+                  "name": "user",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 5996,
+                  "src": "108:12:33",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 5992,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "108:7:33",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "107:14:33"
+            },
+            "returnParameters": {
+              "id": 5995,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "130:0:33"
+            },
+            "scope": 5997,
+            "src": "75:56:33",
+            "stateMutability": "nonpayable",
+            "superFunction": null,
+            "visibility": "external"
+          }
+        ],
+        "scope": 5998,
+        "src": "26:108:33"
+      }
+    ],
+    "src": "0:134:33"
+  },
+  "legacyAST": {
+    "absolutePath": "/Users/ilya/Documents/Akropolis/dca-strategy-bot/contracts/interfaces/token/IPoolTokenBalanceChangeRecipient.sol",
+    "exportedSymbols": {
+      "IPoolTokenBalanceChangeRecipient": [
+        5997
+      ]
+    },
+    "id": 5998,
+    "nodeType": "SourceUnit",
+    "nodes": [
+      {
+        "id": 5991,
+        "literals": [
+          "solidity",
+          "^",
+          "0.5",
+          ".12"
+        ],
+        "nodeType": "PragmaDirective",
+        "src": "0:24:33"
+      },
+      {
+        "baseContracts": [],
+        "contractDependencies": [],
+        "contractKind": "interface",
+        "documentation": null,
+        "fullyImplemented": false,
+        "id": 5997,
+        "linearizedBaseContracts": [
+          5997
+        ],
+        "name": "IPoolTokenBalanceChangeRecipient",
+        "nodeType": "ContractDefinition",
+        "nodes": [
+          {
+            "body": null,
+            "documentation": null,
+            "id": 5996,
+            "implemented": false,
+            "kind": "function",
+            "modifiers": [],
+            "name": "poolTokenBalanceChanged",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 5994,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 5993,
+                  "name": "user",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 5996,
+                  "src": "108:12:33",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 5992,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "108:7:33",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "107:14:33"
+            },
+            "returnParameters": {
+              "id": 5995,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "130:0:33"
+            },
+            "scope": 5997,
+            "src": "75:56:33",
+            "stateMutability": "nonpayable",
+            "superFunction": null,
+            "visibility": "external"
+          }
+        ],
+        "scope": 5998,
+        "src": "26:108:33"
+      }
+    ],
+    "src": "0:134:33"
+  },
+  "compiler": {
+    "name": "solc",
+    "version": "0.5.17+commit.d19bba13.Emscripten.clang"
+  },
+  "networks": {},
+  "schemaVersion": "3.2.3",
+  "updatedAt": "2020-08-07T09:48:49.898Z",
+  "devdoc": {
+    "methods": {}
+  },
+  "userdoc": {
+    "methods": {}
+  }
+}
