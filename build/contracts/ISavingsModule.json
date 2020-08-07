@@ -88,27 +88,42 @@
       "payable": false,
       "stateMutability": "nonpayable",
       "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "supportedRewardTokens",
+      "outputs": [
+        {
+          "internalType": "address[]",
+          "name": "",
+          "type": "address[]"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
     }
   ],
-  "metadata": "{\"compiler\":{\"version\":\"0.5.17+commit.d19bba13\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"constant\":false,\"inputs\":[{\"internalType\":\"address\",\"name\":\"_protocol\",\"type\":\"address\"},{\"internalType\":\"address[]\",\"name\":\"_tokens\",\"type\":\"address[]\"},{\"internalType\":\"uint256[]\",\"name\":\"_dnAmounts\",\"type\":\"uint256[]\"}],\"name\":\"deposit\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"address\",\"name\":\"_protocol\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"dnAmount\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"maxNAmount\",\"type\":\"uint256\"}],\"name\":\"withdraw\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"address[]\",\"name\":\"rewardTokens\",\"type\":\"address[]\"}],\"name\":\"withdrawReward\",\"outputs\":[{\"internalType\":\"uint256[]\",\"name\":\"\",\"type\":\"uint256[]\"}],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"}],\"devdoc\":{\"methods\":{\"deposit(address,address[],uint256[])\":{\"params\":{\"_dnAmounts\":\"Array of amounts (denormalized to token decimals)\",\"_protocol\":\"Protocol to deposit tokens\",\"_tokens\":\"Array of tokens to deposit\"}},\"withdraw(address,address,uint256,uint256)\":{\"params\":{\"_protocol\":\"Protocol to withdraw from\",\"dnAmount\":\"Amount to withdraw (denormalized)\",\"maxNAmount\":\"Max amount of PoolToken to burn\",\"token\":\"Token to withdraw\"},\"return\":\"Amount of PoolToken burned from user\"},\"withdrawReward(address[])\":{\"params\":{\"rewardTokens\":\"Array of tokens to withdraw\"}}}},\"userdoc\":{\"methods\":{\"deposit(address,address[],uint256[])\":{\"notice\":\"Deposit tokens to a protocol\"},\"withdraw(address,address,uint256,uint256)\":{\"notice\":\"Withdraw token from protocol\"},\"withdrawReward(address[])\":{\"notice\":\"Withdraw reward tokens for user\"}}}},\"settings\":{\"compilationTarget\":{\"/Users/ilya/Documents/Akropolis/dca-strategy-bot/contracts/interfaces/savings/ISavingsModule.sol\":\"ISavingsModule\"},\"evmVersion\":\"istanbul\",\"libraries\":{},\"optimizer\":{\"enabled\":true,\"runs\":10000},\"remappings\":[]},\"sources\":{\"/Users/ilya/Documents/Akropolis/dca-strategy-bot/contracts/interfaces/savings/ISavingsModule.sol\":{\"keccak256\":\"0x82365be7c9df2c511cdf40a33957716e381581259f8f403dcb98b12d3e5acd0a\",\"urls\":[\"bzz-raw://7a01e28054d43ff6c9586061b73a251f840fdb28125e1afc6d78cb369803186a\",\"dweb:/ipfs/Qmb2JVDNTn9VR4E4FdoodzSU2a1qyTJPT3v9YZkqftHpam\"]}},\"version\":1}",
+  "metadata": "{\"compiler\":{\"version\":\"0.5.17+commit.d19bba13\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"constant\":false,\"inputs\":[{\"internalType\":\"address\",\"name\":\"_protocol\",\"type\":\"address\"},{\"internalType\":\"address[]\",\"name\":\"_tokens\",\"type\":\"address[]\"},{\"internalType\":\"uint256[]\",\"name\":\"_dnAmounts\",\"type\":\"uint256[]\"}],\"name\":\"deposit\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"supportedRewardTokens\",\"outputs\":[{\"internalType\":\"address[]\",\"name\":\"\",\"type\":\"address[]\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"address\",\"name\":\"_protocol\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"dnAmount\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"maxNAmount\",\"type\":\"uint256\"}],\"name\":\"withdraw\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"internalType\":\"address[]\",\"name\":\"rewardTokens\",\"type\":\"address[]\"}],\"name\":\"withdrawReward\",\"outputs\":[{\"internalType\":\"uint256[]\",\"name\":\"\",\"type\":\"uint256[]\"}],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"}],\"devdoc\":{\"methods\":{\"deposit(address,address[],uint256[])\":{\"params\":{\"_dnAmounts\":\"Array of amounts (denormalized to token decimals)\",\"_protocol\":\"Protocol to deposit tokens\",\"_tokens\":\"Array of tokens to deposit\"}},\"withdraw(address,address,uint256,uint256)\":{\"params\":{\"_protocol\":\"Protocol to withdraw from\",\"dnAmount\":\"Amount to withdraw (denormalized)\",\"maxNAmount\":\"Max amount of PoolToken to burn\",\"token\":\"Token to withdraw\"},\"return\":\"Amount of PoolToken burned from user\"},\"withdrawReward(address[])\":{\"params\":{\"rewardTokens\":\"Array of tokens to withdraw\"}}}},\"userdoc\":{\"methods\":{\"deposit(address,address[],uint256[])\":{\"notice\":\"Deposit tokens to a protocol\"},\"withdraw(address,address,uint256,uint256)\":{\"notice\":\"Withdraw token from protocol\"},\"withdrawReward(address[])\":{\"notice\":\"Withdraw reward tokens for user\"}}}},\"settings\":{\"compilationTarget\":{\"/Users/ilya/Documents/Akropolis/dca-strategy-bot/contracts/interfaces/savings/ISavingsModule.sol\":\"ISavingsModule\"},\"evmVersion\":\"istanbul\",\"libraries\":{},\"optimizer\":{\"enabled\":true,\"runs\":10000},\"remappings\":[]},\"sources\":{\"/Users/ilya/Documents/Akropolis/dca-strategy-bot/contracts/interfaces/savings/ISavingsModule.sol\":{\"keccak256\":\"0x0d2a38b6ed7f87ca9970601a41ed6af9ecce1de2b56dc7892e52f56c216da96f\",\"urls\":[\"bzz-raw://faab8df225395b1e6e54eb83d031f533e4c639a0da40c2153b716bdbfec5eb91\",\"dweb:/ipfs/QmWcV69UE9CzdMcM3fbgYQ1gMazXiVu7qHx5vbogw9k58d\"]}},\"version\":1}",
   "bytecode": "0x",
   "deployedBytecode": "0x",
   "sourceMap": "",
   "deployedSourceMap": "",
-  "source": "pragma solidity ^0.5.0;\n\ncontract ISavingsModule {\n    /**\n     * @notice Deposit tokens to a protocol\n     * @param _protocol Protocol to deposit tokens\n     * @param _tokens Array of tokens to deposit\n     * @param _dnAmounts Array of amounts (denormalized to token decimals)\n     */\n    function deposit(\n        address _protocol,\n        address[] memory _tokens,\n        uint256[] memory _dnAmounts\n    ) public returns (uint256);\n\n    /**\n     * Withdraw token from protocol\n     * @param _protocol Protocol to withdraw from\n     * @param token Token to withdraw\n     * @param dnAmount Amount to withdraw (denormalized)\n     * @param maxNAmount Max amount of PoolToken to burn\n     * @return Amount of PoolToken burned from user\n     */\n    function withdraw(\n        address _protocol,\n        address token,\n        uint256 dnAmount,\n        uint256 maxNAmount\n    ) public returns (uint256);\n\n    /**\n     * @notice Withdraw reward tokens for user\n     * @param rewardTokens Array of tokens to withdraw\n     */\n    function withdrawReward(address[] memory rewardTokens)\n        public\n        returns (uint256[] memory);\n}\n",
+  "source": "pragma solidity ^0.5.0;\n\ncontract ISavingsModule {\n    /**\n     * @notice Deposit tokens to a protocol\n     * @param _protocol Protocol to deposit tokens\n     * @param _tokens Array of tokens to deposit\n     * @param _dnAmounts Array of amounts (denormalized to token decimals)\n     */\n    function deposit(\n        address _protocol,\n        address[] memory _tokens,\n        uint256[] memory _dnAmounts\n    ) public returns (uint256);\n\n    /**\n     * Withdraw token from protocol\n     * @param _protocol Protocol to withdraw from\n     * @param token Token to withdraw\n     * @param dnAmount Amount to withdraw (denormalized)\n     * @param maxNAmount Max amount of PoolToken to burn\n     * @return Amount of PoolToken burned from user\n     */\n    function withdraw(\n        address _protocol,\n        address token,\n        uint256 dnAmount,\n        uint256 maxNAmount\n    ) public returns (uint256);\n\n    /**\n     * @notice Withdraw reward tokens for user\n     * @param rewardTokens Array of tokens to withdraw\n     */\n    function withdrawReward(address[] memory rewardTokens)\n        public\n        returns (uint256[] memory);\n\n    function supportedRewardTokens() public view returns (address[] memory);\n}\n",
   "sourcePath": "/Users/ilya/Documents/Akropolis/dca-strategy-bot/contracts/interfaces/savings/ISavingsModule.sol",
   "ast": {
     "absolutePath": "/Users/ilya/Documents/Akropolis/dca-strategy-bot/contracts/interfaces/savings/ISavingsModule.sol",
     "exportedSymbols": {
       "ISavingsModule": [
-        5989
+        6119
       ]
     },
-    "id": 5990,
+    "id": 6120,
     "nodeType": "SourceUnit",
     "nodes": [
       {
-        "id": 5953,
+        "id": 6077,
         "literals": [
           "solidity",
           "^",
@@ -116,7 +131,7 @@
           ".0"
         ],
         "nodeType": "PragmaDirective",
-        "src": "0:23:32"
+        "src": "0:23:34"
       },
       {
         "baseContracts": [],
@@ -124,9 +139,9 @@
         "contractKind": "contract",
         "documentation": null,
         "fullyImplemented": false,
-        "id": 5989,
+        "id": 6119,
         "linearizedBaseContracts": [
-          5989
+          6119
         ],
         "name": "ISavingsModule",
         "nodeType": "ContractDefinition",
@@ -134,23 +149,23 @@
           {
             "body": null,
             "documentation": "@notice Deposit tokens to a protocol\n@param _protocol Protocol to deposit tokens\n@param _tokens Array of tokens to deposit\n@param _dnAmounts Array of amounts (denormalized to token decimals)",
-            "id": 5966,
+            "id": 6090,
             "implemented": false,
             "kind": "function",
             "modifiers": [],
             "name": "deposit",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 5962,
+              "id": 6086,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 5955,
+                  "id": 6079,
                   "name": "_protocol",
                   "nodeType": "VariableDeclaration",
-                  "scope": 5966,
-                  "src": "316:17:32",
+                  "scope": 6090,
+                  "src": "316:17:34",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -158,10 +173,10 @@
                     "typeString": "address"
                   },
                   "typeName": {
-                    "id": 5954,
+                    "id": 6078,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
-                    "src": "316:7:32",
+                    "src": "316:7:34",
                     "stateMutability": "nonpayable",
                     "typeDescriptions": {
                       "typeIdentifier": "t_address",
@@ -173,11 +188,11 @@
                 },
                 {
                   "constant": false,
-                  "id": 5958,
+                  "id": 6082,
                   "name": "_tokens",
                   "nodeType": "VariableDeclaration",
-                  "scope": 5966,
-                  "src": "343:24:32",
+                  "scope": 6090,
+                  "src": "343:24:34",
                   "stateVariable": false,
                   "storageLocation": "memory",
                   "typeDescriptions": {
@@ -186,20 +201,20 @@
                   },
                   "typeName": {
                     "baseType": {
-                      "id": 5956,
+                      "id": 6080,
                       "name": "address",
                       "nodeType": "ElementaryTypeName",
-                      "src": "343:7:32",
+                      "src": "343:7:34",
                       "stateMutability": "nonpayable",
                       "typeDescriptions": {
                         "typeIdentifier": "t_address",
                         "typeString": "address"
                       }
                     },
-                    "id": 5957,
+                    "id": 6081,
                     "length": null,
                     "nodeType": "ArrayTypeName",
-                    "src": "343:9:32",
+                    "src": "343:9:34",
                     "typeDescriptions": {
                       "typeIdentifier": "t_array$_t_address_$dyn_storage_ptr",
                       "typeString": "address[]"
@@ -210,11 +225,11 @@
                 },
                 {
                   "constant": false,
-                  "id": 5961,
+                  "id": 6085,
                   "name": "_dnAmounts",
                   "nodeType": "VariableDeclaration",
-                  "scope": 5966,
-                  "src": "377:27:32",
+                  "scope": 6090,
+                  "src": "377:27:34",
                   "stateVariable": false,
                   "storageLocation": "memory",
                   "typeDescriptions": {
@@ -223,19 +238,19 @@
                   },
                   "typeName": {
                     "baseType": {
-                      "id": 5959,
+                      "id": 6083,
                       "name": "uint256",
                       "nodeType": "ElementaryTypeName",
-                      "src": "377:7:32",
+                      "src": "377:7:34",
                       "typeDescriptions": {
                         "typeIdentifier": "t_uint256",
                         "typeString": "uint256"
                       }
                     },
-                    "id": 5960,
+                    "id": 6084,
                     "length": null,
                     "nodeType": "ArrayTypeName",
-                    "src": "377:9:32",
+                    "src": "377:9:34",
                     "typeDescriptions": {
                       "typeIdentifier": "t_array$_t_uint256_$dyn_storage_ptr",
                       "typeString": "uint256[]"
@@ -245,19 +260,19 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "306:104:32"
+              "src": "306:104:34"
             },
             "returnParameters": {
-              "id": 5965,
+              "id": 6089,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 5964,
+                  "id": 6088,
                   "name": "",
                   "nodeType": "VariableDeclaration",
-                  "scope": 5966,
-                  "src": "427:7:32",
+                  "scope": 6090,
+                  "src": "427:7:34",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -265,10 +280,10 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 5963,
+                    "id": 6087,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
-                    "src": "427:7:32",
+                    "src": "427:7:34",
                     "typeDescriptions": {
                       "typeIdentifier": "t_uint256",
                       "typeString": "uint256"
@@ -278,10 +293,10 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "426:9:32"
+              "src": "426:9:34"
             },
-            "scope": 5989,
-            "src": "290:146:32",
+            "scope": 6119,
+            "src": "290:146:34",
             "stateMutability": "nonpayable",
             "superFunction": null,
             "visibility": "public"
@@ -289,23 +304,23 @@
           {
             "body": null,
             "documentation": "Withdraw token from protocol\n@param _protocol Protocol to withdraw from\n@param token Token to withdraw\n@param dnAmount Amount to withdraw (denormalized)\n@param maxNAmount Max amount of PoolToken to burn\n@return Amount of PoolToken burned from user",
-            "id": 5979,
+            "id": 6103,
             "implemented": false,
             "kind": "function",
             "modifiers": [],
             "name": "withdraw",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 5975,
+              "id": 6099,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 5968,
+                  "id": 6092,
                   "name": "_protocol",
                   "nodeType": "VariableDeclaration",
-                  "scope": 5979,
-                  "src": "775:17:32",
+                  "scope": 6103,
+                  "src": "775:17:34",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -313,10 +328,10 @@
                     "typeString": "address"
                   },
                   "typeName": {
-                    "id": 5967,
+                    "id": 6091,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
-                    "src": "775:7:32",
+                    "src": "775:7:34",
                     "stateMutability": "nonpayable",
                     "typeDescriptions": {
                       "typeIdentifier": "t_address",
@@ -328,11 +343,11 @@
                 },
                 {
                   "constant": false,
-                  "id": 5970,
+                  "id": 6094,
                   "name": "token",
                   "nodeType": "VariableDeclaration",
-                  "scope": 5979,
-                  "src": "802:13:32",
+                  "scope": 6103,
+                  "src": "802:13:34",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -340,10 +355,10 @@
                     "typeString": "address"
                   },
                   "typeName": {
-                    "id": 5969,
+                    "id": 6093,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
-                    "src": "802:7:32",
+                    "src": "802:7:34",
                     "stateMutability": "nonpayable",
                     "typeDescriptions": {
                       "typeIdentifier": "t_address",
@@ -355,11 +370,11 @@
                 },
                 {
                   "constant": false,
-                  "id": 5972,
+                  "id": 6096,
                   "name": "dnAmount",
                   "nodeType": "VariableDeclaration",
-                  "scope": 5979,
-                  "src": "825:16:32",
+                  "scope": 6103,
+                  "src": "825:16:34",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -367,10 +382,10 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 5971,
+                    "id": 6095,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
-                    "src": "825:7:32",
+                    "src": "825:7:34",
                     "typeDescriptions": {
                       "typeIdentifier": "t_uint256",
                       "typeString": "uint256"
@@ -381,11 +396,11 @@
                 },
                 {
                   "constant": false,
-                  "id": 5974,
+                  "id": 6098,
                   "name": "maxNAmount",
                   "nodeType": "VariableDeclaration",
-                  "scope": 5979,
-                  "src": "851:18:32",
+                  "scope": 6103,
+                  "src": "851:18:34",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -393,10 +408,10 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 5973,
+                    "id": 6097,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
-                    "src": "851:7:32",
+                    "src": "851:7:34",
                     "typeDescriptions": {
                       "typeIdentifier": "t_uint256",
                       "typeString": "uint256"
@@ -406,19 +421,19 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "765:110:32"
+              "src": "765:110:34"
             },
             "returnParameters": {
-              "id": 5978,
+              "id": 6102,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 5977,
+                  "id": 6101,
                   "name": "",
                   "nodeType": "VariableDeclaration",
-                  "scope": 5979,
-                  "src": "892:7:32",
+                  "scope": 6103,
+                  "src": "892:7:34",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -426,10 +441,10 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 5976,
+                    "id": 6100,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
-                    "src": "892:7:32",
+                    "src": "892:7:34",
                     "typeDescriptions": {
                       "typeIdentifier": "t_uint256",
                       "typeString": "uint256"
@@ -439,10 +454,10 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "891:9:32"
+              "src": "891:9:34"
             },
-            "scope": 5989,
-            "src": "748:153:32",
+            "scope": 6119,
+            "src": "748:153:34",
             "stateMutability": "nonpayable",
             "superFunction": null,
             "visibility": "public"
@@ -450,23 +465,23 @@
           {
             "body": null,
             "documentation": "@notice Withdraw reward tokens for user\n@param rewardTokens Array of tokens to withdraw",
-            "id": 5988,
+            "id": 6112,
             "implemented": false,
             "kind": "function",
             "modifiers": [],
             "name": "withdrawReward",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 5983,
+              "id": 6107,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 5982,
+                  "id": 6106,
                   "name": "rewardTokens",
                   "nodeType": "VariableDeclaration",
-                  "scope": 5988,
-                  "src": "1049:29:32",
+                  "scope": 6112,
+                  "src": "1049:29:34",
                   "stateVariable": false,
                   "storageLocation": "memory",
                   "typeDescriptions": {
@@ -475,20 +490,20 @@
                   },
                   "typeName": {
                     "baseType": {
-                      "id": 5980,
+                      "id": 6104,
                       "name": "address",
                       "nodeType": "ElementaryTypeName",
-                      "src": "1049:7:32",
+                      "src": "1049:7:34",
                       "stateMutability": "nonpayable",
                       "typeDescriptions": {
                         "typeIdentifier": "t_address",
                         "typeString": "address"
                       }
                     },
-                    "id": 5981,
+                    "id": 6105,
                     "length": null,
                     "nodeType": "ArrayTypeName",
-                    "src": "1049:9:32",
+                    "src": "1049:9:34",
                     "typeDescriptions": {
                       "typeIdentifier": "t_array$_t_address_$dyn_storage_ptr",
                       "typeString": "address[]"
@@ -498,19 +513,19 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "1048:31:32"
+              "src": "1048:31:34"
             },
             "returnParameters": {
-              "id": 5987,
+              "id": 6111,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 5986,
+                  "id": 6110,
                   "name": "",
                   "nodeType": "VariableDeclaration",
-                  "scope": 5988,
-                  "src": "1112:16:32",
+                  "scope": 6112,
+                  "src": "1112:16:34",
                   "stateVariable": false,
                   "storageLocation": "memory",
                   "typeDescriptions": {
@@ -519,19 +534,19 @@
                   },
                   "typeName": {
                     "baseType": {
-                      "id": 5984,
+                      "id": 6108,
                       "name": "uint256",
                       "nodeType": "ElementaryTypeName",
-                      "src": "1112:7:32",
+                      "src": "1112:7:34",
                       "typeDescriptions": {
                         "typeIdentifier": "t_uint256",
                         "typeString": "uint256"
                       }
                     },
-                    "id": 5985,
+                    "id": 6109,
                     "length": null,
                     "nodeType": "ArrayTypeName",
-                    "src": "1112:9:32",
+                    "src": "1112:9:34",
                     "typeDescriptions": {
                       "typeIdentifier": "t_array$_t_uint256_$dyn_storage_ptr",
                       "typeString": "uint256[]"
@@ -541,33 +556,98 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "1111:18:32"
+              "src": "1111:18:34"
             },
-            "scope": 5989,
-            "src": "1025:105:32",
+            "scope": 6119,
+            "src": "1025:105:34",
             "stateMutability": "nonpayable",
+            "superFunction": null,
+            "visibility": "public"
+          },
+          {
+            "body": null,
+            "documentation": null,
+            "id": 6118,
+            "implemented": false,
+            "kind": "function",
+            "modifiers": [],
+            "name": "supportedRewardTokens",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 6113,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "1166:2:34"
+            },
+            "returnParameters": {
+              "id": 6117,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 6116,
+                  "name": "",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 6118,
+                  "src": "1190:16:34",
+                  "stateVariable": false,
+                  "storageLocation": "memory",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_array$_t_address_$dyn_memory_ptr",
+                    "typeString": "address[]"
+                  },
+                  "typeName": {
+                    "baseType": {
+                      "id": 6114,
+                      "name": "address",
+                      "nodeType": "ElementaryTypeName",
+                      "src": "1190:7:34",
+                      "stateMutability": "nonpayable",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_address",
+                        "typeString": "address"
+                      }
+                    },
+                    "id": 6115,
+                    "length": null,
+                    "nodeType": "ArrayTypeName",
+                    "src": "1190:9:34",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_array$_t_address_$dyn_storage_ptr",
+                      "typeString": "address[]"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "1189:18:34"
+            },
+            "scope": 6119,
+            "src": "1136:72:34",
+            "stateMutability": "view",
             "superFunction": null,
             "visibility": "public"
           }
         ],
-        "scope": 5990,
-        "src": "25:1107:32"
+        "scope": 6120,
+        "src": "25:1185:34"
       }
     ],
-    "src": "0:1133:32"
+    "src": "0:1211:34"
   },
   "legacyAST": {
     "absolutePath": "/Users/ilya/Documents/Akropolis/dca-strategy-bot/contracts/interfaces/savings/ISavingsModule.sol",
     "exportedSymbols": {
       "ISavingsModule": [
-        5989
+        6119
       ]
     },
-    "id": 5990,
+    "id": 6120,
     "nodeType": "SourceUnit",
     "nodes": [
       {
-        "id": 5953,
+        "id": 6077,
         "literals": [
           "solidity",
           "^",
@@ -575,7 +655,7 @@
           ".0"
         ],
         "nodeType": "PragmaDirective",
-        "src": "0:23:32"
+        "src": "0:23:34"
       },
       {
         "baseContracts": [],
@@ -583,9 +663,9 @@
         "contractKind": "contract",
         "documentation": null,
         "fullyImplemented": false,
-        "id": 5989,
+        "id": 6119,
         "linearizedBaseContracts": [
-          5989
+          6119
         ],
         "name": "ISavingsModule",
         "nodeType": "ContractDefinition",
@@ -593,23 +673,23 @@
           {
             "body": null,
             "documentation": "@notice Deposit tokens to a protocol\n@param _protocol Protocol to deposit tokens\n@param _tokens Array of tokens to deposit\n@param _dnAmounts Array of amounts (denormalized to token decimals)",
-            "id": 5966,
+            "id": 6090,
             "implemented": false,
             "kind": "function",
             "modifiers": [],
             "name": "deposit",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 5962,
+              "id": 6086,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 5955,
+                  "id": 6079,
                   "name": "_protocol",
                   "nodeType": "VariableDeclaration",
-                  "scope": 5966,
-                  "src": "316:17:32",
+                  "scope": 6090,
+                  "src": "316:17:34",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -617,10 +697,10 @@
                     "typeString": "address"
                   },
                   "typeName": {
-                    "id": 5954,
+                    "id": 6078,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
-                    "src": "316:7:32",
+                    "src": "316:7:34",
                     "stateMutability": "nonpayable",
                     "typeDescriptions": {
                       "typeIdentifier": "t_address",
@@ -632,11 +712,11 @@
                 },
                 {
                   "constant": false,
-                  "id": 5958,
+                  "id": 6082,
                   "name": "_tokens",
                   "nodeType": "VariableDeclaration",
-                  "scope": 5966,
-                  "src": "343:24:32",
+                  "scope": 6090,
+                  "src": "343:24:34",
                   "stateVariable": false,
                   "storageLocation": "memory",
                   "typeDescriptions": {
@@ -645,20 +725,20 @@
                   },
                   "typeName": {
                     "baseType": {
-                      "id": 5956,
+                      "id": 6080,
                       "name": "address",
                       "nodeType": "ElementaryTypeName",
-                      "src": "343:7:32",
+                      "src": "343:7:34",
                       "stateMutability": "nonpayable",
                       "typeDescriptions": {
                         "typeIdentifier": "t_address",
                         "typeString": "address"
                       }
                     },
-                    "id": 5957,
+                    "id": 6081,
                     "length": null,
                     "nodeType": "ArrayTypeName",
-                    "src": "343:9:32",
+                    "src": "343:9:34",
                     "typeDescriptions": {
                       "typeIdentifier": "t_array$_t_address_$dyn_storage_ptr",
                       "typeString": "address[]"
@@ -669,11 +749,11 @@
                 },
                 {
                   "constant": false,
-                  "id": 5961,
+                  "id": 6085,
                   "name": "_dnAmounts",
                   "nodeType": "VariableDeclaration",
-                  "scope": 5966,
-                  "src": "377:27:32",
+                  "scope": 6090,
+                  "src": "377:27:34",
                   "stateVariable": false,
                   "storageLocation": "memory",
                   "typeDescriptions": {
@@ -682,19 +762,19 @@
                   },
                   "typeName": {
                     "baseType": {
-                      "id": 5959,
+                      "id": 6083,
                       "name": "uint256",
                       "nodeType": "ElementaryTypeName",
-                      "src": "377:7:32",
+                      "src": "377:7:34",
                       "typeDescriptions": {
                         "typeIdentifier": "t_uint256",
                         "typeString": "uint256"
                       }
                     },
-                    "id": 5960,
+                    "id": 6084,
                     "length": null,
                     "nodeType": "ArrayTypeName",
-                    "src": "377:9:32",
+                    "src": "377:9:34",
                     "typeDescriptions": {
                       "typeIdentifier": "t_array$_t_uint256_$dyn_storage_ptr",
                       "typeString": "uint256[]"
@@ -704,19 +784,19 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "306:104:32"
+              "src": "306:104:34"
             },
             "returnParameters": {
-              "id": 5965,
+              "id": 6089,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 5964,
+                  "id": 6088,
                   "name": "",
                   "nodeType": "VariableDeclaration",
-                  "scope": 5966,
-                  "src": "427:7:32",
+                  "scope": 6090,
+                  "src": "427:7:34",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -724,10 +804,10 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 5963,
+                    "id": 6087,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
-                    "src": "427:7:32",
+                    "src": "427:7:34",
                     "typeDescriptions": {
                       "typeIdentifier": "t_uint256",
                       "typeString": "uint256"
@@ -737,10 +817,10 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "426:9:32"
+              "src": "426:9:34"
             },
-            "scope": 5989,
-            "src": "290:146:32",
+            "scope": 6119,
+            "src": "290:146:34",
             "stateMutability": "nonpayable",
             "superFunction": null,
             "visibility": "public"
@@ -748,23 +828,23 @@
           {
             "body": null,
             "documentation": "Withdraw token from protocol\n@param _protocol Protocol to withdraw from\n@param token Token to withdraw\n@param dnAmount Amount to withdraw (denormalized)\n@param maxNAmount Max amount of PoolToken to burn\n@return Amount of PoolToken burned from user",
-            "id": 5979,
+            "id": 6103,
             "implemented": false,
             "kind": "function",
             "modifiers": [],
             "name": "withdraw",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 5975,
+              "id": 6099,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 5968,
+                  "id": 6092,
                   "name": "_protocol",
                   "nodeType": "VariableDeclaration",
-                  "scope": 5979,
-                  "src": "775:17:32",
+                  "scope": 6103,
+                  "src": "775:17:34",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -772,10 +852,10 @@
                     "typeString": "address"
                   },
                   "typeName": {
-                    "id": 5967,
+                    "id": 6091,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
-                    "src": "775:7:32",
+                    "src": "775:7:34",
                     "stateMutability": "nonpayable",
                     "typeDescriptions": {
                       "typeIdentifier": "t_address",
@@ -787,11 +867,11 @@
                 },
                 {
                   "constant": false,
-                  "id": 5970,
+                  "id": 6094,
                   "name": "token",
                   "nodeType": "VariableDeclaration",
-                  "scope": 5979,
-                  "src": "802:13:32",
+                  "scope": 6103,
+                  "src": "802:13:34",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -799,10 +879,10 @@
                     "typeString": "address"
                   },
                   "typeName": {
-                    "id": 5969,
+                    "id": 6093,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
-                    "src": "802:7:32",
+                    "src": "802:7:34",
                     "stateMutability": "nonpayable",
                     "typeDescriptions": {
                       "typeIdentifier": "t_address",
@@ -814,11 +894,11 @@
                 },
                 {
                   "constant": false,
-                  "id": 5972,
+                  "id": 6096,
                   "name": "dnAmount",
                   "nodeType": "VariableDeclaration",
-                  "scope": 5979,
-                  "src": "825:16:32",
+                  "scope": 6103,
+                  "src": "825:16:34",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -826,10 +906,10 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 5971,
+                    "id": 6095,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
-                    "src": "825:7:32",
+                    "src": "825:7:34",
                     "typeDescriptions": {
                       "typeIdentifier": "t_uint256",
                       "typeString": "uint256"
@@ -840,11 +920,11 @@
                 },
                 {
                   "constant": false,
-                  "id": 5974,
+                  "id": 6098,
                   "name": "maxNAmount",
                   "nodeType": "VariableDeclaration",
-                  "scope": 5979,
-                  "src": "851:18:32",
+                  "scope": 6103,
+                  "src": "851:18:34",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -852,10 +932,10 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 5973,
+                    "id": 6097,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
-                    "src": "851:7:32",
+                    "src": "851:7:34",
                     "typeDescriptions": {
                       "typeIdentifier": "t_uint256",
                       "typeString": "uint256"
@@ -865,19 +945,19 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "765:110:32"
+              "src": "765:110:34"
             },
             "returnParameters": {
-              "id": 5978,
+              "id": 6102,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 5977,
+                  "id": 6101,
                   "name": "",
                   "nodeType": "VariableDeclaration",
-                  "scope": 5979,
-                  "src": "892:7:32",
+                  "scope": 6103,
+                  "src": "892:7:34",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -885,10 +965,10 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 5976,
+                    "id": 6100,
                     "name": "uint256",
                     "nodeType": "ElementaryTypeName",
-                    "src": "892:7:32",
+                    "src": "892:7:34",
                     "typeDescriptions": {
                       "typeIdentifier": "t_uint256",
                       "typeString": "uint256"
@@ -898,10 +978,10 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "891:9:32"
+              "src": "891:9:34"
             },
-            "scope": 5989,
-            "src": "748:153:32",
+            "scope": 6119,
+            "src": "748:153:34",
             "stateMutability": "nonpayable",
             "superFunction": null,
             "visibility": "public"
@@ -909,23 +989,23 @@
           {
             "body": null,
             "documentation": "@notice Withdraw reward tokens for user\n@param rewardTokens Array of tokens to withdraw",
-            "id": 5988,
+            "id": 6112,
             "implemented": false,
             "kind": "function",
             "modifiers": [],
             "name": "withdrawReward",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 5983,
+              "id": 6107,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 5982,
+                  "id": 6106,
                   "name": "rewardTokens",
                   "nodeType": "VariableDeclaration",
-                  "scope": 5988,
-                  "src": "1049:29:32",
+                  "scope": 6112,
+                  "src": "1049:29:34",
                   "stateVariable": false,
                   "storageLocation": "memory",
                   "typeDescriptions": {
@@ -934,20 +1014,20 @@
                   },
                   "typeName": {
                     "baseType": {
-                      "id": 5980,
+                      "id": 6104,
                       "name": "address",
                       "nodeType": "ElementaryTypeName",
-                      "src": "1049:7:32",
+                      "src": "1049:7:34",
                       "stateMutability": "nonpayable",
                       "typeDescriptions": {
                         "typeIdentifier": "t_address",
                         "typeString": "address"
                       }
                     },
-                    "id": 5981,
+                    "id": 6105,
                     "length": null,
                     "nodeType": "ArrayTypeName",
-                    "src": "1049:9:32",
+                    "src": "1049:9:34",
                     "typeDescriptions": {
                       "typeIdentifier": "t_array$_t_address_$dyn_storage_ptr",
                       "typeString": "address[]"
@@ -957,19 +1037,19 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "1048:31:32"
+              "src": "1048:31:34"
             },
             "returnParameters": {
-              "id": 5987,
+              "id": 6111,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 5986,
+                  "id": 6110,
                   "name": "",
                   "nodeType": "VariableDeclaration",
-                  "scope": 5988,
-                  "src": "1112:16:32",
+                  "scope": 6112,
+                  "src": "1112:16:34",
                   "stateVariable": false,
                   "storageLocation": "memory",
                   "typeDescriptions": {
@@ -978,19 +1058,19 @@
                   },
                   "typeName": {
                     "baseType": {
-                      "id": 5984,
+                      "id": 6108,
                       "name": "uint256",
                       "nodeType": "ElementaryTypeName",
-                      "src": "1112:7:32",
+                      "src": "1112:7:34",
                       "typeDescriptions": {
                         "typeIdentifier": "t_uint256",
                         "typeString": "uint256"
                       }
                     },
-                    "id": 5985,
+                    "id": 6109,
                     "length": null,
                     "nodeType": "ArrayTypeName",
-                    "src": "1112:9:32",
+                    "src": "1112:9:34",
                     "typeDescriptions": {
                       "typeIdentifier": "t_array$_t_uint256_$dyn_storage_ptr",
                       "typeString": "uint256[]"
@@ -1000,20 +1080,85 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "1111:18:32"
+              "src": "1111:18:34"
             },
-            "scope": 5989,
-            "src": "1025:105:32",
+            "scope": 6119,
+            "src": "1025:105:34",
             "stateMutability": "nonpayable",
+            "superFunction": null,
+            "visibility": "public"
+          },
+          {
+            "body": null,
+            "documentation": null,
+            "id": 6118,
+            "implemented": false,
+            "kind": "function",
+            "modifiers": [],
+            "name": "supportedRewardTokens",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 6113,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "1166:2:34"
+            },
+            "returnParameters": {
+              "id": 6117,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 6116,
+                  "name": "",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 6118,
+                  "src": "1190:16:34",
+                  "stateVariable": false,
+                  "storageLocation": "memory",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_array$_t_address_$dyn_memory_ptr",
+                    "typeString": "address[]"
+                  },
+                  "typeName": {
+                    "baseType": {
+                      "id": 6114,
+                      "name": "address",
+                      "nodeType": "ElementaryTypeName",
+                      "src": "1190:7:34",
+                      "stateMutability": "nonpayable",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_address",
+                        "typeString": "address"
+                      }
+                    },
+                    "id": 6115,
+                    "length": null,
+                    "nodeType": "ArrayTypeName",
+                    "src": "1190:9:34",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_array$_t_address_$dyn_storage_ptr",
+                      "typeString": "address[]"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "1189:18:34"
+            },
+            "scope": 6119,
+            "src": "1136:72:34",
+            "stateMutability": "view",
             "superFunction": null,
             "visibility": "public"
           }
         ],
-        "scope": 5990,
-        "src": "25:1107:32"
+        "scope": 6120,
+        "src": "25:1185:34"
       }
     ],
-    "src": "0:1133:32"
+    "src": "0:1211:34"
   },
   "compiler": {
     "name": "solc",
@@ -1021,7 +1166,7 @@
   },
   "networks": {},
   "schemaVersion": "3.2.3",
-  "updatedAt": "2020-08-07T09:48:49.843Z",
+  "updatedAt": "2020-08-07T11:30:42.878Z",
   "devdoc": {
     "methods": {
       "deposit(address,address[],uint256[])": {

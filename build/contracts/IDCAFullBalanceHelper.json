@@ -1,0 +1,450 @@
+{
+  "contractName": "IDCAFullBalanceHelper",
+  "abi": [
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "dcaModule",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "account",
+          "type": "address"
+        }
+      ],
+      "name": "getFullAccountBalances",
+      "outputs": [
+        {
+          "internalType": "address[]",
+          "name": "",
+          "type": "address[]"
+        },
+        {
+          "internalType": "uint256[]",
+          "name": "",
+          "type": "uint256[]"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    }
+  ],
+  "metadata": "{\"compiler\":{\"version\":\"0.5.17+commit.d19bba13\"},\"language\":\"Solidity\",\"output\":{\"abi\":[{\"constant\":false,\"inputs\":[{\"internalType\":\"address\",\"name\":\"dcaModule\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"getFullAccountBalances\",\"outputs\":[{\"internalType\":\"address[]\",\"name\":\"\",\"type\":\"address[]\"},{\"internalType\":\"uint256[]\",\"name\":\"\",\"type\":\"uint256[]\"}],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"}],\"devdoc\":{\"methods\":{}},\"userdoc\":{\"methods\":{}}},\"settings\":{\"compilationTarget\":{\"/Users/ilya/Documents/Akropolis/dca-strategy-bot/contracts/interfaces/dca/IDCAFullBalanceHelper.sol\":\"IDCAFullBalanceHelper\"},\"evmVersion\":\"istanbul\",\"libraries\":{},\"optimizer\":{\"enabled\":true,\"runs\":10000},\"remappings\":[]},\"sources\":{\"/Users/ilya/Documents/Akropolis/dca-strategy-bot/contracts/interfaces/dca/IDCAFullBalanceHelper.sol\":{\"keccak256\":\"0xa9ebda54c515b7b32984c3ecc86b6a2b33e7cd3a2bb2f7b3429535df31bfa07f\",\"urls\":[\"bzz-raw://4270dbc5831e6204602320a1ebc026ed1abea6fb4afd0ee4d11f6d43c30d61df\",\"dweb:/ipfs/QmdZENJ13ntNeAktpVZudxAf3V31Bm6vxwCWTvR1rK7XiF\"]}},\"version\":1}",
+  "bytecode": "0x",
+  "deployedBytecode": "0x",
+  "sourceMap": "",
+  "deployedSourceMap": "",
+  "source": "pragma solidity ^0.5.17;\n\ncontract IDCAFullBalanceHelper {\n    function getFullAccountBalances(address dcaModule, address account)\n        external\n        returns (address[] memory, uint256[] memory);\n}\n",
+  "sourcePath": "/Users/ilya/Documents/Akropolis/dca-strategy-bot/contracts/interfaces/dca/IDCAFullBalanceHelper.sol",
+  "ast": {
+    "absolutePath": "/Users/ilya/Documents/Akropolis/dca-strategy-bot/contracts/interfaces/dca/IDCAFullBalanceHelper.sol",
+    "exportedSymbols": {
+      "IDCAFullBalanceHelper": [
+        5215
+      ]
+    },
+    "id": 5216,
+    "nodeType": "SourceUnit",
+    "nodes": [
+      {
+        "id": 5201,
+        "literals": [
+          "solidity",
+          "^",
+          "0.5",
+          ".17"
+        ],
+        "nodeType": "PragmaDirective",
+        "src": "0:24:13"
+      },
+      {
+        "baseContracts": [],
+        "contractDependencies": [],
+        "contractKind": "contract",
+        "documentation": null,
+        "fullyImplemented": false,
+        "id": 5215,
+        "linearizedBaseContracts": [
+          5215
+        ],
+        "name": "IDCAFullBalanceHelper",
+        "nodeType": "ContractDefinition",
+        "nodes": [
+          {
+            "body": null,
+            "documentation": null,
+            "id": 5214,
+            "implemented": false,
+            "kind": "function",
+            "modifiers": [],
+            "name": "getFullAccountBalances",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 5206,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 5203,
+                  "name": "dcaModule",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 5214,
+                  "src": "95:17:13",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 5202,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "95:7:13",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 5205,
+                  "name": "account",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 5214,
+                  "src": "114:15:13",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 5204,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "114:7:13",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "94:36:13"
+            },
+            "returnParameters": {
+              "id": 5213,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 5209,
+                  "name": "",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 5214,
+                  "src": "165:16:13",
+                  "stateVariable": false,
+                  "storageLocation": "memory",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_array$_t_address_$dyn_memory_ptr",
+                    "typeString": "address[]"
+                  },
+                  "typeName": {
+                    "baseType": {
+                      "id": 5207,
+                      "name": "address",
+                      "nodeType": "ElementaryTypeName",
+                      "src": "165:7:13",
+                      "stateMutability": "nonpayable",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_address",
+                        "typeString": "address"
+                      }
+                    },
+                    "id": 5208,
+                    "length": null,
+                    "nodeType": "ArrayTypeName",
+                    "src": "165:9:13",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_array$_t_address_$dyn_storage_ptr",
+                      "typeString": "address[]"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 5212,
+                  "name": "",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 5214,
+                  "src": "183:16:13",
+                  "stateVariable": false,
+                  "storageLocation": "memory",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_array$_t_uint256_$dyn_memory_ptr",
+                    "typeString": "uint256[]"
+                  },
+                  "typeName": {
+                    "baseType": {
+                      "id": 5210,
+                      "name": "uint256",
+                      "nodeType": "ElementaryTypeName",
+                      "src": "183:7:13",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_uint256",
+                        "typeString": "uint256"
+                      }
+                    },
+                    "id": 5211,
+                    "length": null,
+                    "nodeType": "ArrayTypeName",
+                    "src": "183:9:13",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_array$_t_uint256_$dyn_storage_ptr",
+                      "typeString": "uint256[]"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "164:36:13"
+            },
+            "scope": 5215,
+            "src": "63:138:13",
+            "stateMutability": "nonpayable",
+            "superFunction": null,
+            "visibility": "external"
+          }
+        ],
+        "scope": 5216,
+        "src": "26:177:13"
+      }
+    ],
+    "src": "0:204:13"
+  },
+  "legacyAST": {
+    "absolutePath": "/Users/ilya/Documents/Akropolis/dca-strategy-bot/contracts/interfaces/dca/IDCAFullBalanceHelper.sol",
+    "exportedSymbols": {
+      "IDCAFullBalanceHelper": [
+        5215
+      ]
+    },
+    "id": 5216,
+    "nodeType": "SourceUnit",
+    "nodes": [
+      {
+        "id": 5201,
+        "literals": [
+          "solidity",
+          "^",
+          "0.5",
+          ".17"
+        ],
+        "nodeType": "PragmaDirective",
+        "src": "0:24:13"
+      },
+      {
+        "baseContracts": [],
+        "contractDependencies": [],
+        "contractKind": "contract",
+        "documentation": null,
+        "fullyImplemented": false,
+        "id": 5215,
+        "linearizedBaseContracts": [
+          5215
+        ],
+        "name": "IDCAFullBalanceHelper",
+        "nodeType": "ContractDefinition",
+        "nodes": [
+          {
+            "body": null,
+            "documentation": null,
+            "id": 5214,
+            "implemented": false,
+            "kind": "function",
+            "modifiers": [],
+            "name": "getFullAccountBalances",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 5206,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 5203,
+                  "name": "dcaModule",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 5214,
+                  "src": "95:17:13",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 5202,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "95:7:13",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 5205,
+                  "name": "account",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 5214,
+                  "src": "114:15:13",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 5204,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "114:7:13",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "94:36:13"
+            },
+            "returnParameters": {
+              "id": 5213,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 5209,
+                  "name": "",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 5214,
+                  "src": "165:16:13",
+                  "stateVariable": false,
+                  "storageLocation": "memory",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_array$_t_address_$dyn_memory_ptr",
+                    "typeString": "address[]"
+                  },
+                  "typeName": {
+                    "baseType": {
+                      "id": 5207,
+                      "name": "address",
+                      "nodeType": "ElementaryTypeName",
+                      "src": "165:7:13",
+                      "stateMutability": "nonpayable",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_address",
+                        "typeString": "address"
+                      }
+                    },
+                    "id": 5208,
+                    "length": null,
+                    "nodeType": "ArrayTypeName",
+                    "src": "165:9:13",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_array$_t_address_$dyn_storage_ptr",
+                      "typeString": "address[]"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 5212,
+                  "name": "",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 5214,
+                  "src": "183:16:13",
+                  "stateVariable": false,
+                  "storageLocation": "memory",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_array$_t_uint256_$dyn_memory_ptr",
+                    "typeString": "uint256[]"
+                  },
+                  "typeName": {
+                    "baseType": {
+                      "id": 5210,
+                      "name": "uint256",
+                      "nodeType": "ElementaryTypeName",
+                      "src": "183:7:13",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_uint256",
+                        "typeString": "uint256"
+                      }
+                    },
+                    "id": 5211,
+                    "length": null,
+                    "nodeType": "ArrayTypeName",
+                    "src": "183:9:13",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_array$_t_uint256_$dyn_storage_ptr",
+                      "typeString": "uint256[]"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "164:36:13"
+            },
+            "scope": 5215,
+            "src": "63:138:13",
+            "stateMutability": "nonpayable",
+            "superFunction": null,
+            "visibility": "external"
+          }
+        ],
+        "scope": 5216,
+        "src": "26:177:13"
+      }
+    ],
+    "src": "0:204:13"
+  },
+  "compiler": {
+    "name": "solc",
+    "version": "0.5.17+commit.d19bba13.Emscripten.clang"
+  },
+  "networks": {},
+  "schemaVersion": "3.2.3",
+  "updatedAt": "2020-08-07T11:30:42.874Z",
+  "devdoc": {
+    "methods": {}
+  },
+  "userdoc": {
+    "methods": {}
+  }
+}

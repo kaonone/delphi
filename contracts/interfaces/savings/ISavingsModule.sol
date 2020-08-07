@@ -35,4 +35,6 @@ contract ISavingsModule {
     function withdrawReward(address[] memory rewardTokens)
         public
         returns (uint256[] memory);
+
+    function supportedRewardTokens() public view returns (address[] memory);
 }

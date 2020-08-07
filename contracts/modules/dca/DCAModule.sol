@@ -7,6 +7,7 @@ import "@openzeppelin/contracts-ethereum-package/contracts/drafts/Counters.sol";
 import "@openzeppelin/contracts-ethereum-package/contracts/math/SafeMath.sol";
 import "../../interfaces/uniswap/IUniswapV2Router02.sol";
 import "../../interfaces/savings/ISavingsModule.sol";
+import "../../interfaces/dca/IDCAFullBalanceHelper.sol";
 import "../../utils/TransferHelper.sol";
 import "../../utils/Normalization.sol";
 import "./DCAOperatorRole.sol";
@@ -55,6 +56,7 @@ contract DCAModule is Module, ERC721Full, ERC721Burnable, DCAOperatorRole {
 
     Distribution[] public distributions;
     address[] public tokensToBuy;
+    address[] public rewardPools;
 
     Counters.Counter private _tokenIds;
 
@@ -62,18 +64,19 @@ contract DCAModule is Module, ERC721Full, ERC721Burnable, DCAOperatorRole {
     uint256 public nextBuyTimestamp;
     uint256 public globalPeriodBuyAmount;
     uint256 public deadline; // uniswap v2 deadline
-    uint256 public protocolMaxFee;
-
-    uint256 public constant FEE_FOUNDATION = 1e18;
+    uint256 public protocolMaxFee; // 1e18 fee foundation
 
     address public router;
     address public tokenToSell;
+    address public dcaFullBalanceHelper;
 
     bool public isThisAStrategyForBuyingASingleToken;
 
     mapping(uint256 => Account) public _accountOf;
     mapping(uint256 => uint256) public removeAfterDistribution;
     mapping(address => TokenData) public tokenDataOf;
+
+    mapping(address => bool) private inPools;
 
     function initialize(
         string calldata _name,
@@ -104,16 +107,12 @@ contract DCAModule is Module, ERC721Full, ERC721Burnable, DCAOperatorRole {
     }
 
     // GETTERS
-    function getTokenIdByAddress(address user) public view returns (uint256) {
-        return _tokensOfOwner(user)[0];
-    }
-
-    function getAccountBalance(uint256 tokenId, address token)
+    function getTokenIdByAddress(address userAddress)
         public
         view
         returns (uint256)
     {
-        return _accountOf[tokenId].balance[token];
+        return _tokensOfOwner(userAddress)[0];
     }
 
     function getAccountBuyAmount(uint256 tokenId)
@@ -122,6 +121,34 @@ contract DCAModule is Module, ERC721Full, ERC721Burnable, DCAOperatorRole {
         returns (uint256)
     {
         return _accountOf[tokenId].buyAmount;
+    }
+
+    function getFullAccountBalances(address account, address[] calldata tokens)
+        external
+        returns (uint256[] memory)
+    {
+        _claimDistributions();
+
+        uint256 tokenId = getTokenIdByAddress(account);
+
+        uint256[] memory balances = new uint256[](tokens.length);
+
+        for (uint256 i = 0; i < tokens.length; i++) {
+            balances[i] = _accountOf[tokenId].balance[tokens[i]];
+        }
+
+        return balances;
+    }
+
+    function getFullAccountBalances(address account)
+        external
+        returns (address[] memory, uint256[] memory)
+    {
+        return
+            IDCAFullBalanceHelper(dcaFullBalanceHelper).getFullAccountBalances(
+                address(this),
+                account
+            );
     }
 
     // SETTERS
@@ -138,6 +165,11 @@ contract DCAModule is Module, ERC721Full, ERC721Burnable, DCAOperatorRole {
             protocol: protocol,
             poolToken: poolToken
         });
+
+        if (!inPools[pool]) {
+            rewardPools.push(pool);
+            inPools[pool] = true;
+        }
 
         return true;
     }
@@ -161,7 +193,7 @@ contract DCAModule is Module, ERC721Full, ERC721Burnable, DCAOperatorRole {
         if (balanceOf(_msgSender()) == 0) {
             uint256 tokenId = _registerNewAccount();
 
-            // returns normalized and denormalized amount of pTokens (mint)
+            // returns normalized amount of pTokens (mint)
             (uint256 nDeposit, uint256 dDeposit) = _depositToPool(
                 tokenToSell,
                 amount
@@ -187,7 +219,7 @@ contract DCAModule is Module, ERC721Full, ERC721Burnable, DCAOperatorRole {
 
             uint256 tokenId = getTokenIdByAddress(_msgSender());
 
-            // returns normalized and denormalized amount of pTokens (mint)
+            // returns normalized amount of pTokens (mint)
             (uint256 nDeposit, uint256 dDeposit) = _depositToPool(
                 tokenToSell,
                 amount
@@ -226,7 +258,7 @@ contract DCAModule is Module, ERC721Full, ERC721Burnable, DCAOperatorRole {
             "DCAModule-withdraw: withdraw amount exceeds balance"
         );
 
-        // returns normalized and denormalized amount of pTokens (burn)
+        // returns normalized amount of pTokens (burn)
         (uint256 nWithdrawal, uint256 dWithdrawal) = _withdrawFromPool(
             token,
             amount
@@ -254,7 +286,7 @@ contract DCAModule is Module, ERC721Full, ERC721Burnable, DCAOperatorRole {
 
         uint256 dividedBuyAmount = _calculateDividedBuyAmount();
 
-        // returns normalized and denormalized amount of pTokens (burn)
+        // returns amounts of original tokens and pool tokens (burn)
         (, uint256 dWithdrawal) = _withdrawFromPool(
             tokenToSell,
             globalPeriodBuyAmount
@@ -276,28 +308,6 @@ contract DCAModule is Module, ERC721Full, ERC721Burnable, DCAOperatorRole {
         globalPeriodBuyAmount = globalPeriodBuyAmount.sub(
             removeAfterDistribution[distributions.length]
         );
-    }
-
-    function _withdrawRewardsAndMakeDistribution(
-        address[] calldata rewardTokens
-    ) external onlyDCAOperator {
-        uint256[] memory rAmounts = ISavingsModule(
-            tokenDataOf[rewardTokens[0]]
-                .pool
-        )
-            .withdrawReward(rewardTokens);
-
-        for (uint256 i = 0; i < rewardTokens.length; i++) {
-            _makeDistribution(
-                rewardTokens[i],
-                globalPeriodBuyAmount,
-                rAmounts[i]
-            );
-        }
-    }
-
-    function checkDistributions() external {
-        _claimDistributions();
     }
 
     // PRIVATE (HELPERS)
@@ -393,7 +403,27 @@ contract DCAModule is Module, ERC721Full, ERC721Burnable, DCAOperatorRole {
         return globalPeriodBuyAmount.div(tokensToBuy.length);
     }
 
+    function _withdrawRewardsAndMakeDistribution() private {
+        for (uint256 i = 0; i < rewardPools.length; i++) {
+            address[] memory rewardTokens = ISavingsModule(rewardPools[i])
+                .supportedRewardTokens();
+
+            uint256[] memory rAmounts = ISavingsModule(rewardPools[i])
+                .withdrawReward(rewardTokens);
+
+            for (uint256 j = 0; j < rewardTokens.length; j++) {
+                _makeDistribution(
+                    rewardTokens[j],
+                    globalPeriodBuyAmount,
+                    rAmounts[j]
+                );
+            }
+        }
+    }
+
     function _claimDistributions() private returns (bool) {
+        _withdrawRewardsAndMakeDistribution();
+
         uint256 tokenId = getTokenIdByAddress(_msgSender());
 
         uint256 dividedBuyAmount = _calculateDividedBuyAmount();
@@ -454,7 +484,7 @@ contract DCAModule is Module, ERC721Full, ERC721Burnable, DCAOperatorRole {
         uint256 nAmount = amount.normalize(tokenDataOf[token].decimals);
 
         // normalized withdrawal amount + fee
-        return nAmount.add(nAmount.mul(protocolMaxFee).div(FEE_FOUNDATION));
+        return nAmount.add(nAmount.mul(protocolMaxFee).div(1e18));
     }
 
     function _makeDistribution(
@@ -501,14 +531,14 @@ contract DCAModule is Module, ERC721Full, ERC721Burnable, DCAOperatorRole {
 
         token.safeApprove(tokenDataOf[token].pool, amount);
 
-        // normalized deposit amount (mint)
+        // normalized deposit amount
         uint256 nDeposit = ISavingsModule(tokenDataOf[token].pool).deposit(
             tokenDataOf[token].protocol,
             tokens,
             amounts
         );
 
-        // denormalized deposit amount (mint)
+        // denormalized deposit amount
         uint256 dDeposit = nDeposit.denormalize(tokenDataOf[token].decimals);
 
         return (nDeposit, dDeposit);
