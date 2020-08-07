@@ -44,14 +44,14 @@
     "absolutePath": "/Users/ilya/Documents/Akropolis/dca-strategy-bot/contracts/interfaces/defi/IRAYNAVCalculator.sol",
     "exportedSymbols": {
       "IRAYNAVCalculator": [
-        5773
+        5897
       ]
     },
-    "id": 5774,
+    "id": 5898,
     "nodeType": "SourceUnit",
     "nodes": [
       {
-        "id": 5761,
+        "id": 5885,
         "literals": [
           "solidity",
           "^",
@@ -59,7 +59,7 @@
           ".12"
         ],
         "nodeType": "PragmaDirective",
-        "src": "0:24:28"
+        "src": "0:24:30"
       },
       {
         "baseContracts": [],
@@ -67,9 +67,9 @@
         "contractKind": "interface",
         "documentation": "@notice  Basic interface for integration with RAY - The Robo-Advisor for Yield.\n\n/// Author:   Devan Purhar\n Version:  1.0.0",
         "fullyImplemented": false,
-        "id": 5773,
+        "id": 5897,
         "linearizedBaseContracts": [
-          5773
+          5897
         ],
         "name": "IRAYNAVCalculator",
         "nodeType": "ContractDefinition",
@@ -77,23 +77,23 @@
           {
             "body": null,
             "documentation": "@notice  Get the underlying value of a RAY token (principal + yield earnt)\n\n    /// @dev     The implementation of this function exists in NAVCalculator\n\n    /// @param   portfolioId - the id of the portfolio associated with the RAY token\n @param   tokenId - the id of the RAY token to get the value of\n\n    /// @return  an array of two, the first value is the current token value, the\n          second value is the current price per share of the portfolio",
-            "id": 5772,
+            "id": 5896,
             "implemented": false,
             "kind": "function",
             "modifiers": [],
             "name": "getTokenValue",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 5766,
+              "id": 5890,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 5763,
+                  "id": 5887,
                   "name": "portfolioId",
                   "nodeType": "VariableDeclaration",
-                  "scope": 5772,
-                  "src": "1810:19:28",
+                  "scope": 5896,
+                  "src": "1810:19:30",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -101,10 +101,10 @@
                     "typeString": "bytes32"
                   },
                   "typeName": {
-                    "id": 5762,
+                    "id": 5886,
                     "name": "bytes32",
                     "nodeType": "ElementaryTypeName",
-                    "src": "1810:7:28",
+                    "src": "1810:7:30",
                     "typeDescriptions": {
                       "typeIdentifier": "t_bytes32",
                       "typeString": "bytes32"
@@ -115,11 +115,11 @@
                 },
                 {
                   "constant": false,
-                  "id": 5765,
+                  "id": 5889,
                   "name": "tokenId",
                   "nodeType": "VariableDeclaration",
-                  "scope": 5772,
-                  "src": "1831:15:28",
+                  "scope": 5896,
+                  "src": "1831:15:30",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -127,10 +127,10 @@
                     "typeString": "bytes32"
                   },
                   "typeName": {
-                    "id": 5764,
+                    "id": 5888,
                     "name": "bytes32",
                     "nodeType": "ElementaryTypeName",
-                    "src": "1831:7:28",
+                    "src": "1831:7:30",
                     "typeDescriptions": {
                       "typeIdentifier": "t_bytes32",
                       "typeString": "bytes32"
@@ -140,19 +140,19 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "1809:38:28"
+              "src": "1809:38:30"
             },
             "returnParameters": {
-              "id": 5771,
+              "id": 5895,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 5768,
+                  "id": 5892,
                   "name": "",
                   "nodeType": "VariableDeclaration",
-                  "scope": 5772,
-                  "src": "1865:4:28",
+                  "scope": 5896,
+                  "src": "1865:4:30",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -160,10 +160,10 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 5767,
+                    "id": 5891,
                     "name": "uint",
                     "nodeType": "ElementaryTypeName",
-                    "src": "1865:4:28",
+                    "src": "1865:4:30",
                     "typeDescriptions": {
                       "typeIdentifier": "t_uint256",
                       "typeString": "uint256"
@@ -174,11 +174,11 @@
                 },
                 {
                   "constant": false,
-                  "id": 5770,
+                  "id": 5894,
                   "name": "",
                   "nodeType": "VariableDeclaration",
-                  "scope": 5772,
-                  "src": "1871:4:28",
+                  "scope": 5896,
+                  "src": "1871:4:30",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -186,10 +186,10 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 5769,
+                    "id": 5893,
                     "name": "uint",
                     "nodeType": "ElementaryTypeName",
-                    "src": "1871:4:28",
+                    "src": "1871:4:30",
                     "typeDescriptions": {
                       "typeIdentifier": "t_uint256",
                       "typeString": "uint256"
@@ -199,33 +199,33 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "1864:12:28"
+              "src": "1864:12:30"
             },
-            "scope": 5773,
-            "src": "1787:90:28",
+            "scope": 5897,
+            "src": "1787:90:30",
             "stateMutability": "nonpayable",
             "superFunction": null,
             "visibility": "external"
           }
         ],
-        "scope": 5774,
-        "src": "1253:626:28"
+        "scope": 5898,
+        "src": "1253:626:30"
       }
     ],
-    "src": "0:1880:28"
+    "src": "0:1880:30"
   },
   "legacyAST": {
     "absolutePath": "/Users/ilya/Documents/Akropolis/dca-strategy-bot/contracts/interfaces/defi/IRAYNAVCalculator.sol",
     "exportedSymbols": {
       "IRAYNAVCalculator": [
-        5773
+        5897
       ]
     },
-    "id": 5774,
+    "id": 5898,
     "nodeType": "SourceUnit",
     "nodes": [
       {
-        "id": 5761,
+        "id": 5885,
         "literals": [
           "solidity",
           "^",
@@ -233,7 +233,7 @@
           ".12"
         ],
         "nodeType": "PragmaDirective",
-        "src": "0:24:28"
+        "src": "0:24:30"
       },
       {
         "baseContracts": [],
@@ -241,9 +241,9 @@
         "contractKind": "interface",
         "documentation": "@notice  Basic interface for integration with RAY - The Robo-Advisor for Yield.\n\n/// Author:   Devan Purhar\n Version:  1.0.0",
         "fullyImplemented": false,
-        "id": 5773,
+        "id": 5897,
         "linearizedBaseContracts": [
-          5773
+          5897
         ],
         "name": "IRAYNAVCalculator",
         "nodeType": "ContractDefinition",
@@ -251,23 +251,23 @@
           {
             "body": null,
             "documentation": "@notice  Get the underlying value of a RAY token (principal + yield earnt)\n\n    /// @dev     The implementation of this function exists in NAVCalculator\n\n    /// @param   portfolioId - the id of the portfolio associated with the RAY token\n @param   tokenId - the id of the RAY token to get the value of\n\n    /// @return  an array of two, the first value is the current token value, the\n          second value is the current price per share of the portfolio",
-            "id": 5772,
+            "id": 5896,
             "implemented": false,
             "kind": "function",
             "modifiers": [],
             "name": "getTokenValue",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 5766,
+              "id": 5890,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 5763,
+                  "id": 5887,
                   "name": "portfolioId",
                   "nodeType": "VariableDeclaration",
-                  "scope": 5772,
-                  "src": "1810:19:28",
+                  "scope": 5896,
+                  "src": "1810:19:30",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -275,10 +275,10 @@
                     "typeString": "bytes32"
                   },
                   "typeName": {
-                    "id": 5762,
+                    "id": 5886,
                     "name": "bytes32",
                     "nodeType": "ElementaryTypeName",
-                    "src": "1810:7:28",
+                    "src": "1810:7:30",
                     "typeDescriptions": {
                       "typeIdentifier": "t_bytes32",
                       "typeString": "bytes32"
@@ -289,11 +289,11 @@
                 },
                 {
                   "constant": false,
-                  "id": 5765,
+                  "id": 5889,
                   "name": "tokenId",
                   "nodeType": "VariableDeclaration",
-                  "scope": 5772,
-                  "src": "1831:15:28",
+                  "scope": 5896,
+                  "src": "1831:15:30",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -301,10 +301,10 @@
                     "typeString": "bytes32"
                   },
                   "typeName": {
-                    "id": 5764,
+                    "id": 5888,
                     "name": "bytes32",
                     "nodeType": "ElementaryTypeName",
-                    "src": "1831:7:28",
+                    "src": "1831:7:30",
                     "typeDescriptions": {
                       "typeIdentifier": "t_bytes32",
                       "typeString": "bytes32"
@@ -314,19 +314,19 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "1809:38:28"
+              "src": "1809:38:30"
             },
             "returnParameters": {
-              "id": 5771,
+              "id": 5895,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 5768,
+                  "id": 5892,
                   "name": "",
                   "nodeType": "VariableDeclaration",
-                  "scope": 5772,
-                  "src": "1865:4:28",
+                  "scope": 5896,
+                  "src": "1865:4:30",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -334,10 +334,10 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 5767,
+                    "id": 5891,
                     "name": "uint",
                     "nodeType": "ElementaryTypeName",
-                    "src": "1865:4:28",
+                    "src": "1865:4:30",
                     "typeDescriptions": {
                       "typeIdentifier": "t_uint256",
                       "typeString": "uint256"
@@ -348,11 +348,11 @@
                 },
                 {
                   "constant": false,
-                  "id": 5770,
+                  "id": 5894,
                   "name": "",
                   "nodeType": "VariableDeclaration",
-                  "scope": 5772,
-                  "src": "1871:4:28",
+                  "scope": 5896,
+                  "src": "1871:4:30",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -360,10 +360,10 @@
                     "typeString": "uint256"
                   },
                   "typeName": {
-                    "id": 5769,
+                    "id": 5893,
                     "name": "uint",
                     "nodeType": "ElementaryTypeName",
-                    "src": "1871:4:28",
+                    "src": "1871:4:30",
                     "typeDescriptions": {
                       "typeIdentifier": "t_uint256",
                       "typeString": "uint256"
@@ -373,20 +373,20 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "1864:12:28"
+              "src": "1864:12:30"
             },
-            "scope": 5773,
-            "src": "1787:90:28",
+            "scope": 5897,
+            "src": "1787:90:30",
             "stateMutability": "nonpayable",
             "superFunction": null,
             "visibility": "external"
           }
         ],
-        "scope": 5774,
-        "src": "1253:626:28"
+        "scope": 5898,
+        "src": "1253:626:30"
       }
     ],
-    "src": "0:1880:28"
+    "src": "0:1880:30"
   },
   "compiler": {
     "name": "solc",
@@ -394,7 +394,7 @@
   },
   "networks": {},
   "schemaVersion": "3.2.3",
-  "updatedAt": "2020-08-07T09:48:49.894Z",
+  "updatedAt": "2020-08-07T14:14:27.005Z",
   "devdoc": {
     "methods": {
       "getTokenValue(bytes32,bytes32)": {

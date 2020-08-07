@@ -22,17 +22,11 @@ contract DCAModule is Module, ERC721Full, ERC721Burnable, DCAOperatorRole {
     event Deposit(
         address user,
         address token,
-        uint256 dDeposit,
-        uint256 nDeposit,
+        uint256 amount,
         uint256 newBuyAmount
     );
 
-    event Withdrawal(
-        address user,
-        address token,
-        uint256 dWithdrawal,
-        uint256 nWithdrawal
-    );
+    event Withdrawal(address user, address token, uint256 amount);
 
     struct Account {
         mapping(address => uint256) balance;
@@ -70,11 +64,10 @@ contract DCAModule is Module, ERC721Full, ERC721Burnable, DCAOperatorRole {
     address public tokenToSell;
     address public dcaFullBalanceHelper;
 
-    bool public isThisAStrategyForBuyingASingleToken;
-
     mapping(uint256 => Account) public _accountOf;
     mapping(uint256 => uint256) public removeAfterDistribution;
     mapping(address => TokenData) public tokenDataOf;
+    mapping(address => uint256) public prevPoolTokenBalanceOf;
 
     mapping(address => bool) private inPools;
 
@@ -84,14 +77,13 @@ contract DCAModule is Module, ERC721Full, ERC721Burnable, DCAOperatorRole {
         address _osPool,
         address _tokenToSell,
         address[] calldata _tokensToBuy,
-        bool _isThisAStrategyForBuyingASingleToken,
         address _router,
         uint256 _periodTimestamp,
         address bot
     ) external initializer {
         Module.initialize(_osPool);
 
-        DCAOperatorRole.initialize(bot);
+        DCAOperatorRole.initialize(_msgSender());
 
         ERC721.initialize();
         ERC721Enumerable.initialize();
@@ -100,7 +92,6 @@ contract DCAModule is Module, ERC721Full, ERC721Burnable, DCAOperatorRole {
         _setTokensToBuy(_tokensToBuy);
 
         tokenToSell = _tokenToSell;
-        isThisAStrategyForBuyingASingleToken = _isThisAStrategyForBuyingASingleToken;
         router = _router;
         periodTimestamp = _periodTimestamp;
         nextBuyTimestamp = now.add(_periodTimestamp);
@@ -193,6 +184,10 @@ contract DCAModule is Module, ERC721Full, ERC721Burnable, DCAOperatorRole {
         if (balanceOf(_msgSender()) == 0) {
             uint256 tokenId = _registerNewAccount();
 
+            _withdrawRewardsAndMakeDistribution();
+
+            _accountOf[tokenId].nextDistributionIndex = distributions.length;
+
             // returns normalized amount of pTokens (mint)
             (uint256 nDeposit, uint256 dDeposit) = _depositToPool(
                 tokenToSell,
@@ -201,15 +196,7 @@ contract DCAModule is Module, ERC721Full, ERC721Burnable, DCAOperatorRole {
 
             _refreshAccount(tokenId, dDeposit, 0, newBuyAmount, true);
 
-            emit Deposit(
-                _msgSender(),
-                tokenToSell,
-                dDeposit,
-                nDeposit,
-                newBuyAmount
-            );
-
-            _accountOf[tokenId].nextDistributionIndex = distributions.length;
+            emit Deposit(_msgSender(), tokenToSell, amount, newBuyAmount);
 
             return (nDeposit, dDeposit);
 
@@ -233,13 +220,7 @@ contract DCAModule is Module, ERC721Full, ERC721Burnable, DCAOperatorRole {
                 true
             );
 
-            emit Deposit(
-                _msgSender(),
-                tokenToSell,
-                dDeposit,
-                nDeposit,
-                newBuyAmount
-            );
+            emit Deposit(_msgSender(), tokenToSell, amount, newBuyAmount);
 
             return (nDeposit, dDeposit);
         }
@@ -269,14 +250,14 @@ contract DCAModule is Module, ERC721Full, ERC721Burnable, DCAOperatorRole {
                 tokenId,
                 dWithdrawal,
                 _accountOf[tokenId].buyAmount,
-                0,
+                _accountOf[tokenId].buyAmount,
                 false
             );
         }
 
         token.safeTransfer(_msgSender(), dWithdrawal);
 
-        emit Withdrawal(_msgSender(), token, dWithdrawal, nWithdrawal);
+        emit Withdrawal(_msgSender(), token, amount);
 
         return (nWithdrawal, dWithdrawal);
     }
@@ -306,18 +287,17 @@ contract DCAModule is Module, ERC721Full, ERC721Burnable, DCAOperatorRole {
         nextBuyTimestamp = nextBuyTimestamp.add(periodTimestamp);
 
         globalPeriodBuyAmount = globalPeriodBuyAmount.sub(
-            removeAfterDistribution[distributions.length]
+            removeAfterDistribution[distributions
+                .length
+                .div(tokensToBuy.length)
+                .sub(0x0001)]
         );
+
+        // event
     }
 
     // PRIVATE (HELPERS)
     function _setTokensToBuy(address[] memory tokens) private {
-        require(
-            (isThisAStrategyForBuyingASingleToken && tokens.length <= 1) ||
-                !isThisAStrategyForBuyingASingleToken,
-            "DCAModule-setTokenToBuy: a strategy can contain only one token"
-        );
-
         for (uint256 i = 0; i < tokens.length; i++) {
             tokensToBuy.push(tokens[i]);
         }
@@ -341,9 +321,9 @@ contract DCAModule is Module, ERC721Full, ERC721Burnable, DCAOperatorRole {
                 .sub(amount);
         }
 
-        if (newBuyAmount > 0) {
+        if (newBuyAmount != oldBuyAmount) {
             // update buyAmount
-            _accountOf[tokenId].buyAmount = newBuyAmount;
+            _accountOf[tokenId].buyAmount = newBuyAmount; // ?
 
             // remove oldBuyAmount from globalPeriodBuyAmount and add newBuyAmount
             globalPeriodBuyAmount = globalPeriodBuyAmount.sub(oldBuyAmount).add(
@@ -352,24 +332,22 @@ contract DCAModule is Module, ERC721Full, ERC721Burnable, DCAOperatorRole {
         }
 
         // remove oldBuyAmount from removeAfterDistribution
-        if (oldBuyAmount > 0) {
-            removeAfterDistribution[_accountOf[tokenId]
-                .lastRemovalPointIndex] = removeAfterDistribution[_accountOf[tokenId]
-                .lastRemovalPointIndex]
-                .sub(oldBuyAmount);
+        removeAfterDistribution[_accountOf[tokenId]
+            .lastRemovalPointIndex] = removeAfterDistribution[_accountOf[tokenId]
+            .lastRemovalPointIndex]
+            .sub(oldBuyAmount);
 
-            // calculate new removalPoint
-            uint256 removalPoint = distributions
-                .length
-                .add(_accountOf[tokenId].balance[tokenToSell].div(newBuyAmount))
-                .sub(0x0001);
+        // calculate new removalPoint
+        uint256 removalPoint = distributions
+            .length
+            .add(_accountOf[tokenId].balance[tokenToSell].div(newBuyAmount))
+            .sub(0x0001);
 
-            // add newBuyAmount from removeAfterDistribution
-            removeAfterDistribution[removalPoint] = removeAfterDistribution[removalPoint]
-                .add(newBuyAmount);
+        // add newBuyAmount from removeAfterDistribution
+        removeAfterDistribution[removalPoint] = removeAfterDistribution[removalPoint]
+            .add(newBuyAmount);
 
-            _accountOf[tokenId].lastRemovalPointIndex = removalPoint;
-        }
+        _accountOf[tokenId].lastRemovalPointIndex = removalPoint;
     }
 
     function _calculatePayout(uint256 distibutionIndex, uint256 buyAmount)
@@ -458,11 +436,11 @@ contract DCAModule is Module, ERC721Full, ERC721Burnable, DCAOperatorRole {
                         dividedBuyAmount,
                         amount
                     );
-
-                    _accountOf[tokenId].nextDistributionIndex = i.add(0x0001);
                 }
             }
         }
+
+        _accountOf[tokenId].nextDistributionIndex = distributions.length;
     }
 
     function _registerNewAccount() private returns (uint256) {
@@ -503,13 +481,24 @@ contract DCAModule is Module, ERC721Full, ERC721Burnable, DCAOperatorRole {
 
     function _calculateYieldAndMakeDistribution(
         address token,
-        uint256 prevPoolTokenBalance,
-        uint256 nWithdrawal
+        uint256 nAmount,
+        bool isIncrementBalance
     ) private {
-        uint256 yield = IERC20(tokenDataOf[token].poolToken)
-            .balanceOf(address(this))
-            .sub(prevPoolTokenBalance)
-            .sub(nWithdrawal);
+        uint256 actualBalance = IERC20(tokenDataOf[token].poolToken).balanceOf(
+            address(this)
+        );
+
+        uint256 yield = 0;
+
+        if (isIncrementBalance) {
+            yield = actualBalance.add(nAmount).sub(
+                prevPoolTokenBalanceOf[token]
+            );
+        } else {
+            yield = actualBalance.sub(nAmount).sub(
+                prevPoolTokenBalanceOf[token]
+            );
+        }
 
         if (yield > 0)
             _makeDistribution(
@@ -541,6 +530,11 @@ contract DCAModule is Module, ERC721Full, ERC721Burnable, DCAOperatorRole {
         // denormalized deposit amount
         uint256 dDeposit = nDeposit.denormalize(tokenDataOf[token].decimals);
 
+        _calculateYieldAndMakeDistribution(token, nDeposit, true);
+
+        prevPoolTokenBalanceOf[token] = IERC20(tokenDataOf[token].poolToken)
+            .balanceOf(address(this));
+
         return (nDeposit, dDeposit);
     }
 
@@ -548,9 +542,6 @@ contract DCAModule is Module, ERC721Full, ERC721Burnable, DCAOperatorRole {
         private
         returns (uint256, uint256)
     {
-        uint256 prevPoolTokenBalance = IERC20(tokenDataOf[token].poolToken)
-            .balanceOf(address(this));
-
         // normalized withdrawal amount (burn)
         uint256 nWithdrawal = ISavingsModule(tokenDataOf[token].pool).withdraw(
             tokenDataOf[token].protocol,
@@ -564,11 +555,10 @@ contract DCAModule is Module, ERC721Full, ERC721Burnable, DCAOperatorRole {
             tokenDataOf[token].decimals
         );
 
-        _calculateYieldAndMakeDistribution(
-            token,
-            prevPoolTokenBalance,
-            nWithdrawal
-        );
+        _calculateYieldAndMakeDistribution(token, nWithdrawal, false);
+
+        prevPoolTokenBalanceOf[token] = IERC20(tokenDataOf[token].poolToken)
+            .balanceOf(address(this));
 
         return (nWithdrawal, dWithdrawal);
     }
