@@ -29,15 +29,10 @@ contract AccessModule is Module, IAccessModule, Pausable, WhitelistedRole {
     }
 
     function isOperationAllowed(Operation operation, address sender) public view returns(bool) {
+        (operation);    //noop to prevent compiler warning
         if (paused()) return false;
         if (!whitelistEnabled) {
             return true;
-        } else if (
-            // This operations are allowed even if sender is not whitelisted
-            (operation == Operation.Repay) ||               // allowed to prevent unnecessary defaults and interest payments
-            (operation == Operation.WithdrawUnlockedPledge) // allowed because repay() calls withdrawUnlockedPledge() after full repay
-        ) {
-            return true;   
         } else {
             return isWhitelisted(sender);
         }

@@ -6,10 +6,11 @@ import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/ERC20Deta
 import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/SafeERC20.sol";
 import "../../interfaces/defi/IDefiProtocol.sol";
 import "../../common/Module.sol";
+import "../access/AccessChecker.sol";
 import "../token/PoolToken.sol";
 import "./RewardDistributions.sol";
 
-contract SavingsModule is Module, RewardDistributions {
+contract SavingsModule is Module, AccessChecker, RewardDistributions {
     uint256 constant MAX_UINT256 = uint256(-1);
     uint256 public constant DISTRIBUTION_AGGREGATION_PERIOD = 24*60*60;
 
@@ -90,7 +91,10 @@ contract SavingsModule is Module, RewardDistributions {
      * @param _tokens Array of tokens to deposit
      * @param _dnAmounts Array of amounts (denormalized to token decimals)
      */
-    function deposit(address[] memory _protocols, address[] memory _tokens, uint256[] memory _dnAmounts) public returns(uint256[] memory) {
+    function deposit(address[] memory _protocols, address[] memory _tokens, uint256[] memory _dnAmounts) 
+    public operationAllowed(IAccessModule.Operation.Deposit) 
+    returns(uint256[] memory) 
+    {
         require(_protocols.length == _tokens.length && _tokens.length == _dnAmounts.length, "SavingsModule: size of arrays does not match");
         uint256[] memory ptAmounts = new uint256[](_protocols.length);
         for (uint256 i=0; i < _protocols.length; i++) {
@@ -109,7 +113,10 @@ contract SavingsModule is Module, RewardDistributions {
      * @param _tokens Array of tokens to deposit
      * @param _dnAmounts Array of amounts (denormalized to token decimals)
      */
-    function deposit(address _protocol, address[] memory _tokens, uint256[] memory _dnAmounts) public returns(uint256) {
+    function deposit(address _protocol, address[] memory _tokens, uint256[] memory _dnAmounts)
+    public operationAllowed(IAccessModule.Operation.Deposit)
+    returns(uint256) 
+    {
         distributeRewardIfRequired(_protocol);
 
         uint256 nBalanceBefore = distributeYieldInternal(_protocol);
@@ -145,7 +152,10 @@ contract SavingsModule is Module, RewardDistributions {
      * @param nAmount Normalized (to 18 decimals) amount to withdraw
      * @return Amount of PoolToken burned from user
      */
-    function withdrawAll(address _protocol, uint256 nAmount) public returns(uint256) {
+    function withdrawAll(address _protocol, uint256 nAmount)
+    public operationAllowed(IAccessModule.Operation.Withdraw)
+    returns(uint256) 
+    {
         distributeRewardIfRequired(_protocol);
 
         PoolToken poolToken = PoolToken(protocols[_protocol].poolToken);
@@ -169,7 +179,9 @@ contract SavingsModule is Module, RewardDistributions {
      * @param maxNAmount Max amount of PoolToken to burn
      * @return Amount of PoolToken burned from user
      */
-    function withdraw(address _protocol, address token, uint256 dnAmount, uint256 maxNAmount) public returns(uint256){
+    function withdraw(address _protocol, address token, uint256 dnAmount, uint256 maxNAmount)
+    public operationAllowed(IAccessModule.Operation.Withdraw)
+    returns(uint256){
         distributeRewardIfRequired(_protocol);
 
         uint256 nBalanceBefore = distributeYieldInternal(_protocol);

@@ -2,18 +2,8 @@ pragma solidity ^0.5.12;
 
 interface IAccessModule {
     enum Operation {
-        // LiquidityModule
         Deposit,
-        Withdraw,
-        // LoanModule
-        CreateDebtProposal,
-        AddPledge,
-        WithdrawPledge,
-        CancelDebtProposal,
-        ExecuteDebtProposal,
-        Repay,
-        ExecuteDebtDefault,
-        WithdrawUnlockedPledge
+        Withdraw
     }
     
     /**

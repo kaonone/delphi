@@ -6,9 +6,10 @@ import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/IERC20.so
 import "../../common/Base.sol";
 import "../../interfaces/token/IPoolTokenBalanceChangeRecipient.sol";
 import "../../interfaces/defi/IDefiProtocol.sol";
+import "../access/AccessChecker.sol";
 import "../token/PoolToken.sol";
 
-contract RewardDistributions is Base, IPoolTokenBalanceChangeRecipient {
+contract RewardDistributions is Base, IPoolTokenBalanceChangeRecipient, AccessChecker {
     event RewardDistribution(address indexed poolToken, address indexed rewardRoken, uint256 amount, uint256 totalShares);
     event RewardWithdraw(address indexed user, address indexed rewardToken, uint256 amount);
 
@@ -47,7 +48,7 @@ contract RewardDistributions is Base, IPoolTokenBalanceChangeRecipient {
         rewardBalances[user].shares[token] = newAmount;
     }
 
-    function withdrawReward() public returns(uint256[] memory){
+    function withdrawReward() public returns(uint256[] memory) {
         return withdrawReward(supportedRewardTokens());
     }
 
@@ -55,7 +56,10 @@ contract RewardDistributions is Base, IPoolTokenBalanceChangeRecipient {
      * @notice Withdraw reward tokens for user
      * @param rewardTokens Array of tokens to withdraw
      */
-    function withdrawReward(address[] memory rewardTokens) public returns(uint256[] memory){
+    function withdrawReward(address[] memory rewardTokens)
+    public operationAllowed(IAccessModule.Operation.Withdraw)
+    returns(uint256[] memory)
+    {
         address user = _msgSender();
         uint256[] memory rAmounts = new uint256[](rewardTokens.length);
         updateRewardBalance(user);
@@ -69,13 +73,17 @@ contract RewardDistributions is Base, IPoolTokenBalanceChangeRecipient {
      * @notice Withdraw reward tokens for user
      * @param rewardToken Token to withdraw
      */
-    function withdrawReward(address rewardToken) public returns(uint256){
+    function withdrawReward(address rewardToken) 
+    public operationAllowed(IAccessModule.Operation.Withdraw)
+    returns(uint256){
         address user = _msgSender();
         updateRewardBalance(user);
         return _withdrawReward(user, rewardToken);
     }
 
-    function withdrawReward(address poolToken, address rewardToken) public returns(uint256){
+    function withdrawReward(address poolToken, address rewardToken) 
+    public operationAllowed(IAccessModule.Operation.Withdraw)
+    returns(uint256){
         address user = _msgSender();
         updateRewardBalance(user);
         return _withdrawReward(user, poolToken, rewardToken);
