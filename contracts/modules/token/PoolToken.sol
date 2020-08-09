@@ -35,11 +35,6 @@ contract PoolToken is Module, ERC20, ERC20Detailed, ERC20Mintable, ERC20Burnable
         }
     }
 
-    function userBalanceChanged(address account) internal {
-        IPoolTokenBalanceChangeRecipient savings = IPoolTokenBalanceChangeRecipient(getModuleAddress(MODULE_SAVINGS));
-        savings.poolTokenBalanceChanged(account);
-    }
-
     function _transfer(address sender, address recipient, uint256 amount) internal {
         if( !allowTransfers && 
             (sender != address(this)) //transfers from *this* used for distributions
@@ -48,5 +43,10 @@ contract PoolToken is Module, ERC20, ERC20Detailed, ERC20Mintable, ERC20Burnable
         }
         super._transfer(sender, recipient, amount);
     } 
+
+    function userBalanceChanged(address account) internal {
+        IPoolTokenBalanceChangeRecipient savings = IPoolTokenBalanceChangeRecipient(getModuleAddress(MODULE_SAVINGS));
+        savings.poolTokenBalanceChanged(account);
+    }
 
 }
