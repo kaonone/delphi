@@ -19,6 +19,8 @@ contract DCAModule is Module, ERC721Full, ERC721Burnable, DCAOperatorRole {
     using Normalization for uint256;
     using Counters for Counters.Counter;
 
+    Counters.Counter private _tokenIds;
+
     event Deposit(
         address user,
         address token,
@@ -52,8 +54,6 @@ contract DCAModule is Module, ERC721Full, ERC721Burnable, DCAOperatorRole {
     address[] public tokensToBuy;
     address[] public rewardPools;
 
-    Counters.Counter private _tokenIds;
-
     uint256 public periodTimestamp;
     uint256 public nextBuyTimestamp;
     uint256 public globalPeriodBuyAmount;
@@ -68,8 +68,7 @@ contract DCAModule is Module, ERC721Full, ERC721Burnable, DCAOperatorRole {
     mapping(uint256 => uint256) public removeAfterDistribution;
     mapping(address => TokenData) public tokenDataOf;
     mapping(address => uint256) public prevPoolTokenBalanceOf;
-
-    mapping(address => bool) private inPools;
+    mapping(address => bool) private inRewardPools;
 
     function initialize(
         string calldata _name,
