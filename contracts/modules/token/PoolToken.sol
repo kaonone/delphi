@@ -7,8 +7,9 @@ import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/ERC20Burn
 import "../../interfaces/token/IPoolTokenBalanceChangeRecipient.sol";
 import "../../common/Module.sol";
 import "./DistributionToken.sol";
+import "./UserCappedToken.sol";
 
-contract PoolToken is Module, ERC20, ERC20Detailed, ERC20Mintable, ERC20Burnable, DistributionToken {
+contract PoolToken is Module, ERC20, ERC20Detailed, ERC20Mintable, ERC20Burnable, DistributionToken, UserCappedToken {
 
     function initialize(address _pool, string memory poolName, string memory poolSymbol) public initializer {
         Module.initialize(_pool);
