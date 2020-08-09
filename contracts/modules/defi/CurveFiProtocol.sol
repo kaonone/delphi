@@ -219,8 +219,8 @@ contract CurveFiProtocol is ProtocolBase {
             return amount;
         } else if (_decimals > 18) {
             return amount.div(10**(_decimals-18));
-        } else if (_decimals > 18) {
-            return amount.mul(10**(_decimals-18));
+        } else if (_decimals < 18) {
+            return amount.mul(10**(18-_decimals));
         }
     }
 
@@ -230,8 +230,8 @@ contract CurveFiProtocol is ProtocolBase {
             return amount;
         } else if (_decimals > 18) {
             return amount.mul(10**(_decimals-18));
-        } else if (_decimals > 18) {
-            return amount.div(10**(_decimals-18));
+        } else if (_decimals < 18) {
+            return amount.div(10**(18-_decimals));
         }
     }
 
