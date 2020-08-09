@@ -5,6 +5,7 @@ import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/ERC20Deta
 import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/SafeERC20.sol";
 import "@openzeppelin/contracts-ethereum-package/contracts/math/SafeMath.sol";
 import "../../interfaces/defi/IDefiProtocol.sol";
+import "../../interfaces/defi/IBPool.sol";
 import "../../common/Module.sol";
 import "./DefiOperatorRole.sol";
 import "./ProtocolBase.sol";
@@ -46,23 +47,23 @@ contract BalancerProtocol is ProtocolBase {
             registeredTokensInfo[tkn] = TokenInfo({
                 idx: i,
                 decimals: ERC20Detailed(tkn).decimals(),
-                normalizedWeight: bal.getNormalizedWeight(tkn)
+                normalizedWeight: bpt.getNormalizedWeight(tkn)
             });
             require(registeredTokensInfo[tkn].normalizedWeight > 0, "BalancerProtocol: weight can not be 0");
-            IERC20(tkn).approve(bpt, MAX_UINT256);
+            IERC20(tkn).approve(address(bpt), MAX_UINT256);
         }
         baseToken = _baseToken;
         require(registeredTokensInfo[baseToken].normalizedWeight > 0, "BalancerProtocol: wrong base token");
     }
 
     function handleDeposit(address token, uint256 amount) public onlyDefiOperator {
-        uint256 bptAmount = bpt.joinswapExternAmountIn(token, amount, 0);
+        bpt.joinswapExternAmountIn(token, amount, 0);
         // uint256 bptBalance = bpt.balanceOf(address(this));
         // expect(bptAmount == bptBalance, "BalancerProtocol: returned and received amount not match");
     }
 
     function handleDeposit(address[] memory tokens, uint256[] memory amounts) public onlyDefiOperator {
-        (uint256[] amnts, uint256 nTotal) = translateAmountArrayToProtocolTokens(tokens, amounts);
+        (uint256[] memory amnts, uint256 nTotal) = translateAmountArrayToProtocolTokens(tokens, amounts);
         bool correctProportions = checkAmountProportions(amnts, nTotal);
         require(correctProportions, "BalancerProtocol: wrong proportions");
         // Calculate expected bpt amount
@@ -82,32 +83,37 @@ contract BalancerProtocol is ProtocolBase {
     }
 
     function withdraw(address beneficiary, uint256[] memory amounts) public onlyDefiOperator {
-        (uint256[] amnts, uint256 nTotal) = translateAmountArrayToProtocolTokens(tokens, amounts);
+        (uint256[] memory amnts, uint256 nTotal) = translateAmountArrayToProtocolTokens(registeredTokens, amounts);
         bool correctProportions = checkAmountProportions(amnts, nTotal);
         require(correctProportions, "BalancerProtocol: wrong proportions");
         // Calculate expected bpt amount
         uint256 maxExpectedBpt = 0;
-        for(uint256 i=0; i<tokens.length;i++){
-            uint256 tBal = bpt.getBalance(tokens[i]);
+        for(uint256 i=0; i<registeredTokens.length;i++){
+            uint256 tBal = bpt.getBalance(registeredTokens[i]);
             uint256 pbtTS = bpt.totalSupply();
             uint256 expectedBpt = amnts[i].mul(pbtTS).div(tBal); // expectedBpt/bpt.totalSupply() == amnts[i]/tBal
             if(expectedBpt > maxExpectedBpt) maxExpectedBpt = expectedBpt;
         }
         bpt.exitPool(maxExpectedBpt, amnts);
+        //send tokens to user
+        for(uint256 i=0; i<registeredTokens.length; i++){
+            address tkn = registeredTokens[i];
+            IERC20(tkn).transfer(beneficiary, amnts[i]);
+        }
     }
 
     function balanceOf(address token) public returns(uint256) {
-        uint256 bptBalance = pbt.balanceOf(address(this));
+        uint256 bptBalance = bpt.balanceOf(address(this));
         uint256 bptTS = bpt.totalSupply();
         uint256 tBalance = bpt.getBalance(token);
         return bptBalance.mul(tBalance).div(bptTS); // ourTBalance/tBalance = bptBalance/bptTS
     }
     
     function balanceOfAll() public returns(uint256[] memory amnts) {
-        uint256 bptBalance = pbt.balanceOf(address(this));
+        uint256 bptBalance = bpt.balanceOf(address(this));
         uint256 bptTS = bpt.totalSupply();
 
-        amnts = uint256[](registeredTokens.length);
+        amnts = new uint256[](registeredTokens.length);
         for(uint256 i=0; i<registeredTokens.length;i++){
             uint256 tBalance = bpt.getBalance(registeredTokens[i]);
             amnts[i] = bptBalance.mul(tBalance).div(bptTS);
@@ -126,23 +132,23 @@ contract BalancerProtocol is ProtocolBase {
         uint256 summ; //BPool balance of all tokens, converted to baseToken
         for (uint256 i=0; i < registeredTokens.length; i++){
             address tkn = registeredTokens[i];
-            uint256 bal = bpt.getBalance(tkn);
+            uint256 bbal = bpt.getBalance(tkn);
             if(tkn == baseToken){
-                summ = summ.add(bal);
+                summ = summ.add(bbal);
             }else{
                 uint256 rate = bpt.getSpotPriceSansFee(tkn, baseToken); //This will return conversion rate without fee
-                uint256 converted = bal.mul(1e18).div(rate);    //1e18 is used because rate has 18 decimals
+                uint256 converted = bbal.mul(1e18).div(rate);    //1e18 is used because rate has 18 decimals
                 summ = summ.add(converted);
             }
         }
-        uint256 bptBalance = pbt.balanceOf(address(this));
+        uint256 bptBalance = bpt.balanceOf(address(this));
         uint256 bptTS = bpt.totalSupply();
         uint256 ourBalance = bptBalance.mul(summ).div(bptTS);
         return normalizeAmount(registeredTokensInfo[baseToken].decimals, ourBalance);
     }
 
     function canSwapToToken(address token) public view returns(bool) {
-        return (registeredTokensInfo[tkn].normalizedWeight > 0); //can swap to all tokens in BPool
+        return (registeredTokensInfo[token].normalizedWeight > 0); //can swap to all tokens in BPool
     }    
 
     function supportedTokens() public view returns(address[] memory){
@@ -153,8 +159,13 @@ contract BalancerProtocol is ProtocolBase {
         return registeredTokens.length;
     }
 
+    function getTokenIndex(address token) public view returns(uint256) {
+        require(registeredTokensInfo[token].normalizedWeight > 0, "Unsupported token");
+        return registeredTokensInfo[token].idx;
+    }
+
     function supportedRewardTokens() public view returns(address[] memory) {
-        address[] rtkns = new address[](1);
+        address[] memory rtkns = new address[](1);
         rtkns[0] = address(bal);
         return rtkns;
     }
@@ -167,46 +178,43 @@ contract BalancerProtocol is ProtocolBase {
         //do nothing, Balancer will send BAL tokens itself
     }
 
-    function translateAmountArrayToProtocolTokens(address[] memory tokens, uint256[] amounts) internal view returns(uint256[] amnts, uint256 nTotal) {
+    function translateAmountArrayToProtocolTokens(address[] memory tokens, uint256[] memory amounts) internal view returns(uint256[] memory amnts, uint256 nTotal) {
         amnts = new uint256[](registeredTokens.length);
         for(uint256 i=0; i<tokens.length;i++){
-            uint256 idx = getTokenIndex(tokens[i]);
+            address token = tokens[i];
+            uint256 idx = getTokenIndex(token);
             amnts[idx] = amounts[i];
-            nTotal = nTotal.add(normalizeAmount(registeredTokensInfo[idx].decimals, amnts[idx]));
+            nTotal = nTotal.add(normalizeAmount(registeredTokensInfo[token].decimals, amnts[idx]));
         }
     }
-    function checkAmountProportions(uint256[] memory amnts, uint256 nTotal) returns(bool){
-        for(uint256 i=0; i<tokens.length;i++){
-            uint256 expectedNAmount = nTotal.mul(registeredTokensInfo[idx].normalizedWeight).div(1e18);
-            uint256 nAmount = normalizeAmount(amnts[idx]);
+    function checkAmountProportions(uint256[] memory amnts, uint256 nTotal) internal view returns(bool){
+        for(uint256 i=0; i<registeredTokens.length;i++){
+            address token = registeredTokens[i];
+            uint256 expectedNAmount = nTotal.mul(registeredTokensInfo[token].normalizedWeight).div(1e18);
+            uint256 nAmount = normalizeAmount(registeredTokensInfo[token].decimals, amnts[i]);
             uint256 diff = (nAmount > expectedNAmount)?(nAmount - expectedNAmount):(expectedNAmount-nAmount);
             if(diff > ALLOWED_NAMOUNT_DIFF) return false;
         }
         return true;
     }
 
-    function getTokenIndex(address token) internal view returns(uint256) {
-        require(registeredTokensInfo[tkn].normalizedWeight > 0, "Unsupported token");
-        return registeredTokensInfo[tkn].idx;
-    }
-
-    function normalizeAmount(uint8 decimals, uint256 amount) internal view returns(uint256) {
+    function normalizeAmount(uint8 decimals, uint256 amount) internal pure returns(uint256) {
         if (decimals == 18) {
             return amount;
         } else if (decimals > 18) {
-            return amount.div(10**(decimals-18));
+            return amount.div(10**(uint256(decimals)-18));
         } else if (decimals < 18) {
-            return amount.mul(10**(18-decimals));
+            return amount.mul(10**(18-uint256(decimals)));
         }
     }
 
-    function denormalizeAmount(uint8 decimals, uint256 amount) internal view returns(uint256) {
+    function denormalizeAmount(uint8 decimals, uint256 amount) internal pure returns(uint256) {
         if (decimals == 18) {
             return amount;
         } else if (decimals > 18) {
-            return amount.mul(10**(decimals-18));
+            return amount.mul(10**(uint256(decimals)-18));
         } else if (decimals < 18) {
-            return amount.div(10**(18-decimals));
+            return amount.div(10**(18-uint256(decimals)));
         }
     }
 
