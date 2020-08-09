@@ -4,13 +4,14 @@ import "@openzeppelin/contracts-ethereum-package/contracts/math/SafeMath.sol";
 import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/ERC20Detailed.sol";
 import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/SafeERC20.sol";
+import "@openzeppelin/contracts-ethereum-package/contracts/access/roles/CapperRole.sol";
 import "../../interfaces/defi/IDefiProtocol.sol";
 import "../../common/Module.sol";
 import "../access/AccessChecker.sol";
 import "../token/PoolToken.sol";
 import "./RewardDistributions.sol";
 
-contract SavingsModule is Module, AccessChecker, RewardDistributions {
+contract SavingsModule is Module, AccessChecker, RewardDistributions, CapperRole {
     uint256 constant MAX_UINT256 = uint256(-1);
     uint256 public constant DISTRIBUTION_AGGREGATION_PERIOD = 24*60*60;
 
@@ -20,6 +21,8 @@ contract SavingsModule is Module, AccessChecker, RewardDistributions {
     event Deposit(address indexed protocol, address indexed user, uint256 nAmount, uint256 nFee);
     event WithdrawToken(address indexed protocol, address indexed token, uint256 dnAmount);
     event Withdraw(address indexed protocol, address indexed user, uint256 nAmount, uint256 nFee);
+    event UserCapEnabledChange(bool enabled);
+    event UserCapChanged(address indexed protocol, address indexed user, uint256 newCap);
 
     using SafeERC20 for IERC20;
     using SafeMath for uint256;
@@ -29,6 +32,7 @@ contract SavingsModule is Module, AccessChecker, RewardDistributions {
         uint256 previousBalance;
         uint256 lastRewardDistribution;
         address[] supportedRewardTokens;
+        mapping(address => uint256) userCap; //Limit of pool tokens which can be minted for a user during deposit
     }
 
     struct TokenData {
@@ -42,9 +46,30 @@ contract SavingsModule is Module, AccessChecker, RewardDistributions {
     mapping(address => ProtocolInfo) protocols; //Mapping of protocol to data we need to calculate APY and do distributions
     mapping(address => address) poolTokenToProtocol;    //Mapping of pool tokens to protocols
     mapping(address => bool) private rewardTokenRegistered;     //marks registered reward tokens
+    bool public userCapEnabled;
+
 
     function initialize(address _pool) public initializer {
         Module.initialize(_pool);
+        CapperRole.initialize(_msgSender());
+    }
+
+    function setUserCapEnabled(bool _userCapEnabled) public onlyOwner {
+        userCapEnabled = _userCapEnabled;
+        emit UserCapEnabledChange(userCapEnabled);
+    }
+
+    function setUserCap(address _protocol, address user, uint256 cap) public onlyCapper {
+        protocols[_protocol].userCap[user] = cap;
+        emit UserCapChanged(_protocol, user, cap);
+    }
+
+    function setUserCap(address _protocol, address[] calldata users, uint256[] calldata caps) external onlyCapper {
+        require(users.length == caps.length, "SavingsModule: arrays length not match");
+        for(uint256 i=0;  i < users.length; i++) {
+            protocols[_protocol].userCap[users[i]] = caps[i];
+            emit UserCapChanged(_protocol, users[i], caps[i]);
+        }
     }
 
     function registerProtocol(IDefiProtocol protocol, PoolToken poolToken) public onlyOwner {
@@ -127,6 +152,14 @@ contract SavingsModule is Module, AccessChecker, RewardDistributions {
         uint256 nDeposit = nBalanceAfter.sub(nBalanceBefore);
         poolToken.mint(_msgSender(), nDeposit);
 
+        if(userCapEnabled){
+            uint256 cap = protocols[_protocol].userCap[_msgSender()];
+            require(cap >= nDeposit, "SavingsModule: deposit exeeds cap");
+            cap = cap - nDeposit;
+            protocols[_protocol].userCap[_msgSender()] = cap;
+            emit UserCapChanged(_protocol, _msgSender(), cap);
+        }
+
         uint256 nAmount;
         for (uint256 i=0; i < _tokens.length; i++) {
             nAmount = nAmount.add(normalizeTokenAmount(_tokens[i], _dnAmounts[i]));
@@ -166,6 +199,14 @@ contract SavingsModule is Module, AccessChecker, RewardDistributions {
 
         uint256 actualAmount = nBalanceBefore.sub(nBalanceAfter);
         require(actualAmount <= nAmount, "SavingsModule: unexpected withdrawal fee");
+
+        if(userCapEnabled){
+            uint256 cap = protocols[_protocol].userCap[_msgSender()];
+            cap = cap.add(actualAmount);
+            protocols[_protocol].userCap[_msgSender()] = cap;
+            emit UserCapChanged(_protocol, _msgSender(), cap);
+        }
+
         poolToken.burnFrom(_msgSender(), actualAmount);
         emit Withdraw(_protocol, _msgSender(), actualAmount, 0);
         return actualAmount;
@@ -193,6 +234,13 @@ contract SavingsModule is Module, AccessChecker, RewardDistributions {
         PoolToken poolToken = PoolToken(protocols[_protocol].poolToken);
         poolToken.burnFrom(_msgSender(), nAmount);
 
+        if(userCapEnabled){
+            uint256 cap = protocols[_protocol].userCap[_msgSender()];
+            cap = cap.add(nAmount);
+            protocols[_protocol].userCap[_msgSender()] = cap;
+            emit UserCapChanged(_protocol, _msgSender(), cap);
+        }
+
         uint256 nAmountWithoutFee = normalizeTokenAmount(token, dnAmount);
         uint256 fee = (nAmount > nAmountWithoutFee)?(nAmount-nAmountWithoutFee):0;
         emit WithdrawToken(_protocol, token, dnAmount);
@@ -216,6 +264,10 @@ contract SavingsModule is Module, AccessChecker, RewardDistributions {
         for(uint256 i=0; i<registeredProtocols.length; i++) {
             distributeRewardIfRequired(address(registeredProtocols[i]));
         }
+    }
+
+    function userCap(address _protocol, address user) public view returns(uint256) {
+        return protocols[_protocol].userCap[user];
     }
 
     function poolTokenByProtocol(address _protocol) public view returns(address) {
