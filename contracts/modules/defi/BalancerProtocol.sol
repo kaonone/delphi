@@ -27,6 +27,7 @@ contract BalancerProtocol is ProtocolBase {
 
     IBPool bpt; //Balancer pool
     IERC20 bal; //Balancer reward token
+    address baseToken;   //Token used for normalizedBalance() calculation
     address[] registeredTokens; //addresses of tokens in the pool
     mapping(address => TokenInfo) registeredTokensInfo; //Maps token addresses to their details
 
@@ -34,7 +35,7 @@ contract BalancerProtocol is ProtocolBase {
         ProtocolBase.initialize(_pool);
     }
 
-    function setBalancer(address _bpt, address _bal) public onlyDefiOperator {
+    function setBalancer(address _bpt, address _bal, address _baseToken) public onlyDefiOperator {
         bpt = IBPool(_bpt);
         bal = IERC20(_bal);
         registeredTokens = bpt.getCurrentTokens();
@@ -50,7 +51,8 @@ contract BalancerProtocol is ProtocolBase {
             require(registeredTokensInfo[tkn].normalizedWeight > 0, "BalancerProtocol: weight can not be 0");
             IERC20(tkn).approve(bpt, MAX_UINT256);
         }
-
+        baseToken = _baseToken;
+        require(registeredTokensInfo[baseToken].normalizedWeight > 0, "BalancerProtocol: wrong base token");
     }
 
     function handleDeposit(address token, uint256 amount) public onlyDefiOperator {
@@ -112,14 +114,31 @@ contract BalancerProtocol is ProtocolBase {
         }
     }
 
+    /**
+     * @notice Returns balance converted to baseToken and normalized to 18 decimals.
+     * Example: Pool of 50% BTC + 50% ETH. BaseToken - BTC.
+     * This fuction will convert amount of ETH to BTC, 
+     * so that "summ" will be total BPool balance in BTC.
+     * Then it will calculate "our" part of that balance,
+     * and then convert this number to 18 decimals.
+     */
     function normalizedBalance() public returns(uint256) {
-        uint256[] memory amnts = balanceOfAll();
-        uint256 summ;
+        uint256 summ; //BPool balance of all tokens, converted to baseToken
         for (uint256 i=0; i < registeredTokens.length; i++){
             address tkn = registeredTokens[i];
-            summ = summ.add(normalizeAmount(registeredTokensInfo[tkn].decimals, amnts[i]));
+            uint256 bal = bpt.getBalance(tkn);
+            if(tkn == baseToken){
+                summ = summ.add(bal);
+            }else{
+                uint256 rate = bpt.getSpotPriceSansFee(tkn, baseToken); //This will return conversion rate without fee
+                uint256 converted = bal.mul(1e18).div(rate);    //1e18 is used because rate has 18 decimals
+                summ = summ.add(converted);
+            }
         }
-        return summ;
+        uint256 bptBalance = pbt.balanceOf(address(this));
+        uint256 bptTS = bpt.totalSupply();
+        uint256 ourBalance = bptBalance.mul(summ).div(bptTS);
+        return normalizeAmount(registeredTokensInfo[baseToken].decimals, ourBalance);
     }
 
     function canSwapToToken(address token) public view returns(bool) {
