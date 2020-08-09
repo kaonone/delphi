@@ -156,9 +156,9 @@ contract DCAModule is Module, ERC721Full, ERC721Burnable, DCAOperatorRole {
             poolToken: poolToken
         });
 
-        if (!inPools[pool]) {
+        if (!inRewardPools[pool]) {
             rewardPools.push(pool);
-            inPools[pool] = true;
+            inRewardPools[pool] = true;
         }
 
         return true;
@@ -280,7 +280,7 @@ contract DCAModule is Module, ERC721Full, ERC721Burnable, DCAOperatorRole {
             path[0] = tokenToSell;
             path[1] = tokensToBuy[i];
 
-            _swapAndCreateDistribution(dividedBuyAmount, path);
+            _swapAndMakeDistribution(dividedBuyAmount, path);
         }
 
         nextBuyTimestamp = nextBuyTimestamp.add(periodTimestamp);
@@ -562,7 +562,7 @@ contract DCAModule is Module, ERC721Full, ERC721Burnable, DCAOperatorRole {
         return (nWithdrawal, dWithdrawal);
     }
 
-    function _swapAndCreateDistribution(uint256 amountIn, address[] memory path)
+    function _swapAndMakeDistribution(uint256 amountIn, address[] memory path)
         private
     {
         uint256[] memory amountsOut = IUniswapV2Router02(router).getAmountsOut(
