@@ -22,29 +22,16 @@ contract PoolToken is Module, ERC20, ERC20Detailed, ERC20Mintable, ERC20Burnable
         allowTransfers = _allowTransfers;
     }
 
-
     /**
-     * @dev Overrides ERC20 transferFrom to allow unlimited transfers by SavingsModule
+     * @dev Overrides ERC20Burnable burnFrom to allow unlimited transfers by SavingsModule
      */
-    function transferFrom(address from, address to, uint256 value) public returns (bool) {
+    function burnFrom(address from, uint256 value) public {
         address savingsModule = getModuleAddress(MODULE_SAVINGS);
         if (_msgSender() == savingsModule) {
-            _transfer(from, to, value);
-            return true;
-        } else {
-            return super.transferFrom(from, to, value);
-        }
-    }
-
-    /**
-     * @dev Overrides ERC20Burnable burnFrom to allow unlimited burn by SavingsModule
-     */
-    function burnFrom(address account, uint256 amount) public {
-        address savingsModule = getModuleAddress(MODULE_SAVINGS);
-        if (_msgSender() == savingsModule) {
-            _burn(account, amount);
-        } else {
-            super.burnFrom(account, amount);
+            //Skip decrease allowance
+            _burn(from, value);
+        }else{
+            super.burnFrom(from, value);
         }
     }
 
