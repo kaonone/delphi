@@ -195,7 +195,7 @@ contract StakingPool is Module, IERC900, CapperRole  {
    * @param _amount uint256 the amount of tokens to unstake
    * @param _data bytes optional data to include in the Unstake event
    */
-  function unstake(uint256 _amount, bytes memory _data) public isUserCapEnabledForUnStakeFor(_amount)  {
+  function unstake(uint256 _amount, bytes memory _data) public {
     withdrawStake(
       _amount,
       _data);
@@ -311,7 +311,7 @@ contract StakingPool is Module, IERC900, CapperRole  {
   function withdrawStake(
     uint256 _amount,
     bytes memory _data)
-    internal
+    internal isUserCapEnabledForUnStakeFor(_amount)
   {
     Stake storage personalStake = stakeHolders[_msgSender()].personalStakes[stakeHolders[_msgSender()].personalStakeIndex];
 
