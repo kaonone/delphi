@@ -108,8 +108,8 @@ contract CompoundProtocol is ProtocolBase {
             return amount;
         } else if (decimals > 18) {
             return amount.div(10**(uint256(decimals)-18));
-        } else if (decimals > 18) {
-            return amount.mul(10**(uint256(decimals)-18));
+        } else if (decimals < 18) {
+            return amount.mul(10**(18-uint256(decimals)));
         }
     }
 
@@ -118,8 +118,8 @@ contract CompoundProtocol is ProtocolBase {
             return amount;
         } else if (decimals > 18) {
             return amount.mul(10**(uint256(decimals)-18));
-        } else if (decimals > 18) {
-            return amount.div(10**(uint256(decimals)-18));
+        } else if (decimals < 18) {
+            return amount.div(10**(18-uint256(decimals)));
         }
     }
 
