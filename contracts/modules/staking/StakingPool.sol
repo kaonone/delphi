@@ -60,6 +60,7 @@ contract StakingPool is Module, IERC900, CapperRole  {
   event UserCapChanged(address indexed user, uint256 newCap);
   event Staked(address indexed user, uint256 amount, uint256 totalStacked, bytes data);
   event Unstaked(address user, uint256 amount, uint256 totalStacked, bytes data);
+  event setLockInDuration(uint256 defaultLockInDuration);
 
   mapping(address => uint256) userCap; //Limit of pool tokens which can be minted for a user during deposit
   /**
@@ -101,10 +102,17 @@ contract StakingPool is Module, IERC900, CapperRole  {
   }
 
 
-  function initialize(address _pool, ERC20 _stakingToken) public initializer {
+  function initialize(address _pool, ERC20 _stakingToken, uint256 _defaultLockInDuration) public initializer {
         stakingToken = _stakingToken;
+        defaultLockInDuration = _defaultLockInDuration;
         Module.initialize(_pool);
+
         CapperRole.initialize(_msgSender());
+  }
+
+  function setDefaultLockInDuration(uint256 _defaultLockInDuration) public onlyOwner {
+      defaultLockInDuration = _defaultLockInDuration;
+      emit setLockInDuration(_defaultLockInDuration);
   }
 
   function setUserCapEnabled(bool _userCapEnabled) public onlyCapper {
@@ -174,20 +182,6 @@ contract StakingPool is Module, IERC900, CapperRole  {
       _data);
   }
 
-  /**
-   * @notice Stakes a certain amount of tokens, this MUST transfer the given amount from the caller
-   * @notice MUST trigger Staked event
-   * @param _user address the address the tokens are staked for
-   * @param _amount uint256 the amount of tokens to stake
-   * @param _data bytes optional data to include in the Stake event
-   */
-  function stakeFor(address _user, uint256 _amount, bytes memory _data) public {
-    createStake(
-      _user,
-      _amount,
-      defaultLockInDuration,
-      _data);
-  }
 
   /**
    * @notice Unstakes a certain amount of tokens, this SHOULD return the given amount of tokens to the user, if unstaking is currently not possible the function MUST revert
