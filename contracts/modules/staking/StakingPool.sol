@@ -231,12 +231,13 @@ contract StakingPool is Module, IERC900, CapperRole  {
 
   function unstakeAllUnlocked(bytes memory _data) public returns(uint256) {
      uint256 unstakeAllAmount = 0;
-     for(uint256 i=0; i<stakeHolders[_msgSender()].personalStakes.length; i++) {
-       Stake storage personalStake = stakeHolders[_msgSender()].personalStakes[i];
+     uint256 personalStakeIndex = stakeHolders[_msgSender()].personalStakeIndex;
 
-       if (personalStake.unlockedTimestamp <= block.timestamp) {
-           unstakeAllAmount = unstakeAllAmount+personalStake.actualAmount;
-           withdrawStake(personalStake.actualAmount, _data);
+     for(uint256 i=personalStakeIndex; i<stakeHolders[_msgSender()].personalStakes.length; i++) {
+       
+       if (stakeHolders[_msgSender()].personalStakes[i].unlockedTimestamp <= block.timestamp) {
+           unstakeAllAmount = unstakeAllAmount+stakeHolders[_msgSender()].personalStakes[i].actualAmount;
+           withdrawStake(stakeHolders[_msgSender()].personalStakes[i].actualAmount, _data);
        }
      }
 
