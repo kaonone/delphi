@@ -88,7 +88,8 @@ contract StakingPool is Module, IERC900, CapperRole  {
           emit UserCapChanged(_msgSender(), cap);
          
       }
-       _;
+      
+      _;
   }
 
 
