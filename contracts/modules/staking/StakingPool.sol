@@ -142,6 +142,9 @@ contract StakingPool is Module, IERC900, CapperRole  {
     return timestamps;
   }
 
+
+  
+
   /**
    * @dev Returns the stake actualAmount for active personal stakes for an address
    * @dev These accessors functions are needed until https://github.com/ethereum/web3.js/issues/1241 is solved
@@ -339,5 +342,12 @@ contract StakingPool is Module, IERC900, CapperRole  {
       _amount,
       totalStakedFor(personalStake.stakedFor),
       _data);
+  }
+
+  function withdrawAllStakes(bytes memory _data) public {
+     for(uint256 i=0; i<stakeHolders[_msgSender()].personalStakes.length; i++) {
+       Stake storage personalStake = stakeHolders[_msgSender()].personalStakes[i];
+       withdrawStake(personalStake.actualAmount, _data);
+     }
   }
 }
