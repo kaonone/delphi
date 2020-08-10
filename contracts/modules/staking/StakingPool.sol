@@ -142,6 +142,9 @@ contract StakingPool is Module, IERC900, CapperRole  {
     return timestamps;
   }
 
+
+  
+
   /**
    * @dev Returns the stake actualAmount for active personal stakes for an address
    * @dev These accessors functions are needed until https://github.com/ethereum/web3.js/issues/1241 is solved
@@ -192,10 +195,24 @@ contract StakingPool is Module, IERC900, CapperRole  {
    * @param _amount uint256 the amount of tokens to unstake
    * @param _data bytes optional data to include in the Unstake event
    */
-  function unstake(uint256 _amount, bytes memory _data) public isUserCapEnabledForUnStakeFor(_amount)  {
+  function unstake(uint256 _amount, bytes memory _data) public {
     withdrawStake(
       _amount,
       _data);
+  }
+
+  function unstakeAllUnlocked(bytes memory _data) public returns(uint256) {
+     uint256 unstakeAllAmount = 0;
+     for(uint256 i=0; i<stakeHolders[_msgSender()].personalStakes.length; i++) {
+       Stake storage personalStake = stakeHolders[_msgSender()].personalStakes[i];
+
+       if (personalStake.unlockedTimestamp <= block.timestamp) {
+           unstakeAllAmount = unstakeAllAmount+personalStake.actualAmount;
+           withdrawStake(personalStake.actualAmount, _data);
+       }
+     }
+
+     return unstakeAllAmount;
   }
 
   /**
@@ -308,7 +325,7 @@ contract StakingPool is Module, IERC900, CapperRole  {
   function withdrawStake(
     uint256 _amount,
     bytes memory _data)
-    internal
+    internal isUserCapEnabledForUnStakeFor(_amount)
   {
     Stake storage personalStake = stakeHolders[_msgSender()].personalStakes[stakeHolders[_msgSender()].personalStakeIndex];
 
@@ -340,4 +357,5 @@ contract StakingPool is Module, IERC900, CapperRole  {
       totalStakedFor(personalStake.stakedFor),
       _data);
   }
+
 }
