@@ -86,8 +86,10 @@ contract StakingPool is Module, IERC900, CapperRole  {
           cap = cap - stake;
           userCap[_msgSender()] = cap;
           emit UserCapChanged(_msgSender(), cap);
-          _;
+         
       }
+      
+      _;
   }
 
 
