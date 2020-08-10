@@ -23,7 +23,7 @@ contract FakeSavingsModule is ISavingsModule {
         address wbtcPoolToken
     ) public {
         for (uint256 i = 0; i < _supportedRewardTokens.length; i++) {
-            supportedRewardTokens_[i] = _supportedRewardTokens[i];
+            supportedRewardTokens_.push(_supportedRewardTokens[i]);
         }
 
         tokens[usdc] = usdcPoolToken;
@@ -90,9 +90,12 @@ contract FakeSavingsModule is ISavingsModule {
         public
         returns (uint256[] memory)
     {
+        uint256[] memory rAmounts = new uint256[](rewardTokens.length);
         for (uint256 i = 0; i < rewardTokens.length; i++) {
             rewardTokens[i].safeTransfer(msg.sender, 100e18);
+            rAmounts[i] = 100e18;
         }
+        return rAmounts;
     }
 
     function supportedRewardTokens() public view returns (address[] memory) {

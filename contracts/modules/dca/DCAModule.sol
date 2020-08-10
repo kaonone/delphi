@@ -82,7 +82,7 @@ contract DCAModule is Module, ERC721Full, ERC721Burnable, DCAOperatorRole {
     ) external initializer {
         Module.initialize(_osPool);
 
-        DCAOperatorRole.initialize(_msgSender());
+        DCAOperatorRole.initialize(bot);
 
         ERC721.initialize();
         ERC721Enumerable.initialize();
@@ -105,12 +105,12 @@ contract DCAModule is Module, ERC721Full, ERC721Burnable, DCAOperatorRole {
         return _tokensOfOwner(userAddress)[0];
     }
 
-    function getAccountBuyAmount(uint256 tokenId)
+    function getAccountBalance(uint256 tokenId, address token)
         public
         view
         returns (uint256)
     {
-        return _accountOf[tokenId].buyAmount;
+        return _accountOf[tokenId].balance[token];
     }
 
     function getFullAccountBalances(address account, address[] calldata tokens)
@@ -411,24 +411,25 @@ contract DCAModule is Module, ERC721Full, ERC721Burnable, DCAOperatorRole {
             i++
         ) {
             if (distributions[i].token == tokenToSell) {
+                // require(false, "claim");
+
                 uint256 amount = _calculatePayout(
                     i,
                     _accountOf[tokenId].buyAmount
                 );
 
-                _refreshAccount(
-                    tokenId,
-                    amount,
-                    _accountOf[tokenId].buyAmount,
-                    0,
-                    true
-                );
+                // _refreshAccount(
+                //     tokenId,
+                //     amount,
+                //     _accountOf[tokenId].buyAmount,
+                //     0,
+                //     true
+                // );
             } else {
                 if (
                     _accountOf[tokenId].balance[tokenToSell] >= dividedBuyAmount
                 ) {
                     uint256 amount = _calculatePayout(i, dividedBuyAmount);
-
                     _subBuyAmountAndUpdateBalance(
                         tokenId,
                         i,

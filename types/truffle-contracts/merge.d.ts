@@ -11,76 +11,147 @@ declare global {
       require(name: "AccessModule"): TruffleContracts.AccessModuleContract;
       require(name: "Base"): TruffleContracts.BaseContract;
       require(
-        name: "CompoundProtocol_DAI"
-      ): TruffleContracts.CompoundProtocol_DAIContract;
+        name: "CompoundProtocolDai"
+      ): TruffleContracts.CompoundProtocolDaiContract;
       require(
         name: "CompoundProtocol"
       ): TruffleContracts.CompoundProtocolContract;
+      require(
+        name: "ComptrollerStub"
+      ): TruffleContracts.ComptrollerStubContract;
       require(name: "Context"): TruffleContracts.ContextContract;
       require(name: "CoreInterface"): TruffleContracts.CoreInterfaceContract;
       require(
-        name: "CurveFiYProtocol"
-      ): TruffleContracts.CurveFiYProtocolContract;
-      require(name: "DCAModule"): TruffleContracts.DCAModuleContract;
+        name: "CurveFiDepositStubSbtc"
+      ): TruffleContracts.CurveFiDepositStubSbtcContract;
       require(
-        name: "DCAOperatorRole"
-      ): TruffleContracts.DCAOperatorRoleContract;
+        name: "CurveFiDepositStubY"
+      ): TruffleContracts.CurveFiDepositStubYContract;
+      require(
+        name: "CurveFiProtocolSbtc"
+      ): TruffleContracts.CurveFiProtocolSbtcContract;
+      require(
+        name: "CurveFiProtocolSusd"
+      ): TruffleContracts.CurveFiProtocolSusdContract;
+      require(
+        name: "CurveFiProtocolY"
+      ): TruffleContracts.CurveFiProtocolYContract;
+      require(
+        name: "CurveFiProtocol"
+      ): TruffleContracts.CurveFiProtocolContract;
+      require(
+        name: "CurveFiSwapStubSbtc"
+      ): TruffleContracts.CurveFiSwapStubSbtcContract;
+      require(
+        name: "CurveFiSwapStubY"
+      ): TruffleContracts.CurveFiSwapStubYContract;
+      require(
+        name: "CurveFiTokenStubSbtc"
+      ): TruffleContracts.CurveFiTokenStubSbtcContract;
+      require(
+        name: "CurveFiTokenStubY"
+      ): TruffleContracts.CurveFiTokenStubYContract;
+      require(
+        name: "DcaFullBalanceHelper"
+      ): TruffleContracts.DcaFullBalanceHelperContract;
+      require(name: "DcaModule"): TruffleContracts.DcaModuleContract;
+      require(
+        name: "DcaOperatorRole"
+      ): TruffleContracts.DcaOperatorRoleContract;
       require(
         name: "DefiOperatorRole"
       ): TruffleContracts.DefiOperatorRoleContract;
       require(
         name: "DistributionToken"
       ): TruffleContracts.DistributionTokenContract;
-      require(name: "ERC165"): TruffleContracts.ERC165Contract;
-      require(name: "ERC20"): TruffleContracts.ERC20Contract;
-      require(name: "ERC20Burnable"): TruffleContracts.ERC20BurnableContract;
-      require(name: "ERC20Detailed"): TruffleContracts.ERC20DetailedContract;
-      require(name: "ERC20Mintable"): TruffleContracts.ERC20MintableContract;
-      require(name: "ERC721"): TruffleContracts.ERC721Contract;
-      require(name: "ERC721Burnable"): TruffleContracts.ERC721BurnableContract;
+      require(name: "Erc165"): TruffleContracts.Erc165Contract;
+      require(name: "Erc20"): TruffleContracts.Erc20Contract;
+      require(name: "Erc20Burnable"): TruffleContracts.Erc20BurnableContract;
+      require(name: "Erc20Detailed"): TruffleContracts.Erc20DetailedContract;
+      require(name: "Erc20Mintable"): TruffleContracts.Erc20MintableContract;
+      require(name: "Erc721"): TruffleContracts.Erc721Contract;
+      require(name: "Erc721Burnable"): TruffleContracts.Erc721BurnableContract;
       require(
-        name: "ERC721Enumerable"
-      ): TruffleContracts.ERC721EnumerableContract;
-      require(name: "ERC721Full"): TruffleContracts.ERC721FullContract;
-      require(name: "ERC721Metadata"): TruffleContracts.ERC721MetadataContract;
+        name: "Erc721Enumerable"
+      ): TruffleContracts.Erc721EnumerableContract;
+      require(name: "Erc721Full"): TruffleContracts.Erc721FullContract;
+      require(name: "Erc721Metadata"): TruffleContracts.Erc721MetadataContract;
+      require(
+        name: "FakeSavingsModule"
+      ): TruffleContracts.FakeSavingsModuleContract;
       require(
         name: "FakeUniswapRouter"
       ): TruffleContracts.FakeUniswapRouterContract;
+      require(name: "FreeErc20"): TruffleContracts.FreeErc20Contract;
       require(name: "IAccessModule"): TruffleContracts.IAccessModuleContract;
-      require(name: "ICErc20"): TruffleContracts.ICErc20Contract;
+      require(name: "IcErc20"): TruffleContracts.IcErc20Contract;
       require(name: "IComptroller"): TruffleContracts.IComptrollerContract;
+      require(
+        name: "ICurveFiDepositSbtc"
+      ): TruffleContracts.ICurveFiDepositSbtcContract;
+      require(
+        name: "ICurveFiDepositSusd"
+      ): TruffleContracts.ICurveFiDepositSusdContract;
+      require(
+        name: "ICurveFiDepositY"
+      ): TruffleContracts.ICurveFiDepositYContract;
       require(
         name: "ICurveFiDeposit"
       ): TruffleContracts.ICurveFiDepositContract;
+      require(
+        name: "ICurveFiRewardsSbtc"
+      ): TruffleContracts.ICurveFiRewardsSbtcContract;
+      require(
+        name: "ICurveFiRewardsSusd"
+      ): TruffleContracts.ICurveFiRewardsSusdContract;
+      require(
+        name: "ICurveFiRewardsY"
+      ): TruffleContracts.ICurveFiRewardsYContract;
+      require(
+        name: "ICurveFiRewards"
+      ): TruffleContracts.ICurveFiRewardsContract;
+      require(
+        name: "ICurveFiSwapSbtc"
+      ): TruffleContracts.ICurveFiSwapSbtcContract;
+      require(
+        name: "ICurveFiSwapSusd"
+      ): TruffleContracts.ICurveFiSwapSusdContract;
+      require(name: "ICurveFiSwapY"): TruffleContracts.ICurveFiSwapYContract;
       require(name: "ICurveFiSwap"): TruffleContracts.ICurveFiSwapContract;
+      require(
+        name: "IdcaFullBalanceHelper"
+      ): TruffleContracts.IdcaFullBalanceHelperContract;
+      require(name: "IdcaModule"): TruffleContracts.IdcaModuleContract;
       require(name: "IDefiProtocol"): TruffleContracts.IDefiProtocolContract;
-      require(name: "IERC165"): TruffleContracts.IERC165Contract;
-      require(name: "IERC20"): TruffleContracts.IERC20Contract;
-      require(name: "IERC721"): TruffleContracts.IERC721Contract;
+      require(name: "Ierc165"): TruffleContracts.Ierc165Contract;
+      require(name: "Ierc20"): TruffleContracts.Ierc20Contract;
+      require(name: "Ierc721"): TruffleContracts.Ierc721Contract;
       require(
-        name: "IERC721Enumerable"
-      ): TruffleContracts.IERC721EnumerableContract;
+        name: "Ierc721Enumerable"
+      ): TruffleContracts.Ierc721EnumerableContract;
       require(
-        name: "IERC721Metadata"
-      ): TruffleContracts.IERC721MetadataContract;
+        name: "Ierc721Metadata"
+      ): TruffleContracts.Ierc721MetadataContract;
       require(
-        name: "IERC721Receiver"
-      ): TruffleContracts.IERC721ReceiverContract;
+        name: "Ierc721Receiver"
+      ): TruffleContracts.Ierc721ReceiverContract;
+      require(name: "Ierc900"): TruffleContracts.Ierc900Contract;
       require(
         name: "IPoolTokenBalanceChangeRecipient"
       ): TruffleContracts.IPoolTokenBalanceChangeRecipientContract;
       require(
-        name: "IRAYNAVCalculator"
-      ): TruffleContracts.IRAYNAVCalculatorContract;
+        name: "IraynavCalculator"
+      ): TruffleContracts.IraynavCalculatorContract;
       require(
-        name: "IRAYPortfolioManager"
-      ): TruffleContracts.IRAYPortfolioManagerContract;
-      require(name: "IRAYStorage"): TruffleContracts.IRAYStorageContract;
+        name: "IrayPortfolioManager"
+      ): TruffleContracts.IrayPortfolioManagerContract;
+      require(name: "IrayStorage"): TruffleContracts.IrayStorageContract;
       require(name: "ISavingsModule"): TruffleContracts.ISavingsModuleContract;
       require(
         name: "IUniswapV2Router02"
       ): TruffleContracts.IUniswapV2Router02Contract;
-      require(name: "IYErc20"): TruffleContracts.IYErc20Contract;
+      require(name: "IyErc20"): TruffleContracts.IyErc20Contract;
+      require(name: "Migrations"): TruffleContracts.MigrationsContract;
       require(name: "MinterRole"): TruffleContracts.MinterRoleContract;
       require(name: "Module"): TruffleContracts.ModuleContract;
       require(name: "Ownable"): TruffleContracts.OwnableContract;
@@ -88,17 +159,28 @@ declare global {
       require(name: "PauserRole"): TruffleContracts.PauserRoleContract;
       require(name: "Pool"): TruffleContracts.PoolContract;
       require(
-        name: "PoolToken_Compound_DAI"
-      ): TruffleContracts.PoolToken_Compound_DAIContract;
+        name: "PoolTokenCompoundDai"
+      ): TruffleContracts.PoolTokenCompoundDaiContract;
       require(
-        name: "PoolToken_CurveFiY"
-      ): TruffleContracts.PoolToken_CurveFiYContract;
+        name: "PoolTokenCurveFiSbtc"
+      ): TruffleContracts.PoolTokenCurveFiSbtcContract;
+      require(
+        name: "PoolTokenCurveFiSusd"
+      ): TruffleContracts.PoolTokenCurveFiSusdContract;
+      require(
+        name: "PoolTokenCurveFiY"
+      ): TruffleContracts.PoolTokenCurveFiYContract;
+      require(
+        name: "PoolTokenCurveFiY"
+      ): TruffleContracts.PoolTokenCurveFiYContract;
       require(name: "PoolToken"): TruffleContracts.PoolTokenContract;
-      require(name: "RAYProtocol"): TruffleContracts.RAYProtocolContract;
+      require(name: "ProtocolBase"): TruffleContracts.ProtocolBaseContract;
+      require(name: "RayProtocol"): TruffleContracts.RayProtocolContract;
       require(
         name: "RewardDistributions"
       ): TruffleContracts.RewardDistributionsContract;
       require(name: "SavingsModule"): TruffleContracts.SavingsModuleContract;
+      require(name: "StakingPool"): TruffleContracts.StakingPoolContract;
       require(
         name: "WhitelistAdminRole"
       ): TruffleContracts.WhitelistAdminRoleContract;

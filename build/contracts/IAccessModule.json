@@ -39,14 +39,14 @@
     "absolutePath": "/Users/ilya/Documents/Akropolis/dca-strategy-bot/contracts/interfaces/access/IAccessModule.sol",
     "exportedSymbols": {
       "IAccessModule": [
-        5110
+        591
       ]
     },
-    "id": 5111,
+    "id": 592,
     "nodeType": "SourceUnit",
     "nodes": [
       {
-        "id": 5089,
+        "id": 570,
         "literals": [
           "solidity",
           "^",
@@ -62,73 +62,73 @@
         "contractKind": "interface",
         "documentation": null,
         "fullyImplemented": false,
-        "id": 5110,
+        "id": 591,
         "linearizedBaseContracts": [
-          5110
+          591
         ],
         "name": "IAccessModule",
         "nodeType": "ContractDefinition",
         "nodes": [
           {
             "canonicalName": "IAccessModule.Operation",
-            "id": 5100,
+            "id": 581,
             "members": [
               {
-                "id": 5090,
+                "id": 571,
                 "name": "Deposit",
                 "nodeType": "EnumValue",
                 "src": "108:7:11"
               },
               {
-                "id": 5091,
+                "id": 572,
                 "name": "Withdraw",
                 "nodeType": "EnumValue",
                 "src": "125:8:11"
               },
               {
-                "id": 5092,
+                "id": 573,
                 "name": "CreateDebtProposal",
                 "nodeType": "EnumValue",
                 "src": "165:18:11"
               },
               {
-                "id": 5093,
+                "id": 574,
                 "name": "AddPledge",
                 "nodeType": "EnumValue",
                 "src": "193:9:11"
               },
               {
-                "id": 5094,
+                "id": 575,
                 "name": "WithdrawPledge",
                 "nodeType": "EnumValue",
                 "src": "212:14:11"
               },
               {
-                "id": 5095,
+                "id": 576,
                 "name": "CancelDebtProposal",
                 "nodeType": "EnumValue",
                 "src": "236:18:11"
               },
               {
-                "id": 5096,
+                "id": 577,
                 "name": "ExecuteDebtProposal",
                 "nodeType": "EnumValue",
                 "src": "264:19:11"
               },
               {
-                "id": 5097,
+                "id": 578,
                 "name": "Repay",
                 "nodeType": "EnumValue",
                 "src": "293:5:11"
               },
               {
-                "id": 5098,
+                "id": 579,
                 "name": "ExecuteDebtDefault",
                 "nodeType": "EnumValue",
                 "src": "308:18:11"
               },
               {
-                "id": 5099,
+                "id": 580,
                 "name": "WithdrawUnlockedPledge",
                 "nodeType": "EnumValue",
                 "src": "336:22:11"
@@ -141,38 +141,38 @@
           {
             "body": null,
             "documentation": "@notice Check if operation is allowed\n@param operation Requested operation\n@param sender Sender of transaction",
-            "id": 5109,
+            "id": 590,
             "implemented": false,
             "kind": "function",
             "modifiers": [],
             "name": "isOperationAllowed",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 5105,
+              "id": 586,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 5102,
+                  "id": 583,
                   "name": "operation",
                   "nodeType": "VariableDeclaration",
-                  "scope": 5109,
+                  "scope": 590,
                   "src": "550:19:11",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
-                    "typeIdentifier": "t_enum$_Operation_$5100",
+                    "typeIdentifier": "t_enum$_Operation_$581",
                     "typeString": "enum IAccessModule.Operation"
                   },
                   "typeName": {
                     "contractScope": null,
-                    "id": 5101,
+                    "id": 582,
                     "name": "Operation",
                     "nodeType": "UserDefinedTypeName",
-                    "referencedDeclaration": 5100,
+                    "referencedDeclaration": 581,
                     "src": "550:9:11",
                     "typeDescriptions": {
-                      "typeIdentifier": "t_enum$_Operation_$5100",
+                      "typeIdentifier": "t_enum$_Operation_$581",
                       "typeString": "enum IAccessModule.Operation"
                     }
                   },
@@ -181,10 +181,10 @@
                 },
                 {
                   "constant": false,
-                  "id": 5104,
+                  "id": 585,
                   "name": "sender",
                   "nodeType": "VariableDeclaration",
-                  "scope": 5109,
+                  "scope": 590,
                   "src": "571:14:11",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -193,7 +193,7 @@
                     "typeString": "address"
                   },
                   "typeName": {
-                    "id": 5103,
+                    "id": 584,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
                     "src": "571:7:11",
@@ -210,15 +210,15 @@
               "src": "549:37:11"
             },
             "returnParameters": {
-              "id": 5108,
+              "id": 589,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 5107,
+                  "id": 588,
                   "name": "",
                   "nodeType": "VariableDeclaration",
-                  "scope": 5109,
+                  "scope": 590,
                   "src": "609:4:11",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -227,7 +227,7 @@
                     "typeString": "bool"
                   },
                   "typeName": {
-                    "id": 5106,
+                    "id": 587,
                     "name": "bool",
                     "nodeType": "ElementaryTypeName",
                     "src": "609:4:11",
@@ -242,14 +242,14 @@
               ],
               "src": "608:6:11"
             },
-            "scope": 5110,
+            "scope": 591,
             "src": "522:93:11",
             "stateMutability": "view",
             "superFunction": null,
             "visibility": "external"
           }
         ],
-        "scope": 5111,
+        "scope": 592,
         "src": "26:591:11"
       }
     ],
@@ -259,14 +259,14 @@
     "absolutePath": "/Users/ilya/Documents/Akropolis/dca-strategy-bot/contracts/interfaces/access/IAccessModule.sol",
     "exportedSymbols": {
       "IAccessModule": [
-        5110
+        591
       ]
     },
-    "id": 5111,
+    "id": 592,
     "nodeType": "SourceUnit",
     "nodes": [
       {
-        "id": 5089,
+        "id": 570,
         "literals": [
           "solidity",
           "^",
@@ -282,73 +282,73 @@
         "contractKind": "interface",
         "documentation": null,
         "fullyImplemented": false,
-        "id": 5110,
+        "id": 591,
         "linearizedBaseContracts": [
-          5110
+          591
         ],
         "name": "IAccessModule",
         "nodeType": "ContractDefinition",
         "nodes": [
           {
             "canonicalName": "IAccessModule.Operation",
-            "id": 5100,
+            "id": 581,
             "members": [
               {
-                "id": 5090,
+                "id": 571,
                 "name": "Deposit",
                 "nodeType": "EnumValue",
                 "src": "108:7:11"
               },
               {
-                "id": 5091,
+                "id": 572,
                 "name": "Withdraw",
                 "nodeType": "EnumValue",
                 "src": "125:8:11"
               },
               {
-                "id": 5092,
+                "id": 573,
                 "name": "CreateDebtProposal",
                 "nodeType": "EnumValue",
                 "src": "165:18:11"
               },
               {
-                "id": 5093,
+                "id": 574,
                 "name": "AddPledge",
                 "nodeType": "EnumValue",
                 "src": "193:9:11"
               },
               {
-                "id": 5094,
+                "id": 575,
                 "name": "WithdrawPledge",
                 "nodeType": "EnumValue",
                 "src": "212:14:11"
               },
               {
-                "id": 5095,
+                "id": 576,
                 "name": "CancelDebtProposal",
                 "nodeType": "EnumValue",
                 "src": "236:18:11"
               },
               {
-                "id": 5096,
+                "id": 577,
                 "name": "ExecuteDebtProposal",
                 "nodeType": "EnumValue",
                 "src": "264:19:11"
               },
               {
-                "id": 5097,
+                "id": 578,
                 "name": "Repay",
                 "nodeType": "EnumValue",
                 "src": "293:5:11"
               },
               {
-                "id": 5098,
+                "id": 579,
                 "name": "ExecuteDebtDefault",
                 "nodeType": "EnumValue",
                 "src": "308:18:11"
               },
               {
-                "id": 5099,
+                "id": 580,
                 "name": "WithdrawUnlockedPledge",
                 "nodeType": "EnumValue",
                 "src": "336:22:11"
@@ -361,38 +361,38 @@
           {
             "body": null,
             "documentation": "@notice Check if operation is allowed\n@param operation Requested operation\n@param sender Sender of transaction",
-            "id": 5109,
+            "id": 590,
             "implemented": false,
             "kind": "function",
             "modifiers": [],
             "name": "isOperationAllowed",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 5105,
+              "id": 586,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 5102,
+                  "id": 583,
                   "name": "operation",
                   "nodeType": "VariableDeclaration",
-                  "scope": 5109,
+                  "scope": 590,
                   "src": "550:19:11",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
-                    "typeIdentifier": "t_enum$_Operation_$5100",
+                    "typeIdentifier": "t_enum$_Operation_$581",
                     "typeString": "enum IAccessModule.Operation"
                   },
                   "typeName": {
                     "contractScope": null,
-                    "id": 5101,
+                    "id": 582,
                     "name": "Operation",
                     "nodeType": "UserDefinedTypeName",
-                    "referencedDeclaration": 5100,
+                    "referencedDeclaration": 581,
                     "src": "550:9:11",
                     "typeDescriptions": {
-                      "typeIdentifier": "t_enum$_Operation_$5100",
+                      "typeIdentifier": "t_enum$_Operation_$581",
                       "typeString": "enum IAccessModule.Operation"
                     }
                   },
@@ -401,10 +401,10 @@
                 },
                 {
                   "constant": false,
-                  "id": 5104,
+                  "id": 585,
                   "name": "sender",
                   "nodeType": "VariableDeclaration",
-                  "scope": 5109,
+                  "scope": 590,
                   "src": "571:14:11",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -413,7 +413,7 @@
                     "typeString": "address"
                   },
                   "typeName": {
-                    "id": 5103,
+                    "id": 584,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
                     "src": "571:7:11",
@@ -430,15 +430,15 @@
               "src": "549:37:11"
             },
             "returnParameters": {
-              "id": 5108,
+              "id": 589,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 5107,
+                  "id": 588,
                   "name": "",
                   "nodeType": "VariableDeclaration",
-                  "scope": 5109,
+                  "scope": 590,
                   "src": "609:4:11",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -447,7 +447,7 @@
                     "typeString": "bool"
                   },
                   "typeName": {
-                    "id": 5106,
+                    "id": 587,
                     "name": "bool",
                     "nodeType": "ElementaryTypeName",
                     "src": "609:4:11",
@@ -462,14 +462,14 @@
               ],
               "src": "608:6:11"
             },
-            "scope": 5110,
+            "scope": 591,
             "src": "522:93:11",
             "stateMutability": "view",
             "superFunction": null,
             "visibility": "external"
           }
         ],
-        "scope": 5111,
+        "scope": 592,
         "src": "26:591:11"
       }
     ],
@@ -481,7 +481,7 @@
   },
   "networks": {},
   "schemaVersion": "3.2.3",
-  "updatedAt": "2020-08-09T16:13:08.713Z",
+  "updatedAt": "2020-08-10T19:11:24.020Z",
   "devdoc": {
     "methods": {
       "isOperationAllowed(uint8,address)": {
