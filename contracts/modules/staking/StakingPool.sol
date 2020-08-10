@@ -101,6 +101,18 @@ contract StakingPool is Module, IERC900, CapperRole  {
      }
   }
 
+  
+
+  modifier checkUserCapDisabled() {
+    require(isUserCapEnabled() == false, "UserCapEnabled");
+    _;
+  }
+
+  modifier checkUserCapEnabled() {
+    require(isUserCapEnabled(), "UserCapDisabled");
+    _;
+  }
+
 
   function initialize(address _pool, ERC20 _stakingToken, uint256 _defaultLockInDuration) public initializer {
         stakingToken = _stakingToken;
@@ -185,6 +197,20 @@ contract StakingPool is Module, IERC900, CapperRole  {
       _data);
   }
 
+  /**
+   * @notice Stakes a certain amount of tokens, this MUST transfer the given amount from the caller
+   * @notice MUST trigger Staked event
+   * @param _user address the address the tokens are staked for
+   * @param _amount uint256 the amount of tokens to stake
+   * @param _data bytes optional data to include in the Stake event
+   */
+  function stakeFor(address _user, uint256 _amount, bytes memory _data) public checkUserCapDisabled {
+    createStake(
+      _user,
+      _amount,
+      defaultLockInDuration,
+      _data);
+  }
 
   /**
    * @notice Unstakes a certain amount of tokens, this SHOULD return the given amount of tokens to the user, if unstaking is currently not possible the function MUST revert
