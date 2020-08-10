@@ -3190,7 +3190,7 @@
       }
     },
     "StakingPool": {
-      "address": "0x6711df916D70D62b0A5CFE7c0AbfD18879C8CcFa",
+      "address": "0x605e5EC98ad8Bbd170079891Df6c4E0B0C95271c",
       "constructorCode": "6080604052612697806100136000396000f3fe",
       "bodyBytecodeHash": "76808cc12a71c515a2e97f4f007bd2a64dbd8db49d8afc294e645132f0566967",
       "localBytecodeHash": "8829b2d2580578c522804e0ccdd2b5aaf9db6e4efbad4db7763c6b7b8213befb",
@@ -3424,7 +3424,26 @@
         "hasSelfDestruct": false,
         "hasDelegateCall": false,
         "hasInitialValuesInDeclarations": false,
-        "uninitializedBaseContracts": []
+        "uninitializedBaseContracts": [],
+        "storageUncheckedVars": [
+          {
+            "contract": "CapperRole",
+            "path": "@openzeppelin\\contracts-ethereum-package\\contracts\\access\\roles\\CapperRole.sol",
+            "label": "_cappers",
+            "astId": 16274,
+            "type": "t_struct<Roles.Role>",
+            "src": "327:27:66"
+          },
+          {
+            "contract": "StakingPool",
+            "path": "..\\..\\..\\D\\projects\\akropolis\\savings-pool\\contracts\\modules\\staking\\StakingPool.sol",
+            "label": "stakeHolders",
+            "astId": 8877,
+            "type": "t_mapping<t_struct<StakingPool.StakeContract>>",
+            "src": "1152:54:49"
+          }
+        ],
+        "storageDiff": []
       }
     }
   },
@@ -3551,7 +3570,7 @@
       {
         "address": "0x14d5e052965A243C3B4B140E72FB5F69268D4828",
         "version": "1.0.0",
-        "implementation": "0x6711df916D70D62b0A5CFE7c0AbfD18879C8CcFa",
+        "implementation": "0x605e5EC98ad8Bbd170079891Df6c4E0B0C95271c",
         "admin": "0xC78DD8B33dcF12D9f5E89b77AE571D262e8Da196",
         "kind": "Upgradeable"
       }
