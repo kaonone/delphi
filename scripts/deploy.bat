@@ -5,6 +5,7 @@ rem ==== External ====
 rem ===== Tokens ====
 SET EXT_TOKEN_DAI=0x5592EC0cfb4dbc12D3aB100b257153436a1f0FEa
 SET EXT_TOKEN_USDC=0x4DBCdF9B62e891a7cec5A2568C3F4FAF9E8Abe2b
+SET EXT_TOKEN_AKRO=0xad7541B1E795656851caD5c70aA8d495063D9a95
 
 rem ===== Compound ====
 SET EXT_COMPOUND_CTOKEN_DAI=0x6D7F0754FFeb405d23C51CE938289d4835bE3b14
@@ -23,6 +24,7 @@ rem ==== Akropolis ====
 SET MODULE_POOL=0x8538Cf86d777484551D6bc8140e4fC35c155Bdc2
 SET MODULE_ACCESS=0x0B80CBfE5E1d7061Ea0927103796985652E0a32f
 SET MODULE_SAVINGS=0xF5402dDA4C904AbfF40Bc2A7A133980785F59780
+SET MODULE_STAKING=0x14d5e052965A243C3B4B140E72FB5F69268D4828
 
 SET PROTOCOL_CURVEFY_Y=0x2c1e51FB4D01B50A5b1a97E3f5Cd4195119a153C
 SET POOL_TOKEN_CURVEFY_Y=0xF92Ad527Bb3c13ee164Cb63bD77A1bA46E2f391D
@@ -40,7 +42,7 @@ SET PROTOCOL_COMPOUND_USDC=0xb55c7880683fa742576053cF9B49Ad4d1D39d0f2
 SET POOL_TOKEN_COMPOUND_USDC=0xee49ED50Ad0B1102001743bE3D4263acA7AB11aa
 
 rem === ACTION ===
-goto :setupOperators2
+goto :done
 
 :init
 echo INIT PROJECT, ADD CONTRACTS
@@ -62,6 +64,7 @@ goto :done
 echo CREATE MODULES
 call npx oz create AccessModule --network rinkeby --init "initialize(address _pool)" --args %MODULE_POOL%
 call npx oz create SavingsModule --network rinkeby --init "initialize(address _pool)" --args %MODULE_POOL%
+call npx oz create StakingPool --network rinkeby --init "initialize(address _pool,address _stakingToken, uint256 _defaultLockInDuration)" --args "%MODULE_POOL%, %EXT_TOKEN_AKRO%, 0"
 echo CREATE PROTOCOLS AND TOKENS
 echo CREATE Curve.Fi Y
 call npx oz create CurveFiProtocol_Y --network rinkeby --init "initialize(address _pool)" --args %MODULE_POOL%
@@ -84,6 +87,7 @@ goto :done
 echo SETUP POOL: CALL FOR ALL MODULES (set)
 npx oz send-tx --to %MODULE_POOL% --network rinkeby --method set --args "access, %MODULE_ACCESS%, false"
 npx oz send-tx --to %MODULE_POOL% --network rinkeby --method set --args "savings, %MODULE_SAVINGS%, false"
+npx oz send-tx --to %MODULE_POOL% --network rinkeby --method set --args "staking, %MODULE_STAKING%, false"
 echo SETUP OTHER CONTRACTS
 call npx oz send-tx --to %PROTOCOL_CURVEFY_Y% --network rinkeby --method setCurveFi --args "%EXT_CURVEFY_Y_DEPOSIT%, %EXT_CURVEFY_Y_REWARDS%"
 call npx oz send-tx --to %PROTOCOL_CURVEFY_SBTC% --network rinkeby --method setCurveFi --args "%EXT_CURVEFY_SBTC_DEPOSIT%, %EXT_CURVEFY_SBTC_REWARDS%"
