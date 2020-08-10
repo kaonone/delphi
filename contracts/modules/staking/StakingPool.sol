@@ -201,6 +201,17 @@ contract StakingPool is Module, IERC900, CapperRole  {
       _data);
   }
 
+  function unstakeAll(bytes memory _data) public returns(uint256) {
+     uint256 unstakeAllAmount = 0;
+     for(uint256 i=0; i<stakeHolders[_msgSender()].personalStakes.length; i++) {
+       Stake storage personalStake = stakeHolders[_msgSender()].personalStakes[i];
+       unstakeAllAmount = unstakeAllAmount+personalStake.actualAmount;
+       withdrawStake(personalStake.actualAmount, _data);
+     }
+
+     return unstakeAllAmount;
+  }
+
   /**
    * @notice Returns the current total of tokens staked for an address
    * @param _address address The address to query
@@ -344,10 +355,4 @@ contract StakingPool is Module, IERC900, CapperRole  {
       _data);
   }
 
-  function withdrawAllStakes(bytes memory _data) public {
-     for(uint256 i=0; i<stakeHolders[_msgSender()].personalStakes.length; i++) {
-       Stake storage personalStake = stakeHolders[_msgSender()].personalStakes[i];
-       withdrawStake(personalStake.actualAmount, _data);
-     }
-  }
 }
