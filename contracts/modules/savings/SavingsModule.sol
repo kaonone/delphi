@@ -54,7 +54,7 @@ contract SavingsModule is Module, AccessChecker, RewardDistributions, CapperRole
         CapperRole.initialize(_msgSender());
     }
 
-    function setUserCapEnabled(bool _userCapEnabled) public onlyOwner {
+    function setUserCapEnabled(bool _userCapEnabled) public onlyCapper {
         userCapEnabled = _userCapEnabled;
         emit UserCapEnabledChange(userCapEnabled);
     }
