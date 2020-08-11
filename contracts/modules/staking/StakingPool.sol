@@ -59,10 +59,10 @@ contract StakingPool is Module, IERC900, CapperRole  {
   event UserCapEnabledChange(bool enabled);
   event UserCapChanged(address indexed user, uint256 newCap);
   event Staked(address indexed user, uint256 amount, uint256 totalStacked, bytes data);
-  event Unstaked(address user, uint256 amount, uint256 totalStacked, bytes data);
+  event Unstaked(address indexed user, uint256 amount, uint256 totalStacked, bytes data);
   event setLockInDuration(uint256 defaultLockInDuration);
 
-  mapping(address => uint256) userCap; //Limit of pool tokens which can be minted for a user during deposit
+  mapping(address => uint256) public userCap; //Limit of pool tokens which can be minted for a user during deposit
   /**
    * @dev Modifier that checks that this contract can transfer tokens from the
    *  balance in the stakingToken contract for the given address.
