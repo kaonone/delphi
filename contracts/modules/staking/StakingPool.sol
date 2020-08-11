@@ -139,6 +139,14 @@ contract StakingPool is Module, IERC900, CapperRole  {
       emit UserCapChanged(user, cap);
   }
 
+  function setUserCap(address[] calldata users, uint256[] calldata caps) external onlyCapper {
+        require(users.length == caps.length, "SavingsModule: arrays length not match");
+        for(uint256 i=0;  i < users.length; i++) {
+            userCap[users[i]] = caps[i];
+            emit UserCapChanged(users[i], caps[i]);
+        }
+  }
+
   function isUserCapEnabled() public view returns(bool) {
     return userCapEnabled;
   }
