@@ -320,6 +320,7 @@ contract SavingsModule is Module, AccessChecker, RewardDistributions, CapperRole
         PoolToken poolToken = PoolToken(pi.poolToken);
         if(currentBalance > pi.previousBalance) {
             uint256 yield = currentBalance.sub(pi.previousBalance);
+            pi.previousBalance = currentBalance;
             poolToken.distribute(yield);
             emit YieldDistribution(address(poolToken), yield);
         }
