@@ -31,30 +31,38 @@ contract("DCAModule", ([bot, osPool, protocol, acc1, acc2]) => {
 
   beforeEach(async () => {
     // Tokens Deploy
+    // @ts-ignore
     usdcInstance = await FreeERC20.new(
       "USD Coinbase",
       "USDC",
       6,
       new BN(10000e6)
     );
+    // @ts-ignore
     wbtcInstance = await FreeERC20.new(
       "Wrapped BTC",
       "WBTC",
       8,
       new BN(10000e8)
     );
+
+    // @ts-ignore
     usdcPoolTokenInstance = await FreeERC20.new(
       "Pool USD Coinbase Token",
       "PUSDC",
       8,
       ether("10000")
     );
+
+    // @ts-ignore
     wbtcPoolTokenInstance = await FreeERC20.new(
       "Pool Wrapped BTC",
       "PWBTC",
       8,
       ether("10000")
     );
+
+    // @ts-ignore
     rewardTokenInstance = await FreeERC20.new(
       "Reward Token",
       "RWD",
@@ -119,6 +127,7 @@ contract("DCAModule", ([bot, osPool, protocol, acc1, acc2]) => {
     });
 
     // DCA Deploy
+    // @ts-ignore
     dcaModuleInstance = await DCAModule.new();
 
     await dcaModuleInstance.initialize(
@@ -192,10 +201,6 @@ contract("DCAModule", ([bot, osPool, protocol, acc1, acc2]) => {
       from: acc1,
     });
 
-    // const tokensToBuy = await dcaModuleInstance.tokensToBuy(1);
-
-    // console.log({ tokensToBuy });
-
     await dcaModuleInstance.deposit(new BN(500e6), new BN(200e6), {
       from: acc1,
     });
@@ -210,12 +215,4 @@ contract("DCAModule", ([bot, osPool, protocol, acc1, acc2]) => {
 
     // expect(buyAmount).to.be.a.bignumber.that.equals(new BN(200e6));
   });
-
-  // it("should purchase (existing user)", async () => {
-  //   expect().to.be.a.bignumber.that.equals();
-  // });
-
-  // it("should withdraw with reward and yield", async () => {
-  //   expect().to.be.a.bignumber.that.equals();
-  // });
 });
