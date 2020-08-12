@@ -1,5 +1,74 @@
 # savings-pool
 
+
+## Deployed contracts (Mainnet)
+
+### External contracts
+#### Tokens
+DAI `0x6b175474e89094c44da98b954eedeac495271d0f`
+USDC `0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48`
+AKRO `0x8ab7404063ec4dbcfd4598215992dc3f8ec853d7`
+
+#### Compound
+cDAI `0x5d3a536e4d6dbd6114cc1ead35777bab948e3643`
+cUSDC `0x39aa39c021dfbae8fac545936693ac917d5e7563`
+Comptroller `0x3d9819210a31b4961b30ef54be2aed79b9c9cd3b`
+
+#### Curve.Fi
+##### Curve.Fi Y
+Deposit `0xbBC81d23Ea2c3ec7e56D39296F0cbB648873a5d3`
+Rewards `0x0001fb050fe7312791bf6475b96569d83f695c9f`
+
+##### Curve.Fi sUSD
+Deposit `0xFCBa3E75865d2d561BE8D220616520c171F12851`
+Rewards `0xDCB6A51eA3CA5d3Fd898Fd6564757c7aAeC3ca92`
+
+### Pool contracts
+* Pool `0x4C39b37f5F20a0695BFDC59cf10bd85a6c4B7c30`
+* AccessModule `0x5fFcf7da7BdC49CA8A2E7a542BD59dC38228Dd45`
+* SavingsModule `0x73fC3038B4cD8FfD07482b92a52Ea806505e5748`
+* StakingPool `0x3501Ec11d205fa249f2C42f5470e137b529b35D0`
+
+#### Protocols
+##### Curve.Fi Y [(y)DAI, (y)USDC, (y)USDT, (y)TUSD] - YFI
+* Protocol CurveFi Y 
+* PoolToken for CurveFi Y 
+
+##### Curve.Fi sBTC [renBTC, wBTC, sBTC] - BPT
+* Protocol CurveFi SBTC 
+* PoolToken for CurveFi SBTC 
+
+##### Curve.Fi sUSD [DAI, USDC, USDT, sUSD] - SNX
+* Protocol CurveFi SUSD 
+* PoolToken for CurveFi SUSD
+
+##### Compound DAI - COMP
+* Protocol Compound DAI `0x08DDB58D31C08242Cd444BB5B43F7d2C6bcA0396`
+* PoolToken for Compound DAI `0x9Fca734Bb62C20D2cF654705b8fbf4F49FF5cC31`
+
+##### Compound USDC - COMP
+* Protocol Compound USDC `0x9984D588EF2112894a0513663ba815310D383E3c`
+* PoolToken for Compound USDC `0x5Ad76E93a3a852C9af760dA3FdB7983C265d8997`
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 ## Deployed contracts (Rinkeby)
 ### External contracts
 #### ERC20 tokens
