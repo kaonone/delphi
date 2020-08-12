@@ -41,14 +41,14 @@ contract CompoundProtocol is ProtocolBase {
     //     compToken = IERC20(comptroller.getCompAddress());
     // }
 
-    function handleDeposit(address token, uint256 amount) public onlyDefiOperator {
+    function handleDeposit(address, address token, uint256 amount) public onlyDefiOperator {
         require(token == address(baseToken), "CompoundProtocol: token not supported");
         cToken.mint(amount);
     }
 
-    function handleDeposit(address[] memory tokens, uint256[] memory amounts) public onlyDefiOperator {
+    function handleDeposit(address, address[] memory tokens, uint256[] memory amounts) public onlyDefiOperator {
         require(tokens.length == 1 && amounts.length == 1, "CompoundProtocol: wrong count of tokens or amounts");
-        handleDeposit(tokens[0], amounts[0]);
+        handleDeposit(address(0), tokens[0], amounts[0]);
     }
 
     function withdraw(address beneficiary, address token, uint256 amount) public onlyDefiOperator {

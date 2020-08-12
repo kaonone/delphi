@@ -145,7 +145,7 @@ contract SavingsModule is Module, AccessChecker, RewardDistributions, CapperRole
         //distributeRewardIfRequired(_protocol);
 
         uint256 nBalanceBefore = distributeYieldInternal(_protocol);
-        depositToProtocol(_protocol, _tokens, _dnAmounts);
+        depositToProtocol(_msgSender(), _protocol, _tokens, _dnAmounts);
         uint256 nBalanceAfter = updateProtocolBalance(_protocol);
 
         PoolToken poolToken = PoolToken(protocols[_protocol].poolToken);
@@ -169,12 +169,12 @@ contract SavingsModule is Module, AccessChecker, RewardDistributions, CapperRole
         return nDeposit;
     }
 
-    function depositToProtocol(address _protocol, address[] memory _tokens, uint256[] memory _dnAmounts) internal {
+    function depositToProtocol(address beneficiary, address _protocol, address[] memory _tokens, uint256[] memory _dnAmounts) internal {
         require(_tokens.length == _dnAmounts.length, "SavingsModule: count of tokens does not match count of amounts");
         for (uint256 i=0; i < _tokens.length; i++) {
             address tkn = _tokens[i];
             IERC20(tkn).safeTransferFrom(_msgSender(), _protocol, _dnAmounts[i]);
-            IDefiProtocol(_protocol).handleDeposit(tkn, _dnAmounts[i]);
+            IDefiProtocol(_protocol).handleDeposit(beneficiary, tkn, _dnAmounts[i]);
             emit DepositToken(_protocol, tkn, _dnAmounts[i]);
         }
     }

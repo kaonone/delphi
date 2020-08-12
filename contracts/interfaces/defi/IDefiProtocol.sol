@@ -3,13 +3,14 @@ pragma solidity ^0.5.12;
 interface IDefiProtocol {
     /**
      * @notice Transfer tokens from sender to DeFi protocol
+     * @param beneficiary Address of user, who should receive refund if required
      * @param token Address of token
      * @param amount Value of token to deposit
      * @return new balances of each token
      */
-    function handleDeposit(address token, uint256 amount) external;
+    function handleDeposit(address beneficiary, address token, uint256 amount) external;
 
-    function handleDeposit(address[] calldata tokens, uint256[] calldata amounts) external;
+    function handleDeposit(address beneficiary, address[] calldata tokens, uint256[] calldata amounts) external;
 
     /**
      * @notice Transfer tokens from DeFi protocol to beneficiary

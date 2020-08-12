@@ -75,7 +75,7 @@ contract CurveFiProtocol is ProtocolBase {
         slippageMultiplier = _slippageMultiplier;
     }
 
-    function handleDeposit(address token, uint256 amount) public onlyDefiOperator {
+    function handleDeposit(address, address token, uint256 amount) public onlyDefiOperator {
         uint256[] memory amounts = new uint256[](nCoins());
         for (uint256 i=0; i < _registeredTokens.length; i++){
             amounts[i] = IERC20(_registeredTokens[i]).balanceOf(address(this)); // Check balance which is left after previous withdrawal
@@ -88,7 +88,7 @@ contract CurveFiProtocol is ProtocolBase {
         stakeCurveFiToken();
     }
 
-    function handleDeposit(address[] memory tokens, uint256[] memory amounts) public onlyDefiOperator {
+    function handleDeposit(address, address[] memory tokens, uint256[] memory amounts) public onlyDefiOperator {
         require(tokens.length == amounts.length, "CurveFiYProtocol: count of tokens does not match count of amounts");
         require(amounts.length == nCoins(), "CurveFiYProtocol: amounts count does not match registered tokens");
         uint256[] memory amnts = new uint256[](nCoins());
@@ -257,7 +257,7 @@ contract CurveFiProtocol is ProtocolBase {
         IERC20 ltoken = IERC20(token);
         uint256 currentBalance = ltoken.balanceOf(address(this));
         if (currentBalance > 0) {
-            handleDeposit(token, currentBalance); 
+            handleDeposit(address(this), token, currentBalance); 
         }
         decimals[token] = ERC20Detailed(token).decimals();
         emit TokenRegistered(token);

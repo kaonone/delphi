@@ -53,13 +53,13 @@ contract BalancerProtocol is ProtocolBase {
         }
     }
 
-    function handleDeposit(address token, uint256 amount) public onlyDefiOperator {
+    function handleDeposit(address, address token, uint256 amount) public onlyDefiOperator {
         bpt.joinswapExternAmountIn(token, amount, 0);
         // uint256 bptBalance = bpt.balanceOf(address(this));
         // expect(bptAmount == bptBalance, "BalancerProtocol: returned and received amount not match");
     }
 
-    function handleDeposit(address[] memory tokens, uint256[] memory amounts) public onlyDefiOperator {
+    function handleDeposit(address, address[] memory tokens, uint256[] memory amounts) public onlyDefiOperator {
         (uint256[] memory amnts, uint256 nTotal) = translateAmountArrayToProtocolTokens(tokens, amounts);
         bool correctProportions = checkAmountProportions(amnts, nTotal);
         require(correctProportions, "BalancerProtocol: wrong proportions");
