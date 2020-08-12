@@ -21,10 +21,10 @@ SET EXT_CURVEFY_SUSD_DEPOSIT=0x627E0ca4c14299ACE0383fC9CBb57634ef843499
 SET EXT_CURVEFY_SUSD_REWARDS=0x716312d5176aC683953d54773B87A6001e449fD6
 
 rem ==== Akropolis ====
-SET MODULE_POOL=
-SET MODULE_ACCESS=
-SET MODULE_SAVINGS=
-SET MODULE_STAKING=
+SET MODULE_POOL=0x6CEEd89849f5890392D7c2Ecb429888e2123E99b
+SET MODULE_ACCESS=0xbFC891b6c83b36aFC9493957065D304661c4189A
+SET MODULE_SAVINGS=0xb733994019A4F55CAa3f130400B7978Cc6624c39
+SET MODULE_STAKING=0x6887DF2f4296e8B772cb19479472A16E836dB9e0
 
 SET PROTOCOL_CURVEFY_Y=
 SET POOL_TOKEN_CURVEFY_Y=
@@ -32,17 +32,17 @@ SET POOL_TOKEN_CURVEFY_Y=
 SET PROTOCOL_CURVEFY_SBTC=
 SET POOL_TOKEN_CURVEFY_SBTC=
 
-SET PROTOCOL_CURVEFY_SUSD=
-SET POOL_TOKEN_CURVEFY_SUSD=
+SET PROTOCOL_CURVEFY_SUSD=0x3A52c1BB8651d8a73Ebf9E569AE5fe9b558Fcde1
+SET POOL_TOKEN_CURVEFY_SUSD=0x0ecaf0f8A287aC68dB7D45C65b4B15c0889cA819
 
-SET PROTOCOL_COMPOUND_DAI=
-SET POOL_TOKEN_COMPOUND_DAI=
+SET PROTOCOL_COMPOUND_DAI=0x853D71180E6bA6584f3D400b21E4aEe2463129A4
+SET POOL_TOKEN_COMPOUND_DAI=0x06C2119701B0034BFaC3Be3C65DAc35054404571
 
-SET PROTOCOL_COMPOUND_USDC=
-SET POOL_TOKEN_COMPOUND_USDC=
+SET PROTOCOL_COMPOUND_USDC=0x048E645BA2965F48d72e7b855D6636F951aeD303
+SET POOL_TOKEN_COMPOUND_USDC=0x551AaBC00A7d02b51A81138fb8fA455786720793
 
 rem === ACTION ===
-goto :createPool
+goto :done
 
 :init
 echo INIT PROJECT, ADD CONTRACTS
@@ -83,11 +83,15 @@ call npx oz create CurveFiProtocol_SUSD --network rinkeby --init "initialize(add
 call npx oz create PoolToken_CurveFi_SUSD --network rinkeby --init "initialize(address _pool)" --args %MODULE_POOL%
 goto :done
 
+:empty
+rem fixes "can not find addModules" error 
+goto :done
+
 :addModules
 echo SETUP POOL: CALL FOR ALL MODULES (set)
-npx oz send-tx --to %MODULE_POOL% --network rinkeby --method set --args "access, %MODULE_ACCESS%, false"
-npx oz send-tx --to %MODULE_POOL% --network rinkeby --method set --args "savings, %MODULE_SAVINGS%, false"
-npx oz send-tx --to %MODULE_POOL% --network rinkeby --method set --args "staking, %MODULE_STAKING%, false"
+call npx oz send-tx --to %MODULE_POOL% --network rinkeby --method set --args "access, %MODULE_ACCESS%, false"
+call npx oz send-tx --to %MODULE_POOL% --network rinkeby --method set --args "savings, %MODULE_SAVINGS%, false"
+call npx oz send-tx --to %MODULE_POOL% --network rinkeby --method set --args "staking, %MODULE_STAKING%, false"
 goto :done
 
 :setupProtocols
@@ -110,7 +114,7 @@ goto :done
 echo SETUP OPERATORS FOR PROTOCOLS
 call npx oz send-tx --to %PROTOCOL_COMPOUND_DAI% --network rinkeby --method addDefiOperator --args %MODULE_SAVINGS%
 call npx oz send-tx --to %PROTOCOL_COMPOUND_USDC% --network rinkeby --method addDefiOperator --args %MODULE_SAVINGS%
-rme call npx oz send-tx --to %PROTOCOL_CURVEFY_Y% --network rinkeby --method addDefiOperator --args %MODULE_SAVINGS%
+rem call npx oz send-tx --to %PROTOCOL_CURVEFY_Y% --network rinkeby --method addDefiOperator --args %MODULE_SAVINGS%
 rem call npx oz send-tx --to %PROTOCOL_CURVEFY_SBTC% --network rinkeby --method addDefiOperator --args %MODULE_SAVINGS%
 call npx oz send-tx --to %PROTOCOL_CURVEFY_SUSD% --network rinkeby --method addDefiOperator --args %MODULE_SAVINGS%
 echo SETUP MINTERS FOR POOL TOKENS
