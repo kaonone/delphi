@@ -28,7 +28,6 @@ contract BalancerProtocol is ProtocolBase {
 
     IBPool bpt; //Balancer pool
     IERC20 bal; //Balancer reward token
-    address baseToken;   //Token used for normalizedBalance() calculation
     address[] registeredTokens; //addresses of tokens in the pool
     mapping(address => TokenInfo) registeredTokensInfo; //Maps token addresses to their details
 
@@ -36,7 +35,7 @@ contract BalancerProtocol is ProtocolBase {
         ProtocolBase.initialize(_pool);
     }
 
-    function setBalancer(address _bpt, address _bal, address _baseToken) public onlyDefiOperator {
+    function setBalancer(address _bpt, address _bal) public onlyDefiOperator {
         bpt = IBPool(_bpt);
         bal = IERC20(_bal);
         registeredTokens = bpt.getCurrentTokens();
@@ -52,8 +51,6 @@ contract BalancerProtocol is ProtocolBase {
             require(registeredTokensInfo[tkn].normalizedWeight > 0, "BalancerProtocol: weight can not be 0");
             IERC20(tkn).approve(address(bpt), MAX_UINT256);
         }
-        baseToken = _baseToken;
-        require(registeredTokensInfo[baseToken].normalizedWeight > 0, "BalancerProtocol: wrong base token");
     }
 
     function handleDeposit(address token, uint256 amount) public onlyDefiOperator {
@@ -120,6 +117,10 @@ contract BalancerProtocol is ProtocolBase {
         }
     }
 
+    function normalizedBalance() public returns(uint256) {
+        return bpt.balanceOf(address(this));
+    }
+
     /**
      * @notice Returns balance converted to baseToken and normalized to 18 decimals.
      * Example: Pool of 50% BTC + 50% ETH. BaseToken - BTC.
@@ -128,7 +129,7 @@ contract BalancerProtocol is ProtocolBase {
      * Then it will calculate "our" part of that balance,
      * and then convert this number to 18 decimals.
      */
-    function normalizedBalance() public returns(uint256) {
+    function balanceConvertedTo(address baseToken) public view returns(uint256) {
         uint256 summ; //BPool balance of all tokens, converted to baseToken
         for (uint256 i=0; i < registeredTokens.length; i++){
             address tkn = registeredTokens[i];
