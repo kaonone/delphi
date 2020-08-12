@@ -84,6 +84,7 @@ module.exports = {
     rinkeby: {
       provider: () => new HDWalletProvider(process.env.DEV_MNEMONIC, "https://rinkeby.infura.io/v3/" + infuraProjectId),
       networkId: 4,       // Rinkeby's id
+      gasPrice: 20000000000, // 20 gwei
     },
     
     // Another network with more advanced options...
