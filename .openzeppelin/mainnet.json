@@ -1930,6 +1930,217 @@
         "hasInitialValuesInDeclarations": false,
         "uninitializedBaseContracts": []
       }
+    },
+    "CurveFiProtocol_SUSD": {
+      "address": "0x2F4EeD3305178e7fbD3618A479a9FC8f2dB41011",
+      "constructorCode": "6080604052614149806100136000396000f3fe",
+      "bodyBytecodeHash": "a1c3c2cf5e6cde3585ea4cf7b811336a62fc9b9e47300224bfa77d85afadd7ef",
+      "localBytecodeHash": "622901c6be20cb43d11a1e8af97363ff8506c6da406cad3692619db438fdb2b7",
+      "deployedBytecodeHash": "622901c6be20cb43d11a1e8af97363ff8506c6da406cad3692619db438fdb2b7",
+      "types": {
+        "t_bool": {
+          "id": "t_bool",
+          "kind": "elementary",
+          "label": "bool"
+        },
+        "t_uint256": {
+          "id": "t_uint256",
+          "kind": "elementary",
+          "label": "uint256"
+        },
+        "t_array:50<t_uint256>": {
+          "id": "t_array:50<t_uint256>",
+          "valueType": "t_uint256",
+          "length": "50",
+          "kind": "array",
+          "label": "uint256[50]"
+        },
+        "t_address": {
+          "id": "t_address",
+          "kind": "elementary",
+          "label": "address"
+        },
+        "t_struct<Roles.Role>": {
+          "id": "t_struct<Roles.Role>",
+          "kind": "struct",
+          "label": "Roles.Role",
+          "members": [
+            {
+              "label": "bearer",
+              "astId": 16249,
+              "type": "t_mapping<t_bool>",
+              "src": "150:32:65"
+            }
+          ]
+        },
+        "t_mapping<t_bool>": {
+          "id": "t_mapping<t_bool>",
+          "valueType": "t_bool",
+          "label": "mapping(key => bool)",
+          "kind": "mapping"
+        },
+        "t_mapping<t_uint256>": {
+          "id": "t_mapping<t_uint256>",
+          "valueType": "t_uint256",
+          "label": "mapping(key => uint256)",
+          "kind": "mapping"
+        },
+        "t_array:dyn<t_address>": {
+          "id": "t_array:dyn<t_address>",
+          "valueType": "t_address",
+          "length": "dyn",
+          "kind": "array",
+          "label": "address[]"
+        },
+        "t_uint8": {
+          "id": "t_uint8",
+          "kind": "elementary",
+          "label": "uint8"
+        },
+        "t_mapping<t_uint8>": {
+          "id": "t_mapping<t_uint8>",
+          "valueType": "t_uint8",
+          "label": "mapping(key => uint8)",
+          "kind": "mapping"
+        }
+      },
+      "storage": [
+        {
+          "contract": "Initializable",
+          "path": "@openzeppelin\\upgrades\\contracts\\Initializable.sol",
+          "label": "initialized",
+          "astId": 18319,
+          "type": "t_bool",
+          "src": "757:24:82"
+        },
+        {
+          "contract": "Initializable",
+          "path": "@openzeppelin\\upgrades\\contracts\\Initializable.sol",
+          "label": "initializing",
+          "astId": 18321,
+          "type": "t_bool",
+          "src": "876:25:82"
+        },
+        {
+          "contract": "Initializable",
+          "path": "@openzeppelin\\upgrades\\contracts\\Initializable.sol",
+          "label": "______gap",
+          "astId": 18383,
+          "type": "t_array:50<t_uint256>",
+          "src": "1982:29:82"
+        },
+        {
+          "contract": "Ownable",
+          "path": "@openzeppelin\\contracts-ethereum-package\\contracts\\ownership\\Ownable.sol",
+          "label": "_owner",
+          "astId": 17252,
+          "type": "t_address",
+          "src": "526:22:73"
+        },
+        {
+          "contract": "Ownable",
+          "path": "@openzeppelin\\contracts-ethereum-package\\contracts\\ownership\\Ownable.sol",
+          "label": "______gap",
+          "astId": 17365,
+          "type": "t_array:50<t_uint256>",
+          "src": "2471:29:73"
+        },
+        {
+          "contract": "Module",
+          "path": "..\\..\\..\\D\\projects\\akropolis\\savings-pool\\contracts\\common\\Module.sol",
+          "label": "pool",
+          "astId": 43,
+          "type": "t_address",
+          "src": "214:19:1"
+        },
+        {
+          "contract": "DefiOperatorRole",
+          "path": "..\\..\\..\\D\\projects\\akropolis\\savings-pool\\contracts\\modules\\defi\\DefiOperatorRole.sol",
+          "label": "_operators",
+          "astId": 5186,
+          "type": "t_struct<Roles.Role>",
+          "src": "445:29:43"
+        },
+        {
+          "contract": "ProtocolBase",
+          "path": "..\\..\\..\\D\\projects\\akropolis\\savings-pool\\contracts\\modules\\defi\\ProtocolBase.sol",
+          "label": "rewardBalances",
+          "astId": 5322,
+          "type": "t_mapping<t_uint256>",
+          "src": "833:40:44"
+        },
+        {
+          "contract": "CurveFiProtocol",
+          "path": "..\\..\\..\\D\\projects\\akropolis\\savings-pool\\contracts\\modules\\defi\\CurveFiProtocol.sol",
+          "label": "curveFiSwap",
+          "astId": 3334,
+          "type": "t_address",
+          "src": "1245:31:39"
+        },
+        {
+          "contract": "CurveFiProtocol",
+          "path": "..\\..\\..\\D\\projects\\akropolis\\savings-pool\\contracts\\modules\\defi\\CurveFiProtocol.sol",
+          "label": "curveFiDeposit",
+          "astId": 3336,
+          "type": "t_address",
+          "src": "1282:37:39"
+        },
+        {
+          "contract": "CurveFiProtocol",
+          "path": "..\\..\\..\\D\\projects\\akropolis\\savings-pool\\contracts\\modules\\defi\\CurveFiProtocol.sol",
+          "label": "curveFiRewards",
+          "astId": 3338,
+          "type": "t_address",
+          "src": "1325:37:39"
+        },
+        {
+          "contract": "CurveFiProtocol",
+          "path": "..\\..\\..\\D\\projects\\akropolis\\savings-pool\\contracts\\modules\\defi\\CurveFiProtocol.sol",
+          "label": "curveFiRewardToken",
+          "astId": 3340,
+          "type": "t_address",
+          "src": "1368:32:39"
+        },
+        {
+          "contract": "CurveFiProtocol",
+          "path": "..\\..\\..\\D\\projects\\akropolis\\savings-pool\\contracts\\modules\\defi\\CurveFiProtocol.sol",
+          "label": "curveFiToken",
+          "astId": 3342,
+          "type": "t_address",
+          "src": "1406:26:39"
+        },
+        {
+          "contract": "CurveFiProtocol",
+          "path": "..\\..\\..\\D\\projects\\akropolis\\savings-pool\\contracts\\modules\\defi\\CurveFiProtocol.sol",
+          "label": "_registeredTokens",
+          "astId": 3345,
+          "type": "t_array:dyn<t_address>",
+          "src": "1438:36:39"
+        },
+        {
+          "contract": "CurveFiProtocol",
+          "path": "..\\..\\..\\D\\projects\\akropolis\\savings-pool\\contracts\\modules\\defi\\CurveFiProtocol.sol",
+          "label": "slippageMultiplier",
+          "astId": 3347,
+          "type": "t_uint256",
+          "src": "1480:33:39"
+        },
+        {
+          "contract": "CurveFiProtocol",
+          "path": "..\\..\\..\\D\\projects\\akropolis\\savings-pool\\contracts\\modules\\defi\\CurveFiProtocol.sol",
+          "label": "decimals",
+          "astId": 3351,
+          "type": "t_mapping<t_uint8>",
+          "src": "1590:41:39"
+        }
+      ],
+      "warnings": {
+        "hasConstructor": false,
+        "hasSelfDestruct": false,
+        "hasDelegateCall": false,
+        "hasInitialValuesInDeclarations": false,
+        "uninitializedBaseContracts": []
+      }
     }
   },
   "solidityLibs": {},
