@@ -115,11 +115,12 @@ contract RewardDistributions is Base, IPoolTokenBalanceChangeRecipient, AccessCh
         uint256 next = rb.nextDistribution;
         while (next < rewardDistributions.length) {
             RewardTokenDistribution storage d = rewardDistributions[next];
+            next++;
+
             uint256 sh = rb.shares[d.poolToken];
             if (sh == 0) continue;
             uint256 distrAmount = d.amounts[rewardToken];
             balance = balance.add(distrAmount.mul(sh).div(d.totalShares));
-            next++;
         }
         return balance;
     }
@@ -201,6 +202,7 @@ contract RewardDistributions is Base, IPoolTokenBalanceChangeRecipient, AccessCh
         if(next >= toDistribution) return;
         while (next < toDistribution) {
             RewardTokenDistribution storage d = rewardDistributions[next];
+            next++;
             uint256 sh = rb.shares[d.poolToken];
             if (sh == 0) continue;
             UserProtocolRewards storage upr = rb.rewardsByProtocol[d.poolToken]; 
@@ -210,7 +212,6 @@ contract RewardDistributions is Base, IPoolTokenBalanceChangeRecipient, AccessCh
                 upr.amounts[rToken] = upr.amounts[rToken].add(distrAmount.mul(sh).div(d.totalShares));
 
             }
-            next++;
         }
         rb.nextDistribution = next;
     }
