@@ -200,6 +200,23 @@ contract RewardDistributions is Base, IPoolTokenBalanceChangeRecipient, AccessCh
         RewardBalance storage rb = rewardBalances[user];
         uint256 next = rb.nextDistribution;
         if(next >= toDistribution) return;
+
+        if(next == 0 && rewardDistributions.length > 0){
+            //This might be a new user, if so we can skip previous distributions
+            address[] memory poolTokens = registeredPoolTokens();
+            bool hasDeposit;
+            for(uint256 i=0; i< poolTokens.length; i++){
+                if(rb.shares[d.poolToken] != 0) {
+                    hasDeposit = true;
+                    break;
+                }
+            }
+            if(!hasDeposit){
+                rb.nextDistribution = rewardDistributions.length;
+                return;
+            }
+        }
+
         while (next < toDistribution) {
             RewardTokenDistribution storage d = rewardDistributions[next];
             next++;
