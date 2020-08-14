@@ -142,7 +142,7 @@ contract SavingsModule is Module, AccessChecker, RewardDistributions, CapperRole
     public operationAllowed(IAccessModule.Operation.Deposit)
     returns(uint256) 
     {
-        distributeRewardIfRequired(_protocol);
+        //distributeRewardIfRequired(_protocol);
 
         uint256 nBalanceBefore = distributeYieldInternal(_protocol);
         depositToProtocol(_protocol, _tokens, _dnAmounts);
@@ -189,7 +189,7 @@ contract SavingsModule is Module, AccessChecker, RewardDistributions, CapperRole
     public operationAllowed(IAccessModule.Operation.Withdraw)
     returns(uint256) 
     {
-        distributeRewardIfRequired(_protocol);
+        //distributeRewardIfRequired(_protocol);
 
         PoolToken poolToken = PoolToken(protocols[_protocol].poolToken);
 
@@ -223,7 +223,7 @@ contract SavingsModule is Module, AccessChecker, RewardDistributions, CapperRole
     function withdraw(address _protocol, address token, uint256 dnAmount, uint256 maxNAmount)
     public operationAllowed(IAccessModule.Operation.Withdraw)
     returns(uint256){
-        distributeRewardIfRequired(_protocol);
+        //distributeRewardIfRequired(_protocol);
 
         uint256 nBalanceBefore = distributeYieldInternal(_protocol);
         withdrawFromProtocolOne(_msgSender(), IDefiProtocol(_protocol), token, dnAmount);
@@ -264,6 +264,10 @@ contract SavingsModule is Module, AccessChecker, RewardDistributions, CapperRole
         for(uint256 i=0; i<registeredProtocols.length; i++) {
             distributeRewardIfRequired(address(registeredProtocols[i]));
         }
+    }
+
+    function distributeRewards(address _protocol) public {
+        distributeRewardIfRequired(_protocol);
     }
 
     function userCap(address _protocol, address user) public view returns(uint256) {
