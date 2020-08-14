@@ -44,6 +44,12 @@ contract ComptrollerStub is Base, IComptroller {
         ai.lastUpdate = now;
     }
 
+    function claimComp(address[] memory holders, address[] memory, bool, bool) public {
+        for(uint256 i=0; i<holders.length;i++){
+            claimComp(holders[i]);
+        }
+    }
+
     function updateTokenBalances(address holder, AddressInfo storage ai) private {
         for(uint256 i=0; i < cTokens.length; i++) {
             address token = cTokens[i];
