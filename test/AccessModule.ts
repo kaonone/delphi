@@ -21,20 +21,10 @@ contract("AccessModule", async ([_, owner, ...otherAccounts]) => {
     let access: AccessModuleInstance;
 
     enum Operation {
-        // LiquidityModule
         Deposit,
-        Withdraw,
-        // LoanModule
-        CreateDebtProposal,
-        AddPledge,
-        WithdrawPledge,
-        CancelDebtProposal,
-        ExecuteDebtProposal,
-        Repay,
-        ExecuteDebtDefault,
-        WithdrawUnlockedPledge
+        Withdraw
     }
-    const alwaysAllowedOps = [Operation.Repay, Operation.WithdrawUnlockedPledge];
+    const alwaysAllowedOps:Operation[] = [];
 
     before(async () => {
         //Setup system contracts
