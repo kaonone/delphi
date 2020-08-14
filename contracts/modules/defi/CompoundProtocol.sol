@@ -100,7 +100,11 @@ contract CompoundProtocol is ProtocolBase {
     }
 
     function cliamRewardsFromProtocol() internal {
-        comptroller.claimComp(address(this));
+        address[] memory holders = new address[](1);
+        holders[0] = address(this);
+        address[] memory cTokens = new address[](1);
+        cTokens[0] = address(cToken);
+        comptroller.claimComp(holders, cTokens, false, true);
     }
 
     function normalizeAmount(address, uint256 amount) internal view returns(uint256) {
