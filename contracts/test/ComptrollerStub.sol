@@ -37,31 +37,41 @@ contract ComptrollerStub is Base, IComptroller {
     function claimComp(address holder) public {
         AddressInfo storage ai = cHolders[holder];
         if(ai.lastUpdate != 0 && ai.lastUpdate < now) {
-            sendComp(holder, ai);
-        }else {
-            updateTokenBalances(holder, ai);
+            sendComp(holder);
         }
-        ai.lastUpdate = now;
+        updateTokenBalances(holder);
     }
 
-    function claimComp(address[] memory holders, address[] memory, bool, bool) public {
+    function claimComp(address[] memory holders, address[] memory _cTokens, bool, bool) public {
         for(uint256 i=0; i<holders.length;i++){
-            claimComp(holders[i]);
+            address holder = holders[i];
+            AddressInfo storage ai = cHolders[holder];
+            for(uint256 j=0; j < _cTokens.length; j++){
+                if(ai.lastUpdate != 0 && ai.lastUpdate < now) {
+                    sendComp(holder, _cTokens[j]);
+                }
+            }
+            updateTokenBalances(holder);
         }
     }
 
-    function updateTokenBalances(address holder, AddressInfo storage ai) private {
+    function updateTokenBalances(address holder) private {
+        AddressInfo storage ai = cHolders[holder];
         for(uint256 i=0; i < cTokens.length; i++) {
             address token = cTokens[i];
             ai.cBalances[token] = IERC20(token).balanceOf(holder);
         }
+        ai.lastUpdate = now;
     }
-    function sendComp(address holder, AddressInfo storage ai) private {
+
+    function sendComp(address holder) private {
+        AddressInfo storage ai = cHolders[holder];
         uint256 period = now.sub(ai.lastUpdate);
         uint256 compAmount;
         for(uint256 i=0; i < cTokens.length; i++) {
             address token = cTokens[i];
             uint256 prevBalance = ai.cBalances[token];
+            if(prevBalance == 0) continue;
             // uint256 compAmount += prevBalance
             //     .mul(period).div(ANNUAL_SECONDS)
             //     .mul(targetAPY).div(EXP)
@@ -71,6 +81,18 @@ contract ComptrollerStub is Base, IComptroller {
         comp.safeTransfer(holder, compAmount);
     }
 
+    function sendComp(address holder, address cToken) private {
+        AddressInfo storage ai = cHolders[holder];
+        uint256 period = now.sub(ai.lastUpdate);
+        uint256 prevBalance = ai.cBalances[cToken];
+        if(prevBalance == 0) return;
+        // uint256 compAmount += prevBalance
+        //     .mul(period).div(ANNUAL_SECONDS)
+        //     .mul(targetAPY).div(EXP)
+        //     .mul(EXP).div(baseCTokenToCompRatio);
+        uint256 compAmount = prevBalance.mul(period).mul(targetAPY).div(ANNUAL_SECONDS).div(baseCTokenToCompRatio);
+        comp.safeTransfer(holder, compAmount);
+    }
 
     function setSupportedCTokens(address[] memory _cTokens) public {
         cTokens = _cTokens;
