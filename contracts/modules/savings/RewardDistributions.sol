@@ -206,7 +206,8 @@ contract RewardDistributions is Base, IPoolTokenBalanceChangeRecipient, AccessCh
             address[] memory poolTokens = registeredPoolTokens();
             bool hasDeposit;
             for(uint256 i=0; i< poolTokens.length; i++){
-                if(rb.shares[d.poolToken] != 0) {
+                address poolToken = poolTokens[i];
+                if(rb.shares[poolToken] != 0) {
                     hasDeposit = true;
                     break;
                 }
