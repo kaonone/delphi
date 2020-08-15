@@ -52,23 +52,6 @@
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 ## Deployed contracts (Rinkeby)
 ### External contracts
 #### ERC20 tokens
@@ -102,7 +85,7 @@
 * AKRO `0xad7541B1E795656851caD5c70aA8d495063D9a95`
 
 #### Other contracts
-* Comptroller `0xD9580ad2bE0013A3a8187Dc29B3F63CDC522Bde7`
+* Comptroller `0x25aB7a06cDa25F00A36d2D3da37D50169549C4eC`
 
 * CurveFi Y Token `0x6015c7c97ec346e7dae0602f4ff6b5fae3ebde4e`
 * CurveFi Y Swap `0xf3b6344792823B9531A3771D80cB165d9FceEe4c`
