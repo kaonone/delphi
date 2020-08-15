@@ -20,11 +20,11 @@ contract CompoundProtocol is ProtocolBase {
     using SafeMath for uint256;
     using SafeERC20 for IERC20;
 
-    IERC20 baseToken;
-    uint8 decimals;
-    ICErc20 cToken;
-    IComptroller comptroller;
-    IERC20 compToken;
+    IERC20 public baseToken;
+    uint8 public decimals;
+    ICErc20 public cToken;
+    IComptroller public comptroller;
+    IERC20 public compToken;
 
     function initialize(address _pool, address _token, address _cToken, address _comptroller) public initializer {
         ProtocolBase.initialize(_pool);
@@ -35,6 +35,11 @@ contract CompoundProtocol is ProtocolBase {
         comptroller = IComptroller(_comptroller);
         compToken = IERC20(comptroller.getCompAddress());
     }
+
+    // function upgrade(address _comptroller) public onlyOwner {
+    //     comptroller = IComptroller(_comptroller);
+    //     compToken = IERC20(comptroller.getCompAddress());
+    // }
 
     function handleDeposit(address token, uint256 amount) public onlyDefiOperator {
         require(token == address(baseToken), "CompoundProtocol: token not supported");
