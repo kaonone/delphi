@@ -93,7 +93,7 @@ contract RewardDistributions is Base, IPoolTokenBalanceChangeRecipient, AccessCh
         uint256[] memory amounts = new uint256[](rewardTokens.length);
         address[] memory poolTokens = registeredPoolTokens();
         for(uint256 i=0; i < rewardTokens.length; i++) {
-            for(uint256 j=0; j < poolTokens.length; i++) {
+            for(uint256 j=0; j < poolTokens.length; j++) {
                 amounts[i] = amounts[i].add(rewardBalanceOf(user, poolTokens[j], rewardTokens[i]));
             }
         }
