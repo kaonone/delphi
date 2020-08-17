@@ -29,6 +29,7 @@ contract ProtocolBase is Module, DefiOperatorRole, IDefiProtocol {
         address[] memory rewardTokens = supportedRewardTokens();
         for(uint256 i = 0; i < rewardTokens.length; i++) {
             address rtkn = rewardTokens[i];
+            require(rewardBalances[rtkn] == 0, "No upgrade required");
             rewardBalances[rtkn] = IERC20(rtkn).balanceOf(address(this));
         }        
     }
