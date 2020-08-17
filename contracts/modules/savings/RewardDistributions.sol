@@ -150,6 +150,26 @@ contract RewardDistributions is Base, IPoolTokenBalanceChangeRecipient, AccessCh
         }
     }
 
+    function storedRewardBalance(address user, address poolToken, address rewardToken) public view returns(uint256) {
+        return rewardBalances[user].rewardsByProtocol[poolToken].amounts[rewardToken];
+    }
+
+    function rewardDistribution(uint256 num) public view returns(address poolToken, uint256 totalShares, address[] memory rewardTokens, uint256[] memory amounts){
+        RewardTokenDistribution storage d = rewardDistributions[num];
+        poolToken = d.poolToken;
+        totalShares = d.totalShares;
+        rewardTokens = d.rewardTokens;
+        amounts = new uint256[](rewardTokens.length);
+        for(uint256 i=0; i < rewardTokens.length; i++) {
+            address tkn = rewardTokens[i];
+            amounts[i] = d.amounts[tkn];
+        }
+    }
+    
+    function rewardDistributionCount() public view returns(uint256){
+        return rewardDistributions.length;
+    }
+
     /**
     * @notice Create reward distribution
     */
