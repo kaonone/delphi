@@ -18,11 +18,19 @@ contract ProtocolBase is Module, DefiOperatorRole, IDefiProtocol {
     using SafeMath for uint256;
     using SafeERC20 for IERC20;
 
-    mapping(address=>uint256) rewardBalances;    //Mapping of already claimed amounts of reward tokens
+    mapping(address=>uint256) public rewardBalances;    //Mapping of already claimed amounts of reward tokens
 
     function initialize(address _pool) public initializer {
         Module.initialize(_pool);
         DefiOperatorRole.initialize(_msgSender());
+    }
+
+    function upgrade() public onlyOwner {
+        address[] memory rewardTokens = supportedRewardTokens();
+        for(uint256 i = 0; i < rewardTokens.length; i++) {
+            address rtkn = rewardTokens[i];
+            rewardBalances[rtkn] = IERC20(rtkn).balanceOf(address(this));
+        }        
     }
 
     function supportedRewardTokens() public view returns(address[] memory);
@@ -44,6 +52,7 @@ contract ProtocolBase is Module, DefiOperatorRole, IDefiProtocol {
             if(newBalance > rewardBalances[rtkn]) {
                 receivedRewardTokensCount++;
                 rewardAmounts[i] = newBalance.sub(rewardBalances[rtkn]);
+                rewardBalances[rtkn] = newBalance;
             }
         }
 
