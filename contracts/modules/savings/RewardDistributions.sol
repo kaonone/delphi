@@ -10,7 +10,7 @@ import "../access/AccessChecker.sol";
 import "../token/PoolToken.sol";
 
 contract RewardDistributions is Base, IPoolTokenBalanceChangeRecipient, AccessChecker {
-    event RewardDistribution(address indexed poolToken, address indexed rewardRoken, uint256 amount, uint256 totalShares);
+    event RewardDistribution(address indexed poolToken, address indexed rewardToken, uint256 amount, uint256 totalShares);
     event RewardWithdraw(address indexed user, address indexed rewardToken, uint256 amount);
 
     using SafeERC20 for IERC20;
