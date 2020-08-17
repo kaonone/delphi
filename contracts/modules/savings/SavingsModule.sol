@@ -278,8 +278,8 @@ contract SavingsModule is Module, AccessChecker, RewardDistributions, CapperRole
         return address(protocols[_protocol].poolToken);
     }
 
-    function protocolByPoolToken(address _protocol) public view returns(address) {
-        return poolTokenToProtocol[_protocol];
+    function protocolByPoolToken(address _poolToken) public view returns(address) {
+        return poolTokenToProtocol[_poolToken];
     }
 
     function rewardTokensByProtocol(address _protocol) public view returns(address[] memory) {

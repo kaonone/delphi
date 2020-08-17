@@ -150,8 +150,12 @@ contract RewardDistributions is Base, IPoolTokenBalanceChangeRecipient, AccessCh
         }
     }
 
-    function storedRewardBalance(address user, address poolToken, address rewardToken) public view returns(uint256) {
-        return rewardBalances[user].rewardsByProtocol[poolToken].amounts[rewardToken];
+    function storedRewardBalance(address user, address poolToken, address rewardToken) public view 
+    returns(uint256 nextDistribution, uint256 poolTokenShares, uint256 storedReward) {
+        RewardBalance storage rb = rewardBalances[user];
+        nextDistribution = rb.nextDistribution;
+        poolTokenShares = rb.shares[poolToken];
+        storedReward = rb.rewardsByProtocol[poolToken].amounts[rewardToken];
     }
 
     function rewardDistribution(uint256 num) public view returns(address poolToken, uint256 totalShares, address[] memory rewardTokens, uint256[] memory amounts){
@@ -165,7 +169,7 @@ contract RewardDistributions is Base, IPoolTokenBalanceChangeRecipient, AccessCh
             amounts[i] = d.amounts[tkn];
         }
     }
-    
+
     function rewardDistributionCount() public view returns(uint256){
         return rewardDistributions.length;
     }
