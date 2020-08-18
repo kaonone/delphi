@@ -270,6 +270,12 @@ contract SavingsModule is Module, AccessChecker, RewardDistributions, CapperRole
         distributeRewardIfRequired(_protocol);
     }
 
+    function distributeRewardsForced(address _protocol) public onlyOwner {
+        ProtocolInfo storage pi = protocols[_protocol];
+        pi.lastRewardDistribution = now;
+        distributeReward(_protocol);
+    }
+
     function userCap(address _protocol, address user) public view returns(uint256) {
         return protocols[_protocol].userCap[user];
     }
