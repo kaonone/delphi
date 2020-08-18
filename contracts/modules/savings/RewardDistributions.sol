@@ -204,8 +204,9 @@ contract RewardDistributions is Base, IPoolTokenBalanceChangeRecipient, AccessCh
                 protocol.withdrawReward(rewardToken, user, amount);
             }
         }
-        require(totalAmount > 0, "RewardDistributions: nothing to withdraw");
-        emit RewardWithdraw(user, rewardToken, totalAmount);
+        if(totalAmount > 0) {
+            emit RewardWithdraw(user, rewardToken, totalAmount);
+        }
         return totalAmount;
     }
 
