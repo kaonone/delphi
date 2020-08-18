@@ -110,6 +110,31 @@ contract SavingsModule is Module, AccessChecker, RewardDistributions, CapperRole
         emit ProtocolRegistered(address(protocol), address(poolToken));
     }
 
+    // function unregisterProtocol(address _protocol) public onlyOwner {
+    //     address poolToken = address(protocols[_protocol].poolToken);
+    //     delete protocols[_protocol];
+    //     delete poolTokenToProtocol[poolToken];
+
+    //     address[] memory supportedRewardTokens = IDefiProtocol(_protocol).supportedRewardTokens();
+    //     for(uint256 i=0; i < supportedRewardTokens.length; i++) {
+    //         address rtkn = supportedRewardTokens[i];
+    //         //TODO check if this token used by other protocols
+
+    //         rewardTokenRegistered[rtkn] = false;
+    //         // Remove reward token from registered array
+    //         for(uint256 j=0; j< registeredRewardTokens.length; j++){
+    //             if(registeredRewardTokens[j] == rtkn) {
+    //                 if(j != registeredRewardTokens.length-1){
+    //                     registeredRewardTokens[j] = registeredRewardTokens[registeredRewardTokens.length-1];
+    //                 }
+    //                 registeredRewardTokens.pop();
+    //             }
+    //         }
+            
+    //     }
+    // }
+
+
     /**
      * @notice Deposit tokens to several protocols
      * @param _protocols Array of protocols to deposit tokens (each protocol only once)
