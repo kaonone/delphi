@@ -1,10 +1,9 @@
 pragma solidity ^0.5.12;
 
-import "./CurveFiProtocol.sol";
+import "./CurveFiProtocolWithRewards.sol";
 import "../../interfaces/defi/ICurveFiDeposit_SBTC.sol";
-import "../../interfaces/defi/ICurveFiRewards_SBTC.sol";
 
-contract CurveFiProtocol_SBTC is CurveFiProtocol {
+contract CurveFiProtocol_SBTC is CurveFiProtocolWithRewards {
     uint256 private constant N_COINS = 3;
 
     address balRewardToken;
@@ -19,27 +18,26 @@ contract CurveFiProtocol_SBTC is CurveFiProtocol {
 
     function supportedRewardTokens() public view returns(address[] memory) {
         require(balRewardToken != address(0), "CurveFiProtocol_SBTC: not yet fully initialized");
-        address[] memory rtokens = new address[](2);
-        rtokens[0] = address(curveFiRewardToken);
-        rtokens[1] = balRewardToken;
+        address[] memory rtokens = new address[](3);
+        rtokens[0] = crvToken;
+        rtokens[1] = rewardToken;
+        rtokens[2] = balRewardToken;
         return rtokens;
     }
 
     function isSupportedRewardToken(address token) public view returns(bool) {
         return(
-            (token == address(curveFiRewardToken)) ||
+            (token == crvToken) || 
+            (token == rewardToken) ||
             (token == balRewardToken)
         );
     }
 
     // Nothing needed to claim BAL, so original implementaion will work
     // function cliamRewardsFromProtocol() internal {
-    //     curveFiRewards.getReward();
+    //     super.getReward();
     // }
 
-    function reward_rewardToken(address rewardsController) internal returns(address){
-        return ICurveFiRewards_SBTC(rewardsController).rewardsToken();
-    }
 
     function convertArray(uint256[] memory amounts) internal pure returns(uint256[N_COINS] memory) {
         require(amounts.length == N_COINS, "CurveFiProtocol_SBTC: wrong token count");

@@ -7,7 +7,8 @@ import "@openzeppelin/contracts-ethereum-package/contracts/math/SafeMath.sol";
 import "../../interfaces/defi/IDefiProtocol.sol";
 import "../../interfaces/defi/ICurveFiDeposit.sol";
 import "../../interfaces/defi/ICurveFiSwap.sol";
-import "../../interfaces/defi/ICurveFiRewards.sol";
+import "../../interfaces/defi/ICurveFiLiquidityGauge.sol";
+import "../../interfaces/defi/ICurveFiMinter.sol";
 import "./ProtocolBase.sol";
 
 
@@ -20,15 +21,16 @@ contract CurveFiProtocol is ProtocolBase {
     using SafeMath for uint256;
     using SafeERC20 for IERC20;
 
-    event CurveFiSetup(address swap, address deposit, address rewardsController);
+    event CurveFiSetup(address swap, address deposit, address liquidityGauge);
     event TokenRegistered(address indexed token);
     event TokenUnregistered(address indexed token);
 
     ICurveFiSwap public curveFiSwap;
     ICurveFiDeposit public curveFiDeposit;
-    ICurveFiRewards public curveFiRewards;
-    IERC20 public curveFiRewardToken;
+    ICurveFiLiquidityGauge public curveFiLPGauge;
+    ICurveFiMinter public curveFiMinter;
     IERC20 public curveFiToken;
+    address public crvToken;
     address[] internal _registeredTokens;
     uint256 public slippageMultiplier; //Multiplier to work-around slippage & fees when witharawing one token
     mapping(address => uint8) public decimals;
@@ -44,7 +46,7 @@ contract CurveFiProtocol is ProtocolBase {
         slippageMultiplier = 1.01*1e18;     //Max slippage - 1%, if more - tx will fail
     }
 
-    function setCurveFi(address deposit, address rewardsController) public onlyDefiOperator {
+    function setCurveFi(address deposit, address liquidityGauge) public onlyDefiOperator {
         if (address(curveFiDeposit) != address(0)) {
             //We need to unregister tokens first
             for (uint256 i=0; i < _registeredTokens.length; i++){
@@ -57,17 +59,22 @@ contract CurveFiProtocol is ProtocolBase {
         curveFiDeposit = ICurveFiDeposit(deposit);
         curveFiSwap = ICurveFiSwap(curveFiDeposit.curve());
         curveFiToken = IERC20(curveFiDeposit.token());
-        curveFiRewards = ICurveFiRewards(rewardsController);
-        curveFiRewardToken = IERC20(reward_rewardToken(rewardsController));
+
+        curveFiLPGauge = ICurveFiLiquidityGauge(liquidityGauge);
+        curveFiMinter = ICurveFiMinter(curveFiLPGauge.minter());
+        address lpToken = curveFiLPGauge.lp_token();
+        require(lpToken == address(curveFiToken), "CurveFiProtocol: LP tokens do not match");
+        crvToken = curveFiLPGauge.crv_token();
+
         IERC20(curveFiToken).safeApprove(address(curveFiDeposit), MAX_UINT256);
-        IERC20(curveFiToken).safeApprove(address(curveFiRewards), MAX_UINT256);
+        IERC20(curveFiToken).safeApprove(address(curveFiLPGauge), MAX_UINT256);
         for (uint256 i=0; i < _registeredTokens.length; i++){
             address token = curveFiDeposit.underlying_coins(int128(i));
             _registeredTokens[i] = token;
             _registerToken(token);
             IERC20(token).safeApprove(address(curveFiDeposit), MAX_UINT256);
         }
-        emit CurveFiSetup(address(curveFiSwap), address(curveFiDeposit), address(curveFiRewards));
+        emit CurveFiSetup(address(curveFiSwap), address(curveFiDeposit), address(curveFiLPGauge));
     }
 
     function setSlippageMultiplier(uint256 _slippageMultiplier) public onlyDefiOperator {
@@ -133,7 +140,7 @@ contract CurveFiProtocol is ProtocolBase {
         for (i = 0; i < _registeredTokens.length; i++){
             amnts[i] = amounts[i];
         }
-        unstakeCurveFiToken();
+        unstakeCurveFiToken(curveFiTokenBalance());
         deposit_remove_liquidity_imbalance(amnts, MAX_UINT256);
         stakeCurveFiToken();
         for (i = 0; i < _registeredTokens.length; i++){
@@ -144,16 +151,16 @@ contract CurveFiProtocol is ProtocolBase {
 
     function supportedRewardTokens() public view returns(address[] memory) {
         address[] memory rtokens = new address[](1);
-        rtokens[0] = address(curveFiRewardToken);
+        rtokens[0] = crvToken;
         return rtokens;
     }
 
     function isSupportedRewardToken(address token) public view returns(bool) {
-        return(token == address(curveFiRewardToken));
+        return(token == crvToken);
     }
 
     function cliamRewardsFromProtocol() internal {
-        curveFiRewards.getReward();
+        curveFiMinter.mint(address(curveFiLPGauge));
     }
 
     function balanceOf(address token) public returns(uint256) {
@@ -168,7 +175,7 @@ contract CurveFiProtocol is ProtocolBase {
     
     function balanceOfAll() public returns(uint256[] memory balances) {
         IERC20 cfToken = IERC20(curveFiDeposit.token());
-        uint256 cfBalance = curveFiRewards.balanceOf(address(this));
+        uint256 cfBalance = curveFiTokenBalance();
         uint256 cfTotalSupply = cfToken.totalSupply();
 
         balances = new uint256[](_registeredTokens.length);
@@ -236,21 +243,16 @@ contract CurveFiProtocol is ProtocolBase {
     }
 
     function curveFiTokenBalance() internal view returns(uint256) {
-        return curveFiRewards.balanceOf(address(this));
+        return curveFiLPGauge.balanceOf(address(this));
     }
 
-    function stakeCurveFiToken() private {
+    function stakeCurveFiToken() internal {
         uint256 cftBalance = curveFiToken.balanceOf(address(this));
-        curveFiRewards.stake(cftBalance);
+        curveFiLPGauge.deposit(cftBalance);
     }
 
-    function unstakeCurveFiToken(uint256 amount) private {
-        curveFiRewards.withdraw(amount);
-    }
-
-    function unstakeCurveFiToken() private {
-        uint256 balance = curveFiRewards.balanceOf(address(this));
-        curveFiRewards.withdraw(balance);
+    function unstakeCurveFiToken(uint256 amount) internal {
+        curveFiLPGauge.withdraw(amount);
     }
 
     function _registerToken(address token) private {
@@ -273,4 +275,5 @@ contract CurveFiProtocol is ProtocolBase {
         emit TokenUnregistered(token);
     }
 
+    uint256[50] private ______gap;
 }

@@ -2,7 +2,6 @@ pragma solidity ^0.5.12;
 
 import "./CurveFiProtocol.sol";
 import "../../interfaces/defi/ICurveFiDeposit_Y.sol";
-import "../../interfaces/defi/ICurveFiRewards_Y.sol";
 import "../../interfaces/defi/IYErc20.sol";
 
 contract CurveFiProtocol_Y is CurveFiProtocol {
@@ -10,10 +9,6 @@ contract CurveFiProtocol_Y is CurveFiProtocol {
 
     function nCoins() internal returns(uint256) {
         return N_COINS;
-    }
-
-    function reward_rewardToken(address rewardsController) internal returns(address){
-        return ICurveFiRewards_Y(rewardsController).yfi();
     }
 
     function convertArray(uint256[] memory amounts) internal pure returns(uint256[N_COINS] memory) {
@@ -50,7 +45,7 @@ contract CurveFiProtocol_Y is CurveFiProtocol {
     
     function balanceOfAll() public returns(uint256[] memory balances) {
         IERC20 cfToken = IERC20(curveFiDeposit.token());
-        uint256 cfBalance = curveFiRewards.balanceOf(address(this));
+        uint256 cfBalance = curveFiTokenBalance();
         uint256 cfTotalSupply = cfToken.totalSupply();
 
         balances = new uint256[](_registeredTokens.length);

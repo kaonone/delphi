@@ -1,18 +1,15 @@
 pragma solidity ^0.5.12;
 
-import "./CurveFiProtocol.sol";
+import "./CurveFiProtocolWithRewards.sol";
 import "../../interfaces/defi/ICurveFiDeposit_SUSD.sol";
-import "../../interfaces/defi/ICurveFiRewards_SUSD.sol";
+import "../../interfaces/defi/ICurveFiLiquidityGaugeReward.sol";
 
-contract CurveFiProtocol_SUSD is CurveFiProtocol {
+contract CurveFiProtocol_SUSD is CurveFiProtocolWithRewards {
     uint256 private constant N_COINS = 4;
+
 
     function nCoins() internal returns(uint256) {
         return N_COINS;
-    }
-
-    function reward_rewardToken(address rewardsController) internal returns(address){
-        return ICurveFiRewards_SUSD(rewardsController).snx();
     }
 
     function convertArray(uint256[] memory amounts) internal pure returns(uint256[N_COINS] memory) {
