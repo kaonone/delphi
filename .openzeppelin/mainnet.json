@@ -1997,11 +1997,11 @@
       }
     },
     "CurveFiProtocol_SUSD": {
-      "address": "0x2F4EeD3305178e7fbD3618A479a9FC8f2dB41011",
-      "constructorCode": "6080604052614149806100136000396000f3fe",
-      "bodyBytecodeHash": "a1c3c2cf5e6cde3585ea4cf7b811336a62fc9b9e47300224bfa77d85afadd7ef",
-      "localBytecodeHash": "622901c6be20cb43d11a1e8af97363ff8506c6da406cad3692619db438fdb2b7",
-      "deployedBytecodeHash": "622901c6be20cb43d11a1e8af97363ff8506c6da406cad3692619db438fdb2b7",
+      "address": "0x7cbDc117E378f421BEb14A6988641b590c59a69B",
+      "constructorCode": "60806040526145e9806100136000396000f3fe",
+      "bodyBytecodeHash": "7cd42e492214d7cade12ea59690db71bf11fb18264d951aaf992db8716757da4",
+      "localBytecodeHash": "eeca06b201b7cd68d11ff6eb73335c8792cab912800c4d76ca91cfa37fb57ed5",
+      "deployedBytecodeHash": "eeca06b201b7cd68d11ff6eb73335c8792cab912800c4d76ca91cfa37fb57ed5",
       "types": {
         "t_bool": {
           "id": "t_bool",
@@ -2032,7 +2032,7 @@
           "members": [
             {
               "label": "bearer",
-              "astId": 16249,
+              "astId": 16776,
               "type": "t_mapping<t_bool>",
               "src": "150:32:65"
             }
@@ -2074,7 +2074,7 @@
           "contract": "Initializable",
           "path": "@openzeppelin\\upgrades\\contracts\\Initializable.sol",
           "label": "initialized",
-          "astId": 18319,
+          "astId": 18846,
           "type": "t_bool",
           "src": "757:24:82"
         },
@@ -2082,7 +2082,7 @@
           "contract": "Initializable",
           "path": "@openzeppelin\\upgrades\\contracts\\Initializable.sol",
           "label": "initializing",
-          "astId": 18321,
+          "astId": 18848,
           "type": "t_bool",
           "src": "876:25:82"
         },
@@ -2090,7 +2090,7 @@
           "contract": "Initializable",
           "path": "@openzeppelin\\upgrades\\contracts\\Initializable.sol",
           "label": "______gap",
-          "astId": 18383,
+          "astId": 18910,
           "type": "t_array:50<t_uint256>",
           "src": "1982:29:82"
         },
@@ -2098,7 +2098,7 @@
           "contract": "Ownable",
           "path": "@openzeppelin\\contracts-ethereum-package\\contracts\\ownership\\Ownable.sol",
           "label": "_owner",
-          "astId": 17252,
+          "astId": 17779,
           "type": "t_address",
           "src": "526:22:73"
         },
@@ -2106,7 +2106,7 @@
           "contract": "Ownable",
           "path": "@openzeppelin\\contracts-ethereum-package\\contracts\\ownership\\Ownable.sol",
           "label": "______gap",
-          "astId": 17365,
+          "astId": 17892,
           "type": "t_array:50<t_uint256>",
           "src": "2471:29:73"
         },
@@ -2122,7 +2122,7 @@
           "contract": "DefiOperatorRole",
           "path": "..\\..\\..\\D\\projects\\akropolis\\savings-pool\\contracts\\modules\\defi\\DefiOperatorRole.sol",
           "label": "_operators",
-          "astId": 5186,
+          "astId": 5313,
           "type": "t_struct<Roles.Role>",
           "src": "445:29:43"
         },
@@ -2130,73 +2130,105 @@
           "contract": "ProtocolBase",
           "path": "..\\..\\..\\D\\projects\\akropolis\\savings-pool\\contracts\\modules\\defi\\ProtocolBase.sol",
           "label": "rewardBalances",
-          "astId": 5322,
+          "astId": 5449,
           "type": "t_mapping<t_uint256>",
-          "src": "833:40:44"
+          "src": "833:47:44"
         },
         {
           "contract": "CurveFiProtocol",
           "path": "..\\..\\..\\D\\projects\\akropolis\\savings-pool\\contracts\\modules\\defi\\CurveFiProtocol.sol",
           "label": "curveFiSwap",
-          "astId": 3334,
+          "astId": 3399,
           "type": "t_address",
-          "src": "1245:31:39"
+          "src": "1300:31:38"
         },
         {
           "contract": "CurveFiProtocol",
           "path": "..\\..\\..\\D\\projects\\akropolis\\savings-pool\\contracts\\modules\\defi\\CurveFiProtocol.sol",
           "label": "curveFiDeposit",
-          "astId": 3336,
+          "astId": 3401,
           "type": "t_address",
-          "src": "1282:37:39"
+          "src": "1337:37:38"
         },
         {
           "contract": "CurveFiProtocol",
           "path": "..\\..\\..\\D\\projects\\akropolis\\savings-pool\\contracts\\modules\\defi\\CurveFiProtocol.sol",
-          "label": "curveFiRewards",
-          "astId": 3338,
+          "label": "curveFiLPGauge",
+          "astId": 3403,
           "type": "t_address",
-          "src": "1325:37:39"
+          "src": "1380:44:38"
         },
         {
           "contract": "CurveFiProtocol",
           "path": "..\\..\\..\\D\\projects\\akropolis\\savings-pool\\contracts\\modules\\defi\\CurveFiProtocol.sol",
-          "label": "curveFiRewardToken",
-          "astId": 3340,
+          "label": "curveFiMinter",
+          "astId": 3405,
           "type": "t_address",
-          "src": "1368:32:39"
+          "src": "1430:35:38"
         },
         {
           "contract": "CurveFiProtocol",
           "path": "..\\..\\..\\D\\projects\\akropolis\\savings-pool\\contracts\\modules\\defi\\CurveFiProtocol.sol",
           "label": "curveFiToken",
-          "astId": 3342,
+          "astId": 3407,
           "type": "t_address",
-          "src": "1406:26:39"
+          "src": "1471:26:38"
+        },
+        {
+          "contract": "CurveFiProtocol",
+          "path": "..\\..\\..\\D\\projects\\akropolis\\savings-pool\\contracts\\modules\\defi\\CurveFiProtocol.sol",
+          "label": "crvToken",
+          "astId": 3409,
+          "type": "t_address",
+          "src": "1503:23:38"
         },
         {
           "contract": "CurveFiProtocol",
           "path": "..\\..\\..\\D\\projects\\akropolis\\savings-pool\\contracts\\modules\\defi\\CurveFiProtocol.sol",
           "label": "_registeredTokens",
-          "astId": 3345,
+          "astId": 3412,
           "type": "t_array:dyn<t_address>",
-          "src": "1438:36:39"
+          "src": "1532:36:38"
         },
         {
           "contract": "CurveFiProtocol",
           "path": "..\\..\\..\\D\\projects\\akropolis\\savings-pool\\contracts\\modules\\defi\\CurveFiProtocol.sol",
           "label": "slippageMultiplier",
-          "astId": 3347,
+          "astId": 3414,
           "type": "t_uint256",
-          "src": "1480:33:39"
+          "src": "1574:33:38"
         },
         {
           "contract": "CurveFiProtocol",
           "path": "..\\..\\..\\D\\projects\\akropolis\\savings-pool\\contracts\\modules\\defi\\CurveFiProtocol.sol",
           "label": "decimals",
-          "astId": 3351,
+          "astId": 3418,
           "type": "t_mapping<t_uint8>",
-          "src": "1590:41:39"
+          "src": "1684:41:38"
+        },
+        {
+          "contract": "CurveFiProtocol",
+          "path": "..\\..\\..\\D\\projects\\akropolis\\savings-pool\\contracts\\modules\\defi\\CurveFiProtocol.sol",
+          "label": "______gap",
+          "astId": 4581,
+          "type": "t_array:50<t_uint256>",
+          "src": "11867:29:38"
+        },
+        {
+          "contract": "CurveFiProtocolWithRewards",
+          "path": "..\\..\\..\\D\\projects\\akropolis\\savings-pool\\contracts\\modules\\defi\\CurveFiProtocolWithRewards.sol",
+          "label": "rewardToken",
+          "astId": 4590,
+          "type": "t_address",
+          "src": "186:26:39"
+        },
+        {
+          "contract": "CurveFiProtocolWithRewards",
+          "path": "..\\..\\..\\D\\projects\\akropolis\\savings-pool\\contracts\\modules\\defi\\CurveFiProtocolWithRewards.sol",
+          "label": "______gap",
+          "astId": 4686,
+          "type": "t_array:50<t_uint256>",
+          "src": "1043:29:39"
         }
       ],
       "warnings": {
@@ -2278,6 +2310,15 @@
         "address": "0x5Ad76E93a3a852C9af760dA3FdB7983C265d8997",
         "version": "1.0.0",
         "implementation": "0xe782F3E4aaa419D5c043794dde32E6B46661A82B",
+        "admin": "0x8f608BCB8971cD7D3073C417A28DbD156d772402",
+        "kind": "Upgradeable"
+      }
+    ],
+    "akropolis-savings-pool/CurveFiProtocol_SUSD": [
+      {
+        "address": "0x91d7b9a8d2314110D4018C88dBFDCF5E2ba4772E",
+        "version": "1.0.0",
+        "implementation": "0x7cbDc117E378f421BEb14A6988641b590c59a69B",
         "admin": "0x8f608BCB8971cD7D3073C417A28DbD156d772402",
         "kind": "Upgradeable"
       }

@@ -17,11 +17,15 @@
 #### Curve.Fi
 ##### Curve.Fi Y
 * Deposit `0xbBC81d23Ea2c3ec7e56D39296F0cbB648873a5d3`
-* Rewards `0x0001fb050fe7312791bf6475b96569d83f695c9f`
+* LiquidityGauge `0xFA712EE4788C042e2B7BB55E6cb8ec569C4530c1`
+
+##### Curve.Fi sBTC
+* Deposit
+* LiquidityGauge `0x705350c4BcD35c9441419DdD5d2f097d7a55410F`
 
 ##### Curve.Fi sUSD
 * Deposit `0xFCBa3E75865d2d561BE8D220616520c171F12851`
-* Rewards `0xDCB6A51eA3CA5d3Fd898Fd6564757c7aAeC3ca92`
+* LiquidityGauge `0xa90996896660decc6e997655e065b23788857849`
 
 ### Pool contracts
 * Pool `0x4C39b37f5F20a0695BFDC59cf10bd85a6c4B7c30`
