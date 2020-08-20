@@ -169,27 +169,41 @@ contract SavingsModule is Module, AccessChecker, RewardDistributions, CapperRole
     {
         //distributeRewardIfRequired(_protocol);
 
+        uint256 nAmount;
+        for (uint256 i=0; i < _tokens.length; i++) {
+            nAmount = nAmount.add(normalizeTokenAmount(_tokens[i], _dnAmounts[i]));
+        }
+
         uint256 nBalanceBefore = distributeYieldInternal(_protocol);
         depositToProtocol(_protocol, _tokens, _dnAmounts);
         uint256 nBalanceAfter = updateProtocolBalance(_protocol);
 
         PoolToken poolToken = PoolToken(protocols[_protocol].poolToken);
         uint256 nDeposit = nBalanceAfter.sub(nBalanceBefore);
-        poolToken.mint(_msgSender(), nDeposit);
+
+        uint256 fee;
+        if(nAmount > nDeposit) {
+            fee = nAmount - nDeposit;
+            poolToken.mint(_msgSender(), nDeposit);
+        } else {
+            fee = 0;
+            poolToken.mint(_msgSender(), nAmount);
+            uint256 yield = nDeposit - nAmount;
+            if (yield > 0) {
+                //Additional Yield received from protocol (because of lottery, or something)
+                createYieldDistribution(poolToken, yield);
+            }
+        }
 
         if(userCapEnabled){
             uint256 cap = protocols[_protocol].userCap[_msgSender()];
-            require(cap >= nDeposit, "SavingsModule: deposit exeeds cap");
-            cap = cap - nDeposit;
+            //uint256 actualAmount = nAmount.sub(fee); //Had to remove this because of stack too deep err
+            require(cap >= nAmount.sub(fee), "SavingsModule: deposit exeeds cap");
+            cap = cap - nAmount.sub(fee);
             protocols[_protocol].userCap[_msgSender()] = cap;
             emit UserCapChanged(_protocol, _msgSender(), cap);
         }
 
-        uint256 nAmount;
-        for (uint256 i=0; i < _tokens.length; i++) {
-            nAmount = nAmount.add(normalizeTokenAmount(_tokens[i], _dnAmounts[i]));
-        }
-        uint256 fee = (nAmount > nDeposit)?nAmount.sub(nDeposit):0;
         emit Deposit(_protocol, _msgSender(), nAmount, fee);
         return nDeposit;
     }
@@ -356,10 +370,14 @@ contract SavingsModule is Module, AccessChecker, RewardDistributions, CapperRole
         if(currentBalance > pi.previousBalance) {
             uint256 yield = currentBalance.sub(pi.previousBalance);
             pi.previousBalance = currentBalance;
-            poolToken.distribute(yield);
-            emit YieldDistribution(address(poolToken), yield);
+            createYieldDistribution(poolToken, yield);
         }
         return currentBalance;
+    }
+
+    function createYieldDistribution(PoolToken poolToken, uint256 yield) internal {
+        poolToken.distribute(yield);
+        emit YieldDistribution(address(poolToken), yield);
     }
 
     function distributeRewardIfRequired(address _protocol) internal {
