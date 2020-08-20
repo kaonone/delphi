@@ -15,7 +15,7 @@ import "./ProtocolBase.sol";
 contract CurveFiProtocol is ProtocolBase {
     // Withdrawing one token form Curve.fi pool may lead to small amount of pool token may left unused on Deposit contract. 
     // If DONATE_DUST = true, it will be left there and donated to curve.fi, otherwise we will use gas to transfer it back.
-    bool public constant DONATE_DUST = true;    
+    bool public constant DONATE_DUST = false;    
     uint256 constant MAX_UINT256 = uint256(-1);
 
     using SafeMath for uint256;
