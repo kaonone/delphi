@@ -17,7 +17,7 @@
       {
         "indexed": false,
         "internalType": "address",
-        "name": "rewardsController",
+        "name": "liquidityGauge",
         "type": "address"
       }
     ],
@@ -180,6 +180,21 @@
   {
     "constant": true,
     "inputs": [],
+    "name": "crvToken",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [],
     "name": "curveFiDeposit",
     "outputs": [
       {
@@ -195,10 +210,10 @@
   {
     "constant": true,
     "inputs": [],
-    "name": "curveFiRewardToken",
+    "name": "curveFiLPGauge",
     "outputs": [
       {
-        "internalType": "contract IERC20",
+        "internalType": "contract ICurveFiLiquidityGauge",
         "name": "",
         "type": "address"
       }
@@ -210,10 +225,10 @@
   {
     "constant": true,
     "inputs": [],
-    "name": "curveFiRewards",
+    "name": "curveFiMinter",
     "outputs": [
       {
-        "internalType": "contract ICurveFiRewards",
+        "internalType": "contract ICurveFiMinter",
         "name": "",
         "type": "address"
       }
@@ -523,7 +538,7 @@
       },
       {
         "internalType": "address",
-        "name": "rewardsController",
+        "name": "liquidityGauge",
         "type": "address"
       }
     ],
