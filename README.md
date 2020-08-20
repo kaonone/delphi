@@ -43,8 +43,8 @@
 * PoolToken for CurveFi SBTC 
 
 ##### Curve.Fi sUSD [DAI, USDC, USDT, sUSD] - SNX
-* Protocol CurveFi SUSD 
-* PoolToken for CurveFi SUSD
+* Protocol CurveFi SUSD `0x91d7b9a8d2314110D4018C88dBFDCF5E2ba4772E`
+* PoolToken for CurveFi SUSD `0x520d25b08080296db66fd9f268ae279b66a8effb`
 
 ##### Compound DAI - COMP
 * Protocol Compound DAI `0x08DDB58D31C08242Cd444BB5B43F7d2C6bcA0396`
