@@ -38,7 +38,6 @@ contract CurveFiProtocol is ProtocolBase {
     function nCoins() internal returns(uint256);
     function deposit_add_liquidity(uint256[] memory amounts, uint256 min_mint_amount) internal;
     function deposit_remove_liquidity_imbalance(uint256[] memory amounts, uint256 max_burn_amount) internal;
-    function reward_rewardToken(address rewardsController) internal returns(address);
 
     function initialize(address _pool) public initializer {
         ProtocolBase.initialize(_pool);
