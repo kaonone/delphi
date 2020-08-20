@@ -242,7 +242,9 @@ contract CurveFiProtocol is ProtocolBase {
     }
 
     function curveFiTokenBalance() internal view returns(uint256) {
-        return curveFiLPGauge.balanceOf(address(this));
+        uint256 notStaked = curveFiToken.balanceOf(address(this));
+        uint256 staked = curveFiLPGauge.balanceOf(address(this));
+        return notStaked.add(staked);
     }
 
     function stakeCurveFiToken() internal {
