@@ -134,14 +134,28 @@ contract CurveFiProtocol is ProtocolBase {
 
     function withdraw(address beneficiary, uint256[] memory amounts) public onlyDefiOperator {
         require(amounts.length == nCoins(), "CurveFiYProtocol: wrong amounts array length");
+
+        uint256 nWithdraw;
         uint256[] memory amnts = new uint256[](nCoins());
         uint256 i;
         for (i = 0; i < _registeredTokens.length; i++){
-            amnts[i] = amounts[i];
+            address tkn = _registeredTokens[i];
+            uint256 available = IERC20(tkn).balanceOf(address(this));
+            if(available < amounts[i]){
+                amnts[i] = amounts[i].sub(available);
+            }else{
+                amnts[i] = 0;
+            }
+            nWithdraw = nWithdraw.add(normalizeAmount(tkn, amnts[i]));
         }
-        unstakeCurveFiToken(curveFiTokenBalance());
-        deposit_remove_liquidity_imbalance(amnts, MAX_UINT256);
-        stakeCurveFiToken();
+
+        uint256 nBalance = normalizedBalance();
+        uint256 poolShares = curveFiTokenBalance();
+        uint256 withdrawShares = poolShares.mul(nWithdraw).mul(slippageMultiplier).div(nBalance).div(1e18); //Increase required amount to some percent, so that we definitely have enough to withdraw
+
+        unstakeCurveFiToken(withdrawShares);
+        deposit_remove_liquidity_imbalance(amnts, withdrawShares);
+        
         for (i = 0; i < _registeredTokens.length; i++){
             IERC20 ltoken = IERC20(_registeredTokens[i]);
             ltoken.safeTransfer(beneficiary, amounts[i]);
