@@ -35,8 +35,8 @@
 
 #### Protocols
 ##### Curve.Fi Y [(y)DAI, (y)USDC, (y)USDT, (y)TUSD] - YFI
-* Protocol CurveFi Y 
-* PoolToken for CurveFi Y 
+* Protocol CurveFi Y `0x7967adA2A32A633d5C055e2e075A83023B632B4e`
+* PoolToken for CurveFi Y `0x2AFA3c8Bf33E65d5036cD0f1c3599716894B3077`
 
 ##### Curve.Fi sBTC [renBTC, wBTC, sBTC] - BPT
 * Protocol CurveFi SBTC 
