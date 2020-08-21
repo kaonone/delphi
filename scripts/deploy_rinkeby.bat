@@ -26,8 +26,8 @@ SET MODULE_ACCESS=0xbFC891b6c83b36aFC9493957065D304661c4189A
 SET MODULE_SAVINGS=0xb733994019A4F55CAa3f130400B7978Cc6624c39
 SET MODULE_STAKING=0x6887DF2f4296e8B772cb19479472A16E836dB9e0
 
-SET PROTOCOL_CURVEFY_Y=
-SET POOL_TOKEN_CURVEFY_Y=
+SET PROTOCOL_CURVEFY_Y=0x1b19B5AE07b9414687A58BE6be9881641FB5F771
+SET POOL_TOKEN_CURVEFY_Y=0x84857Bb64950e7BC2DfEB8Cb69fb75F3f7512E8E
 
 SET PROTOCOL_CURVEFY_SBTC=
 SET POOL_TOKEN_CURVEFY_SBTC=
@@ -42,6 +42,10 @@ SET PROTOCOL_COMPOUND_USDC=0x048E645BA2965F48d72e7b855D6636F951aeD303
 SET POOL_TOKEN_COMPOUND_USDC=0x551AaBC00A7d02b51A81138fb8fA455786720793
 
 rem === ACTION ===
+echo call npx oz send-tx --to %PROTOCOL_CURVEFY_Y% --network rinkeby --method setCurveFi --args "%EXT_CURVEFY_Y_DEPOSIT%, %EXT_CURVEFY_Y_REWARDS%"
+echo call npx oz send-tx --to %MODULE_SAVINGS% --network rinkeby --method registerProtocol --args "%PROTOCOL_CURVEFY_Y%, %POOL_TOKEN_CURVEFY_Y%"
+echo call npx oz send-tx --to %PROTOCOL_CURVEFY_Y% --network rinkeby --method addDefiOperator --args %MODULE_SAVINGS%
+echo call npx oz send-tx --to %POOL_TOKEN_CURVEFY_Y% --network rinkeby --method addMinter --args %MODULE_SAVINGS%
 goto :done
 
 :init
@@ -72,9 +76,9 @@ call npx oz create PoolToken_Compound_DAI --network rinkeby --init "initialize(a
 echo CREATE Compound USDC
 call npx oz create CompoundProtocol_USDC --network rinkeby --init "initialize(address _pool, address _token, address _cToken, address _comptroller)" --args "%MODULE_POOL%, %EXT_TOKEN_USDC%, %EXT_COMPOUND_CTOKEN_USDC%, %EXT_COMPOUND_COMPTROLLER%"
 call npx oz create PoolToken_Compound_USDC --network rinkeby --init "initialize(address _pool)" --args %MODULE_POOL%
-rem echo CREATE Curve.Fi Y
-rem call npx oz create CurveFiProtocol_Y --network rinkeby --init "initialize(address _pool)" --args %MODULE_POOL%
-rem call npx oz create PoolToken_CurveFi_Y --network rinkeby --init "initialize(address _pool)" --args %MODULE_POOL%
+echo CREATE Curve.Fi Y
+call npx oz create CurveFiProtocol_Y --network rinkeby --init "initialize(address _pool)" --args %MODULE_POOL%
+call npx oz create PoolToken_CurveFi_Y --network rinkeby --init "initialize(address _pool)" --args %MODULE_POOL%
 rem echo CREATE Curve.Fi SBTC
 rem call npx oz create CurveFiProtocol_SBTC --network rinkeby --init "initialize(address _pool)" --args %MODULE_POOL%
 rem call npx oz create PoolToken_CurveFi_SBTC --network rinkeby --init "initialize(address _pool)" --args %MODULE_POOL%
