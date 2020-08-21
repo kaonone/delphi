@@ -69,9 +69,7 @@ contract CurveFiProtocol is ProtocolBase {
         IERC20(curveFiToken).safeApprove(address(curveFiLPGauge), MAX_UINT256);
         for (uint256 i=0; i < _registeredTokens.length; i++){
             address token = curveFiDeposit.underlying_coins(int128(i));
-            _registeredTokens[i] = token;
-            _registerToken(token);
-            IERC20(token).safeApprove(address(curveFiDeposit), MAX_UINT256);
+            _registerToken(token, i);
         }
         emit CurveFiSetup(address(curveFiSwap), address(curveFiDeposit), address(curveFiLPGauge));
     }
@@ -270,12 +268,14 @@ contract CurveFiProtocol is ProtocolBase {
         curveFiLPGauge.withdraw(amount);
     }
 
-    function _registerToken(address token) private {
+    function _registerToken(address token, uint256 idx) private {
+        _registeredTokens[idx] = token;
         IERC20 ltoken = IERC20(token);
-        uint256 currentBalance = ltoken.balanceOf(address(this));
-        if (currentBalance > 0) {
-            handleDeposit(token, currentBalance); 
-        }
+        ltoken.safeApprove(address(curveFiDeposit), MAX_UINT256);
+        // uint256 currentBalance = ltoken.balanceOf(address(this));
+        // if (currentBalance > 0) {
+        //     handleDeposit(token, currentBalance); 
+        // }
         decimals[token] = ERC20Detailed(token).decimals();
         emit TokenRegistered(token);
     }
