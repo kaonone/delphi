@@ -262,8 +262,15 @@ contract SavingsModule is Module, AccessChecker, RewardDistributions, CapperRole
         withdrawFromProtocolProportionally(_msgSender(), IDefiProtocol(_protocol), nAmount, nBalanceBefore);
         uint256 nBalanceAfter = updateProtocolBalance(_protocol);
 
-        uint256 actualAmount = nBalanceBefore.sub(nBalanceAfter);
-        require(actualAmount <= nAmount, "SavingsModule: unexpected withdrawal fee");
+        uint256 yield;
+        uint256 actualAmount;
+        if(nBalanceAfter.add(nAmount) > nBalanceBefore) {
+            yield = nBalanceAfter.add(nAmount).sub(nBalanceBefore);
+            actualAmount = nAmount;
+        }else{
+            actualAmount = nBalanceBefore.sub(nBalanceAfter);
+            require(actualAmount == nAmount, "SavingsModule: unexpected withdrawal fee");
+        }
 
         // if(userCapEnabled){
         //     uint256 cap = userCap(_protocol, _msgSender());
@@ -274,6 +281,12 @@ contract SavingsModule is Module, AccessChecker, RewardDistributions, CapperRole
 
         poolToken.burnFrom(_msgSender(), actualAmount);
         emit Withdraw(_protocol, _msgSender(), actualAmount, 0);
+
+        if (yield > 0) {
+            //Additional Yield received from protocol (because of lottery, or something)
+            createYieldDistribution(poolToken, yield);
+        }
+
         return actualAmount;
     }
 
@@ -290,26 +303,44 @@ contract SavingsModule is Module, AccessChecker, RewardDistributions, CapperRole
     returns(uint256){
         //distributeRewardIfRequired(_protocol);
 
+        uint256 nAmount = normalizeTokenAmount(token, dnAmount);
+        require(nAmount <= maxNAmount, "SavingsModule: maxNAmount is less than dnAmount");
+
         uint256 nBalanceBefore = distributeYieldInternal(_protocol);
         withdrawFromProtocolOne(_msgSender(), IDefiProtocol(_protocol), token, dnAmount);
         uint256 nBalanceAfter = updateProtocolBalance(_protocol);
 
-        uint256 nAmount = nBalanceBefore.sub(nBalanceAfter);
-        require(maxNAmount == 0 || nAmount <= maxNAmount, "SavingsModule: provided maxNAmount is too high");
-        PoolToken poolToken = PoolToken(protocols[_protocol].poolToken);
-        poolToken.burnFrom(_msgSender(), nAmount);
+        uint256 yield;
+        uint256 actualAmount;
+        uint256 fee;
+        if(nBalanceAfter.add(nAmount) > nBalanceBefore) {
+            yield = nBalanceAfter.add(nAmount).sub(nBalanceBefore);
+            actualAmount = nAmount;
+        }else{
+            actualAmount = nBalanceBefore.sub(nBalanceAfter);
+            if (actualAmount > nAmount) fee = actualAmount-nAmount;
+        }
+
+        require(maxNAmount == 0 || actualAmount <= maxNAmount, "SavingsModule: provided maxNAmount is too low");
 
         // if(userCapEnabled){
         //     uint256 cap = userCap(_protocol, _msgSender());
-        //     cap = cap.add(nAmount);
+        //     cap = cap.add(actualAmount);
         //     protocols[_protocol].userCap[_msgSender()] = cap;
         //     emit UserCapChanged(_protocol, _msgSender(), cap);
         // }
 
-        uint256 nAmountWithoutFee = normalizeTokenAmount(token, dnAmount);
-        uint256 fee = (nAmount > nAmountWithoutFee)?(nAmount-nAmountWithoutFee):0;
+        PoolToken poolToken = PoolToken(protocols[_protocol].poolToken);
+        poolToken.burnFrom(_msgSender(), actualAmount);
         emit WithdrawToken(_protocol, token, dnAmount);
-        emit Withdraw(_protocol, _msgSender(), nAmount, fee);
+        emit Withdraw(_protocol, _msgSender(), actualAmount, fee);
+
+
+        if (yield > 0) {
+            //Additional Yield received from protocol (because of lottery, or something)
+            createYieldDistribution(poolToken, yield);
+        }
+
         return nAmount;
     }
 
