@@ -23,6 +23,9 @@ contract SavingsModule is Module, AccessChecker, RewardDistributions, CapperRole
     event Withdraw(address indexed protocol, address indexed user, uint256 nAmount, uint256 nFee);
     event UserCapEnabledChange(bool enabled);
     event UserCapChanged(address indexed protocol, address indexed user, uint256 newCap);
+    event DefaultUserCapChanged(address indexed protocol, uint256 newCap);
+    event ProtocolCapEnabledChange(bool enabled);
+    event ProtocolCapChanged(address indexed protocol, uint256 newCap);
 
     using SafeERC20 for IERC20;
     using SafeMath for uint256;
@@ -47,6 +50,10 @@ contract SavingsModule is Module, AccessChecker, RewardDistributions, CapperRole
     mapping(address => address) poolTokenToProtocol;    //Mapping of pool tokens to protocols
     mapping(address => bool) private rewardTokenRegistered;     //marks registered reward tokens
     bool public userCapEnabled;
+    bool public protocolCapEnabled;
+    mapping(address=>uint256) public defaultUserCap;
+    mapping(address=>uint256) public protocolCap;
+
 
 
     function initialize(address _pool) public initializer {
@@ -70,6 +77,20 @@ contract SavingsModule is Module, AccessChecker, RewardDistributions, CapperRole
             protocols[_protocol].userCap[users[i]] = caps[i];
             emit UserCapChanged(_protocol, users[i], caps[i]);
         }
+    }
+    function setDefaultUserCap(address _protocol, uint256 cap) public onlyCapper {
+        defaultUserCap[_protocol] = cap;
+        emit DefaultUserCapChanged(_protocol, cap);
+    }
+
+    function setProtocolCapEnabled(bool _protocolCapEnabled) public onlyCapper {
+        protocolCapEnabled = _protocolCapEnabled;
+        emit ProtocolCapEnabledChange(protocolCapEnabled);
+    }
+
+    function setProtocolCap(address _protocol, uint256 cap) public onlyCapper {
+        protocolCap[_protocol] = cap;
+        emit ProtocolCapChanged(_protocol, cap);
     }
 
     function registerProtocol(IDefiProtocol protocol, PoolToken poolToken) public onlyOwner {
@@ -195,10 +216,15 @@ contract SavingsModule is Module, AccessChecker, RewardDistributions, CapperRole
             }
         }
 
-        if(userCapEnabled){
-            uint256 cap = protocols[_protocol].userCap[_msgSender()];
+        if(protocolCapEnabled) {
+            uint256 ptTS = poolToken.totalSupply();
+            require(ptTS <= protocolCap[_protocol], "SavingsModule: deposit exeeds protocols cap");
+        }
+
+        if(userCapEnabled) {
+            uint256 cap = userCap(_protocol, _msgSender());
             //uint256 actualAmount = nAmount.sub(fee); //Had to remove this because of stack too deep err
-            require(cap >= nAmount.sub(fee), "SavingsModule: deposit exeeds cap");
+            require(cap >= nAmount.sub(fee), "SavingsModule: deposit exeeds user cap");
             cap = cap - nAmount.sub(fee);
             protocols[_protocol].userCap[_msgSender()] = cap;
             emit UserCapChanged(_protocol, _msgSender(), cap);
@@ -240,7 +266,7 @@ contract SavingsModule is Module, AccessChecker, RewardDistributions, CapperRole
         require(actualAmount <= nAmount, "SavingsModule: unexpected withdrawal fee");
 
         if(userCapEnabled){
-            uint256 cap = protocols[_protocol].userCap[_msgSender()];
+            uint256 cap = userCap(_protocol, _msgSender());
             cap = cap.add(actualAmount);
             protocols[_protocol].userCap[_msgSender()] = cap;
             emit UserCapChanged(_protocol, _msgSender(), cap);
@@ -274,7 +300,7 @@ contract SavingsModule is Module, AccessChecker, RewardDistributions, CapperRole
         poolToken.burnFrom(_msgSender(), nAmount);
 
         if(userCapEnabled){
-            uint256 cap = protocols[_protocol].userCap[_msgSender()];
+            uint256 cap = userCap(_protocol, _msgSender());
             cap = cap.add(nAmount);
             protocols[_protocol].userCap[_msgSender()] = cap;
             emit UserCapChanged(_protocol, _msgSender(), cap);
@@ -316,7 +342,12 @@ contract SavingsModule is Module, AccessChecker, RewardDistributions, CapperRole
     }
 
     function userCap(address _protocol, address user) public view returns(uint256) {
-        return protocols[_protocol].userCap[user];
+        uint256 cap = protocols[_protocol].userCap[user];
+        if(cap == 0){
+            uint256 balance = protocols[_protocol].poolToken.balanceOf(user);
+            if(balance == 0) cap = defaultUserCap[_protocol];
+        }
+        return cap;
     }
 
     function poolTokenByProtocol(address _protocol) public view returns(address) {
