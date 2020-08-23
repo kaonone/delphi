@@ -225,9 +225,9 @@ contract SavingsModule is Module, AccessChecker, RewardDistributions, CapperRole
             uint256 cap = userCap(_protocol, _msgSender());
             //uint256 actualAmount = nAmount.sub(fee); //Had to remove this because of stack too deep err
             require(cap >= nAmount.sub(fee), "SavingsModule: deposit exeeds user cap");
-            cap = cap - nAmount.sub(fee);
-            protocols[_protocol].userCap[_msgSender()] = cap;
-            emit UserCapChanged(_protocol, _msgSender(), cap);
+            // cap = cap - nAmount.sub(fee);
+            //protocols[_protocol].userCap[_msgSender()] = cap;
+            // emit UserCapChanged(_protocol, _msgSender(), cap);
         }
 
         emit Deposit(_protocol, _msgSender(), nAmount, fee);
@@ -265,12 +265,12 @@ contract SavingsModule is Module, AccessChecker, RewardDistributions, CapperRole
         uint256 actualAmount = nBalanceBefore.sub(nBalanceAfter);
         require(actualAmount <= nAmount, "SavingsModule: unexpected withdrawal fee");
 
-        if(userCapEnabled){
-            uint256 cap = userCap(_protocol, _msgSender());
-            cap = cap.add(actualAmount);
-            protocols[_protocol].userCap[_msgSender()] = cap;
-            emit UserCapChanged(_protocol, _msgSender(), cap);
-        }
+        // if(userCapEnabled){
+        //     uint256 cap = userCap(_protocol, _msgSender());
+        //     cap = cap.add(actualAmount);
+        //     protocols[_protocol].userCap[_msgSender()] = cap;
+        //     emit UserCapChanged(_protocol, _msgSender(), cap);
+        // }
 
         poolToken.burnFrom(_msgSender(), actualAmount);
         emit Withdraw(_protocol, _msgSender(), actualAmount, 0);
@@ -299,12 +299,12 @@ contract SavingsModule is Module, AccessChecker, RewardDistributions, CapperRole
         PoolToken poolToken = PoolToken(protocols[_protocol].poolToken);
         poolToken.burnFrom(_msgSender(), nAmount);
 
-        if(userCapEnabled){
-            uint256 cap = userCap(_protocol, _msgSender());
-            cap = cap.add(nAmount);
-            protocols[_protocol].userCap[_msgSender()] = cap;
-            emit UserCapChanged(_protocol, _msgSender(), cap);
-        }
+        // if(userCapEnabled){
+        //     uint256 cap = userCap(_protocol, _msgSender());
+        //     cap = cap.add(nAmount);
+        //     protocols[_protocol].userCap[_msgSender()] = cap;
+        //     emit UserCapChanged(_protocol, _msgSender(), cap);
+        // }
 
         uint256 nAmountWithoutFee = normalizeTokenAmount(token, dnAmount);
         uint256 fee = (nAmount > nAmountWithoutFee)?(nAmount-nAmountWithoutFee):0;
@@ -342,10 +342,15 @@ contract SavingsModule is Module, AccessChecker, RewardDistributions, CapperRole
     }
 
     function userCap(address _protocol, address user) public view returns(uint256) {
-        uint256 cap = protocols[_protocol].userCap[user];
-        if(cap == 0){
-            uint256 balance = protocols[_protocol].poolToken.balanceOf(user);
-            if(balance == 0) cap = defaultUserCap[_protocol];
+        // uint256 cap = protocols[_protocol].userCap[user];
+        // if(cap == 0){
+        //     uint256 balance = protocols[_protocol].poolToken.balanceOf(user);
+        //     if(balance == 0) cap = defaultUserCap[_protocol];
+        // }
+        uint256 balance = protocols[_protocol].poolToken.balanceOf(user);
+        uint256 cap;
+        if(balance < defaultUserCap[_protocol]) {
+            cap = defaultUserCap[_protocol] - balance;
         }
         return cap;
     }
