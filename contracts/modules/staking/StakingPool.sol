@@ -54,9 +54,19 @@ contract StakingPool is Module, IERC900, CapperRole  {
   }
 
   bool public userCapEnabled;
+  bool public stakingCapEnabled;
 
+
+
+
+  event StakingCapChanged(uint256 newCap);
+  event StakingCapEnabledChange(bool enabled);
+
+  //global cap
+  event DefaultUserCapChanged(int256 newCap);
 
   event UserCapEnabledChange(bool enabled);
+
   event UserCapChanged(address indexed user, uint256 newCap);
   event Staked(address indexed user, uint256 amount, uint256 totalStacked, bytes data);
   event Unstaked(address indexed user, uint256 amount, uint256 totalStacked, bytes data);
@@ -132,6 +142,11 @@ contract StakingPool is Module, IERC900, CapperRole  {
   function setUserCapEnabled(bool _userCapEnabled) public onlyCapper {
       userCapEnabled = _userCapEnabled;
       emit UserCapEnabledChange(userCapEnabled);
+  }
+
+  function setStakingCapEnabled(bool _stakingCapEnabled) public onlyCapper {
+      stakingCapEnabled= _stakingCapEnabled;
+      emit StakingCapEnabledChange(stakingCapEnabled);
   }
 
   function setUserCap(address user, uint256 cap) public onlyCapper {
