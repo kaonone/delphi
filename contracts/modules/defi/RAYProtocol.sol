@@ -112,7 +112,7 @@ contract RAYProtocol is ProtocolBase {
         return false;
     }
 
-    function cliamRewardsFromProtocol() internal {
+    function claimRewardsFromProtocol() internal {
         this; //do nothing
     }
 

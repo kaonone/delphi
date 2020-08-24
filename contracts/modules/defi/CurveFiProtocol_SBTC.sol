@@ -33,7 +33,7 @@ contract CurveFiProtocol_SBTC is CurveFiProtocol {
     }
 
     // Nothing needed to claim BAL, so original implementaion will work
-    // function cliamRewardsFromProtocol() internal {
+    // function claimRewardsFromProtocol() internal {
     //     curveFiRewards.getReward();
     // }
 

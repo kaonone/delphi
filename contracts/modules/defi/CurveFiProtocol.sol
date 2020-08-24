@@ -152,7 +152,7 @@ contract CurveFiProtocol is ProtocolBase {
         return(token == address(curveFiRewardToken));
     }
 
-    function cliamRewardsFromProtocol() internal {
+    function claimRewardsFromProtocol() internal {
         curveFiRewards.getReward();
     }
 

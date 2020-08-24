@@ -99,7 +99,7 @@ contract CompoundProtocol is ProtocolBase {
         return(token == address(compToken));
     }
 
-    function cliamRewardsFromProtocol() internal {
+    function claimRewardsFromProtocol() internal {
         comptroller.claimComp(address(this));
     }
 

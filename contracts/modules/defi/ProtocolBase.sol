@@ -29,10 +29,10 @@ contract ProtocolBase is Module, DefiOperatorRole, IDefiProtocol {
 
     function isSupportedRewardToken(address token) public view returns(bool);
 
-    function cliamRewardsFromProtocol() internal;
+    function claimRewardsFromProtocol() internal;
 
     function claimRewards() public onlyDefiOperator returns(address[] memory tokens, uint256[] memory amounts){
-        cliamRewardsFromProtocol();
+        claimRewardsFromProtocol();
 
         // Check what we received
         address[] memory rewardTokens = supportedRewardTokens();

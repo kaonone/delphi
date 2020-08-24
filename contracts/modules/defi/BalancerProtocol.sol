@@ -175,7 +175,7 @@ contract BalancerProtocol is ProtocolBase {
         return(token == address(bal));
     }
 
-    function cliamRewardsFromProtocol() internal {
+    function claimRewardsFromProtocol() internal {
         //do nothing, Balancer will send BAL tokens itself
     }
 

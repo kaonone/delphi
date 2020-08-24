@@ -156,7 +156,7 @@ contract UniswapV2Protocol is ProtocolBase {
         return false;
     }
 
-    function cliamRewardsFromProtocol() internal {
+    function claimRewardsFromProtocol() internal {
         //do nothing, rewards not supported
     }
 
