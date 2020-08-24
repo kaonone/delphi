@@ -202,6 +202,11 @@ contract SavingsModule is Module, AccessChecker, RewardDistributions, CapperRole
         PoolToken poolToken = PoolToken(protocols[_protocol].poolToken);
         uint256 nDeposit = nBalanceAfter.sub(nBalanceBefore);
 
+        uint256 cap;
+        if(userCapEnabled) {
+            cap = userCap(_protocol, _msgSender());
+        }
+
         uint256 fee;
         if(nAmount > nDeposit) {
             fee = nAmount - nDeposit;
@@ -222,7 +227,6 @@ contract SavingsModule is Module, AccessChecker, RewardDistributions, CapperRole
         }
 
         if(userCapEnabled) {
-            uint256 cap = userCap(_protocol, _msgSender());
             //uint256 actualAmount = nAmount.sub(fee); //Had to remove this because of stack too deep err
             require(cap >= nAmount.sub(fee), "SavingsModule: deposit exeeds user cap");
             // cap = cap - nAmount.sub(fee);
