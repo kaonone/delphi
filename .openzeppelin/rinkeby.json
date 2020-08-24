@@ -399,11 +399,11 @@
       }
     },
     "SavingsModule": {
-      "address": "0xD244743a1502D9fFeD22feFe385663b8D3B5FeFA",
-      "constructorCode": "6080604052615f86806100136000396000f3fe",
-      "bodyBytecodeHash": "95871ed436c8ed25c4318b92c4d95913b26d12d38595bf30362a6720ae5cb5e1",
-      "localBytecodeHash": "fa4346935026a944e74d622e1b985005d66ae79a8eb850d83c6e1a1a14e47cd8",
-      "deployedBytecodeHash": "fa4346935026a944e74d622e1b985005d66ae79a8eb850d83c6e1a1a14e47cd8",
+      "address": "0xeCc2eA5453667f3dfA702a02353D110944E80E15",
+      "constructorCode": "608060405261597a806100136000396000f3fe",
+      "bodyBytecodeHash": "6de055f39c1c96475b230a6aebfb13ac35005810c0d7ed3921668c0593c0068d",
+      "localBytecodeHash": "d10f3a41278458c1d04005e5715cf884c5a8320e6d5de2fb96bb57e5c2b29871",
+      "deployedBytecodeHash": "d10f3a41278458c1d04005e5715cf884c5a8320e6d5de2fb96bb57e5c2b29871",
       "types": {
         "t_bool": {
           "id": "t_bool",
@@ -535,7 +535,7 @@
           "members": [
             {
               "label": "bearer",
-              "astId": 17238,
+              "astId": 17103,
               "type": "t_mapping<t_bool>",
               "src": "150:32:68"
             }
@@ -554,9 +554,9 @@
           "members": [
             {
               "label": "decimals",
-              "astId": 7848,
+              "astId": 7694,
               "type": "t_uint8",
-              "src": "2091:14:50"
+              "src": "2187:14:50"
             }
           ]
         },
@@ -578,33 +578,39 @@
           "members": [
             {
               "label": "poolToken",
-              "astId": 7834,
+              "astId": 7678,
               "type": "t_address",
               "src": "1804:19:50"
             },
             {
               "label": "previousBalance",
-              "astId": 7836,
+              "astId": 7680,
               "type": "t_uint256",
               "src": "1833:23:50"
             },
             {
               "label": "lastRewardDistribution",
-              "astId": 7838,
+              "astId": 7682,
               "type": "t_uint256",
               "src": "1866:30:50"
             },
             {
               "label": "supportedRewardTokens",
-              "astId": 7841,
+              "astId": 7685,
               "type": "t_array:dyn<t_address>",
               "src": "1906:31:50"
             },
             {
               "label": "userCap",
-              "astId": 7845,
+              "astId": 7689,
               "type": "t_mapping<t_uint256>",
               "src": "1947:35:50"
+            },
+            {
+              "label": "withdrawAllSlippage",
+              "astId": 7691,
+              "type": "t_uint256",
+              "src": "2061:27:50"
             }
           ]
         },
@@ -626,7 +632,7 @@
           "contract": "Initializable",
           "path": "@openzeppelin\\upgrades\\contracts\\Initializable.sol",
           "label": "initialized",
-          "astId": 19308,
+          "astId": 19173,
           "type": "t_bool",
           "src": "757:24:85"
         },
@@ -634,7 +640,7 @@
           "contract": "Initializable",
           "path": "@openzeppelin\\upgrades\\contracts\\Initializable.sol",
           "label": "initializing",
-          "astId": 19310,
+          "astId": 19175,
           "type": "t_bool",
           "src": "876:25:85"
         },
@@ -642,7 +648,7 @@
           "contract": "Initializable",
           "path": "@openzeppelin\\upgrades\\contracts\\Initializable.sol",
           "label": "______gap",
-          "astId": 19372,
+          "astId": 19237,
           "type": "t_array:50<t_uint256>",
           "src": "1982:29:85"
         },
@@ -650,7 +656,7 @@
           "contract": "Ownable",
           "path": "@openzeppelin\\contracts-ethereum-package\\contracts\\ownership\\Ownable.sol",
           "label": "_owner",
-          "astId": 18241,
+          "astId": 18106,
           "type": "t_address",
           "src": "526:22:76"
         },
@@ -658,7 +664,7 @@
           "contract": "Ownable",
           "path": "@openzeppelin\\contracts-ethereum-package\\contracts\\ownership\\Ownable.sol",
           "label": "______gap",
-          "astId": 18354,
+          "astId": 18219,
           "type": "t_array:50<t_uint256>",
           "src": "2471:29:76"
         },
@@ -690,7 +696,7 @@
           "contract": "CapperRole",
           "path": "@openzeppelin\\contracts-ethereum-package\\contracts\\access\\roles\\CapperRole.sol",
           "label": "_cappers",
-          "astId": 17335,
+          "astId": 17200,
           "type": "t_struct<Roles.Role>",
           "src": "327:27:69"
         },
@@ -698,7 +704,7 @@
           "contract": "CapperRole",
           "path": "@openzeppelin\\contracts-ethereum-package\\contracts\\access\\roles\\CapperRole.sol",
           "label": "______gap",
-          "astId": 17435,
+          "astId": 17300,
           "type": "t_array:50<t_uint256>",
           "src": "1193:29:69"
         },
@@ -706,89 +712,89 @@
           "contract": "SavingsModule",
           "path": "..\\..\\..\\D\\projects\\akropolis\\savings-pool\\contracts\\modules\\savings\\SavingsModule.sol",
           "label": "registeredTokens",
-          "astId": 7852,
+          "astId": 7698,
           "type": "t_array:dyn<t_address>",
-          "src": "2118:26:50"
+          "src": "2214:26:50"
         },
         {
           "contract": "SavingsModule",
           "path": "..\\..\\..\\D\\projects\\akropolis\\savings-pool\\contracts\\modules\\savings\\SavingsModule.sol",
           "label": "registeredProtocols",
-          "astId": 7855,
+          "astId": 7701,
           "type": "t_array:dyn<t_address>",
-          "src": "2150:35:50"
+          "src": "2246:35:50"
         },
         {
           "contract": "SavingsModule",
           "path": "..\\..\\..\\D\\projects\\akropolis\\savings-pool\\contracts\\modules\\savings\\SavingsModule.sol",
           "label": "registeredRewardTokens",
-          "astId": 7858,
+          "astId": 7704,
           "type": "t_array:dyn<t_address>",
-          "src": "2191:32:50"
+          "src": "2287:32:50"
         },
         {
           "contract": "SavingsModule",
           "path": "..\\..\\..\\D\\projects\\akropolis\\savings-pool\\contracts\\modules\\savings\\SavingsModule.sol",
           "label": "tokens",
-          "astId": 7862,
+          "astId": 7708,
           "type": "t_mapping<t_struct<SavingsModule.TokenData>>",
-          "src": "2229:36:50"
+          "src": "2325:36:50"
         },
         {
           "contract": "SavingsModule",
           "path": "..\\..\\..\\D\\projects\\akropolis\\savings-pool\\contracts\\modules\\savings\\SavingsModule.sol",
           "label": "protocols",
-          "astId": 7866,
+          "astId": 7712,
           "type": "t_mapping<t_struct<SavingsModule.ProtocolInfo>>",
-          "src": "2271:42:50"
+          "src": "2367:42:50"
         },
         {
           "contract": "SavingsModule",
           "path": "..\\..\\..\\D\\projects\\akropolis\\savings-pool\\contracts\\modules\\savings\\SavingsModule.sol",
           "label": "poolTokenToProtocol",
-          "astId": 7870,
+          "astId": 7716,
           "type": "t_mapping<t_address>",
-          "src": "2395:47:50"
+          "src": "2491:47:50"
         },
         {
           "contract": "SavingsModule",
           "path": "..\\..\\..\\D\\projects\\akropolis\\savings-pool\\contracts\\modules\\savings\\SavingsModule.sol",
           "label": "rewardTokenRegistered",
-          "astId": 7874,
+          "astId": 7720,
           "type": "t_mapping<t_bool>",
-          "src": "2489:54:50"
+          "src": "2585:54:50"
         },
         {
           "contract": "SavingsModule",
           "path": "..\\..\\..\\D\\projects\\akropolis\\savings-pool\\contracts\\modules\\savings\\SavingsModule.sol",
           "label": "userCapEnabled",
-          "astId": 7876,
+          "astId": 7722,
           "type": "t_bool",
-          "src": "2586:26:50"
+          "src": "2682:26:50"
         },
         {
           "contract": "SavingsModule",
           "path": "..\\..\\..\\D\\projects\\akropolis\\savings-pool\\contracts\\modules\\savings\\SavingsModule.sol",
           "label": "protocolCapEnabled",
-          "astId": 7878,
+          "astId": 7724,
           "type": "t_bool",
-          "src": "2618:30:50"
+          "src": "2714:30:50"
         },
         {
           "contract": "SavingsModule",
           "path": "..\\..\\..\\D\\projects\\akropolis\\savings-pool\\contracts\\modules\\savings\\SavingsModule.sol",
           "label": "defaultUserCap",
-          "astId": 7882,
+          "astId": 7728,
           "type": "t_mapping<t_uint256>",
-          "src": "2654:47:50"
+          "src": "2750:47:50"
         },
         {
           "contract": "SavingsModule",
           "path": "..\\..\\..\\D\\projects\\akropolis\\savings-pool\\contracts\\modules\\savings\\SavingsModule.sol",
           "label": "protocolCap",
-          "astId": 7886,
+          "astId": 7732,
           "type": "t_mapping<t_uint256>",
-          "src": "2707:44:50"
+          "src": "2803:44:50"
         }
       ],
       "warnings": {
@@ -818,7 +824,7 @@
             "contract": "CapperRole",
             "path": "@openzeppelin\\contracts-ethereum-package\\contracts\\access\\roles\\CapperRole.sol",
             "label": "_cappers",
-            "astId": 17335,
+            "astId": 17200,
             "type": "t_struct<Roles.Role>",
             "src": "327:27:69"
           },
@@ -826,57 +832,20 @@
             "contract": "SavingsModule",
             "path": "..\\..\\..\\D\\projects\\akropolis\\savings-pool\\contracts\\modules\\savings\\SavingsModule.sol",
             "label": "tokens",
-            "astId": 7862,
+            "astId": 7708,
             "type": "t_mapping<t_struct<SavingsModule.TokenData>>",
-            "src": "2229:36:50"
+            "src": "2325:36:50"
           },
           {
             "contract": "SavingsModule",
             "path": "..\\..\\..\\D\\projects\\akropolis\\savings-pool\\contracts\\modules\\savings\\SavingsModule.sol",
             "label": "protocols",
-            "astId": 7866,
+            "astId": 7712,
             "type": "t_mapping<t_struct<SavingsModule.ProtocolInfo>>",
-            "src": "2271:42:50"
+            "src": "2367:42:50"
           }
         ],
-        "storageDiff": [
-          {
-            "action": "append",
-            "updated": {
-              "index": 18,
-              "contract": "SavingsModule",
-              "path": "..\\..\\..\\D\\projects\\akropolis\\savings-pool\\contracts\\modules\\savings\\SavingsModule.sol",
-              "label": "protocolCapEnabled",
-              "astId": 7878,
-              "type": "t_bool",
-              "src": "2618:30:50"
-            }
-          },
-          {
-            "action": "append",
-            "updated": {
-              "index": 19,
-              "contract": "SavingsModule",
-              "path": "..\\..\\..\\D\\projects\\akropolis\\savings-pool\\contracts\\modules\\savings\\SavingsModule.sol",
-              "label": "defaultUserCap",
-              "astId": 7882,
-              "type": "t_mapping<t_uint256>",
-              "src": "2654:47:50"
-            }
-          },
-          {
-            "action": "append",
-            "updated": {
-              "index": 20,
-              "contract": "SavingsModule",
-              "path": "..\\..\\..\\D\\projects\\akropolis\\savings-pool\\contracts\\modules\\savings\\SavingsModule.sol",
-              "label": "protocolCap",
-              "astId": 7886,
-              "type": "t_mapping<t_uint256>",
-              "src": "2707:44:50"
-            }
-          }
-        ]
+        "storageDiff": []
       }
     },
     "StakingPool": {
@@ -3182,7 +3151,7 @@
         "address": "0xb733994019A4F55CAa3f130400B7978Cc6624c39",
         "version": "1.0.0",
         "implementation": "0xD244743a1502D9fFeD22feFe385663b8D3B5FeFA",
-        "admin": "0x7B27e0dAED14F0DFA17aa8a23f39c5dbF6FaAF12",
+        "admin": "0xeCc2eA5453667f3dfA702a02353D110944E80E15",
         "kind": "Upgradeable"
       }
     ],
