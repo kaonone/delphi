@@ -44,6 +44,7 @@ contract ProtocolBase is Module, DefiOperatorRole, IDefiProtocol {
             if(newBalance > rewardBalances[rtkn]) {
                 receivedRewardTokensCount++;
                 rewardAmounts[i] = newBalance.sub(rewardBalances[rtkn]);
+                rewardBalances[rtkn] = newBalance;
             }
         }
 
