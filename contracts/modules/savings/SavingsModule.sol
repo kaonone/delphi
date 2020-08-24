@@ -67,18 +67,19 @@ contract SavingsModule is Module, AccessChecker, RewardDistributions, CapperRole
         emit UserCapEnabledChange(userCapEnabled);
     }
 
-    function setUserCap(address _protocol, address user, uint256 cap) public onlyCapper {
-        protocols[_protocol].userCap[user] = cap;
-        emit UserCapChanged(_protocol, user, cap);
-    }
+    // function setUserCap(address _protocol, address user, uint256 cap) public onlyCapper {
+    //     protocols[_protocol].userCap[user] = cap;
+    //     emit UserCapChanged(_protocol, user, cap);
+    // }
 
-    function setUserCap(address _protocol, address[] calldata users, uint256[] calldata caps) external onlyCapper {
-        require(users.length == caps.length, "SavingsModule: arrays length not match");
-        for(uint256 i=0;  i < users.length; i++) {
-            protocols[_protocol].userCap[users[i]] = caps[i];
-            emit UserCapChanged(_protocol, users[i], caps[i]);
-        }
-    }
+    // function setUserCap(address _protocol, address[] calldata users, uint256[] calldata caps) external onlyCapper {
+    //     require(users.length == caps.length, "SavingsModule: arrays length not match");
+    //     for(uint256 i=0;  i < users.length; i++) {
+    //         protocols[_protocol].userCap[users[i]] = caps[i];
+    //         emit UserCapChanged(_protocol, users[i], caps[i]);
+    //     }
+    // }
+    
     function setDefaultUserCap(address _protocol, uint256 cap) public onlyCapper {
         defaultUserCap[_protocol] = cap;
         emit DefaultUserCapChanged(_protocol, cap);
@@ -372,9 +373,9 @@ contract SavingsModule is Module, AccessChecker, RewardDistributions, CapperRole
         }
     }
 
-    function distributeRewards(address _protocol) public {
-        distributeRewardIfRequired(_protocol);
-    }
+    // function distributeRewards(address _protocol) public {
+    //     distributeRewardIfRequired(_protocol);
+    // }
 
     function distributeRewardsForced(address _protocol) public onlyOwner {
         ProtocolInfo storage pi = protocols[_protocol];

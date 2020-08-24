@@ -69,17 +69,13 @@ contract RewardDistributions is Base, IPoolTokenBalanceChangeRecipient, AccessCh
         return rAmounts;
     }
 
-    /**
-     * @notice Withdraw reward tokens for user
-     * @param rewardToken Token to withdraw
-     */
-    function withdrawReward(address rewardToken) 
-    public operationAllowed(IAccessModule.Operation.Withdraw)
-    returns(uint256){
-        address user = _msgSender();
-        updateRewardBalance(user);
-        return _withdrawReward(user, rewardToken);
-    }
+    // function withdrawReward(address rewardToken) 
+    // public operationAllowed(IAccessModule.Operation.Withdraw)
+    // returns(uint256){
+    //     address user = _msgSender();
+    //     updateRewardBalance(user);
+    //     return _withdrawReward(user, rewardToken);
+    // }
 
     function withdrawReward(address poolToken, address rewardToken) 
     public operationAllowed(IAccessModule.Operation.Withdraw)
@@ -89,24 +85,24 @@ contract RewardDistributions is Base, IPoolTokenBalanceChangeRecipient, AccessCh
         return _withdrawReward(user, poolToken, rewardToken);
     }
 
-    function rewardBalanceOf(address user, address[] memory rewardTokens) public view returns(uint256[] memory) {
-        uint256[] memory amounts = new uint256[](rewardTokens.length);
-        address[] memory poolTokens = registeredPoolTokens();
-        for(uint256 i=0; i < rewardTokens.length; i++) {
-            for(uint256 j=0; j < poolTokens.length; j++) {
-                amounts[i] = amounts[i].add(rewardBalanceOf(user, poolTokens[j], rewardTokens[i]));
-            }
-        }
-        return amounts;
-    }
+    // function rewardBalanceOf(address user, address[] memory rewardTokens) public view returns(uint256[] memory) {
+    //     uint256[] memory amounts = new uint256[](rewardTokens.length);
+    //     address[] memory poolTokens = registeredPoolTokens();
+    //     for(uint256 i=0; i < rewardTokens.length; i++) {
+    //         for(uint256 j=0; j < poolTokens.length; j++) {
+    //             amounts[i] = amounts[i].add(rewardBalanceOf(user, poolTokens[j], rewardTokens[i]));
+    //         }
+    //     }
+    //     return amounts;
+    // }
 
-    function rewardBalanceOf(address user, address poolToken, address[] memory rewardTokens) public view returns(uint256[] memory) {
-        uint256[] memory amounts = new uint256[](rewardTokens.length);
-        for(uint256 i=0; i < rewardTokens.length; i++) {
-            amounts[i] = rewardBalanceOf(user, poolToken, rewardTokens[i]);
-        }
-        return amounts;
-    }
+    // function rewardBalanceOf(address user, address poolToken, address[] memory rewardTokens) public view returns(uint256[] memory) {
+    //     uint256[] memory amounts = new uint256[](rewardTokens.length);
+    //     for(uint256 i=0; i < rewardTokens.length; i++) {
+    //         amounts[i] = rewardBalanceOf(user, poolToken, rewardTokens[i]);
+    //     }
+    //     return amounts;
+    // }
 
     function rewardBalanceOf(address user, address poolToken, address rewardToken) public view returns(uint256 amounts) {
         RewardBalance storage rb = rewardBalances[user];
