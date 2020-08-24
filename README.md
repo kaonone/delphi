@@ -7,6 +7,7 @@
 #### Tokens
 * DAI `0x6b175474e89094c44da98b954eedeac495271d0f`
 * USDC `0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48`
+* BUSD `0x4Fabb145d64652a948d72533023f6E7A623C7C53`
 * AKRO `0x8ab7404063ec4dbcfd4598215992dc3f8ec853d7`
 
 #### Compound
@@ -38,17 +39,21 @@
 * StakingPool `0x3501Ec11d205fa249f2C42f5470e137b529b35D0`
 
 #### Protocols
-##### Curve.Fi Y [(y)DAI, (y)USDC, (y)USDT, (y)TUSD] - YFI
+##### Curve.Fi Y [(y)DAI, (y)USDC, (y)USDT, (y)TUSD] - CRV
 * Protocol CurveFi Y `0x7967adA2A32A633d5C055e2e075A83023B632B4e`
 * PoolToken for CurveFi Y `0x2AFA3c8Bf33E65d5036cD0f1c3599716894B3077`
 
-##### Curve.Fi sBTC [renBTC, wBTC, sBTC] - BPT
+##### Curve.Fi sBTC [renBTC, wBTC, sBTC] - BPT, CRV
 * Protocol CurveFi SBTC 
 * PoolToken for CurveFi SBTC 
 
-##### Curve.Fi sUSD [DAI, USDC, USDT, sUSD] - SNX
+##### Curve.Fi sUSD [DAI, USDC, USDT, sUSD] - SNX, CRV
 * Protocol CurveFi SUSD `0x91d7b9a8d2314110D4018C88dBFDCF5E2ba4772E`
 * PoolToken for CurveFi SUSD `0x520d25b08080296db66fd9f268ae279b66a8effb`
+
+##### Curve.Fi BUSD [(y)DAI, (y)USDC, (y)USDT, (y)BUSD] - CRV
+* Protocol CurveFi BUSD `0xEaE1A8206F68a7ef629e85fc69E82CFD36E83BA4`
+* PoolToken for CurveFi BUSD `0x8367Af78444C5B57Bc1cF38dED331d03558e67Bb`
 
 ##### Compound DAI - COMP
 * Protocol Compound DAI `0x08DDB58D31C08242Cd444BB5B43F7d2C6bcA0396`
