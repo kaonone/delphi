@@ -36,6 +36,7 @@ contract SavingsModule is Module, AccessChecker, RewardDistributions, CapperRole
         uint256 lastRewardDistribution;
         address[] supportedRewardTokens;
         mapping(address => uint256) userCap; //Limit of pool tokens which can be minted for a user during deposit
+        uint256 withdrawAllSlippage;         //Allowed slippage for withdrawAll function in wei
     }
 
     struct TokenData {
@@ -93,6 +94,10 @@ contract SavingsModule is Module, AccessChecker, RewardDistributions, CapperRole
         emit ProtocolCapChanged(_protocol, cap);
     }
 
+    function setWithdrawAllSlippage(address _protocol, uint256 slippageWei) public onlyOwner {
+        protocols[_protocol].withdrawAllSlippage = slippageWei;
+    }
+
     function registerProtocol(IDefiProtocol protocol, PoolToken poolToken) public onlyOwner {
         uint256 i;
         for (i = 0; i < registeredProtocols.length; i++){
@@ -103,7 +108,8 @@ contract SavingsModule is Module, AccessChecker, RewardDistributions, CapperRole
             poolToken: poolToken,
             previousBalance: protocol.normalizedBalance(),
             lastRewardDistribution: 0,
-            supportedRewardTokens: protocol.supportedRewardTokens()
+            supportedRewardTokens: protocol.supportedRewardTokens(),
+            withdrawAllSlippage:0
         });
         for(i=0; i < protocols[address(protocol)].supportedRewardTokens.length; i++) {
             address rtkn = protocols[address(protocol)].supportedRewardTokens[i];
@@ -273,7 +279,7 @@ contract SavingsModule is Module, AccessChecker, RewardDistributions, CapperRole
             actualAmount = nAmount;
         }else{
             actualAmount = nBalanceBefore.sub(nBalanceAfter);
-            require(actualAmount == nAmount, "SavingsModule: unexpected withdrawal fee");
+            require(actualAmount.sub(nAmount) <= protocols[_protocol].withdrawAllSlippage, "SavingsModule: withdrawal fee exeeds slippage");
         }
 
         // if(userCapEnabled){
