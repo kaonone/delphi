@@ -315,7 +315,6 @@ contract SavingsModule is Module, AccessChecker, RewardDistributions, CapperRole
         //distributeRewardIfRequired(_protocol);
 
         uint256 nAmount = normalizeTokenAmount(token, dnAmount);
-        require(nAmount <= maxNAmount, "SavingsModule: maxNAmount is less than dnAmount");
 
         uint256 nBalanceBefore = distributeYieldInternal(_protocol);
         withdrawFromProtocolOne(_msgSender(), IDefiProtocol(_protocol), token, dnAmount);
