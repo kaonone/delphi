@@ -94,17 +94,11 @@ contract StakingPool is Module, IERC900, CapperRole  {
   modifier isUserCapEnabledForStakeFor(uint256 stake) {
 
     if (stakingCapEnabled) {
-        require(stakingCap >= stake, "StakingModule: stake exeeds staking cap");
-
-        stakingCap = stakingCap.sub(stake);
-
-        emit StakingCapChanged(stakingCap);
+        require((stakingCap > totalStaked() && (stakingCap-totalStaked() >= stake)), "StakingModule: stake exeeds staking cap");
     }
 
-    if(userCapEnabled){
-          
+    if(userCapEnabled) {
           uint256 cap = userCap[_msgSender()];
-
           //check default user cap settings
           if (defaultUserCap > 0) {
               uint256 totalStaked = totalStakedFor(_msgSender());
@@ -128,12 +122,6 @@ contract StakingPool is Module, IERC900, CapperRole  {
 
   modifier isUserCapEnabledForUnStakeFor(uint256 unStake) {
      _;
-
-     if (stakingCapEnabled) {
-        stakingCap = stakingCap.add(unStake);
-
-        emit StakingCapChanged(stakingCap);
-     }
 
      if(userCapEnabled){
         uint256 cap = userCap[_msgSender()];
