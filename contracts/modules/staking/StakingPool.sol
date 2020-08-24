@@ -54,11 +54,11 @@ contract StakingPool is Module, IERC900, CapperRole  {
   }
 
   bool public userCapEnabled;
-  bool public stakingCapEnabled;
 
   mapping(address => uint256) public userCap; //Limit of pool tokens which can be minted for a user during deposit
 
   uint256 public defaultUserCap;
+  bool public stakingCapEnabled;
   uint256 public stakingCap;
 
 
