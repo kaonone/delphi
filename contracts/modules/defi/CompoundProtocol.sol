@@ -36,11 +36,6 @@ contract CompoundProtocol is ProtocolBase {
         compToken = IERC20(comptroller.getCompAddress());
     }
 
-    // function upgrade(address _comptroller) public onlyOwner {
-    //     comptroller = IComptroller(_comptroller);
-    //     compToken = IERC20(comptroller.getCompAddress());
-    // }
-
     function handleDeposit(address token, uint256 amount) public onlyDefiOperator {
         require(token == address(baseToken), "CompoundProtocol: token not supported");
         cToken.mint(amount);
