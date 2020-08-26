@@ -25,79 +25,85 @@ SET PROTOCOL_COMPOUND_USDC=0x048E645BA2965F48d72e7b855D6636F951aeD303
 SET POOL_TOKEN_COMPOUND_USDC=0x551AaBC00A7d02b51A81138fb8fA455786720793
 
 rem === DEFINE NEW OWNERS ===
-set NEW_OWNER=0x4A84e227D11c14f5a56C8E8c73310eBf96A8A540
+set NEW_OWNER=0x701313fb41209ca44628d6312371BeCFEd40Db78
+
+rem === GOTO REQUESTED OP===
+if "%1" neq "" goto :%1
 goto :done
 
 :addRoles
 echo ADD ROLES TO NEW OWNER
 echo ADD MODULE ROLES
-call npx oz send-tx --to %MODULE_ACCESS% --network rinkeby --method addWhitelistAdmin --args %NEW_OWNER%
-call npx oz send-tx --to %MODULE_SAVINGS% --network rinkeby --method addCapper --args %NEW_OWNER%
-call npx oz send-tx --to %MODULE_STAKING% --network rinkeby --method addCapper --args %NEW_OWNER%
+call npx oz send-tx --to %MODULE_ACCESS% --network rinkeby --method addWhitelistAdmin --args %NEW_OWNER% || goto :error
+call npx oz send-tx --to %MODULE_SAVINGS% --network rinkeby --method addCapper --args %NEW_OWNER% || goto :error
+call npx oz send-tx --to %MODULE_STAKING% --network rinkeby --method addCapper --args %NEW_OWNER% || goto :error
 echo ADD PROTOCOL ROLES
-call npx oz send-tx --to %PROTOCOL_COMPOUND_DAI% --network rinkeby --method addDefiOperator --args %NEW_OWNER%
-call npx oz send-tx --to %PROTOCOL_COMPOUND_USDC% --network rinkeby --method addDefiOperator --args %NEW_OWNER%
-call npx oz send-tx --to %PROTOCOL_CURVEFY_Y% --network rinkeby --method addDefiOperator --args %NEW_OWNER%
-call npx oz send-tx --to %PROTOCOL_CURVEFY_SUSD% --network rinkeby --method addDefiOperator --args %NEW_OWNER%
-rem call npx oz send-tx --to %PROTOCOL_CURVEFY_BUSD% --network rinkeby --method addDefiOperator --args %NEW_OWNER%
-rem call npx oz send-tx --to %PROTOCOL_CURVEFY_SBTC% --network rinkeby --method addDefiOperator --args %NEW_OWNER%
+call npx oz send-tx --to %PROTOCOL_COMPOUND_DAI% --network rinkeby --method addDefiOperator --args %NEW_OWNER% || goto :error
+call npx oz send-tx --to %PROTOCOL_COMPOUND_USDC% --network rinkeby --method addDefiOperator --args %NEW_OWNER% || goto :error
+call npx oz send-tx --to %PROTOCOL_CURVEFY_Y% --network rinkeby --method addDefiOperator --args %NEW_OWNER% || goto :error
+call npx oz send-tx --to %PROTOCOL_CURVEFY_SUSD% --network rinkeby --method addDefiOperator --args %NEW_OWNER% || goto :error
+rem call npx oz send-tx --to %PROTOCOL_CURVEFY_BUSD% --network rinkeby --method addDefiOperator --args %NEW_OWNER% || goto :error
+rem call npx oz send-tx --to %PROTOCOL_CURVEFY_SBTC% --network rinkeby --method addDefiOperator --args %NEW_OWNER% || goto :error
 echo ADD POOL_TOKEN ROLES
-call npx oz send-tx --to %POOL_TOKEN_COMPOUND_DAI% --network rinkeby --method addMinter --args %NEW_OWNER%
-call npx oz send-tx --to %POOL_TOKEN_COMPOUND_USDC% --network rinkeby --method addMinter --args %NEW_OWNER%
-call npx oz send-tx --to %POOL_TOKEN_CURVEFY_Y% --network rinkeby --method addMinter --args %NEW_OWNER%
-call npx oz send-tx --to %POOL_TOKEN_CURVEFY_SUSD% --network rinkeby --method addMinter --args %NEW_OWNER%
-rem call npx oz send-tx --to %POOL_TOKEN_CURVEFY_BUSD% --network rinkeby --method addMinter --args %NEW_OWNER%
-rem call npx oz send-tx --to %POOL_TOKEN_CURVEFY_SBTC% --network rinkeby --method addMinter --args %NEW_OWNER%
+call npx oz send-tx --to %POOL_TOKEN_COMPOUND_DAI% --network rinkeby --method addMinter --args %NEW_OWNER% || goto :error
+call npx oz send-tx --to %POOL_TOKEN_COMPOUND_USDC% --network rinkeby --method addMinter --args %NEW_OWNER% || goto :error
+call npx oz send-tx --to %POOL_TOKEN_CURVEFY_Y% --network rinkeby --method addMinter --args %NEW_OWNER% || goto :error
+call npx oz send-tx --to %POOL_TOKEN_CURVEFY_SUSD% --network rinkeby --method addMinter --args %NEW_OWNER% || goto :error
+rem call npx oz send-tx --to %POOL_TOKEN_CURVEFY_BUSD% --network rinkeby --method addMinter --args %NEW_OWNER% || goto :error
+rem call npx oz send-tx --to %POOL_TOKEN_CURVEFY_SBTC% --network rinkeby --method addMinter --args %NEW_OWNER% || goto :error
 goto :done
 
 :removeCurrentRoles
 echo REMOVE ROLES FORM OLD OWNER
 echo REMOVE MODULE ROLES
-call npx oz send-tx --to %MODULE_ACCESS% --network rinkeby --method renounceWhitelistAdmin
-call npx oz send-tx --to %MODULE_SAVINGS% --network rinkeby --method renounceCapper
-call npx oz send-tx --to %MODULE_STAKING% --network rinkeby --method renounceCapper
+call npx oz send-tx --to %MODULE_ACCESS% --network rinkeby --method renounceWhitelistAdmin || goto :error
+call npx oz send-tx --to %MODULE_SAVINGS% --network rinkeby --method renounceCapper || goto :error
+call npx oz send-tx --to %MODULE_STAKING% --network rinkeby --method renounceCapper || goto :error
 echo REMOVE PROTOCOL ROLES
-call npx oz send-tx --to %PROTOCOL_COMPOUND_DAI% --network rinkeby --method renounceDefiOperator
-call npx oz send-tx --to %PROTOCOL_COMPOUND_USDC% --network rinkeby --method renounceDefiOperator
-call npx oz send-tx --to %PROTOCOL_CURVEFY_Y% --network rinkeby --method renounceDefiOperator
-call npx oz send-tx --to %PROTOCOL_CURVEFY_SUSD% --network rinkeby --method renounceDefiOperator
-rem call npx oz send-tx --to %PROTOCOL_CURVEFY_BUSD% --network rinkeby --method renounceDefiOperator
-rem call npx oz send-tx --to %PROTOCOL_CURVEFY_SBTC% --network rinkeby --method renounceDefiOperator
+call npx oz send-tx --to %PROTOCOL_COMPOUND_DAI% --network rinkeby --method renounceDefiOperator || goto :error
+call npx oz send-tx --to %PROTOCOL_COMPOUND_USDC% --network rinkeby --method renounceDefiOperator || goto :error
+call npx oz send-tx --to %PROTOCOL_CURVEFY_Y% --network rinkeby --method renounceDefiOperator || goto :error
+call npx oz send-tx --to %PROTOCOL_CURVEFY_SUSD% --network rinkeby --method renounceDefiOperator || goto :error
+rem call npx oz send-tx --to %PROTOCOL_CURVEFY_BUSD% --network rinkeby --method renounceDefiOperator || goto :error
+rem call npx oz send-tx --to %PROTOCOL_CURVEFY_SBTC% --network rinkeby --method renounceDefiOperator || goto :error
 echo REMOVE POOL_TOKEN ROLES
-call npx oz send-tx --to %POOL_TOKEN_COMPOUND_DAI% --network rinkeby --method renounceMinter
-call npx oz send-tx --to %POOL_TOKEN_COMPOUND_USDC% --network rinkeby --method renounceMinter
-call npx oz send-tx --to %POOL_TOKEN_CURVEFY_Y% --network rinkeby --method renounceMinter
-call npx oz send-tx --to %POOL_TOKEN_CURVEFY_SUSD% --network rinkeby --method renounceMinter
-rem call npx oz send-tx --to %POOL_TOKEN_CURVEFY_BUSD% --network rinkeby --method renounceMinter
-rem call npx oz send-tx --to %POOL_TOKEN_CURVEFY_SBTC% --network rinkeby --method renounceMinter
+call npx oz send-tx --to %POOL_TOKEN_COMPOUND_DAI% --network rinkeby --method renounceMinter || goto :error
+call npx oz send-tx --to %POOL_TOKEN_COMPOUND_USDC% --network rinkeby --method renounceMinter || goto :error
+call npx oz send-tx --to %POOL_TOKEN_CURVEFY_Y% --network rinkeby --method renounceMinter || goto :error
+call npx oz send-tx --to %POOL_TOKEN_CURVEFY_SUSD% --network rinkeby --method renounceMinter || goto :error
+rem call npx oz send-tx --to %POOL_TOKEN_CURVEFY_BUSD% --network rinkeby --method renounceMinter || goto :error
+rem call npx oz send-tx --to %POOL_TOKEN_CURVEFY_SBTC% --network rinkeby --method renounceMinter || goto :error
 goto :done
 
 :transferOwnership
 echo TRANSFER OWNERSHIP
 echo TRANSFER MODULE OWNERSHIP
-call npx oz send-tx --to %MODULE_POOL% --network rinkeby --method transferOwnership --args %NEW_OWNER%
-call npx oz send-tx --to %MODULE_ACCESS% --network rinkeby --method transferOwnership --args %NEW_OWNER%
-call npx oz send-tx --to %MODULE_SAVINGS% --network rinkeby --method transferOwnership --args %NEW_OWNER%
-call npx oz send-tx --to %MODULE_STAKING% --network rinkeby --method transferOwnership --args %NEW_OWNER%
+call npx oz send-tx --to %MODULE_POOL% --network rinkeby --method transferOwnership --args %NEW_OWNER% || goto :error
+call npx oz send-tx --to %MODULE_ACCESS% --network rinkeby --method transferOwnership --args %NEW_OWNER% || goto :error
+call npx oz send-tx --to %MODULE_SAVINGS% --network rinkeby --method transferOwnership --args %NEW_OWNER% || goto :error
+call npx oz send-tx --to %MODULE_STAKING% --network rinkeby --method transferOwnership --args %NEW_OWNER% || goto :error
 echo TRANSFER PROTOCOL OWNERSHIP
-call npx oz send-tx --to %PROTOCOL_COMPOUND_DAI% --network rinkeby --method transferOwnership --args %NEW_OWNER%
-call npx oz send-tx --to %PROTOCOL_COMPOUND_USDC% --network rinkeby --method transferOwnership --args %NEW_OWNER%
-call npx oz send-tx --to %PROTOCOL_CURVEFY_Y% --network rinkeby --method transferOwnership --args %NEW_OWNER%
-call npx oz send-tx --to %PROTOCOL_CURVEFY_SUSD% --network rinkeby --method transferOwnership --args %NEW_OWNER%
+call npx oz send-tx --to %PROTOCOL_COMPOUND_DAI% --network rinkeby --method transferOwnership --args %NEW_OWNER% || goto :error
+call npx oz send-tx --to %PROTOCOL_COMPOUND_USDC% --network rinkeby --method transferOwnership --args %NEW_OWNER% || goto :error
+call npx oz send-tx --to %PROTOCOL_CURVEFY_Y% --network rinkeby --method transferOwnership --args %NEW_OWNER% || goto :error
+call npx oz send-tx --to %PROTOCOL_CURVEFY_SUSD% --network rinkeby --method transferOwnership --args %NEW_OWNER% || goto :error
 rem call npx oz send-tx --to %PROTOCOL_CURVEFY_BUSD% --network rinkeby --method transferOwnership --args %NEW_OWNER%
 rem call npx oz send-tx --to %PROTOCOL_CURVEFY_SBTC% --network rinkeby --method transferOwnership --args %NEW_OWNER%
 echo TRANSFER POOL_TOKEN OWNERSHIP
-call npx oz send-tx --to %POOL_TOKEN_COMPOUND_DAI% --network rinkeby --method transferOwnership --args %NEW_OWNER%
-call npx oz send-tx --to %POOL_TOKEN_COMPOUND_USDC% --network rinkeby --method transferOwnership --args %NEW_OWNER%
-call npx oz send-tx --to %POOL_TOKEN_CURVEFY_Y% --network rinkeby --method transferOwnership --args %NEW_OWNER%
-call npx oz send-tx --to %POOL_TOKEN_CURVEFY_SUSD% --network rinkeby --method transferOwnership --args %NEW_OWNER%
-rem call npx oz send-tx --to %POOL_TOKEN_CURVEFY_BUSD% --network rinkeby --method transferOwnership --args %NEW_OWNER%
-rem call npx oz send-tx --to %POOL_TOKEN_CURVEFY_SBTC% --network rinkeby --method transferOwnership --args %NEW_OWNER%
+call npx oz send-tx --to %POOL_TOKEN_COMPOUND_DAI% --network rinkeby --method transferOwnership --args %NEW_OWNER% || goto :error
+call npx oz send-tx --to %POOL_TOKEN_COMPOUND_USDC% --network rinkeby --method transferOwnership --args %NEW_OWNER% || goto :error
+call npx oz send-tx --to %POOL_TOKEN_CURVEFY_Y% --network rinkeby --method transferOwnership --args %NEW_OWNER% || goto :error
+call npx oz send-tx --to %POOL_TOKEN_CURVEFY_SUSD% --network rinkeby --method transferOwnership --args %NEW_OWNER% || goto :error
+rem call npx oz send-tx --to %POOL_TOKEN_CURVEFY_BUSD% --network rinkeby --method transferOwnership --args %NEW_OWNER% || goto :error
+rem call npx oz send-tx --to %POOL_TOKEN_CURVEFY_SBTC% --network rinkeby --method transferOwnership --args %NEW_OWNER% || goto :error
 
 :transferUpgradeAdmin
 echo TRANSFER UPGRADE ADMIN OWNERSHIP TO %NEW_OWNER%
 call npx oz set-admin %NEW_OWNER% --network rinkeby
 goto :done
+
+:error
+exit /b %errorlevel%
 
 :done
 echo DONE
