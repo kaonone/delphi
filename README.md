@@ -132,3 +132,8 @@
 * Protocol Compound USDC `0x048E645BA2965F48d72e7b855D6636F951aeD303`
 * PoolToken for Compound USDC `0x551AaBC00A7d02b51A81138fb8fA455786720793`
 
+
+## Bug bounty
+
+https://medium.com/akropolis/akropolis-general-update-announcing-bug-bounty-program-fedcd9239dae
+
