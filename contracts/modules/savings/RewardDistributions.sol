@@ -117,8 +117,8 @@ contract RewardDistributions is Base, IPoolTokenBalanceChangeRecipient, AccessCh
             RewardTokenDistribution storage d = rewardDistributions[next];
             next++;
 
-            uint256 sh = rb.shares[poolToken];
-            if (sh == 0) continue;
+            uint256 sh = rb.shares[d.poolToken];
+            if (sh == 0 || poolToken != d.poolToken) continue;
             uint256 distrAmount = d.amounts[rewardToken];
             balance = balance.add(distrAmount.mul(sh).div(d.totalShares));
         }
