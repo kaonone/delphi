@@ -96,6 +96,7 @@ call npx oz send-tx --to %POOL_TOKEN_CURVEFY_Y% --network rinkeby --method trans
 call npx oz send-tx --to %POOL_TOKEN_CURVEFY_SUSD% --network rinkeby --method transferOwnership --args %NEW_OWNER% || goto :error
 rem call npx oz send-tx --to %POOL_TOKEN_CURVEFY_BUSD% --network rinkeby --method transferOwnership --args %NEW_OWNER% || goto :error
 rem call npx oz send-tx --to %POOL_TOKEN_CURVEFY_SBTC% --network rinkeby --method transferOwnership --args %NEW_OWNER% || goto :error
+goto :done
 
 :transferUpgradeAdmin
 echo TRANSFER UPGRADE ADMIN OWNERSHIP TO %NEW_OWNER%
