@@ -1,6 +1,6 @@
 pragma solidity ^0.5.16;
 
-interface ILendingPoolCore {
+interface IAaveLendingPoolCore {
     /**
     * @dev gets the aToken contract address for the reserve
     * @param _reserve the reserve address

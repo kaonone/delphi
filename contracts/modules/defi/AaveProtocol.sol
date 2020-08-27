@@ -5,15 +5,15 @@ import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/ERC20Deta
 import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/SafeERC20.sol";
 import "@openzeppelin/contracts-ethereum-package/contracts/math/SafeMath.sol";
 import "../../interfaces/defi/IDefiProtocol.sol";
-import "../../interfaces/defi/aave/ILendingPoolAddressesProvider.sol";
-import "../../interfaces/defi/aave/ILendingPoolCore.sol";
-import "../../interfaces/defi/aave/ILendingPool.sol";
+import "../../interfaces/defi/aave/IAaveLendingPoolAddressesProvider.sol";
+import "../../interfaces/defi/aave/IAaveLendingPoolCore.sol";
+import "../../interfaces/defi/aave/IAaveLendingPool.sol";
 import "../../interfaces/defi/aave/IAToken.sol";
 import "../../common/Module.sol";
 import "./DefiOperatorRole.sol";
 import "./ProtocolBase.sol";
 
-contract AAVEProtocol is ProtocolBase {
+contract AaveProtocol is ProtocolBase {
     uint256 constant MAX_UINT256 = uint256(-1);
 
     using SafeMath for uint256;
@@ -22,17 +22,17 @@ contract AAVEProtocol is ProtocolBase {
     IERC20 public baseToken;
     uint8 public decimals;
     IAToken public aToken;
-    ILendingPool public lendingPool;
-    ILendingPoolCore public lendingPoolCore;
+    IAaveLendingPool public lendingPool;
+    IAaveLendingPoolCore public lendingPoolCore;
     uint16 public aaveReferralCode;
 
     function initialize(address _pool, address _token, address aaveAddressProvider, uint16 _aaveReferralCode) public initializer {
         ProtocolBase.initialize(_pool);
         baseToken = IERC20(_token);
         aaveReferralCode = _aaveReferralCode;
-        lendingPool = ILendingPool(ILendingPoolAddressesProvider(aaveAddressProvider).getLendingPool());
-        address payable _lendingPool = ILendingPoolAddressesProvider(aaveAddressProvider).getLendingPoolCore();
-        lendingPoolCore = ILendingPoolCore(address(_lendingPool));
+        lendingPool = IAaveLendingPool(IAaveLendingPoolAddressesProvider(aaveAddressProvider).getLendingPool());
+        address payable _lendingPool = IAaveLendingPoolAddressesProvider(aaveAddressProvider).getLendingPoolCore();
+        lendingPoolCore = IAaveLendingPoolCore(address(_lendingPool));
         aToken = IAToken(lendingPoolCore.getReserveATokenAddress(_token));
         decimals = ERC20Detailed(_token).decimals();
 

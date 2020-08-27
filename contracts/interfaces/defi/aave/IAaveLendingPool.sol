@@ -1,6 +1,6 @@
 pragma solidity ^0.5.16;
 
-interface ILendingPool {
+interface IAaveLendingPool {
     /**
     * @dev deposits The underlying asset into the reserve. A corresponding amount of the overlying asset (aTokens)
     * is minted.
