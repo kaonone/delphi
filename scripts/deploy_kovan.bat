@@ -27,6 +27,15 @@ SET POOL_TOKEN_AAVE_DAI=0x47377b24A52B0635Fb9F2A45711d56D35CeA8240
 SET PROTOCOL_AAVE_USDC=0xD93302fA097923eBb2C096ca28Ba1F5F3B0E80c4
 SET POOL_TOKEN_AAVE_USDC=0x15eA9cD690730d8A49375a8355cE390010a04B4d
 
+SET PROTOCOL_AAVE_SUSD=0x221B1F0d64537A9925e23869B7182103c1B1ABa0
+SET POOL_TOKEN_AAVE_SUSD=0x238083F1670b1Ba4eDEE87373A13f8326679EBB2
+
+SET PROTOCOL_AAVE_USDT=0x8fAf519e5c68344081c3b4Db9d11EaD00C6F23f6
+SET POOL_TOKEN_AAVE_USDT=0xaBEb317aed8D8d4A12BBD0205faED96a76470505
+
+SET PROTOCOL_AAVE_TUSD=0x4090df330aa4B3C32DDe2dF5E98068e16961B80e
+SET POOL_TOKEN_AAVE_TUSD=0xB3d80A044397b04e0aebc87454767d4ee9bD09B1
+
 
 rem === ACTION ===
 rem === GOTO REQUESTED OP===
@@ -67,7 +76,6 @@ call npx oz create PoolToken_Aave_USDT --network kovan --init "initialize(addres
 echo CREATE Aave TUSD
 call npx oz create AaveProtocol_TUSD --network kovan --init "initialize(address _pool, address _token, address aaveAddressProvider, uint16 _aaveReferralCode)" --args "%MODULE_POOL%, %EXT_TOKEN_TUSD%, %EXT_AAVE_ADDRESS_PROVIDER%, %EXT_AAVE_REFCODE%"
 call npx oz create PoolToken_Aave_TUSD --network kovan --init "initialize(address _pool)" --args %MODULE_POOL%
-
 goto :done
 
 :empty
@@ -85,9 +93,9 @@ goto :done
 echo ADD PROTOCOLS
 call npx oz send-tx --to %MODULE_SAVINGS% --network kovan --method registerProtocol --args "%PROTOCOL_AAVE_DAI%, %POOL_TOKEN_AAVE_DAI%"
 call npx oz send-tx --to %MODULE_SAVINGS% --network kovan --method registerProtocol --args "%PROTOCOL_AAVE_USDC%, %POOL_TOKEN_AAVE_USDC%"
-call npx oz send-tx --to %MODULE_SAVINGS% --network kovan --method registerProtocol --args "%PROTOCOL_AAVE_USDC%, %POOL_TOKEN_AAVE_SUSD%"
-call npx oz send-tx --to %MODULE_SAVINGS% --network kovan --method registerProtocol --args "%PROTOCOL_AAVE_USDC%, %POOL_TOKEN_AAVE_USDT%"
-call npx oz send-tx --to %MODULE_SAVINGS% --network kovan --method registerProtocol --args "%PROTOCOL_AAVE_USDC%, %POOL_TOKEN_AAVE_TUSD%"
+call npx oz send-tx --to %MODULE_SAVINGS% --network kovan --method registerProtocol --args "%PROTOCOL_AAVE_SUSD%, %POOL_TOKEN_AAVE_SUSD%"
+call npx oz send-tx --to %MODULE_SAVINGS% --network kovan --method registerProtocol --args "%PROTOCOL_AAVE_USDT%, %POOL_TOKEN_AAVE_USDT%"
+call npx oz send-tx --to %MODULE_SAVINGS% --network kovan --method registerProtocol --args "%PROTOCOL_AAVE_TUSD%, %POOL_TOKEN_AAVE_TUSD%"
 goto :done
 
 :setupOperators
