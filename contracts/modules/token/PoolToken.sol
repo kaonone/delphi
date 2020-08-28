@@ -49,4 +49,12 @@ contract PoolToken is Module, ERC20, ERC20Detailed, ERC20Mintable, ERC20Burnable
         savings.poolTokenBalanceChanged(account);
     }
 
+    function distributionBalanceOf(address account) public view returns(uint256) {
+        return (account == address(this))?0:super.distributionBalanceOf(account);
+    }
+
+    function distributionTotalSupply() public view returns(uint256) {
+        return super.distributionTotalSupply().sub(balanceOf(address(this))); 
+    }
+
 }
