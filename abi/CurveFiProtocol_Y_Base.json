@@ -561,26 +561,6 @@
     "inputs": [
       {
         "internalType": "address",
-        "name": "deposit",
-        "type": "address"
-      },
-      {
-        "internalType": "address",
-        "name": "liquidityGauge",
-        "type": "address"
-      }
-    ],
-    "name": "setCurveFi",
-    "outputs": [],
-    "payable": false,
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "constant": false,
-    "inputs": [
-      {
-        "internalType": "address",
         "name": "_pool",
         "type": "address"
       }
@@ -686,26 +666,6 @@
     "inputs": [
       {
         "internalType": "address",
-        "name": "rtkn",
-        "type": "address"
-      },
-      {
-        "internalType": "uint256",
-        "name": "newStoredBalance",
-        "type": "uint256"
-      }
-    ],
-    "name": "upgrade",
-    "outputs": [],
-    "payable": false,
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "constant": false,
-    "inputs": [
-      {
-        "internalType": "address",
         "name": "beneficiary",
         "type": "address"
       },
@@ -772,6 +732,56 @@
     "type": "function"
   },
   {
+    "constant": true,
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "yTokens",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [],
+    "name": "upgrade",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "deposit",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "liquidityGauge",
+        "type": "address"
+      }
+    ],
+    "name": "setCurveFi",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
     "constant": false,
     "inputs": [
       {
@@ -805,6 +815,32 @@
     ],
     "payable": false,
     "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "yToken",
+        "type": "address"
+      }
+    ],
+    "name": "lastYPricePerFullShare",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "lastUpdateBlock",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "price",
+        "type": "uint256"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
     "type": "function"
   }
 ]

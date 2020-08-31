@@ -294,6 +294,44 @@
       },
       {
         "indexed": false,
+        "internalType": "bool",
+        "name": "isVip",
+        "type": "bool"
+      }
+    ],
+    "name": "VipUserChanged",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "bool",
+        "name": "enabled",
+        "type": "bool"
+      }
+    ],
+    "name": "VipUserEnabledChange",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "protocol",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "user",
+        "type": "address"
+      },
+      {
+        "indexed": false,
         "internalType": "uint256",
         "name": "nAmount",
         "type": "uint256"
@@ -594,63 +632,6 @@
     "constant": true,
     "inputs": [
       {
-        "internalType": "address",
-        "name": "user",
-        "type": "address"
-      },
-      {
-        "internalType": "address[]",
-        "name": "rewardTokens",
-        "type": "address[]"
-      }
-    ],
-    "name": "rewardBalanceOf",
-    "outputs": [
-      {
-        "internalType": "uint256[]",
-        "name": "",
-        "type": "uint256[]"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "constant": true,
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "user",
-        "type": "address"
-      },
-      {
-        "internalType": "address",
-        "name": "poolToken",
-        "type": "address"
-      },
-      {
-        "internalType": "address[]",
-        "name": "rewardTokens",
-        "type": "address[]"
-      }
-    ],
-    "name": "rewardBalanceOf",
-    "outputs": [
-      {
-        "internalType": "uint256[]",
-        "name": "",
-        "type": "uint256[]"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "constant": true,
-    "inputs": [
-      {
         "internalType": "uint256",
         "name": "num",
         "type": "uint256"
@@ -820,6 +801,21 @@
     "type": "function"
   },
   {
+    "constant": true,
+    "inputs": [],
+    "name": "vipUserEnabled",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "constant": false,
     "inputs": [
       {
@@ -827,27 +823,6 @@
         "name": "poolToken",
         "type": "address"
       },
-      {
-        "internalType": "address",
-        "name": "rewardToken",
-        "type": "address"
-      }
-    ],
-    "name": "withdrawReward",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "constant": false,
-    "inputs": [
       {
         "internalType": "address",
         "name": "rewardToken",
@@ -945,22 +920,12 @@
     "constant": false,
     "inputs": [
       {
-        "internalType": "address",
-        "name": "_protocol",
-        "type": "address"
-      },
-      {
-        "internalType": "address[]",
-        "name": "users",
-        "type": "address[]"
-      },
-      {
-        "internalType": "uint256[]",
-        "name": "caps",
-        "type": "uint256[]"
+        "internalType": "bool",
+        "name": "_vipUserEnabled",
+        "type": "bool"
       }
     ],
-    "name": "setUserCap",
+    "name": "setVipUserEnabled",
     "outputs": [],
     "payable": false,
     "stateMutability": "nonpayable",
@@ -980,12 +945,12 @@
         "type": "address"
       },
       {
-        "internalType": "uint256",
-        "name": "cap",
-        "type": "uint256"
+        "internalType": "bool",
+        "name": "isVip",
+        "type": "bool"
       }
     ],
-    "name": "setUserCap",
+    "name": "setVipUser",
     "outputs": [],
     "payable": false,
     "stateMutability": "nonpayable",
@@ -1041,6 +1006,26 @@
       }
     ],
     "name": "setProtocolCap",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_protocol",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "slippageWei",
+        "type": "uint256"
+      }
+    ],
+    "name": "setWithdrawAllSlippage",
     "outputs": [],
     "payable": false,
     "stateMutability": "nonpayable",
@@ -1217,21 +1202,6 @@
         "type": "address"
       }
     ],
-    "name": "distributeRewards",
-    "outputs": [],
-    "payable": false,
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "constant": false,
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "_protocol",
-        "type": "address"
-      }
-    ],
     "name": "distributeRewardsForced",
     "outputs": [],
     "payable": false,
@@ -1258,6 +1228,32 @@
         "internalType": "uint256",
         "name": "",
         "type": "uint256"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_protocol",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "user",
+        "type": "address"
+      }
+    ],
+    "name": "isVipUser",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
       }
     ],
     "payable": false,
