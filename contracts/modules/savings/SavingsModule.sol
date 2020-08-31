@@ -26,6 +26,8 @@ contract SavingsModule is Module, AccessChecker, RewardDistributions, CapperRole
     event DefaultUserCapChanged(address indexed protocol, uint256 newCap);
     event ProtocolCapEnabledChange(bool enabled);
     event ProtocolCapChanged(address indexed protocol, uint256 newCap);
+    event VipUserEnabledChange(bool enabled);
+    event VipUserChanged(address indexed protocol, address indexed user, bool isVip);
 
     using SafeERC20 for IERC20;
     using SafeMath for uint256;
@@ -37,6 +39,7 @@ contract SavingsModule is Module, AccessChecker, RewardDistributions, CapperRole
         address[] supportedRewardTokens;
         mapping(address => uint256) userCap; //Limit of pool tokens which can be minted for a user during deposit
         uint256 withdrawAllSlippage;         //Allowed slippage for withdrawAll function in wei
+        mapping(address=>bool) isVipUser;       
     }
 
     struct TokenData {
@@ -54,7 +57,7 @@ contract SavingsModule is Module, AccessChecker, RewardDistributions, CapperRole
     bool public protocolCapEnabled;
     mapping(address=>uint256) public defaultUserCap;
     mapping(address=>uint256) public protocolCap;
-
+    bool public vipUserEnabled;                         // Enable VIP user (overrides protocol cap)
 
 
     function initialize(address _pool) public initializer {
@@ -79,6 +82,16 @@ contract SavingsModule is Module, AccessChecker, RewardDistributions, CapperRole
     //         emit UserCapChanged(_protocol, users[i], caps[i]);
     //     }
     // }
+
+    function setVipUserEnabled(bool _vipUserEnabled) public onlyCapper {
+        vipUserEnabled = _vipUserEnabled;
+        emit VipUserEnabledChange(_vipUserEnabled);
+    }
+
+    function setVipUser(address _protocol, address user, bool isVip) public onlyCapper {
+        protocols[_protocol].isVipUser[user] = isVip;
+        emit VipUserChanged(_protocol, user, isVip);
+    }
     
     function setDefaultUserCap(address _protocol, uint256 cap) public onlyCapper {
         defaultUserCap[_protocol] = cap;
@@ -229,8 +242,10 @@ contract SavingsModule is Module, AccessChecker, RewardDistributions, CapperRole
         }
 
         if(protocolCapEnabled) {
-            uint256 ptTS = poolToken.totalSupply();
-            require(ptTS <= protocolCap[_protocol], "SavingsModule: deposit exeeds protocols cap");
+            if( !(vipUserEnabled && protocols[_protocol].isVipUser[_msgSender()]) ) {
+                uint256 ptTS = poolToken.totalSupply();
+                require(ptTS <= protocolCap[_protocol], "SavingsModule: deposit exeeds protocols cap");
+            }
         }
 
         if(userCapEnabled) {
@@ -394,6 +409,10 @@ contract SavingsModule is Module, AccessChecker, RewardDistributions, CapperRole
             cap = defaultUserCap[_protocol] - balance;
         }
         return cap;
+    }
+
+    function isVipUser(address _protocol, address user) view public returns(bool){
+        return protocols[_protocol].isVipUser[user];
     }
 
     function poolTokenByProtocol(address _protocol) public view returns(address) {
