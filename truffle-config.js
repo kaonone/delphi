@@ -94,8 +94,8 @@ module.exports = {
     mainnet: {
       //provider: () => new HDWalletProvider(process.env.DEV_MNEMONIC, "https://cloudflare-eth.com/"),
       provider: () => new HDWalletProvider(process.env.DEV_MNEMONIC, "https://mainnet.infura.io/v3/" + infuraProjectId),
-      networkId: 1,       // Rinkeby's id
-      gasPrice: 80000000000, // 110 gwei
+      networkId: 1,       // Mainnet's id
+      gasPrice: 435000000000, // 110 gwei
     },
     
     // Another network with more advanced options...

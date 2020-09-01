@@ -57,10 +57,19 @@ contract StakingPool is Module, IERC900, CapperRole  {
 
   mapping(address => uint256) public userCap; //Limit of pool tokens which can be minted for a user during deposit
 
+  
   uint256 public defaultUserCap;
   bool public stakingCapEnabled;
   uint256 public stakingCap;
 
+
+  bool public vipUserEnabled;
+  mapping(address => bool) public isVipUser;
+  
+
+
+  event VipUserEnabledChange(bool enabled);
+  event VipUserChanged(address indexed user, bool isVip);
 
   event StakingCapChanged(uint256 newCap);
   event StakingCapEnabledChange(bool enabled);
@@ -93,7 +102,7 @@ contract StakingPool is Module, IERC900, CapperRole  {
 
   modifier isUserCapEnabledForStakeFor(uint256 stake) {
 
-    if (stakingCapEnabled) {
+    if (stakingCapEnabled && !(vipUserEnabled && isVipUser[_msgSender()])) {
         require((stakingCap > totalStaked() && (stakingCap-totalStaked() >= stake)), "StakingModule: stake exeeds staking cap");
     }
 
@@ -184,12 +193,23 @@ contract StakingPool is Module, IERC900, CapperRole  {
       emit UserCapChanged(user, cap);
   }
 
-  function setUserCap(address[] calldata users, uint256[] calldata caps) external onlyCapper {
+  function setUserCap(address[] memory users, uint256[] memory caps) public onlyCapper {
         require(users.length == caps.length, "SavingsModule: arrays length not match");
         for(uint256 i=0;  i < users.length; i++) {
             userCap[users[i]] = caps[i];
             emit UserCapChanged(users[i], caps[i]);
         }
+  }
+
+
+  function setVipUserEnabled(bool _vipUserEnabled) public onlyCapper {
+      vipUserEnabled = _vipUserEnabled;
+      emit VipUserEnabledChange(_vipUserEnabled);
+  }
+
+  function setVipUser(address user, bool isVip) public onlyCapper {
+      isVipUser[user] = isVip;
+      emit VipUserChanged(user, isVip);
   }
 
   function isUserCapEnabled() public view returns(bool) {
