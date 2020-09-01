@@ -67,6 +67,14 @@
 * Protocol Compound USDC `0x9984D588EF2112894a0513663ba815310D383E3c`
 * PoolToken for Compound USDC `0x5Ad76E93a3a852C9af760dA3FdB7983C265d8997`
 
+##### Aave sUSD
+* Protocol Aaave SUSD `0xBED50F08B8e68293bd7Db742c4207F2F6E520cD2`
+* PoolToken for Aaave SUSD `0x8E2317458878B9223904BdD95173EE96D46feC77`
+
+##### Aave BUSD
+* Protocol Aaave BUSD `0x051E3A47724740d47042Edc71C0AE81A35fDEDE9`
+* PoolToken for Aaave BUSD `0xb62B6B192524F6b220a08f0D5D0EB748A8cbAA1b`
+
 
 ## Deployed contracts (Kovan)
 ### External contracts
