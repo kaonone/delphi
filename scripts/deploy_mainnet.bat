@@ -64,16 +64,6 @@ goto :done
 
 rem === ACTION ===
 :show
-echo npx oz create AaveProtocol_SUSD --network mainnet --init "initialize(address _pool, address _token, address aaveAddressProvider, uint16 _aaveReferralCode)" --args "%MODULE_POOL%, %EXT_TOKEN_SUSD%, %EXT_AAVE_ADDRESS_PROVIDER%, %EXT_AAVE_REFCODE%"
-echo npx oz create PoolToken_Aave_SUSD --network mainnet --init "initialize(address _pool)" --args %MODULE_POOL%
-echo npx oz create AaveProtocol_BUSD --network mainnet --init "initialize(address _pool, address _token, address aaveAddressProvider, uint16 _aaveReferralCode)" --args "%MODULE_POOL%, %EXT_TOKEN_BUSD%, %EXT_AAVE_ADDRESS_PROVIDER%, %EXT_AAVE_REFCODE%"
-echo npx oz create PoolToken_Aave_BUSD --network mainnet --init "initialize(address _pool)" --args %MODULE_POOL%
-echo npx oz send-tx --to %MODULE_SAVINGS% --network mainnet --method registerProtocol --args "%PROTOCOL_AAVE_SUSD%, %POOL_TOKEN_AAVE_SUSD%"
-echo npx oz send-tx --to %MODULE_SAVINGS% --network mainnet --method registerProtocol --args "%PROTOCOL_AAVE_BUSD%, %POOL_TOKEN_AAVE_BUSD%"
-echo npx oz send-tx --to %PROTOCOL_AAVE_SUSD% --network mainnet --method addDefiOperator --args %MODULE_SAVINGS%
-echo npx oz send-tx --to %PROTOCOL_AAVE_BUSD% --network mainnet --method addDefiOperator --args %MODULE_SAVINGS%
-echo npx oz send-tx --to %POOL_TOKEN_AAVE_SUSD% --network mainnet --method addMinter --args %MODULE_SAVINGS%
-echo npx oz send-tx --to %POOL_TOKEN_AAVE_BUSD% --network mainnet --method addMinter --args %MODULE_SAVINGS%
 goto :done
 
 :init

@@ -23,11 +23,22 @@ SET POOL_TOKEN_COMPOUND_DAI=0x9Fca734Bb62C20D2cF654705b8fbf4F49FF5cC31
 SET PROTOCOL_COMPOUND_USDC=0x9984D588EF2112894a0513663ba815310D383E3c
 SET POOL_TOKEN_COMPOUND_USDC=0x5Ad76E93a3a852C9af760dA3FdB7983C265d8997
 
+SET PROTOCOL_AAVE_SUSD=0xBED50F08B8e68293bd7Db742c4207F2F6E520cD2
+SET POOL_TOKEN_AAVE_SUSD=0x8E2317458878B9223904BdD95173EE96D46feC77
+
+SET PROTOCOL_AAVE_BUSD=0x051E3A47724740d47042Edc71C0AE81A35fDEDE9
+SET POOL_TOKEN_AAVE_BUSD=0xb62B6B192524F6b220a08f0D5D0EB748A8cbAA1b
+
 rem === DEFINE NEW OWNERS ===
-set NEW_OWNER=0x4454fC25daF515D1237d0ea76aC3Ea931118eeF0
+set NEW_OWNER=0x509e16558F1fdc4733EFa73846Da891a29797E43
 
 rem === GOTO REQUESTED OP===
 if "%1" neq "" goto :%1
+goto :done
+
+rem === ACTION ===
+:show
+echo npx oz set-admin %NEW_OWNER% --network mainnet
 goto :done
 
 :addRoles
@@ -36,6 +47,7 @@ echo ADD MODULE ROLES
 call npx oz send-tx --to %MODULE_ACCESS% --network mainnet --method addWhitelistAdmin --args %NEW_OWNER% || goto :error
 call npx oz send-tx --to %MODULE_SAVINGS% --network mainnet --method addCapper --args %NEW_OWNER% || goto :error
 call npx oz send-tx --to %MODULE_STAKING% --network mainnet --method addCapper --args %NEW_OWNER% || goto :error
+
 echo ADD PROTOCOL ROLES
 call npx oz send-tx --to %PROTOCOL_COMPOUND_DAI% --network mainnet --method addDefiOperator --args %NEW_OWNER% || goto :error
 call npx oz send-tx --to %PROTOCOL_COMPOUND_USDC% --network mainnet --method addDefiOperator --args %NEW_OWNER% || goto :error
@@ -43,6 +55,9 @@ call npx oz send-tx --to %PROTOCOL_CURVEFY_Y% --network mainnet --method addDefi
 call npx oz send-tx --to %PROTOCOL_CURVEFY_SUSD% --network mainnet --method addDefiOperator --args %NEW_OWNER% || goto :error
 call npx oz send-tx --to %PROTOCOL_CURVEFY_BUSD% --network mainnet --method addDefiOperator --args %NEW_OWNER% || goto :error
 rem call npx oz send-tx --to %PROTOCOL_CURVEFY_SBTC% --network mainnet --method addDefiOperator --args %NEW_OWNER% || goto :error
+call npx oz send-tx --to %PROTOCOL_AAVE_SUSD% --network mainnet --method addDefiOperator --args %NEW_OWNER% || goto :error
+call npx oz send-tx --to %PROTOCOL_AAVE_BUSD% --network mainnet --method addDefiOperator --args %NEW_OWNER% || goto :error
+
 echo ADD POOL_TOKEN ROLES
 call npx oz send-tx --to %POOL_TOKEN_COMPOUND_DAI% --network mainnet --method addMinter --args %NEW_OWNER% || goto :error
 call npx oz send-tx --to %POOL_TOKEN_COMPOUND_USDC% --network mainnet --method addMinter --args %NEW_OWNER% || goto :error
@@ -50,6 +65,8 @@ call npx oz send-tx --to %POOL_TOKEN_CURVEFY_Y% --network mainnet --method addMi
 call npx oz send-tx --to %POOL_TOKEN_CURVEFY_SUSD% --network mainnet --method addMinter --args %NEW_OWNER% || goto :error
 call npx oz send-tx --to %POOL_TOKEN_CURVEFY_BUSD% --network mainnet --method addMinter --args %NEW_OWNER% || goto :error
 rem call npx oz send-tx --to %POOL_TOKEN_CURVEFY_SBTC% --network mainnet --method addMinter --args %NEW_OWNER% || goto :error
+call npx oz send-tx --to %POOL_TOKEN_AAVE_SUSD% --network mainnet --method addMinter --args %NEW_OWNER% || goto :error 
+call npx oz send-tx --to %POOL_TOKEN_AAVE_BUSD% --network mainnet --method addMinter --args %NEW_OWNER% || goto :error
 goto :done
 
 :removeCurrentRoles
@@ -58,6 +75,7 @@ echo REMOVE MODULE ROLES
 call npx oz send-tx --to %MODULE_ACCESS% --network mainnet --method renounceWhitelistAdmin || goto :error
 call npx oz send-tx --to %MODULE_SAVINGS% --network mainnet --method renounceCapper || goto :error
 call npx oz send-tx --to %MODULE_STAKING% --network mainnet --method renounceCapper || goto :error
+
 echo REMOVE PROTOCOL ROLES
 call npx oz send-tx --to %PROTOCOL_COMPOUND_DAI% --network mainnet --method renounceDefiOperator || goto :error
 call npx oz send-tx --to %PROTOCOL_COMPOUND_USDC% --network mainnet --method renounceDefiOperator || goto :error
@@ -65,6 +83,9 @@ call npx oz send-tx --to %PROTOCOL_CURVEFY_Y% --network mainnet --method renounc
 call npx oz send-tx --to %PROTOCOL_CURVEFY_SUSD% --network mainnet --method renounceDefiOperator || goto :error
 call npx oz send-tx --to %PROTOCOL_CURVEFY_BUSD% --network mainnet --method renounceDefiOperator || goto :error
 rem call npx oz send-tx --to %PROTOCOL_CURVEFY_SBTC% --network mainnet --method renounceDefiOperator || goto :error
+call npx oz send-tx --to %PROTOCOL_AAVE_SUSD% --network mainnet --method renounceDefiOperator || goto :error
+call npx oz send-tx --to %PROTOCOL_AAVE_BUSD% --network mainnet --method renounceDefiOperator || goto :error
+
 echo REMOVE POOL_TOKEN ROLES
 call npx oz send-tx --to %POOL_TOKEN_COMPOUND_DAI% --network mainnet --method renounceMinter || goto :error
 call npx oz send-tx --to %POOL_TOKEN_COMPOUND_USDC% --network mainnet --method renounceMinter || goto :error
@@ -72,6 +93,8 @@ call npx oz send-tx --to %POOL_TOKEN_CURVEFY_Y% --network mainnet --method renou
 call npx oz send-tx --to %POOL_TOKEN_CURVEFY_SUSD% --network mainnet --method renounceMinter || goto :error
 call npx oz send-tx --to %POOL_TOKEN_CURVEFY_BUSD% --network mainnet --method renounceMinter || goto :error
 rem call npx oz send-tx --to %POOL_TOKEN_CURVEFY_SBTC% --network mainnet --method renounceMinter || goto :error
+call npx oz send-tx --to %POOL_TOKEN_AAVE_SUSD% --network mainnet --method renounceMinter || goto :error 
+call npx oz send-tx --to %POOL_TOKEN_AAVE_BUSD% --network mainnet --method renounceMinter || goto :error
 goto :done
 
 :transferOwnership
@@ -81,6 +104,7 @@ call npx oz send-tx --to %MODULE_POOL% --network mainnet --method transferOwners
 call npx oz send-tx --to %MODULE_ACCESS% --network mainnet --method transferOwnership --args %NEW_OWNER% || goto :error
 call npx oz send-tx --to %MODULE_SAVINGS% --network mainnet --method transferOwnership --args %NEW_OWNER% || goto :error
 call npx oz send-tx --to %MODULE_STAKING% --network mainnet --method transferOwnership --args %NEW_OWNER% || goto :error
+
 echo TRANSFER PROTOCOL OWNERSHIP
 call npx oz send-tx --to %PROTOCOL_COMPOUND_DAI% --network mainnet --method transferOwnership --args %NEW_OWNER% || goto :error
 call npx oz send-tx --to %PROTOCOL_COMPOUND_USDC% --network mainnet --method transferOwnership --args %NEW_OWNER% || goto :error
@@ -88,6 +112,10 @@ call npx oz send-tx --to %PROTOCOL_CURVEFY_Y% --network mainnet --method transfe
 call npx oz send-tx --to %PROTOCOL_CURVEFY_SUSD% --network mainnet --method transferOwnership --args %NEW_OWNER% || goto :error
 call npx oz send-tx --to %PROTOCOL_CURVEFY_BUSD% --network mainnet --method transferOwnership --args %NEW_OWNER%
 rem call npx oz send-tx --to %PROTOCOL_CURVEFY_SBTC% --network mainnet --method transferOwnership --args %NEW_OWNER%
+call npx oz send-tx --to %PROTOCOL_AAVE_SUSD% --network mainnet --method transferOwnership --args %NEW_OWNER%
+call npx oz send-tx --to %PROTOCOL_AAVE_BUSD% --network mainnet --method transferOwnership --args %NEW_OWNER%
+
+
 echo TRANSFER POOL_TOKEN OWNERSHIP
 call npx oz send-tx --to %POOL_TOKEN_COMPOUND_DAI% --network mainnet --method transferOwnership --args %NEW_OWNER% || goto :error
 call npx oz send-tx --to %POOL_TOKEN_COMPOUND_USDC% --network mainnet --method transferOwnership --args %NEW_OWNER% || goto :error
@@ -95,6 +123,8 @@ call npx oz send-tx --to %POOL_TOKEN_CURVEFY_Y% --network mainnet --method trans
 call npx oz send-tx --to %POOL_TOKEN_CURVEFY_SUSD% --network mainnet --method transferOwnership --args %NEW_OWNER% || goto :error
 call npx oz send-tx --to %POOL_TOKEN_CURVEFY_BUSD% --network mainnet --method transferOwnership --args %NEW_OWNER% || goto :error
 rem call npx oz send-tx --to %POOL_TOKEN_CURVEFY_SBTC% --network mainnet --method transferOwnership --args %NEW_OWNER% || goto :error
+call npx oz send-tx --to %POOL_TOKEN_AAVE_SUSD% --network mainnet --method transferOwnership --args %NEW_OWNER% || goto :error
+call npx oz send-tx --to %POOL_TOKEN_AAVE_BUSD% --network mainnet --method transferOwnership --args %NEW_OWNER% || goto :error
 goto :done
 
 :transferUpgradeAdmin
