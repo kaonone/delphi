@@ -366,7 +366,7 @@ contract SavingsModule is Module, AccessChecker, RewardDistributions, CapperRole
             createYieldDistribution(poolToken, yield);
         }
 
-        return nAmount;
+        return actualAmount;
     }
 
     /** 
