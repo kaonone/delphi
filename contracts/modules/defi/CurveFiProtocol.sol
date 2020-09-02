@@ -155,8 +155,10 @@ contract CurveFiProtocol is ProtocolBase {
         deposit_remove_liquidity_imbalance(amnts, withdrawShares);
         
         for (i = 0; i < _registeredTokens.length; i++){
-            IERC20 ltoken = IERC20(_registeredTokens[i]);
-            ltoken.safeTransfer(beneficiary, amounts[i]);
+            IERC20 lToken = IERC20(_registeredTokens[i]);
+            uint256 lBalance = lToken.balanceOf(address(this));
+            uint256 lAmount = (lBalance <= amounts[i])?lBalance:amounts[i]; // Rounding may prevent Curve.Fi to return exactly requested amount
+            lToken.safeTransfer(beneficiary, lAmount);
         }
     }
 
