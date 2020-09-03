@@ -205,6 +205,20 @@ contract CurveFiProtocol is ProtocolBase {
         return summ;
     }
 
+    function optimalProportions() public returns(uint256[] memory) {
+        uint256[] memory amounts = balanceOfAll();
+        uint256 summ;
+        for (uint256 i=0; i < _registeredTokens.length; i++){
+            amounts[i] = normalizeAmount(_registeredTokens[i], amounts[i]);
+            summ = summ.add(amounts[i]);
+        }
+        for (uint256 i=0; i < _registeredTokens.length; i++){
+            amounts[i] = amounts[i].div(summ);
+        }
+        return amounts;
+    }
+    
+
     function supportedTokens() public view returns(address[] memory){
         return _registeredTokens;
     }

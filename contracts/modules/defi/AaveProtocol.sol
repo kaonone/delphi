@@ -79,6 +79,12 @@ contract AaveProtocol is ProtocolBase {
         return normalizeAmount(balance);
     }
 
+    function optimalProportions() public returns(uint256[] memory) {
+        uint256[] memory amounts = new uint256[](1);
+        amounts[0] = 1e18;
+        return amounts;
+    }
+
     function canSwapToToken(address token) public view returns(bool) {
         return (token == address(baseToken));
     }    

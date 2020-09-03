@@ -55,6 +55,15 @@ interface IDefiProtocol {
     function balanceOfAll() external returns(uint256[] memory); 
 
     /**
+     * @notice Returns optimal proportions of underlying tokens 
+     * to prevent fees on deposit/withdrawl if supplying multiple tokens
+     * @dev This function is not view because on some protocols 
+     * (Compound, RAY with Compound oportunity) it may cause storage writes
+     * same as balanceOfAll()
+     */
+    function optimalProportions() external returns(uint256[] memory);
+
+    /**
     * @notice Returns normalized (to USD with 18 decimals) summary balance 
     * of pool using all tokens in this protocol
     */

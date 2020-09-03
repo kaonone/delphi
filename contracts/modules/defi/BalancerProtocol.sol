@@ -121,6 +121,15 @@ contract BalancerProtocol is ProtocolBase {
         return bpt.balanceOf(address(this));
     }
 
+    function optimalProportions() public returns(uint256[] memory) {
+        uint256[] memory amounts = new uint256[](registeredTokens.length);
+        for(uint256 i=0; i<registeredTokens.length;i++){
+            address token = registeredTokens[i];
+            amounts[i] = registeredTokensInfo[token].normalizedWeight;
+        }
+        return amounts;
+    }
+
     /**
      * @notice Returns balance converted to baseToken and normalized to 18 decimals.
      * Example: Pool of 50% BTC + 50% ETH. BaseToken - BTC.
