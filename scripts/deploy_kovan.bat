@@ -9,7 +9,7 @@ SET EXT_TOKEN_SUSD=0xD868790F57B39C9B2B51b12de046975f986675f9
 SET EXT_TOKEN_USDT=0x13512979ADE267AB5100878E2e0f485B568328a4
 SET EXT_TOKEN_TUSD=0x1c4a937d171752e1313D70fb16Ae2ea02f86303e
 
-SET EXT_TOKEN_BAL=
+SET EXT_TOKEN_BAL=0x4Ea46044d4bCEF7e413F459fCFFa2B6718D85CbE
 SET EXT_TOKEN_AKRO=
 
 rem ===== AAVE ====
@@ -17,13 +17,13 @@ SET EXT_AAVE_ADDRESS_PROVIDER=0x506B0B2CF20FAA8f38a4E2B524EE43e1f4458Cc5
 SET EXT_AAVE_REFCODE=0
 
 rem ===== Balancer ====
-SET EXT_BPT_WETH_WBTC=
+SET EXT_BPT_WETH_WBTC=0x95ec87ac8211E40a201cE8c5CF53f6BeBbf25aA1
 
 rem ==== Akropolis ====
 SET MODULE_POOL=0xB8CE630eBD9d3932565346dDaCAc59DB0AB624fe
 SET MODULE_ACCESS=0xdc605f07Fd230Fc1327f83FF140379C0C1D7773F
 SET MODULE_SAVINGS=0x7E9a8806D37653B7289ae09F36C708485F00DF4b
-SET MODULE_INVESTING=
+SET MODULE_INVESTING=0xC1a8F66fCFEdd346768E5399932Db0eC50d37c0d
 SET MODULE_STAKING=
 
 SET PROTOCOL_AAVE_DAI=0xE87EeAbFBaeAd01B716935b551BE41898F843038
@@ -41,8 +41,8 @@ SET POOL_TOKEN_AAVE_USDT=0xaBEb317aed8D8d4A12BBD0205faED96a76470505
 SET PROTOCOL_AAVE_TUSD=0x4090df330aa4B3C32DDe2dF5E98068e16961B80e
 SET POOL_TOKEN_AAVE_TUSD=0xB3d80A044397b04e0aebc87454767d4ee9bD09B1
 
-SET PROTOCOL_BALANCER_WETH_WBTC=
-SET POOL_TOKEN_BALANCER_WETH_WBTC=
+SET PROTOCOL_BALANCER_WETH_WBTC=0xAe703C0F711238dB3a61DE8920860ad2c75Dc9b3
+SET POOL_TOKEN_BALANCER_WETH_WBTC=0x82Be1a3164fbE36F79D7d1da200D8F5360B82b9e
 
 rem === GOTO REQUESTED OP===
 if "%1" neq "" goto :%1
@@ -50,13 +50,7 @@ goto :done
 
 rem === ACTION ===
 :deploy1
-echo npx oz create InvestingModule --network kovan --init "initialize(address _pool)" --args %MODULE_POOL%
-echo npx oz create BalancerProtocol_WETH_WBTC --network kovan --init "initialize(address _pool, address _bpt, address _bal)" --args "%MODULE_POOL%, %EXT_BPT_WETH_WBTC%, %EXT_TOKEN_BAL%"
-echo npx oz create PoolToken_Balancer_WETH_WBTC --network kovan --init "initialize(address _pool)" --args %MODULE_POOL%
-echo npx oz send-tx --to %MODULE_INVESTING% --network kovan --method registerProtocol --args "%PROTOCOL_BALANCER_WETH_WBTC%, %POOL_TOKEN_BALANCER_WETH_WBTC%"
-echo npx oz send-tx --to %PROTOCOL_BALANCER_WETH_WBTC% --network kovan --method addDefiOperator --args %MODULE_INVESTING%
-echo npx oz send-tx --to %POOL_TOKEN_BALANCER_WETH_WBTC% --network kovan --method addMinter --args %MODULE_INVESTING%
-:done
+goto :done
 
 :init
 echo INIT PROJECT, ADD CONTRACTS
@@ -75,6 +69,7 @@ goto :done
 echo CREATE MODULES
 call npx oz create AccessModule --network kovan --init "initialize(address _pool)" --args %MODULE_POOL%
 call npx oz create SavingsModule --network kovan --init "initialize(address _pool)" --args %MODULE_POOL%
+call npx oz create InvestingModule --network kovan --init "initialize(address _pool)" --args %MODULE_POOL%
 rem call npx oz create StakingPool --network kovan --init "initialize(address _pool,address _stakingToken, uint256 _defaultLockInDuration)" --args "%MODULE_POOL%, %EXT_TOKEN_AKRO%, 0"
 echo CREATE PROTOCOLS AND TOKENS
 echo CREATE Aave DAI
@@ -92,6 +87,9 @@ call npx oz create PoolToken_Aave_USDT --network kovan --init "initialize(addres
 echo CREATE Aave TUSD
 call npx oz create AaveProtocol_TUSD --network kovan --init "initialize(address _pool, address _token, address aaveAddressProvider, uint16 _aaveReferralCode)" --args "%MODULE_POOL%, %EXT_TOKEN_TUSD%, %EXT_AAVE_ADDRESS_PROVIDER%, %EXT_AAVE_REFCODE%"
 call npx oz create PoolToken_Aave_TUSD --network kovan --init "initialize(address _pool)" --args %MODULE_POOL%
+echo CREATE Balancer WETH/WBTC
+call npx oz create BalancerProtocol_WETH_WBTC --network kovan --init "initialize(address _pool, address _bpt, address _bal)" --args "%MODULE_POOL%, %EXT_BPT_WETH_WBTC%, %EXT_TOKEN_BAL%"
+call npx oz create PoolToken_Balancer_WETH_WBTC --network kovan --init "initialize(address _pool)" --args %MODULE_POOL%
 goto :done
 
 :empty
@@ -112,6 +110,7 @@ call npx oz send-tx --to %MODULE_SAVINGS% --network kovan --method registerProto
 call npx oz send-tx --to %MODULE_SAVINGS% --network kovan --method registerProtocol --args "%PROTOCOL_AAVE_SUSD%, %POOL_TOKEN_AAVE_SUSD%"
 call npx oz send-tx --to %MODULE_SAVINGS% --network kovan --method registerProtocol --args "%PROTOCOL_AAVE_USDT%, %POOL_TOKEN_AAVE_USDT%"
 call npx oz send-tx --to %MODULE_SAVINGS% --network kovan --method registerProtocol --args "%PROTOCOL_AAVE_TUSD%, %POOL_TOKEN_AAVE_TUSD%"
+call npx oz send-tx --to %MODULE_INVESTING% --network kovan --method registerProtocol --args "%PROTOCOL_BALANCER_WETH_WBTC%, %POOL_TOKEN_BALANCER_WETH_WBTC%"
 goto :done
 
 :setupOperators
@@ -121,12 +120,14 @@ call npx oz send-tx --to %PROTOCOL_AAVE_USDC% --network kovan --method addDefiOp
 call npx oz send-tx --to %PROTOCOL_AAVE_SUSD% --network kovan --method addDefiOperator --args %MODULE_SAVINGS%
 call npx oz send-tx --to %PROTOCOL_AAVE_USDT% --network kovan --method addDefiOperator --args %MODULE_SAVINGS%
 call npx oz send-tx --to %PROTOCOL_AAVE_TUSD% --network kovan --method addDefiOperator --args %MODULE_SAVINGS%
+call npx oz send-tx --to %PROTOCOL_BALANCER_WETH_WBTC% --network kovan --method addDefiOperator --args %MODULE_INVESTING%
 echo SETUP MINTERS FOR POOL TOKENS
 call npx oz send-tx --to %POOL_TOKEN_AAVE_DAI% --network kovan --method addMinter --args %MODULE_SAVINGS%
 call npx oz send-tx --to %POOL_TOKEN_AAVE_USDC% --network kovan --method addMinter --args %MODULE_SAVINGS%
 call npx oz send-tx --to %POOL_TOKEN_AAVE_SUSD% --network kovan --method addMinter --args %MODULE_SAVINGS%
 call npx oz send-tx --to %POOL_TOKEN_AAVE_USDT% --network kovan --method addMinter --args %MODULE_SAVINGS%
 call npx oz send-tx --to %POOL_TOKEN_AAVE_TUSD% --network kovan --method addMinter --args %MODULE_SAVINGS%
+call npx oz send-tx --to %POOL_TOKEN_BALANCER_WETH_WBTC% --network kovan --method addMinter --args %MODULE_INVESTING%
 goto :done
 
 :done
