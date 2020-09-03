@@ -178,7 +178,7 @@ contract SavingsModule is Module, AccessChecker, RewardDistributions, CapperRole
 
     /**
      * @notice Deposit tokens to several protocols
-     * @param _protocols Array of protocols to deposit tokens (each protocol only once)
+     * @param _protocols Array of protocols to deposit tokens (has to be sorted!!!)
      * @param _tokens Array of tokens to deposit
      * @param _dnAmounts Array of amounts (denormalized to token decimals)
      */
@@ -187,13 +187,46 @@ contract SavingsModule is Module, AccessChecker, RewardDistributions, CapperRole
     returns(uint256[] memory) 
     {
         require(_protocols.length == _tokens.length && _tokens.length == _dnAmounts.length, "SavingsModule: size of arrays does not match");
-        uint256[] memory ptAmounts = new uint256[](_protocols.length);
-        for (uint256 i=0; i < _protocols.length; i++) {
-            address[] memory tkns = new address[](1);
-            tkns[0] = _tokens[i];
-            uint256[] memory amnts = new uint256[](1);
-            amnts[0] = _dnAmounts[i];
-            ptAmounts[i] = deposit(_protocols[i], tkns, amnts);
+        require(_protocols.length > 0, "SavingsModule: nothing to deposit");
+        uint256 i;
+
+        //Count protocols and tokens
+        address[] memory foundProtocols = new address[](_protocols.length); // each protocol added only once
+        uint256[] memory foundTokens = new uint256[](_protocols.length);    // store how many tokens found for protocol with same index
+
+        foundProtocols[0] = _protocols[0]; foundTokens[0] = 1; //First protocol always on 0 position
+        uint256 lastProtocolIdx;
+        for(i=1; i<_protocols.length; i++){
+            address p = _protocols[i];
+            if(foundProtocols[lastProtocolIdx] != p) {
+                lastProtocolIdx++;
+                foundProtocols[lastProtocolIdx] = p;
+            }
+            foundTokens[lastProtocolIdx]++;
+        }
+
+        //Do deposits
+        uint256[] memory ptAmounts = new uint256[](lastProtocolIdx+1);
+        uint256 tknIdx; 
+        //prepare before first protocol
+        lastProtocolIdx = 0; 
+        address[] memory tkns = new address[](foundTokens[lastProtocolIdx]);
+        uint256[] memory amnts = new uint256[](foundTokens[lastProtocolIdx]);
+        for (i=0; i < _protocols.length; i++) {
+            if(_protocols[i] != foundProtocols[lastProtocolIdx]) {
+                //Finish with previous protocol
+                ptAmounts[lastProtocolIdx] = deposit(foundProtocols[lastProtocolIdx], tkns, amnts);
+                //Prepare for next protocol
+                lastProtocolIdx++;
+                tknIdx = 0;
+                delete tkns;
+                delete amnts;
+                tkns = new address[](foundTokens[lastProtocolIdx]);
+                amnts = new uint256[](foundTokens[lastProtocolIdx]);
+            }
+            tkns[tknIdx] = _tokens[i];
+            amnts[tknIdx] = _dnAmounts[i];
+            tknIdx++;
         }
         return ptAmounts;
     }
