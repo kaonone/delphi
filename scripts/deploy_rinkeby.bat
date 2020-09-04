@@ -6,6 +6,7 @@ rem ===== Tokens ====
 SET EXT_TOKEN_DAI=0x5592EC0cfb4dbc12D3aB100b257153436a1f0FEa
 SET EXT_TOKEN_USDC=0x4DBCdF9B62e891a7cec5A2568C3F4FAF9E8Abe2b
 SET EXT_TOKEN_AKRO=0xad7541B1E795656851caD5c70aA8d495063D9a95
+SET EXT_TOKEN_ADEL=0x4d7af020D42D3E1a3C0CaE7A8e56127a05EF5e5f
 
 rem ===== Compound ====
 SET EXT_COMPOUND_CTOKEN_DAI=0x6D7F0754FFeb405d23C51CE938289d4835bE3b14
@@ -25,6 +26,7 @@ SET MODULE_POOL=0x6CEEd89849f5890392D7c2Ecb429888e2123E99b
 SET MODULE_ACCESS=0xbFC891b6c83b36aFC9493957065D304661c4189A
 SET MODULE_SAVINGS=0xb733994019A4F55CAa3f130400B7978Cc6624c39
 SET MODULE_STAKING=0x6887DF2f4296e8B772cb19479472A16E836dB9e0
+SET MODULE_STAKING_ADEL=0x1a80540930B869df525981c4231Cd06b0Dcbf668
 
 SET PROTOCOL_CURVEFY_Y=0x1b19B5AE07b9414687A58BE6be9881641FB5F771
 SET POOL_TOKEN_CURVEFY_Y=0x84857Bb64950e7BC2DfEB8Cb69fb75F3f7512E8E
@@ -41,11 +43,14 @@ SET POOL_TOKEN_COMPOUND_DAI=0x06C2119701B0034BFaC3Be3C65DAc35054404571
 SET PROTOCOL_COMPOUND_USDC=0x048E645BA2965F48d72e7b855D6636F951aeD303
 SET POOL_TOKEN_COMPOUND_USDC=0x551AaBC00A7d02b51A81138fb8fA455786720793
 
-rem === ACTION ===
-echo call npx oz send-tx --to %PROTOCOL_CURVEFY_Y% --network rinkeby --method setCurveFi --args "%EXT_CURVEFY_Y_DEPOSIT%, %EXT_CURVEFY_Y_REWARDS%"
-echo call npx oz send-tx --to %MODULE_SAVINGS% --network rinkeby --method registerProtocol --args "%PROTOCOL_CURVEFY_Y%, %POOL_TOKEN_CURVEFY_Y%"
-echo call npx oz send-tx --to %PROTOCOL_CURVEFY_Y% --network rinkeby --method addDefiOperator --args %MODULE_SAVINGS%
-echo call npx oz send-tx --to %POOL_TOKEN_CURVEFY_Y% --network rinkeby --method addMinter --args %MODULE_SAVINGS%
+rem === GOTO REQUESTED OP===
+if "%1" neq "" goto :%1
+goto :done
+
+rem === ACTIONS ===
+:deploy1
+echo npx oz create StakingPoolADEL --network rinkeby --init "initialize(address _pool,address _stakingToken, uint256 _defaultLockInDuration)" --args "%MODULE_POOL%, %EXT_TOKEN_ADEL%, 0"
+echo npx oz send-tx --to %MODULE_POOL% --network rinkeby --method set --args "stakingAdel, %MODULE_STAKING_ADEL%, false"
 goto :done
 
 :init
@@ -69,6 +74,7 @@ echo CREATE MODULES
 call npx oz create AccessModule --network rinkeby --init "initialize(address _pool)" --args %MODULE_POOL%
 call npx oz create SavingsModule --network rinkeby --init "initialize(address _pool)" --args %MODULE_POOL%
 call npx oz create StakingPool --network rinkeby --init "initialize(address _pool,address _stakingToken, uint256 _defaultLockInDuration)" --args "%MODULE_POOL%, %EXT_TOKEN_AKRO%, 0"
+call npx oz create StakingPoolADEL --network rinkeby --init "initialize(address _pool,address _stakingToken, uint256 _defaultLockInDuration)" --args "%MODULE_POOL%, %EXT_TOKEN_ADEL%, 0"
 echo CREATE PROTOCOLS AND TOKENS
 echo CREATE Compound DAI
 call npx oz create CompoundProtocol_DAI --network rinkeby --init "initialize(address _pool, address _token, address _cToken, address _comptroller)" --args "%MODULE_POOL%, %EXT_TOKEN_DAI%, %EXT_COMPOUND_CTOKEN_DAI%, %EXT_COMPOUND_COMPTROLLER%"
@@ -96,6 +102,7 @@ echo SETUP POOL: CALL FOR ALL MODULES (set)
 call npx oz send-tx --to %MODULE_POOL% --network rinkeby --method set --args "access, %MODULE_ACCESS%, false"
 call npx oz send-tx --to %MODULE_POOL% --network rinkeby --method set --args "savings, %MODULE_SAVINGS%, false"
 call npx oz send-tx --to %MODULE_POOL% --network rinkeby --method set --args "staking, %MODULE_STAKING%, false"
+call npx oz send-tx --to %MODULE_POOL% --network rinkeby --method set --args "stakingAdel, %MODULE_STAKING_ADEL%, false"
 goto :done
 
 :setupProtocols

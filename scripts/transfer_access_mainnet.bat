@@ -4,6 +4,7 @@ SET MODULE_POOL=0x4C39b37f5F20a0695BFDC59cf10bd85a6c4B7c30
 SET MODULE_ACCESS=0x5fFcf7da7BdC49CA8A2E7a542BD59dC38228Dd45
 SET MODULE_SAVINGS=0x73fC3038B4cD8FfD07482b92a52Ea806505e5748
 SET MODULE_STAKING=0x3501Ec11d205fa249f2C42f5470e137b529b35D0
+SET MODULE_STAKING_ADEL=0x1A547c3dd03c39Fb2b5aEaFC524033879bD28F13
 
 SET PROTOCOL_CURVEFY_Y=0x7967adA2A32A633d5C055e2e075A83023B632B4e
 SET POOL_TOKEN_CURVEFY_Y=0x2AFA3c8Bf33E65d5036cD0f1c3599716894B3077
@@ -37,8 +38,11 @@ if "%1" neq "" goto :%1
 goto :done
 
 rem === ACTION ===
-:show
-echo npx oz set-admin %NEW_OWNER% --network mainnet
+:move1
+call npx oz send-tx --to %MODULE_STAKING_ADEL% --network mainnet --method addCapper --args %NEW_OWNER% || goto :error
+call npx oz send-tx --to %MODULE_STAKING_ADEL% --network mainnet --method renounceCapper || goto :error
+call npx oz send-tx --to %MODULE_STAKING_ADEL% --network mainnet --method transferOwnership --args %NEW_OWNER% || goto :error
+call npx oz send-tx --to %MODULE_POOL% --network mainnet --method transferOwnership --args %NEW_OWNER% || goto :error
 goto :done
 
 :addRoles
@@ -47,6 +51,7 @@ echo ADD MODULE ROLES
 call npx oz send-tx --to %MODULE_ACCESS% --network mainnet --method addWhitelistAdmin --args %NEW_OWNER% || goto :error
 call npx oz send-tx --to %MODULE_SAVINGS% --network mainnet --method addCapper --args %NEW_OWNER% || goto :error
 call npx oz send-tx --to %MODULE_STAKING% --network mainnet --method addCapper --args %NEW_OWNER% || goto :error
+call npx oz send-tx --to %MODULE_STAKING_ADEL% --network mainnet --method addCapper --args %NEW_OWNER% || goto :error
 
 echo ADD PROTOCOL ROLES
 call npx oz send-tx --to %PROTOCOL_COMPOUND_DAI% --network mainnet --method addDefiOperator --args %NEW_OWNER% || goto :error
@@ -75,6 +80,7 @@ echo REMOVE MODULE ROLES
 call npx oz send-tx --to %MODULE_ACCESS% --network mainnet --method renounceWhitelistAdmin || goto :error
 call npx oz send-tx --to %MODULE_SAVINGS% --network mainnet --method renounceCapper || goto :error
 call npx oz send-tx --to %MODULE_STAKING% --network mainnet --method renounceCapper || goto :error
+call npx oz send-tx --to %MODULE_STAKING_ADEL% --network mainnet --method renounceCapper || goto :error
 
 echo REMOVE PROTOCOL ROLES
 call npx oz send-tx --to %PROTOCOL_COMPOUND_DAI% --network mainnet --method renounceDefiOperator || goto :error
@@ -104,6 +110,7 @@ call npx oz send-tx --to %MODULE_POOL% --network mainnet --method transferOwners
 call npx oz send-tx --to %MODULE_ACCESS% --network mainnet --method transferOwnership --args %NEW_OWNER% || goto :error
 call npx oz send-tx --to %MODULE_SAVINGS% --network mainnet --method transferOwnership --args %NEW_OWNER% || goto :error
 call npx oz send-tx --to %MODULE_STAKING% --network mainnet --method transferOwnership --args %NEW_OWNER% || goto :error
+call npx oz send-tx --to %MODULE_STAKING_ADEL% --network mainnet --method transferOwnership --args %NEW_OWNER% || goto :error
 
 echo TRANSFER PROTOCOL OWNERSHIP
 call npx oz send-tx --to %PROTOCOL_COMPOUND_DAI% --network mainnet --method transferOwnership --args %NEW_OWNER% || goto :error
