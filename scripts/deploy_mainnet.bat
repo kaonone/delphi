@@ -8,6 +8,7 @@ SET EXT_TOKEN_USDC=0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48
 SET EXT_TOKEN_SUSD=0x57Ab1ec28D129707052df4dF418D58a2D46d5f51
 SET EXT_TOKEN_BUSD=0x4Fabb145d64652a948d72533023f6E7A623C7C53
 SET EXT_TOKEN_AKRO=0x8ab7404063ec4dbcfd4598215992dc3f8ec853d7
+SET EXT_TOKEN_ADEL=0x94d863173EE77439E4292284fF13fAD54b3BA182
 
 rem ===== Compound ====
 SET EXT_COMPOUND_CTOKEN_DAI=0x5d3a536e4d6dbd6114cc1ead35777bab948e3643
@@ -33,6 +34,7 @@ SET MODULE_POOL=0x4C39b37f5F20a0695BFDC59cf10bd85a6c4B7c30
 SET MODULE_ACCESS=0x5fFcf7da7BdC49CA8A2E7a542BD59dC38228Dd45
 SET MODULE_SAVINGS=0x73fC3038B4cD8FfD07482b92a52Ea806505e5748
 SET MODULE_STAKING=0x3501Ec11d205fa249f2C42f5470e137b529b35D0
+SET MODULE_STAKING_ADEL=0x1A547c3dd03c39Fb2b5aEaFC524033879bD28F13
 
 SET PROTOCOL_CURVEFY_Y=0x7967adA2A32A633d5C055e2e075A83023B632B4e
 SET POOL_TOKEN_CURVEFY_Y=0x2AFA3c8Bf33E65d5036cD0f1c3599716894B3077
@@ -64,6 +66,8 @@ goto :done
 
 rem === ACTION ===
 :show
+echo npx oz create StakingPoolADEL --network mainnet --init "initialize(address _pool,address _stakingToken, uint256 _defaultLockInDuration)" --args "%MODULE_POOL%, %EXT_TOKEN_ADEL%, 0"
+echo npx oz send-tx --to %MODULE_POOL% --network mainnet --method set --args "stakingAdel, %MODULE_STAKING_ADEL%, false"
 goto :done
 
 :init
@@ -90,6 +94,7 @@ echo CREATE MODULES
 call npx oz create AccessModule --network mainnet --init "initialize(address _pool)" --args %MODULE_POOL%
 call npx oz create SavingsModule --network mainnet --init "initialize(address _pool)" --args %MODULE_POOL%
 call npx oz create StakingPool --network mainnet --init "initialize(address _pool,address _stakingToken, uint256 _defaultLockInDuration)" --args "%MODULE_POOL%, %EXT_TOKEN_AKRO%, 0"
+call npx oz create StakingPoolADEL --network mainnet --init "initialize(address _pool,address _stakingToken, uint256 _defaultLockInDuration)" --args "%MODULE_POOL%, %EXT_TOKEN_ADEL%, 0"
 echo CREATE PROTOCOLS AND TOKENS
 echo CREATE Compound DAI
 call npx oz create CompoundProtocol_DAI --network mainnet --init "initialize(address _pool, address _token, address _cToken, address _comptroller)" --args "%MODULE_POOL%, %EXT_TOKEN_DAI%, %EXT_COMPOUND_CTOKEN_DAI%, %EXT_COMPOUND_COMPTROLLER%"
@@ -126,6 +131,7 @@ echo SETUP POOL: CALL FOR ALL MODULES (set)
 call npx oz send-tx --to %MODULE_POOL% --network mainnet --method set --args "access, %MODULE_ACCESS%, false"
 call npx oz send-tx --to %MODULE_POOL% --network mainnet --method set --args "savings, %MODULE_SAVINGS%, false"
 call npx oz send-tx --to %MODULE_POOL% --network mainnet --method set --args "staking, %MODULE_STAKING%, false"
+call npx oz send-tx --to %MODULE_POOL% --network mainnet --method set --args "stakingAdel, %MODULE_STAKING_ADEL%, false"
 goto :done
 
 :setupProtocols

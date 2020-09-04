@@ -41,6 +41,7 @@
 * AccessModule `0x5fFcf7da7BdC49CA8A2E7a542BD59dC38228Dd45`
 * SavingsModule `0x73fC3038B4cD8FfD07482b92a52Ea806505e5748`
 * StakingPool `0x3501Ec11d205fa249f2C42f5470e137b529b35D0`
+* StakingPoolAdel `0x1A547c3dd03c39Fb2b5aEaFC524033879bD28F13`
 
 #### Protocols
 ##### Curve.Fi Y [(y)DAI, (y)USDC, (y)USDT, (y)TUSD] - CRV
