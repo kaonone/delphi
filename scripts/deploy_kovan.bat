@@ -10,7 +10,7 @@ SET EXT_TOKEN_USDT=0x13512979ADE267AB5100878E2e0f485B568328a4
 SET EXT_TOKEN_TUSD=0x1c4a937d171752e1313D70fb16Ae2ea02f86303e
 
 SET EXT_TOKEN_BAL=0x4Ea46044d4bCEF7e413F459fCFFa2B6718D85CbE
-SET EXT_TOKEN_AKRO=
+SET EXT_TOKEN_AKRO=0x27f204d58dc05d5bcb8d4fdf65a8cfbbf50a8018
 
 rem ===== AAVE ====
 SET EXT_AAVE_ADDRESS_PROVIDER=0x506B0B2CF20FAA8f38a4E2B524EE43e1f4458Cc5
@@ -24,7 +24,7 @@ SET MODULE_POOL=0xB8CE630eBD9d3932565346dDaCAc59DB0AB624fe
 SET MODULE_ACCESS=0xdc605f07Fd230Fc1327f83FF140379C0C1D7773F
 SET MODULE_SAVINGS=0x7E9a8806D37653B7289ae09F36C708485F00DF4b
 SET MODULE_INVESTING=0xC1a8F66fCFEdd346768E5399932Db0eC50d37c0d
-SET MODULE_STAKING=
+SET MODULE_STAKING=0xF69Ff7e49423fDD3BdedBE7C9776c4B68DA6dFCD
 
 SET PROTOCOL_AAVE_DAI=0xE87EeAbFBaeAd01B716935b551BE41898F843038
 SET POOL_TOKEN_AAVE_DAI=0x47377b24A52B0635Fb9F2A45711d56D35CeA8240
@@ -50,6 +50,8 @@ goto :done
 
 rem === ACTION ===
 :deploy1
+echo npx oz create StakingPool --network kovan --init "initialize(address _pool,address _stakingToken, uint256 _defaultLockInDuration)" --args "%MODULE_POOL%, %EXT_TOKEN_AKRO%, 0"
+echo npx oz send-tx --to %MODULE_POOL% --network kovan --method set --args "staking, %MODULE_STAKING%, false"
 goto :done
 
 :init
@@ -70,7 +72,7 @@ echo CREATE MODULES
 call npx oz create AccessModule --network kovan --init "initialize(address _pool)" --args %MODULE_POOL%
 call npx oz create SavingsModule --network kovan --init "initialize(address _pool)" --args %MODULE_POOL%
 call npx oz create InvestingModule --network kovan --init "initialize(address _pool)" --args %MODULE_POOL%
-rem call npx oz create StakingPool --network kovan --init "initialize(address _pool,address _stakingToken, uint256 _defaultLockInDuration)" --args "%MODULE_POOL%, %EXT_TOKEN_AKRO%, 0"
+call npx oz create StakingPool --network kovan --init "initialize(address _pool,address _stakingToken, uint256 _defaultLockInDuration)" --args "%MODULE_POOL%, %EXT_TOKEN_AKRO%, 0"
 echo CREATE PROTOCOLS AND TOKENS
 echo CREATE Aave DAI
 call npx oz create AaveProtocol_DAI --network kovan --init "initialize(address _pool, address _token, address aaveAddressProvider, uint16 _aaveReferralCode)" --args "%MODULE_POOL%, %EXT_TOKEN_DAI%, %EXT_AAVE_ADDRESS_PROVIDER%, %EXT_AAVE_REFCODE%"
@@ -100,7 +102,7 @@ goto :done
 echo SETUP POOL: CALL FOR ALL MODULES (set)
 call npx oz send-tx --to %MODULE_POOL% --network kovan --method set --args "access, %MODULE_ACCESS%, false"
 call npx oz send-tx --to %MODULE_POOL% --network kovan --method set --args "savings, %MODULE_SAVINGS%, false"
-rem call npx oz send-tx --to %MODULE_POOL% --network kovan --method set --args "staking, %MODULE_STAKING%, false"
+call npx oz send-tx --to %MODULE_POOL% --network kovan --method set --args "staking, %MODULE_STAKING%, false"
 goto :done
 
 :addProtocols
