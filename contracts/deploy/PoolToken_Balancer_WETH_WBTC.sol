@@ -10,4 +10,9 @@ contract PoolToken_Balancer_WETH_WBTC is PoolToken {
             "dbWW"
         );
     }    
+
+    function userBalanceChanged(address account) internal {
+        IPoolTokenBalanceChangeRecipient investing = IPoolTokenBalanceChangeRecipient(getModuleAddress(MODULE_INVESTING));
+        investing.poolTokenBalanceChanged(account);
+    }
 }

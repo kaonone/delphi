@@ -183,7 +183,7 @@ contract SavingsModule is Module, AccessChecker, RewardDistributions, CapperRole
      * @param _dnAmounts Array of amounts (denormalized to token decimals)
      */
     function deposit(address[] memory _protocols, address[] memory _tokens, uint256[] memory _dnAmounts) 
-    public operationAllowed(IAccessModule.Operation.Deposit) 
+    public //operationAllowed(IAccessModule.Operation.Deposit) 
     returns(uint256[] memory) 
     {
         require(_protocols.length == _tokens.length && _tokens.length == _dnAmounts.length, "SavingsModule: size of arrays does not match");
@@ -238,7 +238,7 @@ contract SavingsModule is Module, AccessChecker, RewardDistributions, CapperRole
      * @param _dnAmounts Array of amounts (denormalized to token decimals)
      */
     function deposit(address _protocol, address[] memory _tokens, uint256[] memory _dnAmounts)
-    public operationAllowed(IAccessModule.Operation.Deposit)
+    public //operationAllowed(IAccessModule.Operation.Deposit)
     returns(uint256) 
     {
         //distributeRewardIfRequired(_protocol);
@@ -310,7 +310,7 @@ contract SavingsModule is Module, AccessChecker, RewardDistributions, CapperRole
      * @return Amount of PoolToken burned from user
      */
     function withdrawAll(address _protocol, uint256 nAmount)
-    public operationAllowed(IAccessModule.Operation.Withdraw)
+    public //operationAllowed(IAccessModule.Operation.Withdraw)
     returns(uint256) 
     {
         //distributeRewardIfRequired(_protocol);
@@ -358,7 +358,7 @@ contract SavingsModule is Module, AccessChecker, RewardDistributions, CapperRole
      * @return Amount of PoolToken burned from user
      */
     function withdraw(address _protocol, address token, uint256 dnAmount, uint256 maxNAmount)
-    public operationAllowed(IAccessModule.Operation.Withdraw)
+    public //operationAllowed(IAccessModule.Operation.Withdraw)
     returns(uint256){
         //distributeRewardIfRequired(_protocol);
 

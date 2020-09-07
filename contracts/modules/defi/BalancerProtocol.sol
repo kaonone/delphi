@@ -26,9 +26,9 @@ contract BalancerProtocol is ProtocolBase {
         uint256 normalizedWeight;
     }
 
-    IBPool bpt; //Balancer pool
-    IERC20 bal; //Balancer reward token
-    address[] registeredTokens; //addresses of tokens in the pool
+    IBPool public bpt; //Balancer pool
+    IERC20 public bal; //Balancer reward token
+    address[] public registeredTokens; //addresses of tokens in the pool
     mapping(address => TokenInfo) registeredTokensInfo; //Maps token addresses to their details
 
     function initialize(address _pool) public initializer {

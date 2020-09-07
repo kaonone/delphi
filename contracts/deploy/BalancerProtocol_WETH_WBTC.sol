@@ -8,10 +8,4 @@ contract BalancerProtocol_WETH_WBTC is BalancerProtocol {
         BalancerProtocol.initialize(_pool);
         setBalancer(_bpt, _bal);
     }
-
-    function userBalanceChanged(address account) internal {
-        IPoolTokenBalanceChangeRecipient investing = IPoolTokenBalanceChangeRecipient(getModuleAddress(MODULE_INVESTING));
-        investing.poolTokenBalanceChanged(account);
-    }
-
 }
