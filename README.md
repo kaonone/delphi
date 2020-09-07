@@ -29,7 +29,7 @@
 * LiquidityGauge `0xa90996896660decc6e997655e065b23788857849`
 
 ##### Curve.Fi sBTC
-* Deposit
+* Swap `0x7fC77b5c7614E1533320Ea6DDc2Eb61fa00A9714`
 * LiquidityGauge `0x705350c4BcD35c9441419DdD5d2f097d7a55410F`
 
 ### Akropolis contracts
