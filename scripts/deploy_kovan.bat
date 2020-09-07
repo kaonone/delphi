@@ -23,7 +23,7 @@ rem ==== Akropolis ====
 SET MODULE_POOL=0xB8CE630eBD9d3932565346dDaCAc59DB0AB624fe
 SET MODULE_ACCESS=0xdc605f07Fd230Fc1327f83FF140379C0C1D7773F
 SET MODULE_SAVINGS=0x7E9a8806D37653B7289ae09F36C708485F00DF4b
-SET MODULE_INVESTING=0xC1a8F66fCFEdd346768E5399932Db0eC50d37c0d
+SET MODULE_INVESTING=0xf63FEC0879F85E7Ccf262C34e0697Fc359E98C32
 SET MODULE_STAKING=0xF69Ff7e49423fDD3BdedBE7C9776c4B68DA6dFCD
 
 SET PROTOCOL_AAVE_DAI=0xE87EeAbFBaeAd01B716935b551BE41898F843038
@@ -49,9 +49,15 @@ if "%1" neq "" goto :%1
 goto :done
 
 rem === ACTION ===
+:show
+echo npx oz create InvestingModule --network kovan --init "initialize(address _pool)" --args %MODULE_POOL%
+echo npx oz send-tx --to %MODULE_POOL% --network kovan --method set --args "investing, %MODULE_INVESTING%, false"
+goto :done
+
 :deploy1
-echo npx oz create StakingPool --network kovan --init "initialize(address _pool,address _stakingToken, uint256 _defaultLockInDuration)" --args "%MODULE_POOL%, %EXT_TOKEN_AKRO%, 0"
-echo npx oz send-tx --to %MODULE_POOL% --network kovan --method set --args "staking, %MODULE_STAKING%, false"
+call npx oz send-tx --to %MODULE_INVESTING% --network kovan --method registerProtocol --args "%PROTOCOL_BALANCER_WETH_WBTC%, %POOL_TOKEN_BALANCER_WETH_WBTC%"
+call npx oz send-tx --to %PROTOCOL_BALANCER_WETH_WBTC% --network kovan --method addDefiOperator --args %MODULE_INVESTING%
+call npx oz send-tx --to %POOL_TOKEN_BALANCER_WETH_WBTC% --network kovan --method addMinter --args %MODULE_INVESTING%
 goto :done
 
 :init
