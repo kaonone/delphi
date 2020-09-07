@@ -55,10 +55,17 @@ echo npx oz send-tx --to %MODULE_POOL% --network kovan --method set --args "inve
 goto :done
 
 :deploy1
-call npx oz send-tx --to %MODULE_INVESTING% --network kovan --method registerProtocol --args "%PROTOCOL_BALANCER_WETH_WBTC%, %POOL_TOKEN_BALANCER_WETH_WBTC%"
-call npx oz send-tx --to %PROTOCOL_BALANCER_WETH_WBTC% --network kovan --method addDefiOperator --args %MODULE_INVESTING%
-call npx oz send-tx --to %POOL_TOKEN_BALANCER_WETH_WBTC% --network kovan --method addMinter --args %MODULE_INVESTING%
+echo npx oz send-tx --to %MODULE_INVESTING% --network kovan --method registerProtocol --args "%PROTOCOL_BALANCER_WETH_WBTC%, %POOL_TOKEN_BALANCER_WETH_WBTC%"
+echo npx oz send-tx --to %PROTOCOL_BALANCER_WETH_WBTC% --network kovan --method addDefiOperator --args %MODULE_INVESTING%
+echo npx oz send-tx --to %POOL_TOKEN_BALANCER_WETH_WBTC% --network kovan --method addMinter --args %MODULE_INVESTING%
 goto :done
+
+:deploy2
+call npx oz send-tx --to %MODULE_SAVINGS% --network kovan --method registerProtocol --args "%PROTOCOL_BALANCER_WETH_WBTC%, %POOL_TOKEN_BALANCER_WETH_WBTC%"
+call npx oz send-tx --to %PROTOCOL_BALANCER_WETH_WBTC% --network kovan --method addDefiOperator --args %MODULE_SAVINGS%
+call npx oz send-tx --to %POOL_TOKEN_BALANCER_WETH_WBTC% --network kovan --method addMinter --args %MODULE_SAVINGS%
+goto :done
+
 
 :init
 echo INIT PROJECT, ADD CONTRACTS
