@@ -102,6 +102,7 @@ goto :done
 echo SETUP POOL: CALL FOR ALL MODULES (set)
 call npx oz send-tx --to %MODULE_POOL% --network kovan --method set --args "access, %MODULE_ACCESS%, false"
 call npx oz send-tx --to %MODULE_POOL% --network kovan --method set --args "savings, %MODULE_SAVINGS%, false"
+call npx oz send-tx --to %MODULE_POOL% --network kovan --method set --args "investing, %MODULE_INVESTING%, false"
 call npx oz send-tx --to %MODULE_POOL% --network kovan --method set --args "staking, %MODULE_STAKING%, false"
 goto :done
 
