@@ -122,7 +122,7 @@ contract CurveFiProtocol is ProtocolBase {
         uint256 withdrawShares = poolShares.mul(nAmount).mul(slippageMultiplier).div(nBalance).div(1e18); //Increase required amount to some percent, so that we definitely have enough to withdraw
 
         unstakeCurveFiToken(withdrawShares);
-        curveFiDeposit.remove_liquidity_one_coin(withdrawShares, int128(tokenIdx), wAmount, DONATE_DUST);
+        deposit_remove_liquidity_one_coin(withdrawShares, tokenIdx, wAmount);
 
         available = IERC20(token).balanceOf(address(this));
         require(available >= amount, "CurveFiYProtocol: failed to withdraw required amount");
@@ -185,9 +185,8 @@ contract CurveFiProtocol is ProtocolBase {
     }
     
     function balanceOfAll() public returns(uint256[] memory balances) {
-        IERC20 cfToken = IERC20(curveFiDeposit.token());
         uint256 cfBalance = curveFiTokenBalance();
-        uint256 cfTotalSupply = cfToken.totalSupply();
+        uint256 cfTotalSupply = curveFiToken.totalSupply();
 
         balances = new uint256[](_registeredTokens.length);
         for (uint256 i=0; i < _registeredTokens.length; i++){
@@ -243,6 +242,10 @@ contract CurveFiProtocol is ProtocolBase {
             }
         }
         return false;
+    }
+
+    function deposit_remove_liquidity_one_coin(uint256 _token_amount, uint256 i, uint256 min_uamount) internal {
+        curveFiDeposit.remove_liquidity_one_coin(_token_amount, int128(i), min_uamount, DONATE_DUST);
     }
 
     function normalizeAmount(address token, uint256 amount) internal view returns(uint256) {
