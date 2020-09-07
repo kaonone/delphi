@@ -25,13 +25,6 @@ contract ProtocolBase is Module, DefiOperatorRole, IDefiProtocol {
         DefiOperatorRole.initialize(_msgSender());
     }
 
-    function upgrade(address rtkn, uint256 newStoredBalance) public onlyOwner {
-        require(rewardBalances[rtkn] == 0, "No upgrade required");
-        uint256 balance = IERC20(rtkn).balanceOf(address(this));
-        require(newStoredBalance <= balance, "Can not store more than available");
-        rewardBalances[rtkn] = newStoredBalance;
-    }
-
     function supportedRewardTokens() public view returns(address[] memory);
 
     function isSupportedRewardToken(address token) public view returns(bool);
