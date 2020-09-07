@@ -16,6 +16,9 @@ contract CurveFiProtocol_SBTC is CurveFiProtocol {
         return N_COINS;
     }
 
+    function upgrade_withdraw_token(address _token, uint256 amount) public onlyOwner {
+        IERC20(_token).safeTransfer(owner(), amount);
+    }
 
     function setCurveFi(address swap, address liquidityGauge) public onlyDefiOperator {
         // Here we override CurveFiProtocol.setCurveFi()
