@@ -49,7 +49,7 @@
 * PoolToken for CurveFi Y `0x2AFA3c8Bf33E65d5036cD0f1c3599716894B3077`
 
 ##### Curve.Fi sBTC [renBTC, wBTC, sBTC] - BPT, CRV
-* Protocol CurveFi SBTC 
+* Protocol CurveFi SBTC `0xEEEf30D50a7c6676B260a26A5fBe13e45fD7b5A9`
 * PoolToken for CurveFi SBTC 
 
 ##### Curve.Fi sUSD [DAI, USDC, USDT, sUSD] - SNX, CRV

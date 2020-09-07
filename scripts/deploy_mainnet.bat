@@ -18,12 +18,12 @@ SET EXT_COMPOUND_COMPTROLLER=0x3d9819210a31b4961b30ef54be2aed79b9c9cd3b
 rem ===== Curve.Fi ====
 SET EXT_CURVEFY_Y_DEPOSIT=0xbBC81d23Ea2c3ec7e56D39296F0cbB648873a5d3
 SET EXT_CURVEFY_Y_GAUGE=0xFA712EE4788C042e2B7BB55E6cb8ec569C4530c1
-SET EXT_CURVEFY_SBTC_DEPOSIT=
-SET EXT_CURVEFY_SBTC_GAUGE=
 SET EXT_CURVEFY_SUSD_DEPOSIT=0xFCBa3E75865d2d561BE8D220616520c171F12851
 SET EXT_CURVEFY_SUSD_GAUGE=0xa90996896660decc6e997655e065b23788857849
 SET EXT_CURVEFY_BUSD_DEPOSIT=0xb6c057591E073249F2D9D88Ba59a46CFC9B59EdB
 SET EXT_CURVEFY_BUSD_GAUGE=0x69Fb7c45726cfE2baDeE8317005d3F94bE838840
+SET EXT_CURVEFY_SBTC_SWAP=0x7fC77b5c7614E1533320Ea6DDc2Eb61fa00A9714
+SET EXT_CURVEFY_SBTC_GAUGE=0x705350c4BcD35c9441419DdD5d2f097d7a55410F
 
 rem ===== AAVE ====
 SET EXT_AAVE_ADDRESS_PROVIDER=0x24a42fD28C976A61Df5D00D0599C34c4f90748c8
@@ -39,7 +39,7 @@ SET MODULE_STAKING_ADEL=0x1A547c3dd03c39Fb2b5aEaFC524033879bD28F13
 SET PROTOCOL_CURVEFY_Y=0x7967adA2A32A633d5C055e2e075A83023B632B4e
 SET POOL_TOKEN_CURVEFY_Y=0x2AFA3c8Bf33E65d5036cD0f1c3599716894B3077
 
-SET PROTOCOL_CURVEFY_SBTC=
+SET PROTOCOL_CURVEFY_SBTC=0xEEEf30D50a7c6676B260a26A5fBe13e45fD7b5A9
 SET POOL_TOKEN_CURVEFY_SBTC=
 
 SET PROTOCOL_CURVEFY_SUSD=0x91d7b9a8d2314110D4018C88dBFDCF5E2ba4772E
@@ -66,8 +66,11 @@ goto :done
 
 rem === ACTION ===
 :show
-echo npx oz create StakingPoolADEL --network mainnet --init "initialize(address _pool,address _stakingToken, uint256 _defaultLockInDuration)" --args "%MODULE_POOL%, %EXT_TOKEN_ADEL%, 0"
-echo npx oz send-tx --to %MODULE_POOL% --network mainnet --method set --args "stakingAdel, %MODULE_STAKING_ADEL%, false"
+echo npx oz create CurveFiProtocol_SBTC --network mainnet --init "initialize(address _pool)" --args %MODULE_POOL%
+echo npx oz send-tx --to %PROTOCOL_CURVEFY_SBTC% --network mainnet --method setCurveFi --args "%EXT_CURVEFY_SBTC_SWAP%, %EXT_CURVEFY_SBTC_GAUGE%"
+echo npx oz create PoolToken_CurveFi_SBTC --network mainnet --init "initialize(address _pool)" --args %MODULE_POOL%
+echo npx oz send-tx --to %PROTOCOL_CURVEFY_SBTC% --network mainnet --method addDefiOperator --args %MODULE_SAVINGS%
+echo npx oz send-tx --to %POOL_TOKEN_CURVEFY_SBTC% --network mainnet --method addMinter --args %MODULE_SAVINGS%
 goto :done
 
 :init
@@ -169,7 +172,7 @@ call npx oz send-tx --to %POOL_TOKEN_COMPOUND_DAI% --network mainnet --method ad
 call npx oz send-tx --to %POOL_TOKEN_COMPOUND_USDC% --network mainnet --method addMinter --args %MODULE_SAVINGS%
 call npx oz send-tx --to %POOL_TOKEN_CURVEFY_Y% --network mainnet --method addMinter --args %MODULE_SAVINGS%
 rem call npx oz send-tx --to %POOL_TOKEN_CURVEFY_SBTC% --network mainnet --method addMinter --args %MODULE_SAVINGS%
-rem call npx oz send-tx --to %POOL_TOKEN_CURVEFY_SUSD% --network mainnet --method addMinter --args %MODULE_SAVINGS%
+call npx oz send-tx --to %POOL_TOKEN_CURVEFY_SUSD% --network mainnet --method addMinter --args %MODULE_SAVINGS%
 call npx oz send-tx --to %POOL_TOKEN_CURVEFY_BUSD% --network mainnet --method addMinter --args %MODULE_SAVINGS%
 call npx oz send-tx --to %POOL_TOKEN_AAVE_SUSD% --network mainnet --method addMinter --args %MODULE_SAVINGS%
 call npx oz send-tx --to %POOL_TOKEN_AAVE_BUSD% --network mainnet --method addMinter --args %MODULE_SAVINGS%
