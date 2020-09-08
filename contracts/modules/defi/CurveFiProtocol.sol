@@ -112,20 +112,22 @@ contract CurveFiProtocol is ProtocolBase {
     function withdraw(address beneficiary, address token, uint256 amount) public onlyDefiOperator {
         uint256 tokenIdx = getTokenIndex(token);
         uint256 available = IERC20(token).balanceOf(address(this));
-        uint256 wAmount = amount.sub(available); //Count tokens left after previous withdrawal
+        if(available < amount) {
+            uint256 wAmount = amount.sub(available); //Count tokens left after previous withdrawal
 
-        // count shares for proportional withdraw
-        uint256 nAmount = normalizeAmount(token, wAmount);
-        uint256 nBalance = normalizedBalance();
+            // count shares for proportional withdraw
+            uint256 nAmount = normalizeAmount(token, wAmount);
+            uint256 nBalance = normalizedBalance();
 
-        uint256 poolShares = curveFiTokenBalance();
-        uint256 withdrawShares = poolShares.mul(nAmount).mul(slippageMultiplier).div(nBalance).div(1e18); //Increase required amount to some percent, so that we definitely have enough to withdraw
+            uint256 poolShares = curveFiTokenBalance();
+            uint256 withdrawShares = poolShares.mul(nAmount).mul(slippageMultiplier).div(nBalance).div(1e18); //Increase required amount to some percent, so that we definitely have enough to withdraw
 
-        unstakeCurveFiToken(withdrawShares);
-        deposit_remove_liquidity_one_coin(withdrawShares, tokenIdx, wAmount);
+            unstakeCurveFiToken(withdrawShares);
+            deposit_remove_liquidity_one_coin(withdrawShares, tokenIdx, wAmount);
 
-        available = IERC20(token).balanceOf(address(this));
-        require(available >= amount, "CurveFiYProtocol: failed to withdraw required amount");
+            available = IERC20(token).balanceOf(address(this));
+            require(available >= amount, "CurveFiYProtocol: failed to withdraw required amount");
+        }
         IERC20 ltoken = IERC20(token);
         ltoken.safeTransfer(beneficiary, amount);
     }
