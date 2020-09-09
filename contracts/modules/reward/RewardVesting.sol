@@ -116,7 +116,8 @@ contract RewardVesting is Base, RewardManagerRole {
         if(ep.end > block.timestamp) {
             //Half-claim
             uint256 epStart = ri.epochs[i-1].end;
-            uint256 epochClaim = ep.amount.mul(block.timestamp - epStart).div(ep.end - epStart);
+            uint256 claimStart = (previousClaim > epStart)?previousClaim:epStart;
+            uint256 epochClaim = ep.amount.mul(block.timestamp.sub(claimStart)).div(ep.end.sub(epStart));
             claimAmount = claimAmount.add(epochClaim);
             i--;
         }
