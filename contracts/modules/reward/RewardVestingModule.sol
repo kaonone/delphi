@@ -35,6 +35,7 @@ contract RewardVestingModule is Module, RewardManagerRole {
 
     function initialize(address _pool) public initializer {
         Module.initialize(_pool);
+        RewardManagerRole.initialize(_msgSender());
         defaultEpochLength = 7*24*60*60;
     }
 
