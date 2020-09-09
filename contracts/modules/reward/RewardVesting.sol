@@ -81,7 +81,8 @@ contract RewardVesting is Base, RewardManagerRole {
     function claimRewards() public {
         address protocol = _msgSender();
         ProtocolRewards storage r = rewards[protocol];
-        require(r.tokens.length > 0, "RewardVesting: call only from registered protocols allowed");
+        //require(r.tokens.length > 0, "RewardVesting: call only from registered protocols allowed");
+        if(r.tokens.length == 0) return;    //This allows claims from protocols which are not yet registered without reverting
         for(uint256 i=0; i < r.tokens.length; i++){
             _claimRewards(protocol, r.tokens[i]);
         }
@@ -96,13 +97,17 @@ contract RewardVesting is Base, RewardManagerRole {
         RewardInfo storage ri = r.rewardInfo[token];
         uint256 epochsLength = ri.epochs.length;
         require(epochsLength > 0, "RewardVesting: protocol or token not registered");
+
         Epoch storage lastEpoch = ri.epochs[epochsLength-1];
-        uint256 previousClaim = ri.lastClaim; 
+        uint256 previousClaim = ri.lastClaim;
+        if(previousClaim == lastEpoch.end) return; // Nothing to claim yet
+
         if(lastEpoch.end < block.timestamp) {
             ri.lastClaim = lastEpoch.end;
         }else{
             ri.lastClaim = block.timestamp;
         }
+        
         uint256 claimAmount;
         Epoch storage ep = ri.epochs[0];
         uint256 i;

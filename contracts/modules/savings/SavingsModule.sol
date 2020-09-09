@@ -151,6 +151,22 @@ contract SavingsModule is Module, AccessChecker, RewardDistributions, CapperRole
         emit ProtocolRegistered(address(protocol), address(poolToken));
     }
 
+    /**
+     * @notice Only adding reward tokens is correctly supported now (!!!)
+     */
+    function updateProtocolRewardTokens(IDefiProtocol protocol) public onlyOwner {
+        ProtocolInfo storage pi = protocols[address(protocol)];
+        pi.supportedRewardTokens = protocol.supportedRewardTokens();
+        for(uint256 i=0; i < pi.supportedRewardTokens.length; i++) {
+            address rtkn = pi.supportedRewardTokens[i];
+            if(!rewardTokenRegistered[rtkn]){
+                rewardTokenRegistered[rtkn] = true;
+                registeredRewardTokens.push(rtkn);
+            }
+        }
+        //TODO: cleanup registeredRewardTokens if reward tokens removed
+    }
+
     // function unregisterProtocol(address _protocol) public onlyOwner {
     //     address poolToken = address(protocols[_protocol].poolToken);
     //     delete protocols[_protocol];
