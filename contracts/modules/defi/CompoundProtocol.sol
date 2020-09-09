@@ -96,13 +96,11 @@ contract CompoundProtocol is ProtocolBase {
     }
 
     function supportedRewardTokens() public view returns(address[] memory) {
-        address[] memory rtokens = new address[](1);
-        rtokens[0] = address(compToken);
+        uint256 defaultRTCount = defaultRewardTokensCount();
+        address[] memory rtokens = new address[](defaultRTCount+1);
+        rtokens = defaultRewardTokensFillArray(rtokens);
+        rtokens[defaultRTCount] = address(compToken);
         return rtokens;
-    }
-
-    function isSupportedRewardToken(address token) public view returns(bool) {
-        return(token == address(compToken));
     }
 
     function cliamRewardsFromProtocol() internal {
