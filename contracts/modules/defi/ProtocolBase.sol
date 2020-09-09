@@ -8,7 +8,7 @@ import "../../interfaces/defi/IDefiProtocol.sol";
 import "../../interfaces/defi/ICErc20.sol";
 import "../../interfaces/defi/IComptroller.sol";
 import "../../common/Module.sol";
-import "../reward/RewardVesting.sol";
+import "../reward/RewardVestingModule.sol";
 import "./DefiOperatorRole.sol";
 
 contract ProtocolBase is Module, DefiOperatorRole, IDefiProtocol {
@@ -80,7 +80,7 @@ contract ProtocolBase is Module, DefiOperatorRole, IDefiProtocol {
     }
 
     function claimDefaultRewards() internal {
-        RewardVesting rv = RewardVesting(getModuleAddress(MODULE_REWARD));
+        RewardVestingModule rv = RewardVestingModule(getModuleAddress(MODULE_REWARD));
         rv.claimRewards();
     }
 

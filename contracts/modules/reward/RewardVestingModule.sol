@@ -3,11 +3,11 @@ pragma solidity ^0.5.12;
 import "@openzeppelin/contracts-ethereum-package/contracts/math/SafeMath.sol";
 import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/SafeERC20.sol";
 import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/IERC20.sol";
-import "../../common/Base.sol";
+import "../../common/Module.sol";
 import "./RewardManagerRole.sol";
 
 
-contract RewardVesting is Base, RewardManagerRole {
+contract RewardVestingModule is Module, RewardManagerRole {
     event RewardTokenRegistered(address indexed protocol, address token);
     event EpochRewardAdded(address indexed protocol, address indexed token, uint256 epoch, uint256 amount);
     event RewardClaimed(address indexed protocol, address indexed token, uint256 claimPeriodStart, uint256 claimPeriodEnd, uint256 claimAmount);
@@ -33,8 +33,8 @@ contract RewardVesting is Base, RewardManagerRole {
     mapping(address => ProtocolRewards) internal rewards;
     uint256 public defaultEpochLength;
 
-    function initialize() public initializer {
-        Base.initialize();
+    function initialize(address _pool) public initializer {
+        Module.initialize(_pool);
         defaultEpochLength = 7*24*60*60;
     }
 
