@@ -25,6 +25,7 @@ rem ==== Akropolis ====
 SET MODULE_POOL=0x6CEEd89849f5890392D7c2Ecb429888e2123E99b
 SET MODULE_ACCESS=0xbFC891b6c83b36aFC9493957065D304661c4189A
 SET MODULE_SAVINGS=0xb733994019A4F55CAa3f130400B7978Cc6624c39
+SET MODULE_INVESTING=0x26ecd051a70e2cB39Dc1834aF07ABd12840479bf
 SET MODULE_STAKING=0x6887DF2f4296e8B772cb19479472A16E836dB9e0
 SET MODULE_STAKING_ADEL=0x1a80540930B869df525981c4231Cd06b0Dcbf668
 SET MODULE_REWARD=0x214eAB7667848ec753A50Bf98416a8E12D3516f2
@@ -55,6 +56,12 @@ echo npx oz send-tx --to %MODULE_POOL% --network rinkeby --method set --args "re
 echo npx oz send-tx --to %MODULE_POOL% --network rinkeby --method set --args "akro, %EXT_TOKEN_AKRO%, false"
 echo npx oz send-tx --to %MODULE_POOL% --network rinkeby --method set --args "adel, %EXT_TOKEN_ADEL%, false"
 goto :done
+
+:show2
+echo npx oz create InvestingModule --network rinkeby --init "initialize(address _pool)" --args %MODULE_POOL%
+echo npx oz send-tx --to %MODULE_POOL% --network rinkeby --method set --args "investing, %MODULE_INVESTING%, false"
+goto :done
+
 
 :init
 echo INIT PROJECT, ADD CONTRACTS
