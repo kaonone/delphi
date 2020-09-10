@@ -164,6 +164,7 @@ contract SavingsModule is Module, AccessChecker, RewardDistributions, CapperRole
                 registeredRewardTokens.push(rtkn);
             }
         }
+        emit ProtocolRegistered(address(protocol), poolTokenByProtocol(address(protocol)));
         //TODO: cleanup registeredRewardTokens if reward tokens removed
     }
 
@@ -448,6 +449,10 @@ contract SavingsModule is Module, AccessChecker, RewardDistributions, CapperRole
         for(uint256 i=0; i<poolTokens.length; i++){
             poolTokens[i] = address(protocols[address(registeredProtocols[i])].poolToken);
         }
+    }
+
+    function supportedProtocols() public view returns(IDefiProtocol[] memory) {
+        return registeredProtocols;
     }
 
     function supportedRewardTokens() public view returns(address[] memory) {
