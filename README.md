@@ -32,6 +32,11 @@
 * Swap `0x7fC77b5c7614E1533320Ea6DDc2Eb61fa00A9714`
 * LiquidityGauge `0x705350c4BcD35c9441419DdD5d2f097d7a55410F`
 
+##### Curve.Fi renBTC
+* Swap `0x93054188d876f558f4a66B2EF1d97d16eDf0895B`
+* LiquidityGauge `0xB1F2cdeC61db658F091671F5f199635aEF202CAC`
+
+
 ### Akropolis contracts
 * AKRO `0x8ab7404063ec4dbcfd4598215992dc3f8ec853d7`
 * ADEL `0x94d863173EE77439E4292284fF13fAD54b3BA182`
@@ -49,9 +54,13 @@
 * Protocol CurveFi Y `0x7967adA2A32A633d5C055e2e075A83023B632B4e`
 * PoolToken for CurveFi Y `0x2AFA3c8Bf33E65d5036cD0f1c3599716894B3077`
 
-##### Curve.Fi sBTC [renBTC, wBTC, sBTC] - BPT, CRV
+##### Curve.Fi sBTC [renBTC, wBTC, sBTC] - CRV
 * Protocol CurveFi SBTC `0xEEEf30D50a7c6676B260a26A5fBe13e45fD7b5A9`
 * PoolToken for CurveFi SBTC `0x933082B3D21a6ED90ed7EcA470Fd424Df5D21BEf`
+
+##### Curve.Fi renBTC [renBTC, wBTC] - CRV
+* Protocol CurveFi renBTC 
+* PoolToken for CurveFi renBTC
 
 ##### Curve.Fi sUSD [DAI, USDC, USDT, sUSD] - SNX, CRV
 * Protocol CurveFi SUSD `0x91d7b9a8d2314110D4018C88dBFDCF5E2ba4772E`
