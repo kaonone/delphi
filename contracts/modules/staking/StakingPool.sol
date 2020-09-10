@@ -39,6 +39,10 @@ contract StakingPool is StakingPoolBase {
         emit RewardTokenRegistered(token);
     }
 
+    function claimRewardsFromVesting() public onlyCapper{
+        _claimRewardsFromVesting();
+    }
+
     function isRegisteredRewardToken(address token) public view returns(bool) {
         for(uint256 i=0; i<registeredRewardTokens.length; i++){
             if(token == registeredRewardTokens[i]) return true;
