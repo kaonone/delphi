@@ -32,6 +32,9 @@ contract StakingPool is StakingPoolBase {
     mapping(address=>RewardData) internal rewards;
     mapping(address=>UserRewardInfo) internal userRewards;
 
+    function setRewardVesting(address _rewardVesting) public onlyOwner {
+        rewardVesting = RewardVestingModule(_rewardVesting);
+    }
 
     function registerRewardToken(address token) public onlyOwner {
         require(!isRegisteredRewardToken(token), "StakingPool: already registered");
@@ -54,8 +57,8 @@ contract StakingPool is StakingPoolBase {
         return registeredRewardTokens;
     }
 
-    function withdrawRewards() public {
-        _withdrawRewards(_msgSender());
+    function withdrawRewards() public returns(uint256[] memory){
+        return _withdrawRewards(_msgSender());
     }
 
     function rewardBalanceOf(address user, address token) public view returns(uint256) {
@@ -73,17 +76,19 @@ contract StakingPool is StakingPoolBase {
         return reward;
     }
 
-    function _withdrawRewards(address user) internal {
+    function _withdrawRewards(address user) internal returns(uint256[] memory rwrds) {
+        rwrds = new uint256[](registeredRewardTokens.length);
         for(uint256 i=0; i<registeredRewardTokens.length; i++){
-            _withdrawRewards(user, registeredRewardTokens[i]);
+            rwrds[i] = _withdrawRewards(user, registeredRewardTokens[i]);
         }
+        return rwrds;
     }
 
-    function _withdrawRewards(address user, address token) internal {
+    function _withdrawRewards(address user, address token) internal returns(uint256){
         UserRewardInfo storage uri = userRewards[user];
         RewardData storage rd = rewards[token];
         if(rd.distributions.length == 0) { //No distributions = nothing to do
-            return;
+            return 0;
         }
         uint256 rwrds = rewardBalanceOf(user, token);
         uri.nextDistribution[token] = rd.distributions.length;
@@ -92,6 +97,7 @@ contract StakingPool is StakingPoolBase {
             IERC20(token).transfer(user, rwrds);
             emit RewardWithdraw(user, token, rwrds);
         }
+        return rwrds;
     }
 
     function createStake(address _address, uint256 _amount, uint256 _lockInDuration, bytes memory _data) internal {

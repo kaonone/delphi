@@ -314,6 +314,15 @@
     "type": "function"
   },
   {
+    "constant": false,
+    "inputs": [],
+    "name": "claimRewardsFromVesting",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
     "constant": true,
     "inputs": [],
     "name": "defaultLockInDuration",
@@ -789,6 +798,21 @@
     "constant": false,
     "inputs": [
       {
+        "internalType": "address",
+        "name": "_rewardVesting",
+        "type": "address"
+      }
+    ],
+    "name": "setRewardVesting",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
         "internalType": "uint256",
         "name": "_newCap",
         "type": "uint256"
@@ -1212,7 +1236,13 @@
     "constant": false,
     "inputs": [],
     "name": "withdrawRewards",
-    "outputs": [],
+    "outputs": [
+      {
+        "internalType": "uint256[]",
+        "name": "",
+        "type": "uint256[]"
+      }
+    ],
     "payable": false,
     "stateMutability": "nonpayable",
     "type": "function"

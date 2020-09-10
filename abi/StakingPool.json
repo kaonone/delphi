@@ -1136,11 +1136,35 @@
     "inputs": [
       {
         "internalType": "address",
+        "name": "_rewardVesting",
+        "type": "address"
+      }
+    ],
+    "name": "setRewardVesting",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "internalType": "address",
         "name": "token",
         "type": "address"
       }
     ],
     "name": "registerRewardToken",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [],
+    "name": "claimRewardsFromVesting",
     "outputs": [],
     "payable": false,
     "stateMutability": "nonpayable",
@@ -1186,7 +1210,13 @@
     "constant": false,
     "inputs": [],
     "name": "withdrawRewards",
-    "outputs": [],
+    "outputs": [
+      {
+        "internalType": "uint256[]",
+        "name": "",
+        "type": "uint256[]"
+      }
+    ],
     "payable": false,
     "stateMutability": "nonpayable",
     "type": "function"
