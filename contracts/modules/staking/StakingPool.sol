@@ -1,468 +1,126 @@
-pragma solidity ^0.5.12;
+pragma solidity ^0.5.12; 
 
 import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts-ethereum-package/contracts/math/SafeMath.sol";
+import "../reward/RewardVestingModule.sol";
+import "./StakingPoolBase.sol";
 
-import "./IERC900.sol";
-import "../../common/Module.sol";
-import "@openzeppelin/contracts-ethereum-package/contracts/access/roles/CapperRole.sol";
+contract StakingPool is StakingPoolBase {
+    event RewardTokenRegistered(address token);
+    event RewardDistributionCreated(address token, uint256 amount, uint256 totalShares);
+    event RewardWithdraw(address indexed user, address indexed rewardToken, uint256 amount);
 
-/**
- * @title ERC900 Simple Staking Interface basic implementation
- * @dev See https://github.com/ethereum/EIPs/blob/master/EIPS/eip-900.md
- */
-contract StakingPool is Module, IERC900, CapperRole  {
-  // @TODO: deploy this separately so we don't have to deploy it multiple times for each contract
-  using SafeMath for uint256;
+    using SafeERC20 for IERC20;
+    using SafeMath for uint256;
 
-  // Token used for staking
-  ERC20 stakingToken;
-
-  // The default duration of stake lock-in (in seconds)
-  uint256 public defaultLockInDuration;
-
-  // To save on gas, rather than create a separate mapping for totalStakedFor & personalStakes,
-  //  both data structures are stored in a single mapping for a given addresses.
-  //
-  // It's possible to have a non-existing personalStakes, but have tokens in totalStakedFor
-  //  if other users are staking on behalf of a given address.
-  mapping (address => StakeContract) public stakeHolders;
-
-  // Struct for personal stakes (i.e., stakes made by this address)
-  // unlockedTimestamp - when the stake unlocks (in seconds since Unix epoch)
-  // actualAmount - the amount of tokens in the stake
-  // stakedFor - the address the stake was staked for
-  struct Stake {
-    uint256 unlockedTimestamp;
-    uint256 actualAmount;
-    address stakedFor;
-  }
-
-  // Struct for all stake metadata at a particular address
-  // totalStakedFor - the number of tokens staked for this address
-  // personalStakeIndex - the index in the personalStakes array.
-  // personalStakes - append only array of stakes made by this address
-  // exists - whether or not there are stakes that involve this address
-  struct StakeContract {
-    uint256 totalStakedFor;
-
-    uint256 personalStakeIndex;
-
-    Stake[] personalStakes;
-
-    bool exists;
-  }
-
-  bool public userCapEnabled;
-
-  mapping(address => uint256) public userCap; //Limit of pool tokens which can be minted for a user during deposit
-
-  
-  uint256 public defaultUserCap;
-  bool public stakingCapEnabled;
-  uint256 public stakingCap;
-
-
-  bool public vipUserEnabled;
-  mapping(address => bool) public isVipUser;
-  
-
-
-  event VipUserEnabledChange(bool enabled);
-  event VipUserChanged(address indexed user, bool isVip);
-
-  event StakingCapChanged(uint256 newCap);
-  event StakingCapEnabledChange(bool enabled);
-
-  //global cap
-  event DefaultUserCapChanged(uint256 newCap);
-
-  event UserCapEnabledChange(bool enabled);
-
-  event UserCapChanged(address indexed user, uint256 newCap);
-  event Staked(address indexed user, uint256 amount, uint256 totalStacked, bytes data);
-  event Unstaked(address indexed user, uint256 amount, uint256 totalStacked, bytes data);
-  event setLockInDuration(uint256 defaultLockInDuration);
-
-  /**
-   * @dev Modifier that checks that this contract can transfer tokens from the
-   *  balance in the stakingToken contract for the given address.
-   * @dev This modifier also transfers the tokens.
-   * @param _address address to transfer tokens from
-   * @param _amount uint256 the number of tokens
-   */
-  modifier canStake(address _address, uint256 _amount) {
-    require(
-      stakingToken.transferFrom(_address, address(this), _amount),
-      "Stake required");
-
-    _;
-  }
-
-
-  modifier isUserCapEnabledForStakeFor(uint256 stake) {
-
-    if (stakingCapEnabled && !(vipUserEnabled && isVipUser[_msgSender()])) {
-        require((stakingCap > totalStaked() && (stakingCap-totalStaked() >= stake)), "StakingModule: stake exeeds staking cap");
+    struct RewardDistribution {
+        uint256 totalShares;
+        uint256 amount;
     }
 
-    if(userCapEnabled) {
-          uint256 cap = userCap[_msgSender()];
-          //check default user cap settings
-          if (defaultUserCap > 0) {
-              uint256 totalStaked = totalStakedFor(_msgSender());
-              //get new cap
-              if (defaultUserCap >= totalStaked) {
-                cap = defaultUserCap.sub(totalStaked);
-              } else {
-                 cap = 0;
-              }
-          }
-          
-          require(cap >= stake, "StakingModule: stake exeeds cap");
-          cap = cap.sub(stake);
-          userCap[_msgSender()] = cap;
-          emit UserCapChanged(_msgSender(), cap);  
+    struct UserRewardInfo {
+        mapping(address=>uint256) nextDistribution; //Next unclaimed distribution
     }
-      
-    _;
-  }
+
+    struct RewardData {
+        RewardDistribution[] distributions;
+        uint256 unclaimed;
+    }
+
+    RewardVestingModule public rewardVesting;
+    address[] internal registeredRewardTokens;
+    mapping(address=>RewardData) internal rewards;
+    mapping(address=>UserRewardInfo) internal userRewards;
 
 
-  modifier isUserCapEnabledForUnStakeFor(uint256 unStake) {
-     _;
+    function registerRewardToken(address token) public onlyOwner {
+        require(!isRegisteredRewardToken(token), "StakingPool: already registered");
+        registeredRewardTokens.push(token);
+        emit RewardTokenRegistered(token);
+    }
 
-     if(userCapEnabled){
-        uint256 cap = userCap[_msgSender()];
-        cap = cap.add(unStake);
-
-        if (cap > defaultUserCap) {
-            cap = defaultUserCap;
+    function isRegisteredRewardToken(address token) public view returns(bool) {
+        for(uint256 i=0; i<registeredRewardTokens.length; i++){
+            if(token == registeredRewardTokens[i]) return true;
         }
+        return false;
+    }
 
-        userCap[_msgSender()] = cap;
-        emit UserCapChanged(_msgSender(), cap);
-     }
-  }
+    function supportedRewardTokens() public view returns(address[] memory) {
+        return registeredRewardTokens;
+    }
 
-  modifier checkUserCapDisabled() {
-    require(isUserCapEnabled() == false, "UserCapEnabled");
-    _;
-  }
+    function withdrawRewards() public {
+        _withdrawRewards(_msgSender());
+    }
 
-  modifier checkUserCapEnabled() {
-    require(isUserCapEnabled(), "UserCapDisabled");
-    _;
-  }
-
-  function initialize(address _pool, ERC20 _stakingToken, uint256 _defaultLockInDuration) public initializer {
-        stakingToken = _stakingToken;
-        defaultLockInDuration = _defaultLockInDuration;
-        Module.initialize(_pool);
-
-        CapperRole.initialize(_msgSender());
-  }
-
-  function setDefaultLockInDuration(uint256 _defaultLockInDuration) public onlyOwner {
-      defaultLockInDuration = _defaultLockInDuration;
-      emit setLockInDuration(_defaultLockInDuration);
-  }
-
-  function setUserCapEnabled(bool _userCapEnabled) public onlyCapper {
-      userCapEnabled = _userCapEnabled;
-      emit UserCapEnabledChange(userCapEnabled);
-  }
-
-  function setStakingCapEnabled(bool _stakingCapEnabled) public onlyCapper {
-      stakingCapEnabled= _stakingCapEnabled;
-      emit StakingCapEnabledChange(stakingCapEnabled);
-  }
-
-  function setDefaultUserCap(uint256 _newCap) public onlyCapper {
-      defaultUserCap = _newCap;
-      emit DefaultUserCapChanged(_newCap);
-  }
-
-  function setStakingCap(uint256 _newCap) public onlyCapper {
-      stakingCap = _newCap;
-      emit StakingCapChanged(_newCap);
-  }
-
-  function setUserCap(address user, uint256 cap) public onlyCapper {
-      userCap[user] = cap;
-      emit UserCapChanged(user, cap);
-  }
-
-  function setUserCap(address[] memory users, uint256[] memory caps) public onlyCapper {
-        require(users.length == caps.length, "SavingsModule: arrays length not match");
-        for(uint256 i=0;  i < users.length; i++) {
-            userCap[users[i]] = caps[i];
-            emit UserCapChanged(users[i], caps[i]);
+    function rewardBalanceOf(address user, address token) public view returns(uint256) {
+        RewardData storage rd = rewards[token];
+        if(rd.unclaimed == 0) return 0; //Either token not registered or everything is already claimed
+        uint256 shares = getPersonalStakeTotalAmount(user);
+        if(shares == 0) return 0;
+        UserRewardInfo storage uri = userRewards[user];
+        uint256 reward;
+        for(uint256 i=uri.nextDistribution[token]; i < rd.distributions.length; i++) {
+            RewardDistribution storage rdistr = rd.distributions[i];
+            uint256 r = shares.mul(rdistr.amount).div(rdistr.totalShares);
+            reward = reward.add(r);
         }
-  }
-
-
-  function setVipUserEnabled(bool _vipUserEnabled) public onlyCapper {
-      vipUserEnabled = _vipUserEnabled;
-      emit VipUserEnabledChange(_vipUserEnabled);
-  }
-
-  function setVipUser(address user, bool isVip) public onlyCapper {
-      isVipUser[user] = isVip;
-      emit VipUserChanged(user, isVip);
-  }
-
-  function isUserCapEnabled() public view returns(bool) {
-    return userCapEnabled;
-  }
-
-
-  function iStakingCapEnabled() public view returns(bool) {
-    return stakingCapEnabled;
-  }
-
-  /**
-   * @dev Returns the timestamps for when active personal stakes for an address will unlock
-   * @dev These accessors functions are needed until https://github.com/ethereum/web3.js/issues/1241 is solved
-   * @param _address address that created the stakes
-   * @return uint256[] array of timestamps
-   */
-  function getPersonalStakeUnlockedTimestamps(address _address) external view returns (uint256[] memory) {
-    uint256[] memory timestamps;
-    (timestamps,,) = getPersonalStakes(_address);
-
-    return timestamps;
-  }
-
-
-  
-
-  /**
-   * @dev Returns the stake actualAmount for active personal stakes for an address
-   * @dev These accessors functions are needed until https://github.com/ethereum/web3.js/issues/1241 is solved
-   * @param _address address that created the stakes
-   * @return uint256[] array of actualAmounts
-   */
-  function getPersonalStakeActualAmounts(address _address) external view returns (uint256[] memory) {
-    uint256[] memory actualAmounts;
-    (,actualAmounts,) = getPersonalStakes(_address);
-
-    return actualAmounts;
-  }
-
-  /**
-   * @dev Returns the addresses that each personal stake was created for by an address
-   * @dev These accessors functions are needed until https://github.com/ethereum/web3.js/issues/1241 is solved
-   * @param _address address that created the stakes
-   * @return address[] array of amounts
-   */
-  function getPersonalStakeForAddresses(address _address) external view returns (address[] memory) {
-    address[] memory stakedFor;
-    (,,stakedFor) = getPersonalStakes(_address);
-
-    return stakedFor;
-  }
-
-  /**
-   * @notice Stakes a certain amount of tokens, this MUST transfer the given amount from the user
-   * @notice MUST trigger Staked event
-   * @param _amount uint256 the amount of tokens to stake
-   * @param _data bytes optional data to include in the Stake event
-   */
-  function stake(uint256 _amount, bytes memory _data) public isUserCapEnabledForStakeFor(_amount) {
-    createStake(
-      _msgSender(),
-      _amount,
-      defaultLockInDuration,
-      _data);
-  }
-
-  /**
-   * @notice Stakes a certain amount of tokens, this MUST transfer the given amount from the caller
-   * @notice MUST trigger Staked event
-   * @param _user address the address the tokens are staked for
-   * @param _amount uint256 the amount of tokens to stake
-   * @param _data bytes optional data to include in the Stake event
-   */
-  function stakeFor(address _user, uint256 _amount, bytes memory _data) public checkUserCapDisabled {
-    createStake(
-      _user,
-      _amount,
-      defaultLockInDuration,
-      _data);
-  }
-
-  /**
-   * @notice Unstakes a certain amount of tokens, this SHOULD return the given amount of tokens to the user, if unstaking is currently not possible the function MUST revert
-   * @notice MUST trigger Unstaked event
-   * @dev Unstaking tokens is an atomic operation—either all of the tokens in a stake, or none of the tokens.
-   * @dev Users can only unstake a single stake at a time, it is must be their oldest active stake. Upon releasing that stake, the tokens will be
-   *  transferred back to their account, and their personalStakeIndex will increment to the next active stake.
-   * @param _amount uint256 the amount of tokens to unstake
-   * @param _data bytes optional data to include in the Unstake event
-   */
-  function unstake(uint256 _amount, bytes memory _data) public {
-    withdrawStake(
-      _amount,
-      _data);
-  }
-
-  function unstakeAllUnlocked(bytes memory _data) public returns(uint256) {
-     uint256 unstakeAllAmount = 0;
-     uint256 personalStakeIndex = stakeHolders[_msgSender()].personalStakeIndex;
-
-     for(uint256 i=personalStakeIndex; i<stakeHolders[_msgSender()].personalStakes.length; i++) {
-       
-       if (stakeHolders[_msgSender()].personalStakes[i].unlockedTimestamp <= block.timestamp) {
-           unstakeAllAmount = unstakeAllAmount+stakeHolders[_msgSender()].personalStakes[i].actualAmount;
-           withdrawStake(stakeHolders[_msgSender()].personalStakes[i].actualAmount, _data);
-       }
-     }
-
-     return unstakeAllAmount;
-  }
-
-  /**
-   * @notice Returns the current total of tokens staked for an address
-   * @param _address address The address to query
-   * @return uint256 The number of tokens staked for the given address
-   */
-  function totalStakedFor(address _address) public view returns (uint256) {
-    return stakeHolders[_address].totalStakedFor;
-  }
-
-  /**
-   * @notice Returns the current total of tokens staked
-   * @return uint256 The number of tokens staked in the contract
-   */
-  function totalStaked() public view returns (uint256) {
-    return stakingToken.balanceOf(address(this));
-  }
-
-  /**
-   * @notice Address of the token being used by the staking interface
-   * @return address The address of the ERC20 token used for staking
-   */
-  function token() public view returns (address) {
-    return address(stakingToken);
-  }
-
-  /**
-   * @notice MUST return true if the optional history functions are implemented, otherwise false
-   * @dev Since we don't implement the optional interface, this always returns false
-   * @return bool Whether or not the optional history functions are implemented
-   */
-  function supportsHistory() public pure returns (bool) {
-    return false;
-  }
-
-  /**
-   * @dev Helper function to get specific properties of all of the personal stakes created by an address
-   * @param _address address The address to query
-   * @return (uint256[], uint256[], address[])
-   *  timestamps array, actualAmounts array, stakedFor array
-   */
-  function getPersonalStakes(
-    address _address
-  )
-    public view
-    returns(uint256[] memory, uint256[] memory, address[] memory)
-  {
-    StakeContract storage stakeContract = stakeHolders[_address];
-
-    uint256 arraySize = stakeContract.personalStakes.length - stakeContract.personalStakeIndex;
-    uint256[] memory unlockedTimestamps = new uint256[](arraySize);
-    uint256[] memory actualAmounts = new uint256[](arraySize);
-    address[] memory stakedFor = new address[](arraySize);
-
-    for (uint256 i = stakeContract.personalStakeIndex; i < stakeContract.personalStakes.length; i++) {
-      uint256 index = i - stakeContract.personalStakeIndex;
-      unlockedTimestamps[index] = stakeContract.personalStakes[i].unlockedTimestamp;
-      actualAmounts[index] = stakeContract.personalStakes[i].actualAmount;
-      stakedFor[index] = stakeContract.personalStakes[i].stakedFor;
+        return reward;
     }
 
-    return (
-      unlockedTimestamps,
-      actualAmounts,
-      stakedFor
-    );
-  }
-
-  /**
-   * @dev Helper function to create stakes for a given address
-   * @param _address address The address the stake is being created for
-   * @param _amount uint256 The number of tokens being staked
-   * @param _lockInDuration uint256 The duration to lock the tokens for
-   * @param _data bytes optional data to include in the Stake event
-   */
-  function createStake(
-    address _address,
-    uint256 _amount,
-    uint256 _lockInDuration,
-    bytes memory _data)
-    internal
-    canStake(_msgSender(), _amount)
-  {
-    if (!stakeHolders[_msgSender()].exists) {
-      stakeHolders[_msgSender()].exists = true;
+    function _withdrawRewards(address user) internal {
+        for(uint256 i=0; i<registeredRewardTokens.length; i++){
+            _withdrawRewards(user, registeredRewardTokens[i]);
+        }
     }
 
-    stakeHolders[_address].totalStakedFor = stakeHolders[_address].totalStakedFor.add(_amount);
-    stakeHolders[_msgSender()].personalStakes.push(
-      Stake(
-        block.timestamp.add(_lockInDuration),
-        _amount,
-        _address)
-      );
+    function _withdrawRewards(address user, address token) internal {
+        UserRewardInfo storage uri = userRewards[user];
+        RewardData storage rd = rewards[token];
+        if(rd.distributions.length == 0) { //No distributions = nothing to do
+            return;
+        }
+        uint256 rwrds = rewardBalanceOf(user, token);
+        uri.nextDistribution[token] = rd.distributions.length;
+        if(rwrds > 0){
+            rewards[token].unclaimed = rewards[token].unclaimed.sub(rwrds);
+            IERC20(token).transfer(user, rwrds);
+            emit RewardWithdraw(user, token, rwrds);
+        }
+    }
 
-    emit Staked(
-      _address,
-      _amount,
-      totalStakedFor(_address),
-      _data);
-  }
+    function createStake(address _address, uint256 _amount, uint256 _lockInDuration, bytes memory _data) internal {
+        _withdrawRewards(_address);
+        super.createStake(_address, _amount, _lockInDuration, _data);
+    }
 
-  /**
-   * @dev Helper function to withdraw stakes for the _msgSender()
-   * @param _amount uint256 The amount to withdraw. MUST match the stake amount for the
-   *  stake at personalStakeIndex.
-   * @param _data bytes optional data to include in the Unstake event
-   */
-  function withdrawStake(
-    uint256 _amount,
-    bytes memory _data)
-    internal isUserCapEnabledForUnStakeFor(_amount)
-  {
-    Stake storage personalStake = stakeHolders[_msgSender()].personalStakes[stakeHolders[_msgSender()].personalStakeIndex];
+    function withdrawStake(uint256 _amount, bytes memory _data) internal {
+        _withdrawRewards(_msgSender());
+        super.withdrawStake(_amount, _data);
+    }
 
-    // Check that the current stake has unlocked & matches the unstake amount
-    require(
-      personalStake.unlockedTimestamp <= block.timestamp,
-      "The current stake hasn't unlocked yet");
 
-    require(
-      personalStake.actualAmount == _amount,
-      "The unstake amount does not match the current stake");
-
-    // Transfer the staked tokens from this contract back to the sender
-    // Notice that we are using transfer instead of transferFrom here, so
-    //  no approval is needed beforehand.
-    require(
-      stakingToken.transfer(_msgSender(), _amount),
-      "Unable to withdraw stake");
-
-    stakeHolders[personalStake.stakedFor].totalStakedFor = stakeHolders[personalStake.stakedFor]
-      .totalStakedFor.sub(personalStake.actualAmount);
-
-    personalStake.actualAmount = 0;
-    stakeHolders[_msgSender()].personalStakeIndex++;
-
-    emit Unstaked(
-      personalStake.stakedFor,
-      _amount,
-      totalStakedFor(personalStake.stakedFor),
-      _data);
-  }
+    function _claimRewardsFromVesting() internal {
+        rewardVesting.claimRewards();
+        for(uint256 i=0; i < registeredRewardTokens.length; i++){
+            address rt = registeredRewardTokens[i];
+            uint256 expectedBalance = rewards[rt].unclaimed;
+            if(rt == address(stakingToken)){
+                expectedBalance = expectedBalance.add(totalStaked());
+            }
+            uint256 actualBalance = IERC20(rt).balanceOf(address(this));
+            uint256 distributionAmount = actualBalance.sub(expectedBalance);
+            if(actualBalance > expectedBalance) {
+                uint256 totalShares = totalStaked();
+                rewards[rt].distributions.push(RewardDistribution({
+                    totalShares: totalShares,
+                    amount: distributionAmount
+                }));
+                rewards[rt].unclaimed = rewards[rt].unclaimed.add(distributionAmount);
+                emit RewardDistributionCreated(rt, distributionAmount, totalShares);
+            }
+        }
+    }
 
 }
