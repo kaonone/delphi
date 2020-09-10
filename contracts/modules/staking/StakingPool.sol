@@ -5,13 +5,13 @@ import "@openzeppelin/contracts-ethereum-package/contracts/math/SafeMath.sol";
 
 import "./IERC900.sol";
 import "../../common/Module.sol";
-import "@openzeppelin/contracts-ethereum-package/contracts/access/roles/CapperRole.sol";
+import "./StakingCap.sol";
 
 /**
  * @title ERC900 Simple Staking Interface basic implementation
  * @dev See https://github.com/ethereum/EIPs/blob/master/EIPS/eip-900.md
  */
-contract StakingPool is Module, IERC900, CapperRole  {
+contract StakingPool is Module, IERC900, StakingCap  {
   // @TODO: deploy this separately so we don't have to deploy it multiple times for each contract
   using SafeMath for uint256;
 
@@ -53,172 +53,21 @@ contract StakingPool is Module, IERC900, CapperRole  {
     bool exists;
   }
 
-  bool public userCapEnabled;
-
-  mapping(address => uint256) public userCap; //Limit of pool tokens which can be minted for a user during deposit
-
-  
-  uint256 public defaultUserCap;
-  bool public stakingCapEnabled;
-  uint256 public stakingCap;
-
-
-  bool public vipUserEnabled;
-  mapping(address => bool) public isVipUser;
-  
-
-
-  event VipUserEnabledChange(bool enabled);
-  event VipUserChanged(address indexed user, bool isVip);
-
-  event StakingCapChanged(uint256 newCap);
-  event StakingCapEnabledChange(bool enabled);
-
-  //global cap
-  event DefaultUserCapChanged(uint256 newCap);
-
-  event UserCapEnabledChange(bool enabled);
-
-  event UserCapChanged(address indexed user, uint256 newCap);
   event Staked(address indexed user, uint256 amount, uint256 totalStacked, bytes data);
   event Unstaked(address indexed user, uint256 amount, uint256 totalStacked, bytes data);
   event setLockInDuration(uint256 defaultLockInDuration);
-
-  /**
-   * @dev Modifier that checks that this contract can transfer tokens from the
-   *  balance in the stakingToken contract for the given address.
-   * @dev This modifier also transfers the tokens.
-   * @param _address address to transfer tokens from
-   * @param _amount uint256 the number of tokens
-   */
-  modifier canStake(address _address, uint256 _amount) {
-    require(
-      stakingToken.transferFrom(_address, address(this), _amount),
-      "Stake required");
-
-    _;
-  }
-
-
-  modifier isUserCapEnabledForStakeFor(uint256 stake) {
-
-    if (stakingCapEnabled && !(vipUserEnabled && isVipUser[_msgSender()])) {
-        require((stakingCap > totalStaked() && (stakingCap-totalStaked() >= stake)), "StakingModule: stake exeeds staking cap");
-    }
-
-    if(userCapEnabled) {
-          uint256 cap = userCap[_msgSender()];
-          //check default user cap settings
-          if (defaultUserCap > 0) {
-              uint256 totalStaked = totalStakedFor(_msgSender());
-              //get new cap
-              if (defaultUserCap >= totalStaked) {
-                cap = defaultUserCap.sub(totalStaked);
-              } else {
-                 cap = 0;
-              }
-          }
-          
-          require(cap >= stake, "StakingModule: stake exeeds cap");
-          cap = cap.sub(stake);
-          userCap[_msgSender()] = cap;
-          emit UserCapChanged(_msgSender(), cap);  
-    }
-      
-    _;
-  }
-
-
-  modifier isUserCapEnabledForUnStakeFor(uint256 unStake) {
-     _;
-
-     if(userCapEnabled){
-        uint256 cap = userCap[_msgSender()];
-        cap = cap.add(unStake);
-
-        if (cap > defaultUserCap) {
-            cap = defaultUserCap;
-        }
-
-        userCap[_msgSender()] = cap;
-        emit UserCapChanged(_msgSender(), cap);
-     }
-  }
-
-  modifier checkUserCapDisabled() {
-    require(isUserCapEnabled() == false, "UserCapEnabled");
-    _;
-  }
-
-  modifier checkUserCapEnabled() {
-    require(isUserCapEnabled(), "UserCapDisabled");
-    _;
-  }
 
   function initialize(address _pool, ERC20 _stakingToken, uint256 _defaultLockInDuration) public initializer {
         stakingToken = _stakingToken;
         defaultLockInDuration = _defaultLockInDuration;
         Module.initialize(_pool);
 
-        CapperRole.initialize(_msgSender());
+        StakingCap.initialize(_msgSender());
   }
 
   function setDefaultLockInDuration(uint256 _defaultLockInDuration) public onlyOwner {
       defaultLockInDuration = _defaultLockInDuration;
       emit setLockInDuration(_defaultLockInDuration);
-  }
-
-  function setUserCapEnabled(bool _userCapEnabled) public onlyCapper {
-      userCapEnabled = _userCapEnabled;
-      emit UserCapEnabledChange(userCapEnabled);
-  }
-
-  function setStakingCapEnabled(bool _stakingCapEnabled) public onlyCapper {
-      stakingCapEnabled= _stakingCapEnabled;
-      emit StakingCapEnabledChange(stakingCapEnabled);
-  }
-
-  function setDefaultUserCap(uint256 _newCap) public onlyCapper {
-      defaultUserCap = _newCap;
-      emit DefaultUserCapChanged(_newCap);
-  }
-
-  function setStakingCap(uint256 _newCap) public onlyCapper {
-      stakingCap = _newCap;
-      emit StakingCapChanged(_newCap);
-  }
-
-  function setUserCap(address user, uint256 cap) public onlyCapper {
-      userCap[user] = cap;
-      emit UserCapChanged(user, cap);
-  }
-
-  function setUserCap(address[] memory users, uint256[] memory caps) public onlyCapper {
-        require(users.length == caps.length, "SavingsModule: arrays length not match");
-        for(uint256 i=0;  i < users.length; i++) {
-            userCap[users[i]] = caps[i];
-            emit UserCapChanged(users[i], caps[i]);
-        }
-  }
-
-
-  function setVipUserEnabled(bool _vipUserEnabled) public onlyCapper {
-      vipUserEnabled = _vipUserEnabled;
-      emit VipUserEnabledChange(_vipUserEnabled);
-  }
-
-  function setVipUser(address user, bool isVip) public onlyCapper {
-      isVipUser[user] = isVip;
-      emit VipUserChanged(user, isVip);
-  }
-
-  function isUserCapEnabled() public view returns(bool) {
-    return userCapEnabled;
-  }
-
-
-  function iStakingCapEnabled() public view returns(bool) {
-    return stakingCapEnabled;
   }
 
   /**
@@ -233,8 +82,6 @@ contract StakingPool is Module, IERC900, CapperRole  {
 
     return timestamps;
   }
-
-
   
 
   /**
@@ -269,7 +116,9 @@ contract StakingPool is Module, IERC900, CapperRole  {
    * @param _amount uint256 the amount of tokens to stake
    * @param _data bytes optional data to include in the Stake event
    */
-  function stake(uint256 _amount, bytes memory _data) public isUserCapEnabledForStakeFor(_amount) {
+  function stake(uint256 _amount, bytes memory _data) public
+    isUserCapEnabledForStakeFor(_amount, totalStaked(), totalStakedFor(_msgSender()))
+  {
     createStake(
       _msgSender(),
       _amount,
@@ -390,6 +239,21 @@ contract StakingPool is Module, IERC900, CapperRole  {
   }
 
   /**
+   * @dev Function that checks that this contract can transfer staking tokens
+   *  from the balances in the appropriate contracts for the given address.
+   * @dev Performs transfers of the tokens.
+   * @param _address address to transfer tokens from
+   * @param _amount uint256 the number of tokens
+   */
+  function resolveStakingTokens(address _address, uint256 _amount) internal returns(uint256) {
+    require(
+      stakingToken.transferFrom(_address, address(this), _amount),
+      "Stake required");
+      return (_amount);
+  }
+
+
+  /**
    * @dev Helper function to create stakes for a given address
    * @param _address address The address the stake is being created for
    * @param _amount uint256 The number of tokens being staked
@@ -402,25 +266,37 @@ contract StakingPool is Module, IERC900, CapperRole  {
     uint256 _lockInDuration,
     bytes memory _data)
     internal
-    canStake(_msgSender(), _amount)
   {
+    uint256 actualAmount = resolveStakingTokens(_msgSender(), _amount);
+
     if (!stakeHolders[_msgSender()].exists) {
       stakeHolders[_msgSender()].exists = true;
     }
 
-    stakeHolders[_address].totalStakedFor = stakeHolders[_address].totalStakedFor.add(_amount);
+    stakeHolders[_address].totalStakedFor = stakeHolders[_address].totalStakedFor.add(actualAmount);
     stakeHolders[_msgSender()].personalStakes.push(
       Stake(
         block.timestamp.add(_lockInDuration),
-        _amount,
+        actualAmount,
         _address)
       );
 
     emit Staked(
       _address,
-      _amount,
+      actualAmount,
       totalStakedFor(_address),
       _data);
+  }
+
+  /**
+   * @dev Function transfers staked tokens from this contract back to the sender
+   * @param _address address to transfer tokens
+   * @param _amount uint256 the number of tokens
+   */
+  function resolveUnstakingTokens(address _address, uint256 _amount) internal {
+    // Notice that we are using transfer instead of transferFrom here, so
+    //  no approval is needed beforehand.
+    require(stakingToken.transfer(_address, _amount), "Unable to withdraw stake");
   }
 
   /**
@@ -446,11 +322,7 @@ contract StakingPool is Module, IERC900, CapperRole  {
       "The unstake amount does not match the current stake");
 
     // Transfer the staked tokens from this contract back to the sender
-    // Notice that we are using transfer instead of transferFrom here, so
-    //  no approval is needed beforehand.
-    require(
-      stakingToken.transfer(_msgSender(), _amount),
-      "Unable to withdraw stake");
+    resolveUnstakingTokens(_msgSender(), _amount);
 
     stakeHolders[personalStake.stakedFor].totalStakedFor = stakeHolders[personalStake.stakedFor]
       .totalStakedFor.sub(personalStake.actualAmount);
