@@ -36,6 +36,7 @@ SET MODULE_SAVINGS=0x73fC3038B4cD8FfD07482b92a52Ea806505e5748
 SET MODULE_INVESTING=0xF311b1258d0F245b85090e4Fb01f2277cB2328aD
 SET MODULE_STAKING=0x3501Ec11d205fa249f2C42f5470e137b529b35D0
 SET MODULE_STAKING_ADEL=0x1A547c3dd03c39Fb2b5aEaFC524033879bD28F13
+SET MODULE_REWARD=0x2A9dcb9d79Aba0CC64565A87c9d20D11D1f33a07
 
 SET PROTOCOL_CURVEFY_Y=0x7967adA2A32A633d5C055e2e075A83023B632B4e
 SET POOL_TOKEN_CURVEFY_Y=0x2AFA3c8Bf33E65d5036cD0f1c3599716894B3077
@@ -67,14 +68,10 @@ goto :done
 
 rem === ACTION ===
 :show
-echo npx oz create InvestingModule --network mainnet --init "initialize(address _pool)" --args %MODULE_POOL%
-echo npx oz send-tx --to %MODULE_POOL% --network mainnet --method set --args "investing, %MODULE_INVESTING%, false"
-echo npx oz create CurveFiProtocol_SBTC --network mainnet --init "initialize(address _pool)" --args %MODULE_POOL%
-echo npx oz send-tx --to %PROTOCOL_CURVEFY_SBTC% --network mainnet --method setCurveFi --args "%EXT_CURVEFY_SBTC_SWAP%, %EXT_CURVEFY_SBTC_GAUGE%"
-echo npx oz create PoolToken_CurveFi_SBTC --network mainnet --init "initialize(address _pool)" --args %MODULE_POOL%
-echo npx oz send-tx --to %MODULE_INVESTING% --network mainnet --method registerProtocol --args "%PROTOCOL_CURVEFY_SBTC%, %POOL_TOKEN_CURVEFY_SBTC%"
-echo npx oz send-tx --to %PROTOCOL_CURVEFY_SBTC% --network mainnet --method addDefiOperator --args %MODULE_INVESTING%
-echo npx oz send-tx --to %POOL_TOKEN_CURVEFY_SBTC% --network mainnet --method addMinter --args %MODULE_INVESTING%
+echo npx oz create RewardVestingModule --network mainnet --init "initialize(address _pool)" --args %MODULE_POOL%
+echo npx oz send-tx --to %MODULE_POOL% --network mainnet --method set --args "reward, %MODULE_REWARD%, false"
+echo npx oz send-tx --to %MODULE_POOL% --network mainnet --method set --args "akro, %EXT_TOKEN_AKRO%, false"
+echo npx oz send-tx --to %MODULE_POOL% --network mainnet --method set --args "adel, %EXT_TOKEN_ADEL%, false"
 goto :done
 
 :init
@@ -103,6 +100,7 @@ call npx oz create SavingsModule --network mainnet --init "initialize(address _p
 call npx oz create InvestingModule --network mainnet --init "initialize(address _pool)" --args %MODULE_POOL%
 call npx oz create StakingPool --network mainnet --init "initialize(address _pool,address _stakingToken, uint256 _defaultLockInDuration)" --args "%MODULE_POOL%, %EXT_TOKEN_AKRO%, 0"
 call npx oz create StakingPoolADEL --network mainnet --init "initialize(address _pool,address _stakingToken, uint256 _defaultLockInDuration)" --args "%MODULE_POOL%, %EXT_TOKEN_ADEL%, 0"
+call npx oz create RewardVestingModule --network mainnet --init "initialize(address _pool)" --args %MODULE_POOL%
 echo CREATE PROTOCOLS AND TOKENS
 echo CREATE Compound DAI
 call npx oz create CompoundProtocol_DAI --network mainnet --init "initialize(address _pool, address _token, address _cToken, address _comptroller)" --args "%MODULE_POOL%, %EXT_TOKEN_DAI%, %EXT_COMPOUND_CTOKEN_DAI%, %EXT_COMPOUND_COMPTROLLER%"
@@ -141,6 +139,9 @@ call npx oz send-tx --to %MODULE_POOL% --network mainnet --method set --args "sa
 call npx oz send-tx --to %MODULE_POOL% --network mainnet --method set --args "investing, %MODULE_INVESTING%, false"
 call npx oz send-tx --to %MODULE_POOL% --network mainnet --method set --args "staking, %MODULE_STAKING%, false"
 call npx oz send-tx --to %MODULE_POOL% --network mainnet --method set --args "stakingAdel, %MODULE_STAKING_ADEL%, false"
+call npx oz send-tx --to %MODULE_POOL% --network mainnet --method set --args "reward, %MODULE_REWARD%, false"
+call npx oz send-tx --to %MODULE_POOL% --network mainnet --method set --args "akro, %EXT_TOKEN_AKRO%, false"
+call npx oz send-tx --to %MODULE_POOL% --network mainnet --method set --args "adel, %EXT_TOKEN_ADEL%, false"
 goto :done
 
 :setupProtocols
