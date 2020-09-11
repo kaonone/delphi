@@ -60,8 +60,8 @@
 * PoolToken for CurveFi SBTC `0x933082B3D21a6ED90ed7EcA470Fd424Df5D21BEf`
 
 ##### Curve.Fi renBTC [renBTC, wBTC] - CRV
-* Protocol CurveFi renBTC 
-* PoolToken for CurveFi renBTC
+* Protocol CurveFi renBTC  `0x020439688aA784Baa55DfEDB4732E8229aC8Fb1b`
+* PoolToken for CurveFi renBTC `0x321eb571778e46004Ec52FD399E097C17Fea9C9c`
 
 ##### Curve.Fi sUSD [DAI, USDC, USDT, sUSD] - SNX, CRV
 * Protocol CurveFi SUSD `0x91d7b9a8d2314110D4018C88dBFDCF5E2ba4772E`

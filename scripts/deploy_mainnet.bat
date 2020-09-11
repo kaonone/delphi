@@ -24,6 +24,8 @@ SET EXT_CURVEFY_BUSD_DEPOSIT=0xb6c057591E073249F2D9D88Ba59a46CFC9B59EdB
 SET EXT_CURVEFY_BUSD_GAUGE=0x69Fb7c45726cfE2baDeE8317005d3F94bE838840
 SET EXT_CURVEFY_SBTC_SWAP=0x7fC77b5c7614E1533320Ea6DDc2Eb61fa00A9714
 SET EXT_CURVEFY_SBTC_GAUGE=0x705350c4BcD35c9441419DdD5d2f097d7a55410F
+SET EXT_CURVEFY_RENBTC_SWAP=0x93054188d876f558f4a66B2EF1d97d16eDf0895B
+SET EXT_CURVEFY_RENBTC_GAUGE=0xB1F2cdeC61db658F091671F5f199635aEF202CAC
 
 rem ===== AAVE ====
 SET EXT_AAVE_ADDRESS_PROVIDER=0x24a42fD28C976A61Df5D00D0599C34c4f90748c8
@@ -43,6 +45,9 @@ SET POOL_TOKEN_CURVEFY_Y=0x2AFA3c8Bf33E65d5036cD0f1c3599716894B3077
 
 SET PROTOCOL_CURVEFY_SBTC=0xEEEf30D50a7c6676B260a26A5fBe13e45fD7b5A9
 SET POOL_TOKEN_CURVEFY_SBTC=0x933082B3D21a6ED90ed7EcA470Fd424Df5D21BEf
+
+SET PROTOCOL_CURVEFY_RENBTC=0x020439688aA784Baa55DfEDB4732E8229aC8Fb1b
+SET POOL_TOKEN_CURVEFY_RENBTC=0x321eb571778e46004Ec52FD399E097C17Fea9C9c
 
 SET PROTOCOL_CURVEFY_SUSD=0x91d7b9a8d2314110D4018C88dBFDCF5E2ba4772E
 SET POOL_TOKEN_CURVEFY_SUSD=0x520d25b08080296db66fd9f268ae279b66a8effb
@@ -68,10 +73,12 @@ goto :done
 
 rem === ACTION ===
 :show
-echo npx oz create RewardVestingModule --network mainnet --init "initialize(address _pool)" --args %MODULE_POOL%
-echo npx oz send-tx --to %MODULE_POOL% --network mainnet --method set --args "reward, %MODULE_REWARD%, false"
-echo npx oz send-tx --to %MODULE_POOL% --network mainnet --method set --args "akro, %EXT_TOKEN_AKRO%, false"
-echo npx oz send-tx --to %MODULE_POOL% --network mainnet --method set --args "adel, %EXT_TOKEN_ADEL%, false"
+echo npx oz create CurveFiProtocol_renBTC --network mainnet --init "initialize(address _pool)" --args %MODULE_POOL%
+echo npx oz create PoolToken_CurveFi_renBTC --network mainnet --init "initialize(address _pool)" --args %MODULE_POOL%
+echo npx oz send-tx --to %PROTOCOL_CURVEFY_RENBTC% --network mainnet --method setCurveFi --args "%EXT_CURVEFY_RENBTC_SWAP%, %EXT_CURVEFY_RENBTC_GAUGE%"
+echo npx oz send-tx --to %MODULE_INVESTING% --network mainnet --method registerProtocol --args "%PROTOCOL_CURVEFY_RENBTC%, %POOL_TOKEN_CURVEFY_RENBTC%"
+echo npx oz send-tx --to %PROTOCOL_CURVEFY_RENBTC% --network mainnet --method addDefiOperator --args %MODULE_INVESTING%
+echo npx oz send-tx --to %POOL_TOKEN_CURVEFY_RENBTC% --network mainnet --method addMinter --args %MODULE_INVESTING%
 goto :done
 
 :init
@@ -114,6 +121,9 @@ call npx oz create PoolToken_CurveFi_Y --network mainnet --init "initialize(addr
 rem echo CREATE Curve.Fi SBTC
 rem call npx oz create CurveFiProtocol_SBTC --network mainnet --init "initialize(address _pool)" --args %MODULE_POOL%
 rem call npx oz create PoolToken_CurveFi_SBTC --network mainnet --init "initialize(address _pool)" --args %MODULE_POOL%
+echo CREATE Curve.Fi renBTC
+call npx oz create CurveFiProtocol_renBTC --network mainnet --init "initialize(address _pool)" --args %MODULE_POOL%
+call npx oz create PoolToken_CurveFi_renBTC --network mainnet --init "initialize(address _pool)" --args %MODULE_POOL%
 echo CREATE Curve.Fi SUSD
 call npx oz create CurveFiProtocol_SUSD --network mainnet --init "initialize(address _pool)" --args %MODULE_POOL%
 call npx oz create PoolToken_CurveFi_SUSD --network mainnet --init "initialize(address _pool)" --args %MODULE_POOL%
@@ -147,7 +157,8 @@ goto :done
 :setupProtocols
 echo SETUP OTHER CONTRACTS
 call npx oz send-tx --to %PROTOCOL_CURVEFY_Y% --network mainnet --method setCurveFi --args "%EXT_CURVEFY_Y_DEPOSIT%, %EXT_CURVEFY_Y_GAUGE%"
-rem call npx oz send-tx --to %PROTOCOL_CURVEFY_SBTC% --network mainnet --method setCurveFi --args "%EXT_CURVEFY_SBTC_DEPOSIT%, %EXT_CURVEFY_SBTC_GAUGE%"
+rem call npx oz send-tx --to %PROTOCOL_CURVEFY_SBTC% --network mainnet --method setCurveFi --args "%EXT_CURVEFY_SBTC_SWAP%, %EXT_CURVEFY_SBTC_GAUGE%"
+call npx oz send-tx --to %PROTOCOL_CURVEFY_RENBTC% --network mainnet --method setCurveFi --args "%EXT_CURVEFY_RENBTC_SWAP%, %EXT_CURVEFY_RENBTC_GAUGE%"
 call npx oz send-tx --to %PROTOCOL_CURVEFY_SUSD% --network mainnet --method setCurveFi --args "%EXT_CURVEFY_SUSD_DEPOSIT%, %EXT_CURVEFY_SUSD_GAUGE%"
 call npx oz send-tx --to %PROTOCOL_CURVEFY_BUSD% --network mainnet --method setCurveFi --args "%EXT_CURVEFY_BUSD_DEPOSIT%, %EXT_CURVEFY_BUSD_GAUGE%"
 goto :done
@@ -158,6 +169,7 @@ call npx oz send-tx --to %MODULE_SAVINGS% --network mainnet --method registerPro
 call npx oz send-tx --to %MODULE_SAVINGS% --network mainnet --method registerProtocol --args "%PROTOCOL_COMPOUND_USDC%, %POOL_TOKEN_COMPOUND_USDC%"
 call npx oz send-tx --to %MODULE_SAVINGS% --network mainnet --method registerProtocol --args "%PROTOCOL_CURVEFY_Y%, %POOL_TOKEN_CURVEFY_Y%"
 rem call npx oz send-tx --to %MODULE_INVESTING% --network mainnet --method registerProtocol --args "%PROTOCOL_CURVEFY_SBTC%, %POOL_TOKEN_CURVEFY_SBTC%"
+call npx oz send-tx --to %MODULE_INVESTING% --network mainnet --method registerProtocol --args "%PROTOCOL_CURVEFY_RENBTC%, %POOL_TOKEN_CURVEFY_RENBTC%"
 call npx oz send-tx --to %MODULE_SAVINGS% --network mainnet --method registerProtocol --args "%PROTOCOL_CURVEFY_SUSD%, %POOL_TOKEN_CURVEFY_SUSD%"
 call npx oz send-tx --to %MODULE_SAVINGS% --network mainnet --method registerProtocol --args "%PROTOCOL_CURVEFY_BUSD%, %POOL_TOKEN_CURVEFY_BUSD%"
 call npx oz send-tx --to %MODULE_SAVINGS% --network mainnet --method registerProtocol --args "%PROTOCOL_AAVE_SUSD%, %POOL_TOKEN_AAVE_SUSD%"
@@ -170,6 +182,7 @@ call npx oz send-tx --to %PROTOCOL_COMPOUND_DAI% --network mainnet --method addD
 call npx oz send-tx --to %PROTOCOL_COMPOUND_USDC% --network mainnet --method addDefiOperator --args %MODULE_SAVINGS%
 call npx oz send-tx --to %PROTOCOL_CURVEFY_Y% --network mainnet --method addDefiOperator --args %MODULE_SAVINGS%
 rem call npx oz send-tx --to %PROTOCOL_CURVEFY_SBTC% --network mainnet --method addDefiOperator --args %MODULE_INVESTING%
+call npx oz send-tx --to %PROTOCOL_CURVEFY_RENBTC% --network mainnet --method addDefiOperator --args %MODULE_INVESTING%
 call npx oz send-tx --to %PROTOCOL_CURVEFY_SUSD% --network mainnet --method addDefiOperator --args %MODULE_SAVINGS%
 call npx oz send-tx --to %PROTOCOL_CURVEFY_BUSD% --network mainnet --method addDefiOperator --args %MODULE_SAVINGS%
 call npx oz send-tx --to %PROTOCOL_AAVE_SUSD% --network mainnet --method addDefiOperator --args %MODULE_SAVINGS%
@@ -179,6 +192,7 @@ call npx oz send-tx --to %POOL_TOKEN_COMPOUND_DAI% --network mainnet --method ad
 call npx oz send-tx --to %POOL_TOKEN_COMPOUND_USDC% --network mainnet --method addMinter --args %MODULE_SAVINGS%
 call npx oz send-tx --to %POOL_TOKEN_CURVEFY_Y% --network mainnet --method addMinter --args %MODULE_SAVINGS%
 rem call npx oz send-tx --to %POOL_TOKEN_CURVEFY_SBTC% --network mainnet --method addMinter --args %MODULE_INVESTING%
+call npx oz send-tx --to %POOL_TOKEN_CURVEFY_RENBTC% --network mainnet --method addMinter --args %MODULE_INVESTING%
 call npx oz send-tx --to %POOL_TOKEN_CURVEFY_SUSD% --network mainnet --method addMinter --args %MODULE_SAVINGS%
 call npx oz send-tx --to %POOL_TOKEN_CURVEFY_BUSD% --network mainnet --method addMinter --args %MODULE_SAVINGS%
 call npx oz send-tx --to %POOL_TOKEN_AAVE_SUSD% --network mainnet --method addMinter --args %MODULE_SAVINGS%
