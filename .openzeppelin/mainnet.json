@@ -876,11 +876,11 @@
       }
     },
     "StakingPool": {
-      "address": "0x84428bE4bDa24de9D88858D70EAe80A78F3617D5",
-      "constructorCode": "6080604052613040806100136000396000f3fe",
-      "bodyBytecodeHash": "1fb4169881cc44ec9224d2d3edd6d408e5caf5fe5ac7a8848d5861f9809b8bf1",
-      "localBytecodeHash": "9bf3f91caf1ac5e61a07eda61abf1cf82c0814450e13ee77582ce9dda1c601d0",
-      "deployedBytecodeHash": "9bf3f91caf1ac5e61a07eda61abf1cf82c0814450e13ee77582ce9dda1c601d0",
+      "address": "0x68AEA07c99D571aa6C1681CD91f10BA73E0Ac6B3",
+      "constructorCode": "6080604052613c60806100136000396000f3fe",
+      "bodyBytecodeHash": "60965f9d49cef418d279f85723bfadf4617846dfc49f07eec8e11245d9d14fae",
+      "localBytecodeHash": "cdad1b94a3e7938fed0f562d4ebbcce257d2d57e0d5beb94c5a5a27cf7132766",
+      "deployedBytecodeHash": "cdad1b94a3e7938fed0f562d4ebbcce257d2d57e0d5beb94c5a5a27cf7132766",
       "types": {
         "t_bool": {
           "id": "t_bool",
@@ -911,9 +911,9 @@
           "members": [
             {
               "label": "bearer",
-              "astId": 17440,
+              "astId": 20669,
               "type": "t_mapping<t_bool>",
-              "src": "150:32:68"
+              "src": "150:32:94"
             }
           ]
         },
@@ -923,79 +923,156 @@
           "label": "mapping(key => bool)",
           "kind": "mapping"
         },
-        "t_struct<StakingPool.StakeContract>": {
-          "id": "t_struct<StakingPool.StakeContract>",
+        "t_struct<StakingPoolBase.StakeContract>": {
+          "id": "t_struct<StakingPoolBase.StakeContract>",
           "kind": "struct",
-          "label": "StakingPool.StakeContract",
+          "label": "StakingPoolBase.StakeContract",
           "members": [
             {
               "label": "totalStakedFor",
-              "astId": 9706,
+              "astId": 13447,
               "type": "t_uint256",
-              "src": "1928:22:52"
+              "src": "1932:22:78"
             },
             {
               "label": "personalStakeIndex",
-              "astId": 9708,
+              "astId": 13449,
               "type": "t_uint256",
-              "src": "1957:26:52"
+              "src": "1961:26:78"
             },
             {
               "label": "personalStakes",
-              "astId": 9711,
-              "type": "t_array:dyn<t_struct<StakingPool.Stake>>",
-              "src": "1990:22:52"
+              "astId": 13452,
+              "type": "t_array:dyn<t_struct<StakingPoolBase.Stake>>",
+              "src": "1994:22:78"
             },
             {
               "label": "exists",
-              "astId": 9713,
+              "astId": 13454,
               "type": "t_bool",
-              "src": "2019:11:52"
+              "src": "2023:11:78"
             }
           ]
         },
-        "t_struct<StakingPool.Stake>": {
-          "id": "t_struct<StakingPool.Stake>",
+        "t_struct<StakingPoolBase.Stake>": {
+          "id": "t_struct<StakingPoolBase.Stake>",
           "kind": "struct",
-          "label": "StakingPool.Stake",
+          "label": "StakingPoolBase.Stake",
           "members": [
             {
               "label": "unlockedTimestamp",
-              "astId": 9699,
+              "astId": 13440,
               "type": "t_uint256",
-              "src": "1484:25:52"
+              "src": "1488:25:78"
             },
             {
               "label": "actualAmount",
-              "astId": 9701,
+              "astId": 13442,
               "type": "t_uint256",
-              "src": "1515:20:52"
+              "src": "1519:20:78"
             },
             {
               "label": "stakedFor",
-              "astId": 9703,
+              "astId": 13444,
               "type": "t_address",
-              "src": "1541:17:52"
+              "src": "1545:17:78"
             }
           ]
         },
-        "t_array:dyn<t_struct<StakingPool.Stake>>": {
-          "id": "t_array:dyn<t_struct<StakingPool.Stake>>",
-          "valueType": "t_struct<StakingPool.Stake>",
+        "t_array:dyn<t_struct<StakingPoolBase.Stake>>": {
+          "id": "t_array:dyn<t_struct<StakingPoolBase.Stake>>",
+          "valueType": "t_struct<StakingPoolBase.Stake>",
           "length": "dyn",
           "kind": "array",
-          "label": "StakingPool.Stake[]"
+          "label": "StakingPoolBase.Stake[]"
         },
-        "t_mapping<t_struct<StakingPool.StakeContract>>": {
-          "id": "t_mapping<t_struct<StakingPool.StakeContract>>",
-          "valueType": "t_struct<StakingPool.StakeContract>",
-          "label": "mapping(key => StakingPool.StakeContract)",
+        "t_mapping<t_struct<StakingPoolBase.StakeContract>>": {
+          "id": "t_mapping<t_struct<StakingPoolBase.StakeContract>>",
+          "valueType": "t_struct<StakingPoolBase.StakeContract>",
+          "label": "mapping(key => StakingPoolBase.StakeContract)",
           "kind": "mapping"
         },
         "t_mapping<t_uint256>": {
           "id": "t_mapping<t_uint256>",
           "valueType": "t_uint256",
           "label": "mapping(key => uint256)",
+          "kind": "mapping"
+        },
+        "t_array:dyn<t_address>": {
+          "id": "t_array:dyn<t_address>",
+          "valueType": "t_address",
+          "length": "dyn",
+          "kind": "array",
+          "label": "address[]"
+        },
+        "t_struct<StakingPool.RewardData>": {
+          "id": "t_struct<StakingPool.RewardData>",
+          "kind": "struct",
+          "label": "StakingPool.RewardData",
+          "members": [
+            {
+              "label": "distributions",
+              "astId": 12928,
+              "type": "t_array:dyn<t_struct<StakingPool.RewardDistribution>>",
+              "src": "845:34:77"
+            },
+            {
+              "label": "unclaimed",
+              "astId": 12930,
+              "type": "t_uint256",
+              "src": "889:17:77"
+            }
+          ]
+        },
+        "t_struct<StakingPool.RewardDistribution>": {
+          "id": "t_struct<StakingPool.RewardDistribution>",
+          "kind": "struct",
+          "label": "StakingPool.RewardDistribution",
+          "members": [
+            {
+              "label": "totalShares",
+              "astId": 12917,
+              "type": "t_uint256",
+              "src": "644:19:77"
+            },
+            {
+              "label": "amount",
+              "astId": 12919,
+              "type": "t_uint256",
+              "src": "673:14:77"
+            }
+          ]
+        },
+        "t_array:dyn<t_struct<StakingPool.RewardDistribution>>": {
+          "id": "t_array:dyn<t_struct<StakingPool.RewardDistribution>>",
+          "valueType": "t_struct<StakingPool.RewardDistribution>",
+          "length": "dyn",
+          "kind": "array",
+          "label": "StakingPool.RewardDistribution[]"
+        },
+        "t_mapping<t_struct<StakingPool.RewardData>>": {
+          "id": "t_mapping<t_struct<StakingPool.RewardData>>",
+          "valueType": "t_struct<StakingPool.RewardData>",
+          "label": "mapping(key => StakingPool.RewardData)",
+          "kind": "mapping"
+        },
+        "t_struct<StakingPool.UserRewardInfo>": {
+          "id": "t_struct<StakingPool.UserRewardInfo>",
+          "kind": "struct",
+          "label": "StakingPool.UserRewardInfo",
+          "members": [
+            {
+              "label": "nextDistribution",
+              "astId": 12924,
+              "type": "t_mapping<t_uint256>",
+              "src": "732:42:77"
+            }
+          ]
+        },
+        "t_mapping<t_struct<StakingPool.UserRewardInfo>>": {
+          "id": "t_mapping<t_struct<StakingPool.UserRewardInfo>>",
+          "valueType": "t_struct<StakingPool.UserRewardInfo>",
+          "label": "mapping(key => StakingPool.UserRewardInfo)",
           "kind": "mapping"
         }
       },
@@ -1004,41 +1081,41 @@
           "contract": "Initializable",
           "path": "@openzeppelin\\upgrades\\contracts\\Initializable.sol",
           "label": "initialized",
-          "astId": 19510,
+          "astId": 22739,
           "type": "t_bool",
-          "src": "757:24:85"
+          "src": "757:24:111"
         },
         {
           "contract": "Initializable",
           "path": "@openzeppelin\\upgrades\\contracts\\Initializable.sol",
           "label": "initializing",
-          "astId": 19512,
+          "astId": 22741,
           "type": "t_bool",
-          "src": "876:25:85"
+          "src": "876:25:111"
         },
         {
           "contract": "Initializable",
           "path": "@openzeppelin\\upgrades\\contracts\\Initializable.sol",
           "label": "______gap",
-          "astId": 19574,
+          "astId": 22803,
           "type": "t_array:50<t_uint256>",
-          "src": "1982:29:85"
+          "src": "1982:29:111"
         },
         {
           "contract": "Ownable",
           "path": "@openzeppelin\\contracts-ethereum-package\\contracts\\ownership\\Ownable.sol",
           "label": "_owner",
-          "astId": 18443,
+          "astId": 21672,
           "type": "t_address",
-          "src": "526:22:76"
+          "src": "526:22:102"
         },
         {
           "contract": "Ownable",
           "path": "@openzeppelin\\contracts-ethereum-package\\contracts\\ownership\\Ownable.sol",
           "label": "______gap",
-          "astId": 18556,
+          "astId": 21785,
           "type": "t_array:50<t_uint256>",
-          "src": "2471:29:76"
+          "src": "2471:29:102"
         },
         {
           "contract": "Module",
@@ -1052,97 +1129,145 @@
           "contract": "CapperRole",
           "path": "@openzeppelin\\contracts-ethereum-package\\contracts\\access\\roles\\CapperRole.sol",
           "label": "_cappers",
-          "astId": 17537,
+          "astId": 20766,
           "type": "t_struct<Roles.Role>",
-          "src": "327:27:69"
+          "src": "327:27:95"
         },
         {
           "contract": "CapperRole",
           "path": "@openzeppelin\\contracts-ethereum-package\\contracts\\access\\roles\\CapperRole.sol",
           "label": "______gap",
-          "astId": 17637,
+          "astId": 20866,
           "type": "t_array:50<t_uint256>",
-          "src": "1193:29:69"
+          "src": "1193:29:95"
         },
         {
-          "contract": "StakingPool",
-          "path": "..\\..\\..\\D\\projects\\akropolis\\savings-pool\\contracts\\modules\\staking\\StakingPool.sol",
+          "contract": "StakingPoolBase",
+          "path": "..\\..\\..\\D\\projects\\akropolis\\savings-pool\\contracts\\modules\\staking\\StakingPoolBase.sol",
           "label": "stakingToken",
-          "astId": 9691,
+          "astId": 13432,
           "type": "t_address",
-          "src": "695:18:52"
+          "src": "699:18:78"
         },
         {
-          "contract": "StakingPool",
-          "path": "..\\..\\..\\D\\projects\\akropolis\\savings-pool\\contracts\\modules\\staking\\StakingPool.sol",
+          "contract": "StakingPoolBase",
+          "path": "..\\..\\..\\D\\projects\\akropolis\\savings-pool\\contracts\\modules\\staking\\StakingPoolBase.sol",
           "label": "defaultLockInDuration",
-          "astId": 9693,
+          "astId": 13434,
           "type": "t_uint256",
-          "src": "774:36:52"
+          "src": "778:36:78"
         },
         {
-          "contract": "StakingPool",
-          "path": "..\\..\\..\\D\\projects\\akropolis\\savings-pool\\contracts\\modules\\staking\\StakingPool.sol",
+          "contract": "StakingPoolBase",
+          "path": "..\\..\\..\\D\\projects\\akropolis\\savings-pool\\contracts\\modules\\staking\\StakingPoolBase.sol",
           "label": "stakeHolders",
-          "astId": 9697,
-          "type": "t_mapping<t_struct<StakingPool.StakeContract>>",
-          "src": "1152:54:52"
+          "astId": 13438,
+          "type": "t_mapping<t_struct<StakingPoolBase.StakeContract>>",
+          "src": "1156:54:78"
         },
         {
-          "contract": "StakingPool",
-          "path": "..\\..\\..\\D\\projects\\akropolis\\savings-pool\\contracts\\modules\\staking\\StakingPool.sol",
+          "contract": "StakingPoolBase",
+          "path": "..\\..\\..\\D\\projects\\akropolis\\savings-pool\\contracts\\modules\\staking\\StakingPoolBase.sol",
           "label": "userCapEnabled",
-          "astId": 9716,
+          "astId": 13457,
           "type": "t_bool",
-          "src": "2039:26:52"
+          "src": "2043:26:78"
         },
         {
-          "contract": "StakingPool",
-          "path": "..\\..\\..\\D\\projects\\akropolis\\savings-pool\\contracts\\modules\\staking\\StakingPool.sol",
+          "contract": "StakingPoolBase",
+          "path": "..\\..\\..\\D\\projects\\akropolis\\savings-pool\\contracts\\modules\\staking\\StakingPoolBase.sol",
           "label": "userCap",
-          "astId": 9720,
+          "astId": 13461,
           "type": "t_mapping<t_uint256>",
-          "src": "2070:42:52"
+          "src": "2074:42:78"
         },
         {
-          "contract": "StakingPool",
-          "path": "..\\..\\..\\D\\projects\\akropolis\\savings-pool\\contracts\\modules\\staking\\StakingPool.sol",
+          "contract": "StakingPoolBase",
+          "path": "..\\..\\..\\D\\projects\\akropolis\\savings-pool\\contracts\\modules\\staking\\StakingPoolBase.sol",
           "label": "defaultUserCap",
-          "astId": 9722,
+          "astId": 13463,
           "type": "t_uint256",
-          "src": "2189:29:52"
+          "src": "2193:29:78"
         },
         {
-          "contract": "StakingPool",
-          "path": "..\\..\\..\\D\\projects\\akropolis\\savings-pool\\contracts\\modules\\staking\\StakingPool.sol",
+          "contract": "StakingPoolBase",
+          "path": "..\\..\\..\\D\\projects\\akropolis\\savings-pool\\contracts\\modules\\staking\\StakingPoolBase.sol",
           "label": "stakingCapEnabled",
-          "astId": 9724,
+          "astId": 13465,
           "type": "t_bool",
-          "src": "2222:29:52"
+          "src": "2226:29:78"
         },
         {
-          "contract": "StakingPool",
-          "path": "..\\..\\..\\D\\projects\\akropolis\\savings-pool\\contracts\\modules\\staking\\StakingPool.sol",
+          "contract": "StakingPoolBase",
+          "path": "..\\..\\..\\D\\projects\\akropolis\\savings-pool\\contracts\\modules\\staking\\StakingPoolBase.sol",
           "label": "stakingCap",
-          "astId": 9726,
+          "astId": 13467,
           "type": "t_uint256",
-          "src": "2255:25:52"
+          "src": "2259:25:78"
         },
         {
-          "contract": "StakingPool",
-          "path": "..\\..\\..\\D\\projects\\akropolis\\savings-pool\\contracts\\modules\\staking\\StakingPool.sol",
+          "contract": "StakingPoolBase",
+          "path": "..\\..\\..\\D\\projects\\akropolis\\savings-pool\\contracts\\modules\\staking\\StakingPoolBase.sol",
           "label": "vipUserEnabled",
-          "astId": 9728,
+          "astId": 13469,
           "type": "t_bool",
-          "src": "2286:26:52"
+          "src": "2290:26:78"
+        },
+        {
+          "contract": "StakingPoolBase",
+          "path": "..\\..\\..\\D\\projects\\akropolis\\savings-pool\\contracts\\modules\\staking\\StakingPoolBase.sol",
+          "label": "isVipUser",
+          "astId": 13473,
+          "type": "t_mapping<t_bool>",
+          "src": "2320:41:78"
+        },
+        {
+          "contract": "StakingPoolBase",
+          "path": "..\\..\\..\\D\\projects\\akropolis\\savings-pool\\contracts\\modules\\staking\\StakingPoolBase.sol",
+          "label": "totalStakedAmount",
+          "astId": 13475,
+          "type": "t_uint256",
+          "src": "2366:34:78"
+        },
+        {
+          "contract": "StakingPoolBase",
+          "path": "..\\..\\..\\D\\projects\\akropolis\\savings-pool\\contracts\\modules\\staking\\StakingPoolBase.sol",
+          "label": "______gap",
+          "astId": 14561,
+          "type": "t_array:50<t_uint256>",
+          "src": "16692:29:78"
         },
         {
           "contract": "StakingPool",
           "path": "..\\..\\..\\D\\projects\\akropolis\\savings-pool\\contracts\\modules\\staking\\StakingPool.sol",
-          "label": "isVipUser",
-          "astId": 9732,
-          "type": "t_mapping<t_bool>",
-          "src": "2316:41:52"
+          "label": "rewardVesting",
+          "astId": 12933,
+          "type": "t_address",
+          "src": "919:40:77"
+        },
+        {
+          "contract": "StakingPool",
+          "path": "..\\..\\..\\D\\projects\\akropolis\\savings-pool\\contracts\\modules\\staking\\StakingPool.sol",
+          "label": "registeredRewardTokens",
+          "astId": 12936,
+          "type": "t_array:dyn<t_address>",
+          "src": "965:41:77"
+        },
+        {
+          "contract": "StakingPool",
+          "path": "..\\..\\..\\D\\projects\\akropolis\\savings-pool\\contracts\\modules\\staking\\StakingPool.sol",
+          "label": "rewards",
+          "astId": 12940,
+          "type": "t_mapping<t_struct<StakingPool.RewardData>>",
+          "src": "1012:45:77"
+        },
+        {
+          "contract": "StakingPool",
+          "path": "..\\..\\..\\D\\projects\\akropolis\\savings-pool\\contracts\\modules\\staking\\StakingPool.sol",
+          "label": "userRewards",
+          "astId": 12944,
+          "type": "t_mapping<t_struct<StakingPool.UserRewardInfo>>",
+          "src": "1063:53:77"
         }
       ],
       "warnings": {
@@ -1156,42 +1281,127 @@
             "contract": "CapperRole",
             "path": "@openzeppelin\\contracts-ethereum-package\\contracts\\access\\roles\\CapperRole.sol",
             "label": "_cappers",
-            "astId": 17537,
+            "astId": 20766,
             "type": "t_struct<Roles.Role>",
-            "src": "327:27:69"
+            "src": "327:27:95"
+          },
+          {
+            "contract": "StakingPoolBase",
+            "path": "..\\..\\..\\D\\projects\\akropolis\\savings-pool\\contracts\\modules\\staking\\StakingPoolBase.sol",
+            "label": "stakeHolders",
+            "astId": 13438,
+            "type": "t_mapping<t_struct<StakingPoolBase.StakeContract>>",
+            "src": "1156:54:78"
           },
           {
             "contract": "StakingPool",
             "path": "..\\..\\..\\D\\projects\\akropolis\\savings-pool\\contracts\\modules\\staking\\StakingPool.sol",
-            "label": "stakeHolders",
-            "astId": 9697,
-            "type": "t_mapping<t_struct<StakingPool.StakeContract>>",
-            "src": "1152:54:52"
+            "label": "rewards",
+            "astId": 12940,
+            "type": "t_mapping<t_struct<StakingPool.RewardData>>",
+            "src": "1012:45:77"
+          },
+          {
+            "contract": "StakingPool",
+            "path": "..\\..\\..\\D\\projects\\akropolis\\savings-pool\\contracts\\modules\\staking\\StakingPool.sol",
+            "label": "userRewards",
+            "astId": 12944,
+            "type": "t_mapping<t_struct<StakingPool.UserRewardInfo>>",
+            "src": "1063:53:77"
           }
         ],
         "storageDiff": [
           {
-            "action": "append",
+            "action": "typechange",
             "updated": {
-              "index": 16,
+              "index": 10,
+              "contract": "StakingPoolBase",
+              "path": "..\\..\\..\\D\\projects\\akropolis\\savings-pool\\contracts\\modules\\staking\\StakingPoolBase.sol",
+              "label": "stakeHolders",
+              "astId": 13438,
+              "type": "t_mapping<t_struct<StakingPoolBase.StakeContract>>",
+              "src": "1156:54:78"
+            },
+            "original": {
+              "index": 10,
               "contract": "StakingPool",
               "path": "..\\..\\..\\D\\projects\\akropolis\\savings-pool\\contracts\\modules\\staking\\StakingPool.sol",
-              "label": "vipUserEnabled",
-              "astId": 9728,
-              "type": "t_bool",
-              "src": "2286:26:52"
+              "label": "stakeHolders",
+              "astId": 9697,
+              "type": "t_mapping<t_struct<StakingPool.StakeContract>>",
+              "src": "1152:54:52"
             }
           },
           {
             "action": "append",
             "updated": {
-              "index": 17,
+              "index": 18,
+              "contract": "StakingPoolBase",
+              "path": "..\\..\\..\\D\\projects\\akropolis\\savings-pool\\contracts\\modules\\staking\\StakingPoolBase.sol",
+              "label": "totalStakedAmount",
+              "astId": 13475,
+              "type": "t_uint256",
+              "src": "2366:34:78"
+            }
+          },
+          {
+            "action": "append",
+            "updated": {
+              "index": 19,
+              "contract": "StakingPoolBase",
+              "path": "..\\..\\..\\D\\projects\\akropolis\\savings-pool\\contracts\\modules\\staking\\StakingPoolBase.sol",
+              "label": "______gap",
+              "astId": 14561,
+              "type": "t_array:50<t_uint256>",
+              "src": "16692:29:78"
+            }
+          },
+          {
+            "action": "append",
+            "updated": {
+              "index": 20,
               "contract": "StakingPool",
               "path": "..\\..\\..\\D\\projects\\akropolis\\savings-pool\\contracts\\modules\\staking\\StakingPool.sol",
-              "label": "isVipUser",
-              "astId": 9732,
-              "type": "t_mapping<t_bool>",
-              "src": "2316:41:52"
+              "label": "rewardVesting",
+              "astId": 12933,
+              "type": "t_address",
+              "src": "919:40:77"
+            }
+          },
+          {
+            "action": "append",
+            "updated": {
+              "index": 21,
+              "contract": "StakingPool",
+              "path": "..\\..\\..\\D\\projects\\akropolis\\savings-pool\\contracts\\modules\\staking\\StakingPool.sol",
+              "label": "registeredRewardTokens",
+              "astId": 12936,
+              "type": "t_array:dyn<t_address>",
+              "src": "965:41:77"
+            }
+          },
+          {
+            "action": "append",
+            "updated": {
+              "index": 22,
+              "contract": "StakingPool",
+              "path": "..\\..\\..\\D\\projects\\akropolis\\savings-pool\\contracts\\modules\\staking\\StakingPool.sol",
+              "label": "rewards",
+              "astId": 12940,
+              "type": "t_mapping<t_struct<StakingPool.RewardData>>",
+              "src": "1012:45:77"
+            }
+          },
+          {
+            "action": "append",
+            "updated": {
+              "index": 23,
+              "contract": "StakingPool",
+              "path": "..\\..\\..\\D\\projects\\akropolis\\savings-pool\\contracts\\modules\\staking\\StakingPool.sol",
+              "label": "userRewards",
+              "astId": 12944,
+              "type": "t_mapping<t_struct<StakingPool.UserRewardInfo>>",
+              "src": "1063:53:77"
             }
           }
         ]
@@ -4849,11 +5059,11 @@
       }
     },
     "StakingPoolADEL": {
-      "address": "0xEba33dBbeAC404E39221b43c0F48F0b293Ca68bE",
-      "constructorCode": "6080604052613040806100136000396000f3fe",
-      "bodyBytecodeHash": "1fb4169881cc44ec9224d2d3edd6d408e5caf5fe5ac7a8848d5861f9809b8bf1",
-      "localBytecodeHash": "9bf3f91caf1ac5e61a07eda61abf1cf82c0814450e13ee77582ce9dda1c601d0",
-      "deployedBytecodeHash": "9bf3f91caf1ac5e61a07eda61abf1cf82c0814450e13ee77582ce9dda1c601d0",
+      "address": "0x063E22147bcA7eA413327e2125F5F01DA537D48E",
+      "constructorCode": "6080604052613c60806100136000396000f3fe",
+      "bodyBytecodeHash": "60965f9d49cef418d279f85723bfadf4617846dfc49f07eec8e11245d9d14fae",
+      "localBytecodeHash": "cdad1b94a3e7938fed0f562d4ebbcce257d2d57e0d5beb94c5a5a27cf7132766",
+      "deployedBytecodeHash": "cdad1b94a3e7938fed0f562d4ebbcce257d2d57e0d5beb94c5a5a27cf7132766",
       "types": {
         "t_bool": {
           "id": "t_bool",
@@ -4884,9 +5094,9 @@
           "members": [
             {
               "label": "bearer",
-              "astId": 18465,
+              "astId": 20669,
               "type": "t_mapping<t_bool>",
-              "src": "150:32:87"
+              "src": "150:32:94"
             }
           ]
         },
@@ -4896,79 +5106,156 @@
           "label": "mapping(key => bool)",
           "kind": "mapping"
         },
-        "t_struct<StakingPool.StakeContract>": {
-          "id": "t_struct<StakingPool.StakeContract>",
+        "t_struct<StakingPoolBase.StakeContract>": {
+          "id": "t_struct<StakingPoolBase.StakeContract>",
           "kind": "struct",
-          "label": "StakingPool.StakeContract",
+          "label": "StakingPoolBase.StakeContract",
           "members": [
             {
               "label": "totalStakedFor",
-              "astId": 10678,
+              "astId": 13447,
               "type": "t_uint256",
-              "src": "1928:22:70"
+              "src": "1932:22:78"
             },
             {
               "label": "personalStakeIndex",
-              "astId": 10680,
+              "astId": 13449,
               "type": "t_uint256",
-              "src": "1957:26:70"
+              "src": "1961:26:78"
             },
             {
               "label": "personalStakes",
-              "astId": 10683,
-              "type": "t_array:dyn<t_struct<StakingPool.Stake>>",
-              "src": "1990:22:70"
+              "astId": 13452,
+              "type": "t_array:dyn<t_struct<StakingPoolBase.Stake>>",
+              "src": "1994:22:78"
             },
             {
               "label": "exists",
-              "astId": 10685,
+              "astId": 13454,
               "type": "t_bool",
-              "src": "2019:11:70"
+              "src": "2023:11:78"
             }
           ]
         },
-        "t_struct<StakingPool.Stake>": {
-          "id": "t_struct<StakingPool.Stake>",
+        "t_struct<StakingPoolBase.Stake>": {
+          "id": "t_struct<StakingPoolBase.Stake>",
           "kind": "struct",
-          "label": "StakingPool.Stake",
+          "label": "StakingPoolBase.Stake",
           "members": [
             {
               "label": "unlockedTimestamp",
-              "astId": 10671,
+              "astId": 13440,
               "type": "t_uint256",
-              "src": "1484:25:70"
+              "src": "1488:25:78"
             },
             {
               "label": "actualAmount",
-              "astId": 10673,
+              "astId": 13442,
               "type": "t_uint256",
-              "src": "1515:20:70"
+              "src": "1519:20:78"
             },
             {
               "label": "stakedFor",
-              "astId": 10675,
+              "astId": 13444,
               "type": "t_address",
-              "src": "1541:17:70"
+              "src": "1545:17:78"
             }
           ]
         },
-        "t_array:dyn<t_struct<StakingPool.Stake>>": {
-          "id": "t_array:dyn<t_struct<StakingPool.Stake>>",
-          "valueType": "t_struct<StakingPool.Stake>",
+        "t_array:dyn<t_struct<StakingPoolBase.Stake>>": {
+          "id": "t_array:dyn<t_struct<StakingPoolBase.Stake>>",
+          "valueType": "t_struct<StakingPoolBase.Stake>",
           "length": "dyn",
           "kind": "array",
-          "label": "StakingPool.Stake[]"
+          "label": "StakingPoolBase.Stake[]"
         },
-        "t_mapping<t_struct<StakingPool.StakeContract>>": {
-          "id": "t_mapping<t_struct<StakingPool.StakeContract>>",
-          "valueType": "t_struct<StakingPool.StakeContract>",
-          "label": "mapping(key => StakingPool.StakeContract)",
+        "t_mapping<t_struct<StakingPoolBase.StakeContract>>": {
+          "id": "t_mapping<t_struct<StakingPoolBase.StakeContract>>",
+          "valueType": "t_struct<StakingPoolBase.StakeContract>",
+          "label": "mapping(key => StakingPoolBase.StakeContract)",
           "kind": "mapping"
         },
         "t_mapping<t_uint256>": {
           "id": "t_mapping<t_uint256>",
           "valueType": "t_uint256",
           "label": "mapping(key => uint256)",
+          "kind": "mapping"
+        },
+        "t_array:dyn<t_address>": {
+          "id": "t_array:dyn<t_address>",
+          "valueType": "t_address",
+          "length": "dyn",
+          "kind": "array",
+          "label": "address[]"
+        },
+        "t_struct<StakingPool.RewardData>": {
+          "id": "t_struct<StakingPool.RewardData>",
+          "kind": "struct",
+          "label": "StakingPool.RewardData",
+          "members": [
+            {
+              "label": "distributions",
+              "astId": 12928,
+              "type": "t_array:dyn<t_struct<StakingPool.RewardDistribution>>",
+              "src": "845:34:77"
+            },
+            {
+              "label": "unclaimed",
+              "astId": 12930,
+              "type": "t_uint256",
+              "src": "889:17:77"
+            }
+          ]
+        },
+        "t_struct<StakingPool.RewardDistribution>": {
+          "id": "t_struct<StakingPool.RewardDistribution>",
+          "kind": "struct",
+          "label": "StakingPool.RewardDistribution",
+          "members": [
+            {
+              "label": "totalShares",
+              "astId": 12917,
+              "type": "t_uint256",
+              "src": "644:19:77"
+            },
+            {
+              "label": "amount",
+              "astId": 12919,
+              "type": "t_uint256",
+              "src": "673:14:77"
+            }
+          ]
+        },
+        "t_array:dyn<t_struct<StakingPool.RewardDistribution>>": {
+          "id": "t_array:dyn<t_struct<StakingPool.RewardDistribution>>",
+          "valueType": "t_struct<StakingPool.RewardDistribution>",
+          "length": "dyn",
+          "kind": "array",
+          "label": "StakingPool.RewardDistribution[]"
+        },
+        "t_mapping<t_struct<StakingPool.RewardData>>": {
+          "id": "t_mapping<t_struct<StakingPool.RewardData>>",
+          "valueType": "t_struct<StakingPool.RewardData>",
+          "label": "mapping(key => StakingPool.RewardData)",
+          "kind": "mapping"
+        },
+        "t_struct<StakingPool.UserRewardInfo>": {
+          "id": "t_struct<StakingPool.UserRewardInfo>",
+          "kind": "struct",
+          "label": "StakingPool.UserRewardInfo",
+          "members": [
+            {
+              "label": "nextDistribution",
+              "astId": 12924,
+              "type": "t_mapping<t_uint256>",
+              "src": "732:42:77"
+            }
+          ]
+        },
+        "t_mapping<t_struct<StakingPool.UserRewardInfo>>": {
+          "id": "t_mapping<t_struct<StakingPool.UserRewardInfo>>",
+          "valueType": "t_struct<StakingPool.UserRewardInfo>",
+          "label": "mapping(key => StakingPool.UserRewardInfo)",
           "kind": "mapping"
         }
       },
@@ -4977,41 +5264,41 @@
           "contract": "Initializable",
           "path": "@openzeppelin\\upgrades\\contracts\\Initializable.sol",
           "label": "initialized",
-          "astId": 20535,
+          "astId": 22739,
           "type": "t_bool",
-          "src": "757:24:104"
+          "src": "757:24:111"
         },
         {
           "contract": "Initializable",
           "path": "@openzeppelin\\upgrades\\contracts\\Initializable.sol",
           "label": "initializing",
-          "astId": 20537,
+          "astId": 22741,
           "type": "t_bool",
-          "src": "876:25:104"
+          "src": "876:25:111"
         },
         {
           "contract": "Initializable",
           "path": "@openzeppelin\\upgrades\\contracts\\Initializable.sol",
           "label": "______gap",
-          "astId": 20599,
+          "astId": 22803,
           "type": "t_array:50<t_uint256>",
-          "src": "1982:29:104"
+          "src": "1982:29:111"
         },
         {
           "contract": "Ownable",
           "path": "@openzeppelin\\contracts-ethereum-package\\contracts\\ownership\\Ownable.sol",
           "label": "_owner",
-          "astId": 19468,
+          "astId": 21672,
           "type": "t_address",
-          "src": "526:22:95"
+          "src": "526:22:102"
         },
         {
           "contract": "Ownable",
           "path": "@openzeppelin\\contracts-ethereum-package\\contracts\\ownership\\Ownable.sol",
           "label": "______gap",
-          "astId": 19581,
+          "astId": 21785,
           "type": "t_array:50<t_uint256>",
-          "src": "2471:29:95"
+          "src": "2471:29:102"
         },
         {
           "contract": "Module",
@@ -5025,97 +5312,145 @@
           "contract": "CapperRole",
           "path": "@openzeppelin\\contracts-ethereum-package\\contracts\\access\\roles\\CapperRole.sol",
           "label": "_cappers",
-          "astId": 18562,
+          "astId": 20766,
           "type": "t_struct<Roles.Role>",
-          "src": "327:27:88"
+          "src": "327:27:95"
         },
         {
           "contract": "CapperRole",
           "path": "@openzeppelin\\contracts-ethereum-package\\contracts\\access\\roles\\CapperRole.sol",
           "label": "______gap",
-          "astId": 18662,
+          "astId": 20866,
           "type": "t_array:50<t_uint256>",
-          "src": "1193:29:88"
+          "src": "1193:29:95"
         },
         {
-          "contract": "StakingPool",
-          "path": "..\\..\\..\\D\\projects\\akropolis\\savings-pool\\contracts\\modules\\staking\\StakingPool.sol",
+          "contract": "StakingPoolBase",
+          "path": "..\\..\\..\\D\\projects\\akropolis\\savings-pool\\contracts\\modules\\staking\\StakingPoolBase.sol",
           "label": "stakingToken",
-          "astId": 10663,
+          "astId": 13432,
           "type": "t_address",
-          "src": "695:18:70"
+          "src": "699:18:78"
         },
         {
-          "contract": "StakingPool",
-          "path": "..\\..\\..\\D\\projects\\akropolis\\savings-pool\\contracts\\modules\\staking\\StakingPool.sol",
+          "contract": "StakingPoolBase",
+          "path": "..\\..\\..\\D\\projects\\akropolis\\savings-pool\\contracts\\modules\\staking\\StakingPoolBase.sol",
           "label": "defaultLockInDuration",
-          "astId": 10665,
+          "astId": 13434,
           "type": "t_uint256",
-          "src": "774:36:70"
+          "src": "778:36:78"
         },
         {
-          "contract": "StakingPool",
-          "path": "..\\..\\..\\D\\projects\\akropolis\\savings-pool\\contracts\\modules\\staking\\StakingPool.sol",
+          "contract": "StakingPoolBase",
+          "path": "..\\..\\..\\D\\projects\\akropolis\\savings-pool\\contracts\\modules\\staking\\StakingPoolBase.sol",
           "label": "stakeHolders",
-          "astId": 10669,
-          "type": "t_mapping<t_struct<StakingPool.StakeContract>>",
-          "src": "1152:54:70"
+          "astId": 13438,
+          "type": "t_mapping<t_struct<StakingPoolBase.StakeContract>>",
+          "src": "1156:54:78"
         },
         {
-          "contract": "StakingPool",
-          "path": "..\\..\\..\\D\\projects\\akropolis\\savings-pool\\contracts\\modules\\staking\\StakingPool.sol",
+          "contract": "StakingPoolBase",
+          "path": "..\\..\\..\\D\\projects\\akropolis\\savings-pool\\contracts\\modules\\staking\\StakingPoolBase.sol",
           "label": "userCapEnabled",
-          "astId": 10688,
+          "astId": 13457,
           "type": "t_bool",
-          "src": "2039:26:70"
+          "src": "2043:26:78"
         },
         {
-          "contract": "StakingPool",
-          "path": "..\\..\\..\\D\\projects\\akropolis\\savings-pool\\contracts\\modules\\staking\\StakingPool.sol",
+          "contract": "StakingPoolBase",
+          "path": "..\\..\\..\\D\\projects\\akropolis\\savings-pool\\contracts\\modules\\staking\\StakingPoolBase.sol",
           "label": "userCap",
-          "astId": 10692,
+          "astId": 13461,
           "type": "t_mapping<t_uint256>",
-          "src": "2070:42:70"
+          "src": "2074:42:78"
         },
         {
-          "contract": "StakingPool",
-          "path": "..\\..\\..\\D\\projects\\akropolis\\savings-pool\\contracts\\modules\\staking\\StakingPool.sol",
+          "contract": "StakingPoolBase",
+          "path": "..\\..\\..\\D\\projects\\akropolis\\savings-pool\\contracts\\modules\\staking\\StakingPoolBase.sol",
           "label": "defaultUserCap",
-          "astId": 10694,
+          "astId": 13463,
           "type": "t_uint256",
-          "src": "2189:29:70"
+          "src": "2193:29:78"
         },
         {
-          "contract": "StakingPool",
-          "path": "..\\..\\..\\D\\projects\\akropolis\\savings-pool\\contracts\\modules\\staking\\StakingPool.sol",
+          "contract": "StakingPoolBase",
+          "path": "..\\..\\..\\D\\projects\\akropolis\\savings-pool\\contracts\\modules\\staking\\StakingPoolBase.sol",
           "label": "stakingCapEnabled",
-          "astId": 10696,
+          "astId": 13465,
           "type": "t_bool",
-          "src": "2222:29:70"
+          "src": "2226:29:78"
         },
         {
-          "contract": "StakingPool",
-          "path": "..\\..\\..\\D\\projects\\akropolis\\savings-pool\\contracts\\modules\\staking\\StakingPool.sol",
+          "contract": "StakingPoolBase",
+          "path": "..\\..\\..\\D\\projects\\akropolis\\savings-pool\\contracts\\modules\\staking\\StakingPoolBase.sol",
           "label": "stakingCap",
-          "astId": 10698,
+          "astId": 13467,
           "type": "t_uint256",
-          "src": "2255:25:70"
+          "src": "2259:25:78"
         },
         {
-          "contract": "StakingPool",
-          "path": "..\\..\\..\\D\\projects\\akropolis\\savings-pool\\contracts\\modules\\staking\\StakingPool.sol",
+          "contract": "StakingPoolBase",
+          "path": "..\\..\\..\\D\\projects\\akropolis\\savings-pool\\contracts\\modules\\staking\\StakingPoolBase.sol",
           "label": "vipUserEnabled",
-          "astId": 10700,
+          "astId": 13469,
           "type": "t_bool",
-          "src": "2286:26:70"
+          "src": "2290:26:78"
+        },
+        {
+          "contract": "StakingPoolBase",
+          "path": "..\\..\\..\\D\\projects\\akropolis\\savings-pool\\contracts\\modules\\staking\\StakingPoolBase.sol",
+          "label": "isVipUser",
+          "astId": 13473,
+          "type": "t_mapping<t_bool>",
+          "src": "2320:41:78"
+        },
+        {
+          "contract": "StakingPoolBase",
+          "path": "..\\..\\..\\D\\projects\\akropolis\\savings-pool\\contracts\\modules\\staking\\StakingPoolBase.sol",
+          "label": "totalStakedAmount",
+          "astId": 13475,
+          "type": "t_uint256",
+          "src": "2366:34:78"
+        },
+        {
+          "contract": "StakingPoolBase",
+          "path": "..\\..\\..\\D\\projects\\akropolis\\savings-pool\\contracts\\modules\\staking\\StakingPoolBase.sol",
+          "label": "______gap",
+          "astId": 14561,
+          "type": "t_array:50<t_uint256>",
+          "src": "16692:29:78"
         },
         {
           "contract": "StakingPool",
           "path": "..\\..\\..\\D\\projects\\akropolis\\savings-pool\\contracts\\modules\\staking\\StakingPool.sol",
-          "label": "isVipUser",
-          "astId": 10704,
-          "type": "t_mapping<t_bool>",
-          "src": "2316:41:70"
+          "label": "rewardVesting",
+          "astId": 12933,
+          "type": "t_address",
+          "src": "919:40:77"
+        },
+        {
+          "contract": "StakingPool",
+          "path": "..\\..\\..\\D\\projects\\akropolis\\savings-pool\\contracts\\modules\\staking\\StakingPool.sol",
+          "label": "registeredRewardTokens",
+          "astId": 12936,
+          "type": "t_array:dyn<t_address>",
+          "src": "965:41:77"
+        },
+        {
+          "contract": "StakingPool",
+          "path": "..\\..\\..\\D\\projects\\akropolis\\savings-pool\\contracts\\modules\\staking\\StakingPool.sol",
+          "label": "rewards",
+          "astId": 12940,
+          "type": "t_mapping<t_struct<StakingPool.RewardData>>",
+          "src": "1012:45:77"
+        },
+        {
+          "contract": "StakingPool",
+          "path": "..\\..\\..\\D\\projects\\akropolis\\savings-pool\\contracts\\modules\\staking\\StakingPool.sol",
+          "label": "userRewards",
+          "astId": 12944,
+          "type": "t_mapping<t_struct<StakingPool.UserRewardInfo>>",
+          "src": "1063:53:77"
         }
       ],
       "warnings": {
@@ -5123,7 +5458,136 @@
         "hasSelfDestruct": false,
         "hasDelegateCall": false,
         "hasInitialValuesInDeclarations": false,
-        "uninitializedBaseContracts": []
+        "uninitializedBaseContracts": [],
+        "storageUncheckedVars": [
+          {
+            "contract": "CapperRole",
+            "path": "@openzeppelin\\contracts-ethereum-package\\contracts\\access\\roles\\CapperRole.sol",
+            "label": "_cappers",
+            "astId": 20766,
+            "type": "t_struct<Roles.Role>",
+            "src": "327:27:95"
+          },
+          {
+            "contract": "StakingPoolBase",
+            "path": "..\\..\\..\\D\\projects\\akropolis\\savings-pool\\contracts\\modules\\staking\\StakingPoolBase.sol",
+            "label": "stakeHolders",
+            "astId": 13438,
+            "type": "t_mapping<t_struct<StakingPoolBase.StakeContract>>",
+            "src": "1156:54:78"
+          },
+          {
+            "contract": "StakingPool",
+            "path": "..\\..\\..\\D\\projects\\akropolis\\savings-pool\\contracts\\modules\\staking\\StakingPool.sol",
+            "label": "rewards",
+            "astId": 12940,
+            "type": "t_mapping<t_struct<StakingPool.RewardData>>",
+            "src": "1012:45:77"
+          },
+          {
+            "contract": "StakingPool",
+            "path": "..\\..\\..\\D\\projects\\akropolis\\savings-pool\\contracts\\modules\\staking\\StakingPool.sol",
+            "label": "userRewards",
+            "astId": 12944,
+            "type": "t_mapping<t_struct<StakingPool.UserRewardInfo>>",
+            "src": "1063:53:77"
+          }
+        ],
+        "storageDiff": [
+          {
+            "action": "typechange",
+            "updated": {
+              "index": 10,
+              "contract": "StakingPoolBase",
+              "path": "..\\..\\..\\D\\projects\\akropolis\\savings-pool\\contracts\\modules\\staking\\StakingPoolBase.sol",
+              "label": "stakeHolders",
+              "astId": 13438,
+              "type": "t_mapping<t_struct<StakingPoolBase.StakeContract>>",
+              "src": "1156:54:78"
+            },
+            "original": {
+              "index": 10,
+              "contract": "StakingPool",
+              "path": "..\\..\\..\\D\\projects\\akropolis\\savings-pool\\contracts\\modules\\staking\\StakingPool.sol",
+              "label": "stakeHolders",
+              "astId": 10669,
+              "type": "t_mapping<t_struct<StakingPool.StakeContract>>",
+              "src": "1152:54:70"
+            }
+          },
+          {
+            "action": "append",
+            "updated": {
+              "index": 18,
+              "contract": "StakingPoolBase",
+              "path": "..\\..\\..\\D\\projects\\akropolis\\savings-pool\\contracts\\modules\\staking\\StakingPoolBase.sol",
+              "label": "totalStakedAmount",
+              "astId": 13475,
+              "type": "t_uint256",
+              "src": "2366:34:78"
+            }
+          },
+          {
+            "action": "append",
+            "updated": {
+              "index": 19,
+              "contract": "StakingPoolBase",
+              "path": "..\\..\\..\\D\\projects\\akropolis\\savings-pool\\contracts\\modules\\staking\\StakingPoolBase.sol",
+              "label": "______gap",
+              "astId": 14561,
+              "type": "t_array:50<t_uint256>",
+              "src": "16692:29:78"
+            }
+          },
+          {
+            "action": "append",
+            "updated": {
+              "index": 20,
+              "contract": "StakingPool",
+              "path": "..\\..\\..\\D\\projects\\akropolis\\savings-pool\\contracts\\modules\\staking\\StakingPool.sol",
+              "label": "rewardVesting",
+              "astId": 12933,
+              "type": "t_address",
+              "src": "919:40:77"
+            }
+          },
+          {
+            "action": "append",
+            "updated": {
+              "index": 21,
+              "contract": "StakingPool",
+              "path": "..\\..\\..\\D\\projects\\akropolis\\savings-pool\\contracts\\modules\\staking\\StakingPool.sol",
+              "label": "registeredRewardTokens",
+              "astId": 12936,
+              "type": "t_array:dyn<t_address>",
+              "src": "965:41:77"
+            }
+          },
+          {
+            "action": "append",
+            "updated": {
+              "index": 22,
+              "contract": "StakingPool",
+              "path": "..\\..\\..\\D\\projects\\akropolis\\savings-pool\\contracts\\modules\\staking\\StakingPool.sol",
+              "label": "rewards",
+              "astId": 12940,
+              "type": "t_mapping<t_struct<StakingPool.RewardData>>",
+              "src": "1012:45:77"
+            }
+          },
+          {
+            "action": "append",
+            "updated": {
+              "index": 23,
+              "contract": "StakingPool",
+              "path": "..\\..\\..\\D\\projects\\akropolis\\savings-pool\\contracts\\modules\\staking\\StakingPool.sol",
+              "label": "userRewards",
+              "astId": 12944,
+              "type": "t_mapping<t_struct<StakingPool.UserRewardInfo>>",
+              "src": "1063:53:77"
+            }
+          }
+        ]
       }
     },
     "CurveFiProtocol_SBTC": {
@@ -6908,7 +7372,7 @@
       {
         "address": "0x3501Ec11d205fa249f2C42f5470e137b529b35D0",
         "version": "1.0.0",
-        "implementation": "0x84428bE4bDa24de9D88858D70EAe80A78F3617D5",
+        "implementation": "0x68AEA07c99D571aa6C1681CD91f10BA73E0Ac6B3",
         "admin": "0x8f608BCB8971cD7D3073C417A28DbD156d772402",
         "kind": "Upgradeable"
       }
@@ -7070,7 +7534,7 @@
       {
         "address": "0x1A547c3dd03c39Fb2b5aEaFC524033879bD28F13",
         "version": "1.0.0",
-        "implementation": "0xEba33dBbeAC404E39221b43c0F48F0b293Ca68bE",
+        "implementation": "0x063E22147bcA7eA413327e2125F5F01DA537D48E",
         "admin": "0x8f608BCB8971cD7D3073C417A28DbD156d772402",
         "kind": "Upgradeable"
       }
