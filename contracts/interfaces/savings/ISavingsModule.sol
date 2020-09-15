@@ -44,20 +44,10 @@ contract ISavingsModule {
     /** 
      * @notice Distributes yield. May be called by bot, if there was no deposits/withdrawals
      */
-    function distributeYield() public;
+    function distributeYield() external;
 
     /** 
      * @notice Distributes reward tokens. May be called by bot, if there was no deposits/withdrawals
      */
     function distributeRewards() external;
-
-    function poolTokenByProtocol(address _protocol) external view returns(address);
-
-    function protocolByPoolToken(address _poolToken) external view returns(address);
-
-    function rewardTokensByProtocol(address _protocol) external view returns(address[] memory);
-
-    function registeredPoolTokens() external view returns(address[] memory);
-
-    function supportedRewardTokens() external view returns(address[] memory);
 }
