@@ -115,7 +115,11 @@ contract RewardVestingModule is Module, RewardManagerRole {
         // Searching for last claimable epoch
         for(i = epochsLength-1; i > 0; i--) {
             ep = ri.epochs[i];
-            if(ep.end >= block.timestamp) {
+            if(ep.end < block.timestamp) {  // We've found last fully-finished epoch
+                if(i < epochsLength-1) {    // We have already started current epoch
+                    i++;                    //    Go back to currently-running epoch
+                    ep = ri.epochs[i];
+                }
                 break;
             }
         }
