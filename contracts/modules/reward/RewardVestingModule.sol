@@ -134,8 +134,14 @@ contract RewardVestingModule is Module, RewardManagerRole {
         //Claim rest
         for(i; i > 0; i--) {
             ep = ri.epochs[i];
+            uint256 epStart = ri.epochs[i-1].end;
             if(ep.end > previousClaim) {
-                claimAmount = claimAmount.add(ep.amount);
+                if(previousClaim > epStart) {
+                    uint256 epochClaim = ep.amount.mul(ep.end.sub(previousClaim)).div(ep.end.sub(epStart));
+                    claimAmount = claimAmount.add(epochClaim);
+                } else {
+                    claimAmount = claimAmount.add(ep.amount);
+                }
             } else {
                 break;
             }
