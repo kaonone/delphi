@@ -3974,11 +3974,11 @@
       }
     },
     "RewardVestingModule": {
-      "address": "0xD496c890135BB5aDD4Eb0A175D3277D3eC88ddfC",
-      "constructorCode": "60806040526126e0806100136000396000f3fe",
-      "bodyBytecodeHash": "4d21c8b20c702d14d6da848daae4a24623e63a09ef71734141404a2f9950ea26",
-      "localBytecodeHash": "5527cbfef068a4eff8d16938c7e8130465e73c7e514baf704f3658e59f7e3c3d",
-      "deployedBytecodeHash": "5527cbfef068a4eff8d16938c7e8130465e73c7e514baf704f3658e59f7e3c3d",
+      "address": "0xe55C42bD01553994Fd7EF6a21e30BDc6B732528D",
+      "constructorCode": "6080604052612722806100136000396000f3fe",
+      "bodyBytecodeHash": "7270d497b26df64020b109e1b739664a54db1e9c52d833e407cda5a29039f6f3",
+      "localBytecodeHash": "2d007be8e46ee05cef21f5cdaf30048d1e5a2fe600c71c43ae39f53a5726d83f",
+      "deployedBytecodeHash": "2d007be8e46ee05cef21f5cdaf30048d1e5a2fe600c71c43ae39f53a5726d83f",
       "types": {
         "t_bool": {
           "id": "t_bool",
@@ -4009,9 +4009,9 @@
           "members": [
             {
               "label": "bearer",
-              "astId": 20226,
+              "astId": 20670,
               "type": "t_mapping<t_bool>",
-              "src": "150:32:92"
+              "src": "150:32:94"
             }
           ]
         },
@@ -4028,15 +4028,15 @@
           "members": [
             {
               "label": "tokens",
-              "astId": 8586,
+              "astId": 8994,
               "type": "t_array:dyn<t_address>",
-              "src": "1111:16:71"
+              "src": "1111:16:73"
             },
             {
               "label": "rewardInfo",
-              "astId": 8590,
+              "astId": 8998,
               "type": "t_mapping<t_struct<RewardVestingModule.RewardInfo>>",
-              "src": "1137:39:71"
+              "src": "1137:39:73"
             }
           ]
         },
@@ -4054,15 +4054,15 @@
           "members": [
             {
               "label": "epochs",
-              "astId": 8580,
+              "astId": 8988,
               "type": "t_array:dyn<t_struct<RewardVestingModule.Epoch>>",
-              "src": "997:14:71"
+              "src": "997:14:73"
             },
             {
               "label": "lastClaim",
-              "astId": 8582,
+              "astId": 8990,
               "type": "t_uint256",
-              "src": "1021:17:71"
+              "src": "1021:17:73"
             }
           ]
         },
@@ -4073,15 +4073,15 @@
           "members": [
             {
               "label": "end",
-              "astId": 8574,
+              "astId": 8982,
               "type": "t_uint256",
-              "src": "826:11:71"
+              "src": "826:11:73"
             },
             {
               "label": "amount",
-              "astId": 8576,
+              "astId": 8984,
               "type": "t_uint256",
-              "src": "880:14:71"
+              "src": "880:14:73"
             }
           ]
         },
@@ -4110,41 +4110,41 @@
           "contract": "Initializable",
           "path": "@openzeppelin\\upgrades\\contracts\\Initializable.sol",
           "label": "initialized",
-          "astId": 22296,
+          "astId": 22740,
           "type": "t_bool",
-          "src": "757:24:109"
+          "src": "757:24:111"
         },
         {
           "contract": "Initializable",
           "path": "@openzeppelin\\upgrades\\contracts\\Initializable.sol",
           "label": "initializing",
-          "astId": 22298,
+          "astId": 22742,
           "type": "t_bool",
-          "src": "876:25:109"
+          "src": "876:25:111"
         },
         {
           "contract": "Initializable",
           "path": "@openzeppelin\\upgrades\\contracts\\Initializable.sol",
           "label": "______gap",
-          "astId": 22360,
+          "astId": 22804,
           "type": "t_array:50<t_uint256>",
-          "src": "1982:29:109"
+          "src": "1982:29:111"
         },
         {
           "contract": "Ownable",
           "path": "@openzeppelin\\contracts-ethereum-package\\contracts\\ownership\\Ownable.sol",
           "label": "_owner",
-          "astId": 21229,
+          "astId": 21673,
           "type": "t_address",
-          "src": "526:22:100"
+          "src": "526:22:102"
         },
         {
           "contract": "Ownable",
           "path": "@openzeppelin\\contracts-ethereum-package\\contracts\\ownership\\Ownable.sol",
           "label": "______gap",
-          "astId": 21342,
+          "astId": 21786,
           "type": "t_array:50<t_uint256>",
-          "src": "2471:29:100"
+          "src": "2471:29:102"
         },
         {
           "contract": "Module",
@@ -4158,25 +4158,25 @@
           "contract": "RewardManagerRole",
           "path": "..\\..\\..\\D\\projects\\akropolis\\savings-pool\\contracts\\modules\\reward\\RewardManagerRole.sol",
           "label": "_managers",
-          "astId": 8430,
+          "astId": 8838,
           "type": "t_struct<Roles.Role>",
-          "src": "448:28:70"
+          "src": "448:28:72"
         },
         {
           "contract": "RewardVestingModule",
           "path": "..\\..\\..\\D\\projects\\akropolis\\savings-pool\\contracts\\modules\\reward\\RewardVestingModule.sol",
           "label": "rewards",
-          "astId": 8595,
+          "astId": 9003,
           "type": "t_mapping<t_struct<RewardVestingModule.ProtocolRewards>>",
-          "src": "1189:52:71"
+          "src": "1189:52:73"
         },
         {
           "contract": "RewardVestingModule",
           "path": "..\\..\\..\\D\\projects\\akropolis\\savings-pool\\contracts\\modules\\reward\\RewardVestingModule.sol",
           "label": "defaultEpochLength",
-          "astId": 8597,
+          "astId": 9005,
           "type": "t_uint256",
-          "src": "1247:33:71"
+          "src": "1247:33:73"
         }
       ],
       "warnings": {
@@ -4190,17 +4190,17 @@
             "contract": "RewardManagerRole",
             "path": "..\\..\\..\\D\\projects\\akropolis\\savings-pool\\contracts\\modules\\reward\\RewardManagerRole.sol",
             "label": "_managers",
-            "astId": 8430,
+            "astId": 8838,
             "type": "t_struct<Roles.Role>",
-            "src": "448:28:70"
+            "src": "448:28:72"
           },
           {
             "contract": "RewardVestingModule",
             "path": "..\\..\\..\\D\\projects\\akropolis\\savings-pool\\contracts\\modules\\reward\\RewardVestingModule.sol",
             "label": "rewards",
-            "astId": 8595,
+            "astId": 9003,
             "type": "t_mapping<t_struct<RewardVestingModule.ProtocolRewards>>",
-            "src": "1189:52:71"
+            "src": "1189:52:73"
           }
         ],
         "storageDiff": []
@@ -4760,7 +4760,7 @@
       {
         "address": "0x214eAB7667848ec753A50Bf98416a8E12D3516f2",
         "version": "1.0.0",
-        "implementation": "0xD496c890135BB5aDD4Eb0A175D3277D3eC88ddfC",
+        "implementation": "0xe55C42bD01553994Fd7EF6a21e30BDc6B732528D",
         "admin": "0x7B27e0dAED14F0DFA17aa8a23f39c5dbF6FaAF12",
         "kind": "Upgradeable"
       }
