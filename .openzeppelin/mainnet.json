@@ -6791,11 +6791,11 @@
       }
     },
     "RewardVestingModule": {
-      "address": "0x2F87FBE31130bed3709af7D03bCf4abf47dAba3D",
-      "constructorCode": "6080604052612664806100136000396000f3fe",
-      "bodyBytecodeHash": "8bf08ef70d7979d079b38e228a20792c2b94369d48b9589ac7c553c8db6e6ce4",
-      "localBytecodeHash": "4185cd16c65b96097ba5bfc9ebbdcedd15b2483812040150847ebc3a24d929b2",
-      "deployedBytecodeHash": "4185cd16c65b96097ba5bfc9ebbdcedd15b2483812040150847ebc3a24d929b2",
+      "address": "0x5fF99A7127fb6948C3fB9fDDb2D18163f8B0629d",
+      "constructorCode": "6080604052612722806100136000396000f3fe",
+      "bodyBytecodeHash": "7270d497b26df64020b109e1b739664a54db1e9c52d833e407cda5a29039f6f3",
+      "localBytecodeHash": "2d007be8e46ee05cef21f5cdaf30048d1e5a2fe600c71c43ae39f53a5726d83f",
+      "deployedBytecodeHash": "2d007be8e46ee05cef21f5cdaf30048d1e5a2fe600c71c43ae39f53a5726d83f",
       "types": {
         "t_bool": {
           "id": "t_bool",
@@ -6826,7 +6826,7 @@
           "members": [
             {
               "label": "bearer",
-              "astId": 20669,
+              "astId": 20670,
               "type": "t_mapping<t_bool>",
               "src": "150:32:94"
             }
@@ -6845,13 +6845,13 @@
           "members": [
             {
               "label": "tokens",
-              "astId": 9052,
+              "astId": 8994,
               "type": "t_array:dyn<t_address>",
               "src": "1111:16:73"
             },
             {
               "label": "rewardInfo",
-              "astId": 9056,
+              "astId": 8998,
               "type": "t_mapping<t_struct<RewardVestingModule.RewardInfo>>",
               "src": "1137:39:73"
             }
@@ -6871,13 +6871,13 @@
           "members": [
             {
               "label": "epochs",
-              "astId": 9046,
+              "astId": 8988,
               "type": "t_array:dyn<t_struct<RewardVestingModule.Epoch>>",
               "src": "997:14:73"
             },
             {
               "label": "lastClaim",
-              "astId": 9048,
+              "astId": 8990,
               "type": "t_uint256",
               "src": "1021:17:73"
             }
@@ -6890,13 +6890,13 @@
           "members": [
             {
               "label": "end",
-              "astId": 9040,
+              "astId": 8982,
               "type": "t_uint256",
               "src": "826:11:73"
             },
             {
               "label": "amount",
-              "astId": 9042,
+              "astId": 8984,
               "type": "t_uint256",
               "src": "880:14:73"
             }
@@ -6927,7 +6927,7 @@
           "contract": "Initializable",
           "path": "@openzeppelin\\upgrades\\contracts\\Initializable.sol",
           "label": "initialized",
-          "astId": 22739,
+          "astId": 22740,
           "type": "t_bool",
           "src": "757:24:111"
         },
@@ -6935,7 +6935,7 @@
           "contract": "Initializable",
           "path": "@openzeppelin\\upgrades\\contracts\\Initializable.sol",
           "label": "initializing",
-          "astId": 22741,
+          "astId": 22742,
           "type": "t_bool",
           "src": "876:25:111"
         },
@@ -6943,7 +6943,7 @@
           "contract": "Initializable",
           "path": "@openzeppelin\\upgrades\\contracts\\Initializable.sol",
           "label": "______gap",
-          "astId": 22803,
+          "astId": 22804,
           "type": "t_array:50<t_uint256>",
           "src": "1982:29:111"
         },
@@ -6951,7 +6951,7 @@
           "contract": "Ownable",
           "path": "@openzeppelin\\contracts-ethereum-package\\contracts\\ownership\\Ownable.sol",
           "label": "_owner",
-          "astId": 21672,
+          "astId": 21673,
           "type": "t_address",
           "src": "526:22:102"
         },
@@ -6959,7 +6959,7 @@
           "contract": "Ownable",
           "path": "@openzeppelin\\contracts-ethereum-package\\contracts\\ownership\\Ownable.sol",
           "label": "______gap",
-          "astId": 21785,
+          "astId": 21786,
           "type": "t_array:50<t_uint256>",
           "src": "2471:29:102"
         },
@@ -6975,7 +6975,7 @@
           "contract": "RewardManagerRole",
           "path": "..\\..\\..\\D\\projects\\akropolis\\savings-pool\\contracts\\modules\\reward\\RewardManagerRole.sol",
           "label": "_managers",
-          "astId": 8896,
+          "astId": 8838,
           "type": "t_struct<Roles.Role>",
           "src": "448:28:72"
         },
@@ -6983,7 +6983,7 @@
           "contract": "RewardVestingModule",
           "path": "..\\..\\..\\D\\projects\\akropolis\\savings-pool\\contracts\\modules\\reward\\RewardVestingModule.sol",
           "label": "rewards",
-          "astId": 9061,
+          "astId": 9003,
           "type": "t_mapping<t_struct<RewardVestingModule.ProtocolRewards>>",
           "src": "1189:52:73"
         },
@@ -6991,7 +6991,7 @@
           "contract": "RewardVestingModule",
           "path": "..\\..\\..\\D\\projects\\akropolis\\savings-pool\\contracts\\modules\\reward\\RewardVestingModule.sol",
           "label": "defaultEpochLength",
-          "astId": 9063,
+          "astId": 9005,
           "type": "t_uint256",
           "src": "1247:33:73"
         }
@@ -7001,7 +7001,26 @@
         "hasSelfDestruct": false,
         "hasDelegateCall": false,
         "hasInitialValuesInDeclarations": false,
-        "uninitializedBaseContracts": []
+        "uninitializedBaseContracts": [],
+        "storageUncheckedVars": [
+          {
+            "contract": "RewardManagerRole",
+            "path": "..\\..\\..\\D\\projects\\akropolis\\savings-pool\\contracts\\modules\\reward\\RewardManagerRole.sol",
+            "label": "_managers",
+            "astId": 8838,
+            "type": "t_struct<Roles.Role>",
+            "src": "448:28:72"
+          },
+          {
+            "contract": "RewardVestingModule",
+            "path": "..\\..\\..\\D\\projects\\akropolis\\savings-pool\\contracts\\modules\\reward\\RewardVestingModule.sol",
+            "label": "rewards",
+            "astId": 9003,
+            "type": "t_mapping<t_struct<RewardVestingModule.ProtocolRewards>>",
+            "src": "1189:52:73"
+          }
+        ],
+        "storageDiff": []
       }
     },
     "CurveFiProtocol_renBTC": {
@@ -7749,7 +7768,7 @@
       {
         "address": "0x2A9dcb9d79Aba0CC64565A87c9d20D11D1f33a07",
         "version": "1.0.0",
-        "implementation": "0x2F87FBE31130bed3709af7D03bCf4abf47dAba3D",
+        "implementation": "0x5fF99A7127fb6948C3fB9fDDb2D18163f8B0629d",
         "admin": "0x8f608BCB8971cD7D3073C417A28DbD156d772402",
         "kind": "Upgradeable"
       }
