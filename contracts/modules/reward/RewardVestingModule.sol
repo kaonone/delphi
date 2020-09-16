@@ -39,6 +39,12 @@ contract RewardVestingModule is Module, RewardManagerRole {
         defaultEpochLength = 7*24*60*60;
     }
 
+    function getRewardInfo(address protocol, address token) public view returns(uint256 lastClaim, uint256 epochCount) {
+        ProtocolRewards storage r = rewards[protocol];
+        RewardInfo storage ri = r.rewardInfo[token];
+        return (ri.lastClaim, ri.epochs.length);
+    }
+
     function registerRewardToken(address protocol, address token, uint256 firstEpochStart) public onlyRewardManager {
         if(firstEpochStart == 0) firstEpochStart = block.timestamp;
         //Push zero epoch
