@@ -57,11 +57,13 @@ contract VaultProtocol is Module, IVaultProtocol, DefiOperatorRole {
             balancesOnHold[_user][ind].depositedAmount = balancesOnHold[_user][ind].depositedAmount.add(_amount);
         }
         else {
+            if (balancesOnHold[_user].length == 0) {
+                usersDeposited.push(_user);
+            }
             balancesOnHold[_user].push( DepositData({
                 depositedToken: _token,
                 depositedAmount: _amount
             }) );
-            usersDeposited.push(_user);
         }
 
         emit DepositToVault(_user, _token, _amount);
@@ -101,11 +103,13 @@ contract VaultProtocol is Module, IVaultProtocol, DefiOperatorRole {
                 balancesRequested[_user][ind].depositedAmount = balancesRequested[_user][ind].depositedAmount.add(_amount);
             }
             else {
+                if (balancesRequested[_user].length == 0) {
+                    usersRequested.push(_user);
+                }
                 balancesRequested[_user].push( DepositData({
                     depositedToken: _token,
                     depositedAmount: _amount
                 }) );
-                usersRequested.push(_user);
             }
 
             emit WithdrawRequestCreated(_user, _token, _amount);
@@ -124,26 +128,51 @@ contract VaultProtocol is Module, IVaultProtocol, DefiOperatorRole {
     function withdrawOperator() public onlyDefiOperator {
         //Yield distribution step based on actual deposits (excluding on-hold ones)
         // should be performed from the SavingsModule before other operator's actions
+
         clearOnHoldDeposits();
+        
+        uint256 totalWithdraw = 0;
+        uint256[] memory withdrawAmounts = new uint256[](registeredVaultTokens.length);
         for (uint256 i = 0; i < usersRequested.length; i++) {
+            for (uint256 j = 0; j < balancesRequested[usersRequested[i]].length; j++) {
+                uint256 am = balancesRequested[usersRequested[i]][j].depositedAmount;
+                if (am > 0) {
+                    uint256 ind = tokenRegisteredInd(balancesRequested[usersRequested[i]][j].depositedToken);
+                    withdrawAmounts[ind].add(am);
+                    totalWithdraw = totalWithdraw.add(am);
+
+                    addClaim(usersRequested[i], balancesRequested[usersRequested[i]][j].depositedToken, am);
+                    //claim if need
+    //                if (IERC20(_deposits[i].depositedToken).balanceOf(address(this).sub(claimedTokens[ind])) >= _deposits[i].depositedAmount) {
+    //
+    //               }
+                }
+            }
             //move tokens to claim if there is a liquidity
                 //handleClaim(balancesRequested[usersRequested[i]]);
                 //tokenRegisteredInd()
-            //calculate withdraw deposits
+            //calculate withdraw amounts
             delete balancesRequested[usersRequested[i]];
         }
         delete usersRequested;
 
         uint256[] memory amounts = new uint256[](registeredVaultTokens.length);
+        uint256 totalDeposit = 0;
         for (uint256 i = 0; i < registeredVaultTokens.length; i++) {
             amounts[i] = IERC20(registeredVaultTokens[i]).balanceOf(address(this)).sub(claimableTokens[i]);
+            totalDeposit = totalDeposit.add(amounts[i]);
         }
         //one of two things should happen for the same token: deposit or withdraw
         //simultaneous deposit and withdraw are applied to different tokens
-        
-        handleDeposit(registeredVaultTokens, amounts);
+        if (totalDeposit > 0) {
+            handleDeposit(registeredVaultTokens, amounts);
+            emit DepositRequestResolved(totalDeposit);
+        }
 
-        //handleWithdraws()
+        if (totalWithdraw > 0) {
+            withdraw(address(this), withdrawAmounts);
+            emit WithdrawRequestResolved(totalWithdraw);
+        }
     }
 /*    handleClaim() {
         for (uint256 i = 0; i < _deposits.length; i++) {
@@ -162,18 +191,52 @@ contract VaultProtocol is Module, IVaultProtocol, DefiOperatorRole {
         //should be overloaded in the protocol adapter itself
     }
 
-    function claimRequested(address _user, uint256 _amount) public {
-        //stab
-        //available for the user with fullfilled request
+    function claimRequested(address _user) public {
+        for (uint256 i = 0; i < balancesToClaim[_user].length; i++) {
+            IERC20(balancesToClaim[_user][i].depositedToken).transfer(_user, balancesToClaim[_user][i].depositedAmount);
+        }
+        delete balancesToClaim[_user];
     }
 
-    function canClaimRequested(address _user, uint256 _amount) public view returns (bool) {
-        //stab
-        //view function for the user
-        return true;
+    function claimableAmount(address _user, address _token) public view returns (uint256) {
+        uint256 amount = 0;
+        for (uint i = 0; i < balancesToClaim[_user].length; i++) {
+            if (balancesToClaim[_user][i].depositedToken == _token) {
+                amount = balancesToClaim[_user][i].depositedAmount;
+                break;
+            }
+        }
+        return amount;
     }
 
+    function addClaim(address _user, address _token, uint256 _amount) internal {
+        uint256 ind;
+        bool hasClaim;
+        (hasClaim, ind) = hasClaimToken(_user, _token);
 
+        if (hasClaim) {
+            balancesToClaim[_user][ind].depositedAmount = balancesToClaim[_user][ind].depositedAmount.add(_amount);
+        }
+        else {
+            balancesToClaim[_user].push( DepositData({
+                depositedToken: _token,
+                depositedAmount: _amount
+            }) );
+        }
+    }
+
+    function hasClaimToken(address _user, address _token) internal view returns (bool, uint256) {
+        uint256 ind = 0;
+        bool hasToken = false;
+        for (uint i = 0; i < balancesToClaim[_user].length; i++) {
+            if (balancesToClaim[_user][i].depositedToken == _token) {
+                ind = i;
+                hasToken = true;
+                break;
+            }
+        }
+        return (hasToken, ind);
+    }
 
     function hasOnHoldToken(address _user, address _token) internal view returns (bool, uint256) {
         uint256 ind = 0;
