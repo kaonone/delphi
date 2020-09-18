@@ -19,6 +19,11 @@ contract VaultProtocol is Module, IVaultProtocol, DefiOperatorRole {
 
     //deposits waiting for the defi operator's actions
     mapping(address => DepositData[]) internal balancesOnHold;
+    address[] internal usersDeposited; //for operator's conveniency
+
+    //Withdraw requests waiting for the defi operator's actions
+    mapping(address => DepositData[]) internal balancesRequested;
+    address[] internal usersRequested; //for operator's conveniency
 
 
     function initialize(address _pool) public initializer {
@@ -29,7 +34,7 @@ contract VaultProtocol is Module, IVaultProtocol, DefiOperatorRole {
 
 
 //IVaultProtocol methods
-    function depositToVault(address _user, address _token, uint256 _amount) public {
+    function depositToVault(address _user, address _token, uint256 _amount) public onlyDefiOperator {
         require(_user != address(0), "Incorrect user address");
         require(_token != address(0), "Incorrect token address");
         require(_amount > 0, "No tokens to be deposited");
@@ -48,23 +53,60 @@ contract VaultProtocol is Module, IVaultProtocol, DefiOperatorRole {
                 depositedToken: _token,
                 depositedAmount: _amount
             }) );
+            usersDeposited.push(_user);
         }
 
         emit DepositToVault(_user, _token, _amount);
     }
 
-    function depositToVault(address _user, address[] memory  _tokens, uint256[] memory _amounts) public {
+    function depositToVault(address _user, address[] memory  _tokens, uint256[] memory _amounts) public onlyDefiOperator {
         require(_tokens.length > 0, "No tokens to be deposited");
-        require(_tokens.length == _amounts.length, "No tokens to be deposited");
+        require(_tokens.length == _amounts.length, "Incorrect amounts");
 
         for (uint256 i = 0; i < _tokens.length; i++) {
             depositToVault(_user, _tokens[i], _amounts[i]);
         }
     }
 
-    function withdrawFromVault(address _user, address _token, uint256 _amount) public {
-        //safeTransferTo();
-        //remove from mapping balancesOnHold
+    function withdrawFromVault(address _user, address _token, uint256 _amount) public onlyDefiOperator {
+        require(_user != address(0), "Incorrect user address");
+        require(_token != address(0), "Incorrect token address");
+        require(_amount > 0, "No tokens to be withdrawn");
+
+        if (IERC20(_token).balanceOf(address(this)) >= _amount) {
+            IERC20(_token).transfer(_user, _amount);
+
+            emit WithdrawFromVault(_user, _token, _amount);
+
+            updateOnHoldDeposit(_user, _token, _amount);
+        }
+        else {
+            uint256 ind;
+            bool hasRequest;
+            (hasRequest, ind) = hasRequestedToken(_user, _token);
+
+            if (hasRequest) {
+                balancesRequested[_user][ind].depositedAmount = balancesRequested[_user][ind].depositedAmount.add(_amount);
+            }
+            else {
+                balancesRequested[_user].push( DepositData({
+                    depositedToken: _token,
+                    depositedAmount: _amount
+                }) );
+                usersRequested.push(_user);
+            }
+
+            emit WithdrawRequestCreated(_user, _token, _amount);
+        }
+    }
+
+    function withdrawFromVault(address _user, address[] memory  _tokens, uint256[] memory _amounts) public onlyDefiOperator {
+        require(_tokens.length > 0, "No tokens to be withdrawn");
+        require(_tokens.length == _amounts.length, "Incorrect amounts");
+
+        for (uint256 i = 0; i < _tokens.length; i++) {
+            withdrawFromVault(_user, _tokens[i], _amounts[i]);
+        }
     }
 
     function quickWithdraw(address _user, uint256 _amount) public {
@@ -135,23 +177,66 @@ contract VaultProtocol is Module, IVaultProtocol, DefiOperatorRole {
         return amount;
     }
 
+    function updateOnHoldDeposit(address _user, address _token, uint256 _amount) internal {
+        uint256 ind;
+        bool hasToken;
+        (hasToken, ind) = hasOnHoldToken(_user, _token);
+
+        if (hasToken) {
+            uint256 onHoldBalance = balancesOnHold[_user][ind].depositedAmount;
+            if (onHoldBalance > _amount) {
+                balancesOnHold[_user][ind].depositedAmount = onHoldBalance.sub(_amount);
+            }
+            else {
+                if (balancesOnHold[_user].length == 1) {
+                    delete balancesOnHold[_user];
+                }
+                else {
+                    //Will be deleted by operator on resolving on-hold deposites
+                    balancesOnHold[_user][ind].depositedAmount = 0;
+                }
+            }
+        }
+    }
+
+    function hasRequestedToken(address _user, address _token) internal view returns (bool, uint256) {
+        uint256 ind = 0;
+        bool hasToken = false;
+        for (uint i = 0; i < balancesRequested[_user].length; i++) {
+            if (balancesRequested[_user][i].depositedToken == _token) {
+                ind = i;
+                hasToken = true;
+                break;
+            }
+        }
+        return (hasToken, ind);
+    }
+
+    function amountRequested(address _user, address _token) public view returns (uint256) {
+        uint256 amount = 0;
+        for (uint i = 0; i < balancesRequested[_user].length; i++) {
+            if (balancesRequested[_user][i].depositedToken == _token) {
+                amount = balancesRequested[_user][i].depositedAmount;
+                break;
+            }
+        }
+        return amount;
+    }
 
 //IDefiProtocol methods
     function handleDeposit(address token, uint256 amount) public onlyDefiOperator {
-        // will use the steps from the strategy
-        // remove amount from the mapping for the user
+        // will be overloaded in adapter and use the steps from the strategy
     }
 
     function handleDeposit(address[] memory tokens, uint256[] memory amounts) public onlyDefiOperator {
         //the same but in cycle
     }
     function withdraw(address beneficiary, address token, uint256 amount) public {
-        //check if amount is on hold - so it should be still in the protocol
-        //return withdrawFromVault
+        // will be overloaded in adapter and use the withdraw steps from the strategy
     }
 
     function withdraw(address beneficiary, uint256[] memory amounts) public {
-
+        //the same but in cycle
     }
     function claimRewards() public returns(address[] memory tokens, uint256[] memory amounts) {
         tokens = new address[](1);
