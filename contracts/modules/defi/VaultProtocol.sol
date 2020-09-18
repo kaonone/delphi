@@ -17,6 +17,9 @@ contract VaultProtocol is Module, IVaultProtocol, DefiOperatorRole {
         uint256 depositedAmount;
     }
 
+    //filled up in the overloaded adapter method
+    address[] internal registeredVaultTokens;
+
     //deposits waiting for the defi operator's actions
     mapping(address => DepositData[]) internal balancesOnHold;
     address[] internal usersDeposited; //for operator's conveniency
@@ -25,12 +28,13 @@ contract VaultProtocol is Module, IVaultProtocol, DefiOperatorRole {
     mapping(address => DepositData[]) internal balancesRequested;
     address[] internal usersRequested; //for operator's conveniency
 
+    mapping(address => DepositData[]) internal balancesToClaim;
+    uint256[] internal claimableTokens;
 
     function initialize(address _pool) public initializer {
         Module.initialize(_pool);
         DefiOperatorRole.initialize(_msgSender());
     }
-
 
 
 //IVaultProtocol methods
@@ -43,6 +47,10 @@ contract VaultProtocol is Module, IVaultProtocol, DefiOperatorRole {
 
         uint256 ind;
         bool hasToken;
+
+        hasToken = isTokenRegistered(_token);
+        require(hasToken, "Token is not registered in the vault");
+
         (hasToken, ind) = hasOnHoldToken(_user, _token);
 
         if (hasToken) {
@@ -83,6 +91,10 @@ contract VaultProtocol is Module, IVaultProtocol, DefiOperatorRole {
         else {
             uint256 ind;
             bool hasRequest;
+
+            hasRequest = isTokenRegistered(_token);
+            require(hasRequest, "Token is not registered in the vault");
+            
             (hasRequest, ind) = hasRequestedToken(_user, _token);
 
             if (hasRequest) {
@@ -109,27 +121,45 @@ contract VaultProtocol is Module, IVaultProtocol, DefiOperatorRole {
         }
     }
 
+    function withdrawOperator() public onlyDefiOperator {
+        //Yield distribution step based on actual deposits (excluding on-hold ones)
+        // should be performed from the SavingsModule before other operator's actions
+        clearOnHoldDeposits();
+        for (uint256 i = 0; i < usersRequested.length; i++) {
+            //move tokens to claim if there is a liquidity
+                //handleClaim(balancesRequested[usersRequested[i]]);
+                //tokenRegisteredInd()
+            //calculate withdraw deposits
+            delete balancesRequested[usersRequested[i]];
+        }
+        delete usersRequested;
+
+        uint256[] memory amounts = new uint256[](registeredVaultTokens.length);
+        for (uint256 i = 0; i < registeredVaultTokens.length; i++) {
+            amounts[i] = IERC20(registeredVaultTokens[i]).balanceOf(address(this)).sub(claimableTokens[i]);
+        }
+        //one of two things should happen for the same token: deposit or withdraw
+        //simultaneous deposit and withdraw are applied to different tokens
+        
+        handleDeposit(registeredVaultTokens, amounts);
+
+        //handleWithdraws()
+    }
+/*    handleClaim() {
+        for (uint256 i = 0; i < _deposits.length; i++) {
+            if (_deposits[i].depositedAmount > 0) {
+                uint256 ind = tokenRegisteredInd(_deposits[i].depositedToken);
+                if (IERC20(_deposits[i].depositedToken).balanceOf(address(this).sub(claimedTokens[ind])) >= _deposits[i].depositedAmount) {
+
+                }
+            }
+        }
+    }*/
+
     function quickWithdraw(address _user, uint256 _amount) public {
         //stab
         //available for any how pays for all the gas and is allowed to withdraw
         //should be overloaded in the protocol adapter itself
-    }
-
-    function canWithdrawFromVault(address _user, uint256 _amount) public view returns (bool) {
-        //stab
-        //check if the vault has liquidity
-        return true;
-    }
-
-    function requestWithdraw(address _user, uint256 _amount) public {
-        //stab
-        //function to create withdraw request
-    }
-
-    function getRequested() public view onlyDefiOperator returns (uint256) {
-        //stab
-        //returns the amount of requested tokens
-        return 0;
     }
 
     function claimRequested(address _user, uint256 _amount) public {
@@ -143,15 +173,7 @@ contract VaultProtocol is Module, IVaultProtocol, DefiOperatorRole {
         return true;
     }
 
-    function withdrawOperator(uint256 _amount) public onlyDefiOperator {
-        //stab
-        //method for the operator. Works with actual withdraw from the protocol
-    }
 
-    function depositOperator(uint256 _amount) public onlyDefiOperator {
-        //stab
-        //method for the operator. Works with actual deposit to the protocol/strategy
-    }
 
     function hasOnHoldToken(address _user, address _token) internal view returns (bool, uint256) {
         uint256 ind = 0;
@@ -223,21 +245,49 @@ contract VaultProtocol is Module, IVaultProtocol, DefiOperatorRole {
         return amount;
     }
 
+    function isTokenRegistered(address _token) internal view returns (bool) {
+        bool isReg = false;
+        for (uint i = 0; i < registeredVaultTokens.length; i++) {
+            if (registeredVaultTokens[i] == _token) {
+                isReg = true;
+                break;
+            }
+        }
+        return isReg;
+    }
+
+    function tokenRegisteredInd(address _token) internal view returns (uint256) {
+        uint256 ind = 0;
+        for (uint i = 0; i < registeredVaultTokens.length; i++) {
+            if (registeredVaultTokens[i] == _token) {
+                ind = i;
+                break;
+            }
+        }
+        return ind;
+    }
+
+    function clearOnHoldDeposits() internal onlyDefiOperator {
+        for (uint256 i = 0; i < usersDeposited.length; i++) {
+            //We can delete the on-hold records now - the real balances will be deposited to protocol
+            delete balancesOnHold[usersDeposited[i]];
+        }
+        delete usersDeposited;
+    }
+
 //IDefiProtocol methods
-    function handleDeposit(address token, uint256 amount) public onlyDefiOperator {
-        // will be overloaded in adapter and use the steps from the strategy
-    }
+    //handleDeposit() and withdraw() methods should be overloaded in the adapter
+    function handleDeposit(address token, uint256 amount) public;
 
-    function handleDeposit(address[] memory tokens, uint256[] memory amounts) public onlyDefiOperator {
-        //the same but in cycle
-    }
-    function withdraw(address beneficiary, address token, uint256 amount) public {
-        // will be overloaded in adapter and use the withdraw steps from the strategy
-    }
+    function handleDeposit(address[] memory tokens, uint256[] memory amounts) public; 
 
-    function withdraw(address beneficiary, uint256[] memory amounts) public {
-        //the same but in cycle
-    }
+    function withdraw(address beneficiary, address token, uint256 amount) public;
+
+    function withdraw(address beneficiary, uint256[] memory amounts) public;
+
+
+
+
     function claimRewards() public returns(address[] memory tokens, uint256[] memory amounts) {
         tokens = new address[](1);
         amounts = new uint256[](1);
@@ -266,13 +316,12 @@ contract VaultProtocol is Module, IVaultProtocol, DefiOperatorRole {
         return 0;
     }
 
-    function supportedTokens() external view returns(address[] memory) {
-        address[] memory a = new address[](1);
-        return a;
+    function supportedTokens() public view returns(address[] memory) {
+        return registeredVaultTokens;
     }
 
-    function supportedTokensCount() external view returns(uint256) {
-        return 0;
+    function supportedTokensCount() public view returns(uint256) {
+        return registeredVaultTokens.length;
     }
 
     function supportedRewardTokens() external view returns(address[] memory) {

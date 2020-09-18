@@ -14,21 +14,18 @@ contract IVaultProtocol is IDefiProtocol {
     function withdrawFromVault(address _user, address _token, uint256 _amount) external;
     function withdrawFromVault(address _user, address[] calldata  _tokens, uint256[] calldata _amounts) external;
 
-    function quickWithdraw(address _user, uint256 _amount) external;
+    function withdrawOperator() external;
 
-    function canWithdrawFromVault(address _user, uint256 _amount) external view returns (bool);
-    function requestWithdraw(address _user, uint256 _amount) external;
+        function quickWithdraw(address _user, uint256 _amount) external;
 
-    function claimRequested(address _user, uint256 _amount) external;
-    function canClaimRequested(address _user, uint256 _amount) external view returns (bool);
-    function getRequested() external view returns(uint256);
-
-    function withdrawOperator(uint256 _amount) external;
-    function depositOperator(uint256 _amount) external;
+        function claimRequested(address _user, uint256 _amount) external;
+        function canClaimRequested(address _user, uint256 _amount) external view returns (bool);
 
     function amountOnHold(address _user, address _token) external view returns (uint256);
     function hasOnHoldToken(address _user, address _token) internal view returns (bool, uint256);
 
     function amountRequested(address _user, address _token) external view returns (uint256);
     function hasRequestedToken(address _user, address _token) internal view returns (bool, uint256);
+
+    function clearOnHoldDeposits() internal;
 }
