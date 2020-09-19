@@ -7,8 +7,9 @@ contract IVaultProtocol is IDefiProtocol {
     event DepositToVault(address indexed _user, address indexed _token, uint256 _amount);
     event WithdrawFromVault(address indexed _user, address indexed _token, uint256 _amount);
     event WithdrawRequestCreated(address indexed _user, address indexed _token, uint256 _amount);
-    event DepositRequestResolved(uint256 _amount);
-    event WithdrawRequestResolved(uint256 _amount);
+    event DepositByOperator(uint256 _amount);
+    event WithdrawByOperator(uint256 _amount);
+    event WithdrawReqestsResolved();
 
     function depositToVault(address _user, address _token, uint256 _amount) external;
     function depositToVault(address _user, address[] calldata  _tokens, uint256[] calldata _amounts) external;

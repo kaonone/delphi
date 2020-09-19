@@ -134,56 +134,47 @@ contract VaultProtocol is Module, IVaultProtocol, DefiOperatorRole {
         uint256 totalWithdraw = 0;
         uint256[] memory withdrawAmounts = new uint256[](registeredVaultTokens.length);
         for (uint256 i = 0; i < usersRequested.length; i++) {
-            for (uint256 j = 0; j < balancesRequested[usersRequested[i]].length; j++) {
-                uint256 am = balancesRequested[usersRequested[i]][j].depositedAmount;
-                if (am > 0) {
-                    uint256 ind = tokenRegisteredInd(balancesRequested[usersRequested[i]][j].depositedToken);
-                    withdrawAmounts[ind].add(am);
-                    totalWithdraw = totalWithdraw.add(am);
 
-                    addClaim(usersRequested[i], balancesRequested[usersRequested[i]][j].depositedToken, am);
-                    //claim if need
-    //                if (IERC20(_deposits[i].depositedToken).balanceOf(address(this).sub(claimedTokens[ind])) >= _deposits[i].depositedAmount) {
-    //
-    //               }
+            for (uint256 j = 0; j < balancesRequested[usersRequested[i]].length; j++) {
+                uint256 amount = balancesRequested[usersRequested[i]][j].depositedAmount;
+                address token = balancesRequested[usersRequested[i]][j].depositedToken;
+                if (amount > 0) {
+                    uint256 ind = tokenRegisteredInd(token);
+                    addClaim(usersRequested[i], token, amount);
+                    
+                    //move tokens to claim if there is a liquidity
+                    if (IERC20(token).balanceOf(address(this)).sub(claimableTokens[ind]) >= amount) {
+                        claimableTokens[ind] = claimableTokens[ind].add(amount);
+                    }
+                    else {
+                        withdrawAmounts[ind] = withdrawAmounts[ind].add(amount);
+                        totalWithdraw = totalWithdraw.add(amount);
+                    }
                 }
-            }
-            //move tokens to claim if there is a liquidity
-                //handleClaim(balancesRequested[usersRequested[i]]);
-                //tokenRegisteredInd()
-            //calculate withdraw amounts
+            }            
             delete balancesRequested[usersRequested[i]];
         }
         delete usersRequested;
 
-        uint256[] memory amounts = new uint256[](registeredVaultTokens.length);
+        uint256[] memory depositAmounts = new uint256[](registeredVaultTokens.length);
         uint256 totalDeposit = 0;
         for (uint256 i = 0; i < registeredVaultTokens.length; i++) {
-            amounts[i] = IERC20(registeredVaultTokens[i]).balanceOf(address(this)).sub(claimableTokens[i]);
-            totalDeposit = totalDeposit.add(amounts[i]);
+            depositAmounts[i] = IERC20(registeredVaultTokens[i]).balanceOf(address(this)).sub(claimableTokens[i]);
+            totalDeposit = totalDeposit.add(depositAmounts[i]);
         }
         //one of two things should happen for the same token: deposit or withdraw
         //simultaneous deposit and withdraw are applied to different tokens
         if (totalDeposit > 0) {
-            handleDeposit(registeredVaultTokens, amounts);
-            emit DepositRequestResolved(totalDeposit);
+            handleDeposit(registeredVaultTokens, depositAmounts);
+            emit DepositByOperator(totalDeposit);
         }
 
         if (totalWithdraw > 0) {
             withdraw(address(this), withdrawAmounts);
-            emit WithdrawRequestResolved(totalWithdraw);
+            emit WithdrawByOperator(totalWithdraw);
         }
+        emit WithdrawReqestsResolved();
     }
-/*    handleClaim() {
-        for (uint256 i = 0; i < _deposits.length; i++) {
-            if (_deposits[i].depositedAmount > 0) {
-                uint256 ind = tokenRegisteredInd(_deposits[i].depositedToken);
-                if (IERC20(_deposits[i].depositedToken).balanceOf(address(this).sub(claimedTokens[ind])) >= _deposits[i].depositedAmount) {
-
-                }
-            }
-        }
-    }*/
 
     function quickWithdraw(address _user, uint256 _amount) public {
         //stab

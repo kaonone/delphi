@@ -569,8 +569,7 @@ contract("VaultProtocol", async ([_, owner, user1, user2, user3, pool, defiops, 
             // withdraw by operator 
             let opResult = await vaultProtocol.withdrawOperator({from: defiops});
 
-            expectEvent(opResult, 'DepositRequestResolved', {_amount: "160"});
-            expectEvent.notEmitted(opResult, 'WithdrawRequestResolved');
+            expectEvent(opResult, 'DepositByOperator', {_amount: "160"});
 
             let onhold = await vaultProtocol.amountOnHold(user1, dai.address);
             expect(onhold.toNumber(), "On-hold record (1) should be deleted").to.equal(0);
@@ -613,22 +612,22 @@ contract("VaultProtocol", async ([_, owner, user1, user2, user3, pool, defiops, 
                 protocolBalance3: await busd.balanceOf(protocolStub)
             };
 
-            //Preliminary action - deposits to create liquidity
-            await (<any> vaultProtocol).methods['depositToVault(address,address,uint256)'](user2, dai.address, 100, {from:defiops});
-            await (<any> vaultProtocol).methods['depositToVault(address,address,uint256)'](user2, usdc.address, 50, {from:defiops});
-            await (<any> vaultProtocol).methods['depositToVault(address,address,uint256)'](user2, busd.address, 10, {from:defiops});
-
-
             //Withdraw requests created
             await (<any> vaultProtocol).methods['withdrawFromVault(address,address,uint256)'](user1, dai.address, 100, {from:defiops});
             await (<any> vaultProtocol).methods['withdrawFromVault(address,address,uint256)'](user1, usdc.address, 50, {from:defiops});
             await (<any> vaultProtocol).methods['withdrawFromVault(address,address,uint256)'](user1, busd.address, 10, {from:defiops});
 
+            //Deposits to create the exact liquidity
+            await (<any> vaultProtocol).methods['depositToVault(address,address,uint256)'](user2, dai.address, 100, {from:defiops});
+            await (<any> vaultProtocol).methods['depositToVault(address,address,uint256)'](user2, usdc.address, 50, {from:defiops});
+            await (<any> vaultProtocol).methods['depositToVault(address,address,uint256)'](user2, busd.address, 10, {from:defiops});
+            
+
             // withdraw by operator 
             let opResult = await vaultProtocol.withdrawOperator({from: defiops});
 
-            expectEvent.notEmitted(opResult, 'DepositRequestResolved');
-            expectEvent(opResult, 'WithdrawRequestResolved', {_amount: "160"});
+            expectEvent.notEmitted(opResult, 'WithdrawByOperator');
+            expectEvent(opResult, 'WithdrawReqestsResolved');
 
             //Withdraw requests are resolved
             let requested = await vaultProtocol.amountRequested(user1, dai.address);
@@ -687,8 +686,9 @@ contract("VaultProtocol", async ([_, owner, user1, user2, user3, pool, defiops, 
             // withdraw by operator 
             let opResult = await vaultProtocol.withdrawOperator({from: defiops});
 
-            expectEvent.notEmitted(opResult, 'DepositRequestResolved');
-            expectEvent(opResult, 'WithdrawRequestResolved', {_amount: "160"});
+            expectEvent.notEmitted(opResult, 'DepositByOperator');
+            expectEvent(opResult, 'WithdrawReqestsResolved');
+            expectEvent(opResult, 'WithdrawByOperator', {_amount: "160"});
 
             //Withdraw requests are resolved
             let requested = await vaultProtocol.amountRequested(user1, dai.address);
