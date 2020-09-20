@@ -35,4 +35,46 @@ contract VaultProtocolStub is VaultProtocol {
             IERC20(registeredVaultTokens[i]).transferFrom(protocolStub, beneficiary, amounts[i]);
         }
     }
+
+    function optimalProportions() external returns(uint256[] memory) {
+                uint256[] memory a = new uint256[](1);
+        return a;
+    }
+
+    function normalizedBalance() external returns(uint256) {
+        return 0;
+    }
+
+    function balanceOf(address token) public returns(uint256) {
+        return 0;
+    }
+
+    function balanceOfAll() external returns(uint256[] memory) {
+        uint256[] memory a = new uint256[](1);
+        return a;
+    }
+
+    function canSwapToToken(address token) external view returns(bool) {
+        return false;
+    }
+
+    function claimRewards() public returns(address[] memory tokens, uint256[] memory amounts) {
+        tokens = new address[](1);
+        amounts = new uint256[](1);
+    }
+
+    function withdrawReward(address token, address user, uint256 amount) public {
+
+    }
+
+    function supportedRewardTokens() external view returns(address[] memory) {
+        address[] memory a = new address[](1);
+        return a;
+    }
+
+    function isSupportedRewardToken(address token) external view returns(bool) {
+        return false;
+    }
+
+
 }

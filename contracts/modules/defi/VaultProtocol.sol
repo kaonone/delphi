@@ -83,7 +83,9 @@ contract VaultProtocol is Module, IVaultProtocol, DefiOperatorRole {
         require(_token != address(0), "Incorrect token address");
         require(_amount > 0, "No tokens to be withdrawn");
 
-        if (IERC20(_token).balanceOf(address(this)) >= _amount) {
+        uint256 indReg = tokenRegisteredInd(_token);
+
+        if (IERC20(_token).balanceOf(address(this)).sub(claimableTokens[indReg]) >= _amount) {
             IERC20(_token).transfer(_user, _amount);
 
             emit WithdrawFromVault(_user, _token, _amount);
@@ -172,11 +174,15 @@ contract VaultProtocol is Module, IVaultProtocol, DefiOperatorRole {
         if (totalWithdraw > 0) {
             withdraw(address(this), withdrawAmounts);
             emit WithdrawByOperator(totalWithdraw);
+            //All just withdraw funds mark as claimable
+            for (uint256 i = 0; i < claimableTokens.length; i++) {
+                claimableTokens[i] = claimableTokens[i].add(withdrawAmounts[i]);
+            }
         }
         emit WithdrawReqestsResolved();
     }
 
-    function quickWithdraw(address _user, uint256 _amount) public {
+    function quickWithdraw(address _user, uint256 _amount) public onlyDefiOperator {
         //stab
         //available for any how pays for all the gas and is allowed to withdraw
         //should be overloaded in the protocol adapter itself
@@ -184,7 +190,12 @@ contract VaultProtocol is Module, IVaultProtocol, DefiOperatorRole {
 
     function claimRequested(address _user) public {
         for (uint256 i = 0; i < balancesToClaim[_user].length; i++) {
-            IERC20(balancesToClaim[_user][i].depositedToken).transfer(_user, balancesToClaim[_user][i].depositedAmount);
+            address token = balancesToClaim[_user][i].depositedToken;
+            uint256 indReg = tokenRegisteredInd(token);
+            uint256 amount = balancesToClaim[_user][i].depositedAmount;
+
+            IERC20(token).transfer(_user, amount);
+            claimableTokens[indReg] = claimableTokens[indReg].sub(amount);
         }
         delete balancesToClaim[_user];
     }
@@ -198,6 +209,12 @@ contract VaultProtocol is Module, IVaultProtocol, DefiOperatorRole {
             }
         }
         return amount;
+    }
+
+    function totalClaimableAmount(address _token) public view returns (uint256) {
+        uint256 indReg = tokenRegisteredInd(_token);
+
+        return claimableTokens[indReg];
     }
 
     function addClaim(address _user, address _token, uint256 _amount) internal {
@@ -340,36 +357,6 @@ contract VaultProtocol is Module, IVaultProtocol, DefiOperatorRole {
     function withdraw(address beneficiary, uint256[] memory amounts) public;
 
 
-
-
-    function claimRewards() public returns(address[] memory tokens, uint256[] memory amounts) {
-        tokens = new address[](1);
-        amounts = new uint256[](1);
-    }
-
-    function withdrawReward(address token, address user, uint256 amount) public {
-
-    }
-
-
-    function balanceOf(address token) public returns(uint256) {
-        return 0;
-    }
-
-    function balanceOfAll() external returns(uint256[] memory) {
-        uint256[] memory a = new uint256[](1);
-        return a;
-    }
-
-    function optimalProportions() external returns(uint256[] memory) {
-                uint256[] memory a = new uint256[](1);
-        return a;
-    }
-
-    function normalizedBalance() external returns(uint256) {
-        return 0;
-    }
-
     function supportedTokens() public view returns(address[] memory) {
         return registeredVaultTokens;
     }
@@ -377,18 +364,4 @@ contract VaultProtocol is Module, IVaultProtocol, DefiOperatorRole {
     function supportedTokensCount() public view returns(uint256) {
         return registeredVaultTokens.length;
     }
-
-    function supportedRewardTokens() external view returns(address[] memory) {
-        address[] memory a = new address[](1);
-        return a;
-    }
-
-    function isSupportedRewardToken(address token) external view returns(bool) {
-        return false;
-    }
-
-    function canSwapToToken(address token) external view returns(bool) {
-        return false;
-    }
-
 }

@@ -478,7 +478,6 @@ contract("VaultProtocol", async ([_, owner, user1, user2, user3, pool, defiops, 
 
         });
 
-        
         it('Withdraw several tokens - not enough liquidity for one of them', async () => {
             //Liquidity is withdrawn by another user
             await (<any> vaultProtocol).methods['withdrawFromVault(address,address,uint256)'](user3, dai.address, 150, {from:defiops});
@@ -521,10 +520,6 @@ contract("VaultProtocol", async ([_, owner, user1, user2, user3, pool, defiops, 
             await dai.approve(vaultProtocol.address, 1000, {from:user1});
             await usdc.approve(vaultProtocol.address, 1000, {from:user1});
             await busd.approve(vaultProtocol.address, 1000, {from:user1});
-
-            await dai.approve(vaultProtocol.address, 1000, {from:user2});
-            await usdc.approve(vaultProtocol.address, 1000, {from:user2});
-            await busd.approve(vaultProtocol.address, 1000, {from:user2});
 
             await dai.approve(vaultProtocol.address, 1000, {from:user2});
             await usdc.approve(vaultProtocol.address, 1000, {from:user2});
@@ -727,119 +722,258 @@ contract("VaultProtocol", async ([_, owner, user1, user2, user3, pool, defiops, 
             expect(before.protocolBalance3.sub(after.protocolBalance3).toNumber(), "Protocol didn't send tokens (3)").to.equal(10);
         });
 
+        it('Withdraw request is resolved for user with both on-hold and deposited amounts', async () => {
+            //In case if there is not enough liquidity to fullfill the request - on-hold amount is left untouched
+            //Withdraw should not be fullfilled particulary
 
+            //Create on-hold record
+            await (<any> vaultProtocol).methods['depositToVault(address,address,uint256)'](user1, dai.address, 100, {from:defiops});
 
+            let before = {
+                userBalance: await dai.balanceOf(user1),
+                vaultBalance: await dai.balanceOf(vaultProtocol.address),
+                protocolBalance: await dai.balanceOf(protocolStub),
+            };
 
+            //Withdraw requests created
+            await (<any> vaultProtocol).methods['withdrawFromVault(address,address,uint256)'](user1, dai.address, 150, {from:defiops});
 
+            // withdraw by operator 
+            let opResult = await vaultProtocol.withdrawOperator({from: defiops});
 
+            expectEvent(opResult, 'WithdrawReqestsResolved');
+            //On-hold deposit is moved to the protocol
+            expectEvent(opResult, 'DepositByOperator', {_amount: "100"});
+            //Full amount is withdrawn from the protocol
+            expectEvent(opResult, 'WithdrawByOperator', {_amount: "150"});
 
+            //Withdraw request is resolved
+            let requested = await vaultProtocol.amountRequested(user1, dai.address);
+            expect(requested.toNumber(), "Withdraw request should be resolved").to.equal(0);
 
+            //On-hold record is deleted during the request
+            let onhold = await vaultProtocol.amountOnHold(user1, dai.address);
+            expect(onhold.toNumber(), "On-hold record should be deleted").to.equal(0);
 
-        it('Withdraw request (enough liquidity, no on-hold deposits, there is liquidity for claim)', async () => {
-            let res = true;
-            expect(res, 'Some message').to.be.true;
+            //Total amount is marked as claimed
+            let claimable = await vaultProtocol.claimableAmount(user1, dai.address);
+            expect(claimable.toNumber(), "Cannot claim tokens").to.equal(150);
 
-            //appears when there is some liquidity withdrawn by operator from the protocol but not claimed yet
+            let after = {
+                userBalance: await dai.balanceOf(user1),
+                vaultBalance: await dai.balanceOf(vaultProtocol.address),
+                protocolBalance: await dai.balanceOf(protocolStub),
+            };
 
-            // requested amount is returned from the protocol to the Vault
-            // Tokens are marked as ready for claim by the user
-            //Withdraw request is resolved (deleted)
-            // Existing tokens for claim are untouched
-        });
-
-        it('Withdraw request (enough liquidity, there are on-hold deposits)', async () => {
-            let res = true;
-            expect(res, 'Some message').to.be.true;
-
-            // records for on-hold deposits for matching amount are removed from the storage (or adjusted)
-            // Tokens are marked as ready for claim by the user
-            //Withdraw request is resolved (deleted)
-        });
-
-        it('Withdraw request (enough liquidity, the user has on-hold deposit)', async () => {
-            let res = true;
-            expect(res, 'Some message').to.be.true;
-
-            // record for on-hold deposit is removed from the storage (or adjusted if requested amount is less than deposited)
-            // Tokens are marked as ready for claim by the user
-            //Withdraw request is resolved (deleted)
-        });
-
-        it('Withdraw request (enough liquidity, the user has on-hold deposit)', async () => {
-            let res = true;
-            expect(res, 'Some message').to.be.true;
-
-            // record for on-hold deposit is removed from the storage (or adjusted if requested amount is less than deposited)
-            // Tokens are marked as ready for claim by the user
-            //Withdraw request is resolved (deleted)
-        });
-
-
-
-
-
-
-
-    
-        it('The user claims the on-hold token', async () => {
-            let res = true;
-            expect(res, 'Some message').to.be.true;
-    
-            //the finish of the previous test
-    
-            //Tokens are transferred from the VaultProtocol to the user
-            //claim record is deleted
+            //Since both deposit and withdraw are fullfilled, only (requested - on-hold) is sent from the protocol
+            expect(after.vaultBalance.sub(before.vaultBalance).toNumber(), "Tokens are not transferred to vault").to.equal(50);
+            expect(before.protocolBalance.sub(after.protocolBalance).toNumber(), "Protocol didn't send tokens").to.equal(50);
         });
     });
 
-    describe('Claimed tokens functionality', () => {
-        it('Withdraw with on-hold token (not enough liquidity, liquidity for claim exists)', async () => {
-            let res = true;
-            expect(res, 'Some message').to.be.true;
+    describe('Claimable tokens functionality', () => {
+        let snap: Snapshot;
+        before(async () => {
+            await dai.approve(vaultProtocol.address, 1000, {from:user1});
+            await usdc.approve(vaultProtocol.address, 1000, {from:user1});
+            await busd.approve(vaultProtocol.address, 1000, {from:user1});
 
-            //appears in the moment when someone (with already processed deposit) has withdrawn the free liquidity
-            //but there is some liquidity withdrawn by operator from the protocol but not claimed yet
+            await dai.approve(vaultProtocol.address, 1000, {from:user2});
+            await usdc.approve(vaultProtocol.address, 1000, {from:user2});
+            await busd.approve(vaultProtocol.address, 1000, {from:user2});
 
-            //Withdraw request is created
-            //Deposit record is untouched
-            //Tokens for claim are untouched
+            await dai.approve(vaultProtocol.address, 1000, {from:user3});
+            await usdc.approve(vaultProtocol.address, 1000, {from:user3});
+            await busd.approve(vaultProtocol.address, 1000, {from:user3});
+
+            await dai.transfer(protocolStub, 1000, {from: owner});
+            await usdc.transfer(protocolStub, 1000, {from: owner});
+            await busd.transfer(protocolStub, 1000, {from: owner});
+
+            await dai.approve(vaultProtocol.address, 1000, {from:protocolStub});
+            await usdc.approve(vaultProtocol.address, 1000, {from:protocolStub});
+            await busd.approve(vaultProtocol.address, 1000, {from:protocolStub});
+
+            //Create some claimable amounts
+            await (<any> vaultProtocol).methods['withdrawFromVault(address,address[],uint256[])'](
+                user1, [dai.address, usdc.address, busd.address], [100, 50, 20], {from:defiops});
+            await (<any> vaultProtocol).methods['withdrawFromVault(address,address,uint256)'](user2, dai.address, 80, {from:defiops});
+            await vaultProtocol.withdrawOperator({from: defiops});
+
+
+            snap = await Snapshot.create(web3.currentProvider);
+        });
+
+        after(async () => {
+            await globalSnap.revert();
+        });
+
+        afterEach(async () => {
+            await snap.revert();
+        });
+        it('Deposit from user does not influence claimable amount', async () => {
+            let claimableBefore = await vaultProtocol.claimableAmount(user1, dai.address);
+            let claimableTotalBefore = await vaultProtocol.totalClaimableAmount(dai.address);
+
+            await (<any> vaultProtocol).methods['depositToVault(address,address,uint256)'](user1, dai.address, 150, {from:defiops});
+
+            let claimableAfter = await vaultProtocol.claimableAmount(user1, dai.address);
+            let claimableTotalAfter = await vaultProtocol.totalClaimableAmount(dai.address);
+
+            expect(claimableBefore.toString(), "Claimable tokens amount changed").to.equal(claimableAfter.toString());
+            expect(claimableTotalBefore.toString(), "Total claimable tokens amount changed").to.equal(claimableTotalAfter.toString());
+        });
+
+        it('Withdraw by user (from liquidity on vault) does not influence claimable amount', async () => {
+            //Create some liquidity in the vault
+            await (<any> vaultProtocol).methods['depositToVault(address,address,uint256)'](user3, dai.address, 200, {from:defiops});
+            
+            let claimableBefore = await vaultProtocol.claimableAmount(user1, dai.address);
+            let claimableTotalBefore = await vaultProtocol.totalClaimableAmount(dai.address);
+
+            let opResult = await (<any> vaultProtocol).methods['withdrawFromVault(address,address,uint256)'](user1, dai.address, 100, {from:defiops});
+            expectEvent.notEmitted(opResult, 'WithdrawRequestCreated');
+            expectEvent(opResult, 'WithdrawFromVault', {_user: user1, _token: dai.address, _amount: "100"});
+
+            let claimableAfter = await vaultProtocol.claimableAmount(user1, dai.address);
+            let claimableTotalAfter = await vaultProtocol.totalClaimableAmount(dai.address);
+
+            //Since withdraw with enough liquidity is already tested, we need to check the claimable amount
+            expect(claimableBefore.toString(), "Claimable tokens amount changed").to.equal(claimableAfter.toString());
+            expect(claimableTotalBefore.toString(), "Total claimable tokens amount changed").to.equal(claimableTotalAfter.toString());
+        });
+
+        it('Withdraw does not influence claimable amount, withdraw request is created', async () => {
+            //There is not enough liquidity in the vault
+            let claimableBefore = await vaultProtocol.claimableAmount(user1, dai.address);
+            let claimableTotalBefore = await vaultProtocol.totalClaimableAmount(dai.address);
+
+            let opResult = await (<any> vaultProtocol).methods['withdrawFromVault(address,address,uint256)'](user1, dai.address, 100, {from:defiops});
+            expectEvent(opResult, 'WithdrawRequestCreated');
+
+            let claimableAfter = await vaultProtocol.claimableAmount(user1, dai.address);
+            let claimableTotalAfter = await vaultProtocol.totalClaimableAmount(dai.address);
+
+            expect(claimableBefore.toString(), "Claimable tokens amount changed").to.equal(claimableAfter.toString());
+            expect(claimableTotalBefore.toString(), "Total claimable tokens amount changed").to.equal(claimableTotalAfter.toString());
+        });
+
+        it('Deposit by operator does not influence claimable tokens', async () => {
+            //Create on-hold record to be resolved
+            await (<any> vaultProtocol).methods['depositToVault(address,address,uint256)'](user1, dai.address, 80, {from:defiops});
+            
+            let claimableBefore = await vaultProtocol.claimableAmount(user1, dai.address);
+            let claimableTotalBefore = await vaultProtocol.totalClaimableAmount(dai.address);
+
+            let opResult = await vaultProtocol.withdrawOperator({from: defiops});
+
+            //On-hold tokens are deposited
+            expectEvent(opResult, 'DepositByOperator');
+
+            let claimableAfter = await vaultProtocol.claimableAmount(user1, dai.address);
+            let claimableTotalAfter = await vaultProtocol.totalClaimableAmount(dai.address);
+
+            expect(claimableBefore.toString(), "Claimable tokens amount changed").to.equal(claimableAfter.toString());
+            expect(claimableTotalBefore.toString(), "Total claimable tokens amount changed").to.equal(claimableTotalAfter.toString());
+        });
+
+        it('Withdraw request resolving increases claimable amount', async () => {
+            await (<any> vaultProtocol).methods['withdrawFromVault(address,address,uint256)'](user1, dai.address, 100, {from:defiops});
+            
+            let claimableBefore = await vaultProtocol.claimableAmount(user1, dai.address);
+            let claimableTotalBefore = await vaultProtocol.totalClaimableAmount(dai.address);
+
+            let opResult = await vaultProtocol.withdrawOperator({from: defiops});
+
+            //Additional amount requested
+            expectEvent(opResult, 'WithdrawByOperator');
+
+            let claimableAfter = await vaultProtocol.claimableAmount(user1, dai.address);
+            let claimableTotalAfter = await vaultProtocol.totalClaimableAmount(dai.address);
+
+            //Increases by requested amount
+            expect(claimableAfter.sub(claimableBefore).toNumber(), "Claimable tokens amount not changed").to.equal(100);
+            expect(claimableTotalAfter.sub(claimableTotalBefore).toNumber(), "Total claimable tokens amount not changed").to.equal(100);
+        });
+
+        it('User claims all available tokens', async () => {
+            let before = {
+                userBalance1: await dai.balanceOf(user1),
+                userBalance2: await usdc.balanceOf(user1),
+                userBalance3: await busd.balanceOf(user1),
+                vaultBalance1: await dai.balanceOf(vaultProtocol.address),
+                vaultBalance2: await usdc.balanceOf(vaultProtocol.address),
+                vaultBalance3: await busd.balanceOf(vaultProtocol.address),
+                claimableTotal1: await vaultProtocol.totalClaimableAmount(dai.address),
+                claimableTotal2: await vaultProtocol.totalClaimableAmount(usdc.address),
+                claimableTotal3: await vaultProtocol.totalClaimableAmount(busd.address)
+            };
+
+            await vaultProtocol.claimRequested(user1, {from: user1});
+
+            let after = {
+                userBalance1: await dai.balanceOf(user1),
+                userBalance2: await usdc.balanceOf(user1),
+                userBalance3: await busd.balanceOf(user1),
+                vaultBalance1: await dai.balanceOf(vaultProtocol.address),
+                vaultBalance2: await usdc.balanceOf(vaultProtocol.address),
+                vaultBalance3: await busd.balanceOf(vaultProtocol.address),
+                claimable1: await vaultProtocol.claimableAmount(user1, dai.address),
+                claimable2: await vaultProtocol.claimableAmount(user1, usdc.address),
+                claimable3: await vaultProtocol.claimableAmount(user1, busd.address),
+                claimableTotal1: await vaultProtocol.totalClaimableAmount(dai.address),
+                claimableTotal2: await vaultProtocol.totalClaimableAmount(usdc.address),
+                claimableTotal3: await vaultProtocol.totalClaimableAmount(busd.address)
+            };
+
+            expect(after.claimable1.toNumber(), "Not all tokens (1) are claimed").to.equal(0);
+            expect(after.claimable2.toNumber(), "Not all tokens (2) are claimed").to.equal(0);
+            expect(after.claimable3.toNumber(), "Not all tokens (3) are claimed").to.equal(0);
+
+            expect(after.userBalance1.sub(before.userBalance1).toNumber(), "Tokens (1) are not claimed to user").to.equal(100);
+            expect(after.userBalance2.sub(before.userBalance2).toNumber(), "Tokens (2) are not claimed to user").to.equal(50);
+            expect(after.userBalance3.sub(before.userBalance3).toNumber(), "Tokens (3) are not claimed to user").to.equal(20);
+
+            expect(before.vaultBalance1.sub(after.vaultBalance1).toNumber(), "Tokens (1) are not claimed from vault").to.equal(100);
+            expect(before.vaultBalance2.sub(after.vaultBalance2).toNumber(), "Tokens (2) are not claimed to vault").to.equal(50);
+            expect(before.vaultBalance3.sub(after.vaultBalance3).toNumber(), "Tokens (3) are not claimed to vault").to.equal(20);
+
+            expect(before.claimableTotal1.sub(after.claimableTotal1).toNumber(), "Tokens (1) total is not changed").to.equal(100);
+            expect(before.claimableTotal2.sub(after.claimableTotal2).toNumber(), "Tokens (2) total is not changed").to.equal(50);
+            expect(before.claimableTotal3.sub(after.claimableTotal3).toNumber(), "Tokens (3) total is not changed").to.equal(20);
+        });
+
+        it('Claim by user does not influence other users claims', async () => {
+            let claimableBefore = await vaultProtocol.claimableAmount(user2, dai.address);
+            let claimableTotalBefore = await vaultProtocol.totalClaimableAmount(dai.address);
+
+            await vaultProtocol.claimRequested(user1, {from: user1});
+
+            let claimableAfter = await vaultProtocol.claimableAmount(user2, dai.address);
+            let claimableTotalAfter = await vaultProtocol.totalClaimableAmount(dai.address);
+
+            expect(claimableAfter.toString(), "Claimable tokens amount should not be changed for other users").to.equal(claimableBefore.toString());
+            expect(claimableTotalBefore.sub(claimableTotalAfter).toNumber(), "Total claimable tokens amount not changed").to.equal(100);
+        });
+
+        it('Total claimable calculated correctly', async () => {
+            //[180, 50, 20] - initial from before()
+            await (<any> vaultProtocol).methods['withdrawFromVault(address,address,uint256)'](user1, dai.address, 50, {from:defiops});
+            await (<any> vaultProtocol).methods['withdrawFromVault(address,address,uint256)'](user2, usdc.address, 80, {from:defiops});
+            await (<any> vaultProtocol).methods['withdrawFromVault(address,address,uint256)'](user3, busd.address, 180, {from:defiops});
+
+            await vaultProtocol.withdrawOperator({from: defiops});
+
+
+            let claimable1 = await vaultProtocol.totalClaimableAmount(dai.address);
+            let claimable2 = await vaultProtocol.totalClaimableAmount(usdc.address);
+            let claimable3 = await vaultProtocol.totalClaimableAmount(busd.address);
+
+            expect(claimable1.toNumber(), "Incorrect total claimable (1)").to.equal(230);
+            expect(claimable2.toNumber(), "Incorrect total claimable (2)").to.equal(130);
+            expect(claimable3.toNumber(), "Incorrect total claimable (3)").to.equal(200);
         });
     });
-
-    describe('Quick withdraw', () => {
-        it('Quick withdraw (enough liquidity)', async () => {
-            let res = true;
-            expect(res, 'Some message').to.be.true;
-
-            //Token (requested amount) is transfered to the user
-        });
-
-        it('Quick withdraw (has on-hold token, enough liquidity)', async () => {
-            let res = true;
-            expect(res, 'Some message').to.be.true;
-
-            //Deposit record is removed from the on-hold storage
-            //Token is transfered to the user
-        });
-
-        it('Quick withdraw (has on-hold token, not enough liquidity)', async () => {
-            let res = true;
-            expect(res, 'Some message').to.be.true;
-
-            //Deposit record is removed from the on-hold storage
-            // (requested amount - on-hold tokens) is returned from the protocol
-            //Token is transfered to the user
-        });
-
-        it('Quick withdraw (not enough liquidity)', async () => {
-            let res = true;
-            expect(res, 'Some message').to.be.true;
-
-            // requested amount is returned from the protocol
-            //Token is transfered to the user
-        });
-    });
-
 
     describe('Full cycle', () => {
         let snap: Snapshot;
@@ -887,10 +1021,39 @@ contract("VaultProtocol", async ([_, owner, user1, user2, user3, pool, defiops, 
         });
     });
 
-    describe('Only defi operator can call the methods', () => {
+    describe('Quick withdraw', () => {
+        it('Quick withdraw (enough liquidity)', async () => {
+            let res = true;
+            expect(res, 'Some message').to.be.true;
 
+            //Token (requested amount) is transfered to the user
+        });
+
+        it('Quick withdraw (has on-hold token, enough liquidity)', async () => {
+            let res = true;
+            expect(res, 'Some message').to.be.true;
+
+            //Deposit record is removed from the on-hold storage
+            //Token is transfered to the user
+        });
+
+        it('Quick withdraw (has on-hold token, not enough liquidity)', async () => {
+            let res = true;
+            expect(res, 'Some message').to.be.true;
+
+            //Deposit record is removed from the on-hold storage
+            // (requested amount - on-hold tokens) is returned from the protocol
+            //Token is transfered to the user
+        });
+
+        it('Quick withdraw (not enough liquidity)', async () => {
+            let res = true;
+            expect(res, 'Some message').to.be.true;
+
+            // requested amount is returned from the protocol
+            //Token is transfered to the user
+        });
     });
-
 
     describe('Registered tokens only', () => {
         //operation with not registered token
