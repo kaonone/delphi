@@ -433,7 +433,7 @@ contract SavingsModule is Module, ISavingsModule, AccessChecker, RewardDistribut
         return now.sub(protocols[_protocol].lastRewardDistribution) > DISTRIBUTION_AGGREGATION_PERIOD;
     }
 
-    function normalizeTokenAmount(address token, uint256 amount) private view returns(uint256) {
+    function normalizeTokenAmount(address token, uint256 amount) internal view returns(uint256) {
         uint256 decimals = tokens[token].decimals;
         if (decimals == 18) {
             return amount;
@@ -444,7 +444,7 @@ contract SavingsModule is Module, ISavingsModule, AccessChecker, RewardDistribut
         }
     }
 
-    function denormalizeTokenAmount(address token, uint256 amount) private view returns(uint256) {
+    function denormalizeTokenAmount(address token, uint256 amount) internal view returns(uint256) {
         uint256 decimals = tokens[token].decimals;
         if (decimals == 18) {
             return amount;
