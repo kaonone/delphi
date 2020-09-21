@@ -48,8 +48,7 @@ contract VaultProtocol is Module, IVaultProtocol, DefiOperatorRole {
         uint256 ind;
         bool hasToken;
 
-        hasToken = isTokenRegistered(_token);
-        require(hasToken, "Token is not registered in the vault");
+        require(isTokenRegistered(_token), "Token is not registered in the vault");
 
         (hasToken, ind) = hasOnHoldToken(_user, _token);
 
