@@ -67,6 +67,8 @@ contract StakingPoolBase is Module, IERC900, CapperRole  {
   mapping(address => bool) public isVipUser;
 
   uint256 internal totalStakedAmount;
+
+  uint256 public coeffScore = 1;
   
 
 
@@ -86,6 +88,7 @@ contract StakingPoolBase is Module, IERC900, CapperRole  {
   event Unstaked(address indexed user, uint256 amount, uint256 totalStacked, bytes data);
   event setLockInDuration(uint256 defaultLockInDuration);
 
+  event CoeffScoreUpdated(uint256 coeff);
   /**
    * @dev Modifier that checks that this contract can transfer tokens from the
    *  balance in the stakingToken contract for the given address.
@@ -156,12 +159,7 @@ contract StakingPoolBase is Module, IERC900, CapperRole  {
     require(isUserCapEnabled(), "UserCapDisabled");
     _;
   }
-
-  function upgrade() public onlyOwner() {
-    if(totalStakedAmount == 0) {
-      totalStakedAmount = stakingToken.balanceOf(address(this));
-    }
-  }
+ 
 
   function initialize(address _pool, ERC20 _stakingToken, uint256 _defaultLockInDuration) public initializer {
         stakingToken = _stakingToken;
@@ -218,6 +216,13 @@ contract StakingPoolBase is Module, IERC900, CapperRole  {
   function setVipUser(address user, bool isVip) public onlyCapper {
       isVipUser[user] = isVip;
       emit VipUserChanged(user, isVip);
+  }
+
+
+  function setCoeffScore(uint256 coeff) public onlyCapper {
+    coeffScore = coeff;
+
+    emit CoeffScoreUpdated(coeff);
   }
 
   function isUserCapEnabled() public view returns(bool) {
@@ -348,6 +353,16 @@ contract StakingPoolBase is Module, IERC900, CapperRole  {
   function totalStakedFor(address _address) public view returns (uint256) {
     return stakeHolders[_address].totalStakedFor;
   }
+
+  /**
+   * @notice Returns the current total of tokens staked for an address
+   * @param _address address The address to query
+   * @return uint256 The number of tokens staked for the given address
+   */
+  function totalScoresFor(address _address) public view returns (uint256) {
+    return stakeHolders[_address].totalStakedFor.mul(coeffScore);
+  }
+
 
   /**
    * @notice Returns the current total of tokens staked
@@ -487,5 +502,5 @@ contract StakingPoolBase is Module, IERC900, CapperRole  {
       _data);
   }
 
-  uint256[50] private ______gap;
+  uint256[49] private ______gap;
 }
