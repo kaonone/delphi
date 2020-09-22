@@ -75,7 +75,7 @@ contract CurveFiProtocol is ProtocolBase {
     }
 
     function setSlippageMultiplier(uint256 _slippageMultiplier) public onlyDefiOperator {
-        require(_slippageMultiplier >= 1e18, "CurveFiYModule: multiplier should be > 1");
+        require(_slippageMultiplier >= 1e18, "CurveFiProtocol: multiplier should be > 1");
         slippageMultiplier = _slippageMultiplier;
     }
 
@@ -85,7 +85,7 @@ contract CurveFiProtocol is ProtocolBase {
             amounts[i] = IERC20(_registeredTokens[i]).balanceOf(address(this)); // Check balance which is left after previous withdrawal
             //amounts[i] = (_registeredTokens[i] == token)?amount:0;
             if (_registeredTokens[i] == token) {
-                require(amounts[i] >= amount, "CurveFiYProtocol: requested amount is not deposited");
+                require(amounts[i] >= amount, "CurveFiProtocol: requested amount is not deposited");
             }
         }
         deposit_add_liquidity(amounts, 0);
@@ -93,13 +93,13 @@ contract CurveFiProtocol is ProtocolBase {
     }
 
     function handleDeposit(address[] memory tokens, uint256[] memory amounts) public onlyDefiOperator {
-        require(tokens.length == amounts.length, "CurveFiYProtocol: count of tokens does not match count of amounts");
-        require(amounts.length == nCoins(), "CurveFiYProtocol: amounts count does not match registered tokens");
+        require(tokens.length == amounts.length, "CurveFiProtocol: count of tokens does not match count of amounts");
+        require(amounts.length == nCoins(), "CurveFiProtocol: amounts count does not match registered tokens");
         uint256[] memory amnts = new uint256[](nCoins());
         for (uint256 i=0; i < _registeredTokens.length; i++){
             uint256 idx = getTokenIndex(tokens[i]);
             amnts[idx] = IERC20(_registeredTokens[idx]).balanceOf(address(this)); // Check balance which is left after previous withdrawal
-            require(amnts[idx] >= amounts[i], "CurveFiYProtocol: requested amount is not deposited");
+            require(amnts[idx] >= amounts[i], "CurveFiProtocol: requested amount is not deposited");
         }
         deposit_add_liquidity(amnts, 0);
         stakeCurveFiToken();
@@ -126,14 +126,13 @@ contract CurveFiProtocol is ProtocolBase {
             deposit_remove_liquidity_one_coin(withdrawShares, tokenIdx, wAmount);
 
             available = IERC20(token).balanceOf(address(this));
-            require(available >= amount, "CurveFiYProtocol: failed to withdraw required amount");
+            require(available >= amount, "CurveFiProtocol: failed to withdraw required amount");
         }
-        IERC20 ltoken = IERC20(token);
-        ltoken.safeTransfer(beneficiary, amount);
+        IERC20(token).safeTransfer(beneficiary, amount);
     }
 
     function withdraw(address beneficiary, uint256[] memory amounts) public onlyDefiOperator {
-        require(amounts.length == nCoins(), "CurveFiYProtocol: wrong amounts array length");
+        require(amounts.length == nCoins(), "CurveFiProtocol: wrong amounts array length");
 
         uint256 nWithdraw;
         uint256[] memory amnts = new uint256[](nCoins());
@@ -234,7 +233,7 @@ contract CurveFiProtocol is ProtocolBase {
                 return i;
             }
         }
-        revert("CurveFiYProtocol: token not registered");
+        revert("CurveFiProtocol: token not registered");
     }
 
     function canSwapToToken(address token) public view returns(bool) {

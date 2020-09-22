@@ -10,9 +10,6 @@ import "../../common/Module.sol";
 import "./DefiOperatorRole.sol";
 import "./ProtocolBase.sol";
 
-/**
- * RAY Protocol support module which works with only one base token
- */
 contract BalancerProtocol is ProtocolBase {
     uint256 constant MAX_UINT256 = uint256(-1);
     uint256 constant ALLOWED_NAMOUNT_DIFF = 10; //10 wei diff is allowed for rounding purposes when comparing amounts to expected

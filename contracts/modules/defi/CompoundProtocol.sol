@@ -130,5 +130,4 @@ contract CompoundProtocol is ProtocolBase {
             return amount.div(10**(18-uint256(decimals)));
         }
     }
-
 }

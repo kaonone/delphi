@@ -1,6 +1,6 @@
 pragma solidity ^0.5.12;
 
-contract CoreInterface {
+interface CoreInterface {
 
     /* Module manipulation events */
 
@@ -13,23 +13,23 @@ contract CoreInterface {
 
     /* Functions */
 
-    function set(string memory  _name, address _module, bool _constant) public;
+    function set(string calldata  _name, address _module, bool _constant) external;
 
-    function setMetadata(string memory _name, string  memory _description) public;
+    function setMetadata(string calldata _name, string  calldata _description) external;
 
-    function remove(string memory _name) public;
+    function remove(string calldata _name) external;
     
-    function contains(address _module)  public view returns (bool);
+    function contains(address _module)  external view returns (bool);
 
-    function size() public view returns (uint);
+    function size() external view returns (uint);
 
-    function isConstant(string memory _name) public view returns (bool);
+    function isConstant(string calldata _name) external view returns (bool);
 
-    function get(string memory _name)  public view returns (address);
+    function get(string calldata _name)  external view returns (address);
 
-    function getName(address _module)  public view returns (string memory);
+    function getName(address _module)  external view returns (string memory);
 
-    function first() public view returns (address);
+    function first() external view returns (address);
 
-    function next(address _current)  public view returns (address);
+    function next(address _current)  external view returns (address);
 }

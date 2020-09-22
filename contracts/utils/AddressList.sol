@@ -42,7 +42,7 @@ library AddressList {
         } else {
             require(_data.isContain[_to], "Append target not contained");
 
-            address  nextTo = _data.nextOf[_to];
+            address nextTo = _data.nextOf[_to];
             if (nextTo != ZERO_ADDRESS) {
                 _data.prevOf[nextTo] = _item;
             } else {
@@ -80,9 +80,9 @@ library AddressList {
         if (_data.head == ZERO_ADDRESS) {
             _data.head = _data.tail = _item;
         } else {
-            require(_data.isContain[_to], "Preppend target is not contained");
+            require(_data.isContain[_to], "Prepend target is not contained");
 
-            address  prevTo = _data.prevOf[_to];
+            address prevTo = _data.prevOf[_to];
             if (prevTo != ZERO_ADDRESS) {
                 _data.nextOf[prevTo] = _item;
             } else {

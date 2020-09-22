@@ -43,14 +43,14 @@ interface IDefiProtocol {
 
     /**
      * @dev This function is not view because on some protocols 
-     * (Compound, RAY with Compound oportunity) it may cause storage writes
+     * (Compound, RAY with Compound opportunity) it may cause storage writes
      */
     function balanceOf(address token) external returns(uint256);
 
     /**
      * @notice Balance of all tokens supported by protocol 
      * @dev This function is not view because on some protocols 
-     * (Compound, RAY with Compound oportunity) it may cause storage writes
+     * (Compound, RAY with Compound opportunity) it may cause storage writes
      */
     function balanceOfAll() external returns(uint256[] memory); 
 
@@ -58,7 +58,7 @@ interface IDefiProtocol {
      * @notice Returns optimal proportions of underlying tokens 
      * to prevent fees on deposit/withdrawl if supplying multiple tokens
      * @dev This function is not view because on some protocols 
-     * (Compound, RAY with Compound oportunity) it may cause storage writes
+     * (Compound, RAY with Compound opportunity) it may cause storage writes
      * same as balanceOfAll()
      */
     function optimalProportions() external returns(uint256[] memory);

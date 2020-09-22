@@ -11,6 +11,7 @@ import "../../interfaces/defi/IRAYPortfolioManager.sol";
 import "../../interfaces/defi/IRAYNAVCalculator.sol";
 import "./ProtocolBase.sol";
 
+
 /**
  * RAY Protocol support module which works with only one base token
  */
