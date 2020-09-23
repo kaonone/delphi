@@ -68,7 +68,7 @@ contract StakingPoolBase is Module, IERC900, CapperRole  {
 
   uint256 internal totalStakedAmount;
 
-  uint256 public coeffScore = 1;
+  uint256 public coeffScore;
   
 
 
@@ -360,7 +360,7 @@ contract StakingPoolBase is Module, IERC900, CapperRole  {
    * @return uint256 The number of tokens staked for the given address
    */
   function totalScoresFor(address _address) public view returns (uint256) {
-    return stakeHolders[_address].totalStakedFor.mul(coeffScore);
+    return stakeHolders[_address].totalStakedFor.mul(coeffScore).div(10**18);
   }
 
 
