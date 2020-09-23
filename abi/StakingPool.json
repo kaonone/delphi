@@ -31,6 +31,19 @@
       {
         "indexed": false,
         "internalType": "uint256",
+        "name": "coeff",
+        "type": "uint256"
+      }
+    ],
+    "name": "CoeffScoreUpdated",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint256",
         "name": "newCap",
         "type": "uint256"
       }
@@ -311,6 +324,21 @@
     "outputs": [],
     "payable": false,
     "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [],
+    "name": "coeffScore",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
     "type": "function"
   },
   {
@@ -683,6 +711,21 @@
     "inputs": [
       {
         "internalType": "uint256",
+        "name": "coeff",
+        "type": "uint256"
+      }
+    ],
+    "name": "setCoeffScore",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "internalType": "uint256",
         "name": "_defaultLockInDuration",
         "type": "uint256"
       }
@@ -981,6 +1024,27 @@
   },
   {
     "constant": true,
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_address",
+        "type": "address"
+      }
+    ],
+    "name": "totalScoresFor",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
     "inputs": [],
     "name": "totalStaked",
     "outputs": [
@@ -1067,15 +1131,6 @@
         "type": "uint256"
       }
     ],
-    "payable": false,
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "constant": false,
-    "inputs": [],
-    "name": "upgrade",
-    "outputs": [],
     "payable": false,
     "stateMutability": "nonpayable",
     "type": "function"
