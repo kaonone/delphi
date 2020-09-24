@@ -9,6 +9,8 @@ import "../../interfaces/savings/IVaultSavings.sol";
 import "./SavingsModule.sol";
 import "../defi/DefiOperatorRole.sol";
 
+import "../../utils/CalcUtils.sol";
+
 contract VaultSavingsModule is SavingsModule, IVaultSavings, DefiOperatorRole {
     using SafeERC20 for IERC20;
     using SafeMath for uint256;
@@ -21,7 +23,7 @@ contract VaultSavingsModule is SavingsModule, IVaultSavings, DefiOperatorRole {
 
 // Inherited from ISavingsModule
  /**
-     * @notice Deposit tokens to a protocol
+     * @notice Deposit from user to be transfered to the Vault
      * @param _protocol Protocol to deposit tokens
      * @param _tokens Array of tokens to deposit
      * @param _dnAmounts Array of amounts (denormalized to token decimals)
@@ -30,15 +32,13 @@ contract VaultSavingsModule is SavingsModule, IVaultSavings, DefiOperatorRole {
     public operationAllowed(IAccessModule.Operation.Deposit)
     returns(uint256) 
     {
-        //distributeRewardIfRequired(_protocol);
-
         uint256 nAmount;
         for (uint256 i=0; i < _tokens.length; i++) {
-            nAmount = nAmount.add(normalizeTokenAmount(_tokens[i], _dnAmounts[i]));
+            nAmount = nAmount.add(CalcUtils.normalizeAmount(_tokens[i], _dnAmounts[i]));
         }
 
         depositToProtocol(_protocol, _tokens, _dnAmounts);
-
+        
         PoolToken poolToken = PoolToken(protocols[_protocol].poolToken);
         poolToken.mint(_msgSender(), nAmount);
 
@@ -122,37 +122,21 @@ contract VaultSavingsModule is SavingsModule, IVaultSavings, DefiOperatorRole {
         return 0;
     }
 
-    function handleWithdrawRequests(address _vaultProtocol, address token, uint256 dnAmount, uint256 maxNAmount) public onlyDefiOperator {
-        uint256 nAmount = normalizeTokenAmount(token, dnAmount);
-
+    function handleWithdrawRequests(address _vaultProtocol) public onlyDefiOperator {
         uint256 nBalanceBefore = distributeYieldInternal(_vaultProtocol);
         IVaultProtocol(_vaultProtocol).withdrawOperator();
         uint256 nBalanceAfter = updateProtocolBalance(_vaultProtocol);
 
         uint256 yield;
-        uint256 actualAmount;
-        uint256 fee;
-        if(nBalanceAfter.add(nAmount) > nBalanceBefore) {
-            yield = nBalanceAfter.add(nAmount).sub(nBalanceBefore);
-            actualAmount = nAmount;
-        }else{
-            actualAmount = nBalanceBefore.sub(nBalanceAfter);
-            if (actualAmount > nAmount) fee = actualAmount-nAmount;
+        if (nBalanceAfter > nBalanceBefore) {
+            yield = nBalanceAfter.sub(nBalanceBefore);
         }
-
-        require(maxNAmount == 0 || actualAmount <= maxNAmount, "SavingsModule: provided maxNAmount is too low");
 
         PoolToken poolToken = PoolToken(protocols[_vaultProtocol].poolToken);
-        poolToken.burnFrom(_msgSender(), actualAmount);
-        emit WithdrawToken(_vaultProtocol, token, dnAmount);
-        emit Withdraw(_vaultProtocol, _msgSender(), actualAmount, fee);
-
 
         if (yield > 0) {
-            //Additional Yield received from protocol (because of lottery, or something)
             createYieldDistribution(poolToken, yield);
         }
-
-//        return actualAmount;
     }
+    
 }

@@ -1,7 +1,5 @@
 pragma solidity ^0.5.12;
 
-import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/ERC20Detailed.sol";
-
 import "./VaultProtocol.sol";
 import "../../interfaces/defi/IDefiStrategy.sol";
 import "../../interfaces/defi/ICurveFiDeposit.sol";
@@ -11,8 +9,9 @@ import "../../interfaces/defi/ICurveFiSwap.sol";
 
 import "../../interfaces/defi/IUniswap.sol";
 
-contract CurveFiStablecoinStrategy is VaultProtocol, IDefiStrategy {
+import "../../utils/CalcUtils.sol";
 
+contract CurveFiStablecoinStrategy is VaultProtocol, IDefiStrategy {
     ICurveFiDeposit public curveFiDeposit;
     IERC20 public curveFiToken;
     ICurveFiLiquidityGauge public curveFiLPGauge;
@@ -90,7 +89,7 @@ contract CurveFiStablecoinStrategy is VaultProtocol, IDefiStrategy {
         //All withdrawn tokens are marked as claimable, so anyway we need to withdraw from the protocol
 
             // count shares for proportional withdraw
-        uint256 nAmount = normalizeAmount(token, amount);
+        uint256 nAmount = CalcUtils.normalizeAmount(token, amount);
         uint256 nBalance = normalizedBalance();
 
         uint256 poolShares = curveFiTokenBalance();
@@ -111,7 +110,7 @@ contract CurveFiStablecoinStrategy is VaultProtocol, IDefiStrategy {
         uint256 i;
         for (i = 0; i < registeredVaultTokens.length; i++) {
             address tkn = registeredVaultTokens[i];
-            nWithdraw = nWithdraw.add(normalizeAmount(tkn, amounts[i]));
+            nWithdraw = nWithdraw.add(CalcUtils.normalizeAmount(tkn, amounts[i]));
         }
 
         uint256 nBalance = normalizedBalance();
@@ -180,20 +179,9 @@ contract CurveFiStablecoinStrategy is VaultProtocol, IDefiStrategy {
         uint256[] memory balances = balanceOfAll();
         uint256 summ;
         for (uint256 i=0; i < registeredVaultTokens.length; i++){
-            summ = summ.add(normalizeAmount(registeredVaultTokens[i], balances[i]));
+            summ = summ.add(CalcUtils.normalizeAmount(registeredVaultTokens[i], balances[i]));
         }
         return summ;
-    }
-
-    function normalizeAmount(address token, uint256 amount) internal view returns(uint256) {
-        uint256 _decimals = uint256(ERC20Detailed(token).decimals());
-        if (_decimals == 18) {
-            return amount;
-        } else if (_decimals > 18) {
-            return amount.div(10**(_decimals-18));
-        } else if (_decimals < 18) {
-            return amount.mul(10**(18-_decimals));
-        }
     }
 
     function convertArray(uint256[] memory amounts) internal pure returns(uint256[4] memory) {
