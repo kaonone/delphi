@@ -94,14 +94,98 @@ contract("VaultSavings", async ([_, owner, user1, user2, user3, defiops, protoco
 
 
     describe('Deposit into the vault', () => {
+        beforeEach(async () => {
+            await dai.approve(vaultProtocol.address, 80, {from: user1});
+        });
+        afterEach(async () => {
+            await globalSnap.revert();
+        });
+
+        it('User gets LP tokens after the deposit through VaultSavings', async () => {
+            
+            await (<any> vaultSavings).methods['deposit(address,address[],uint256[])'](vaultProtocol.address, [dai.address], [80], {from:user1});
+
+            let userPoolBalance = await poolToken.balanceOf(user1, {from: user1});
+            expect(userPoolBalance.toNumber(), "Pool tokens are not minted for user1").to.equal(80);
+        });
+
+        it('Deposit through the VaultSavings goes to the Vault', async () => {
+            let userBalanceBefore = await dai.balanceOf(user1, {from: user1});
+
+            await (<any> vaultSavings).methods['deposit(address,address[],uint256[])'](vaultProtocol.address, [dai.address], [80], {from:user1});
+
+            let vaultBalance = await dai.balanceOf(vaultProtocol.address, {from: owner});
+            expect(vaultBalance.toNumber(), "Tokens from (1) are not transferred to vault").to.equal(80);
+
+            let userOnHold = await vaultProtocol.amountOnHold(user1, dai.address, {from:owner});
+            expect(userOnHold.toNumber(), "On-hold record for (1) was not created").to.equal(80);
+
+            let userBalanceAfter = await dai.balanceOf(user1, {from: user1});
+            expect(userBalanceBefore.sub(userBalanceAfter).toNumber(), "User (1) hasn't transfered tokens to vault").to.equal(80);
+        });
+    });
+
+    describe('Operator resolves deposits through the VaultSavings', () => {
+        beforeEach(async () => {
+            await dai.approve(vaultProtocol.address, 80, {from: user1});
+            await (<any> vaultSavings).methods['deposit(address,address[],uint256[])'](vaultProtocol.address, [dai.address], [80], {from:user1});
+
+            await dai.approve(vaultProtocol.address, 50, {from: user2});
+            await (<any> vaultSavings).methods['deposit(address,address[],uint256[])'](vaultProtocol.address, [dai.address], [50], {from:user2});
+        });
+        afterEach(async () => {
+            await globalSnap.revert();
+        });
+
+        it('First deposit (no yield earned yet)', async () => {
+            let before = {
+                userBalance1 : await dai.balanceOf(user1, {from: user1}),
+                userBalance2 : await dai.balanceOf(user2, {from: user2}),
+                poolBalance1 : await poolToken.balanceOf(user1, {from: user1}),
+                poolBalance2 : await poolToken.balanceOf(user2, {from: user2})
+            }
+            
+            await vaultSavings.handleWithdrawRequests(vaultProtocol.address, {from: owner});
+
+            let vaultBalance = await dai.balanceOf(vaultProtocol.address, {from: owner});
+            expect(vaultBalance.toNumber(), "Tokens are not deposited from vault").to.equal(0);
+
+            let protocolBalance = await dai.balanceOf(protocolStub, {from:owner});
+            expect(protocolBalance.toNumber(), "Tokens are not deposited").to.equal(130);
+
+            let userOnHold = await vaultProtocol.amountOnHold(user1, dai.address, {from:owner});
+            expect(userOnHold.toNumber(), "On-hold record for (1) was not deleted").to.equal(0);
+
+            userOnHold = await vaultProtocol.amountOnHold(user2, dai.address, {from:owner});
+            expect(userOnHold.toNumber(), "On-hold record for (2) was not deleted").to.equal(0);
+
+            let poolBalance = await poolToken.balanceOf(poolToken.address, {from: owner});
+            expect(poolBalance.toNumber(), "No new pool tokens minted").to.equal(0);
+
+            let after = {
+                userBalance1 : await dai.balanceOf(user1, {from: user1}),
+                userBalance2 : await dai.balanceOf(user2, {from: user2}),
+                poolBalance1 : await poolToken.balanceOf(user1, {from: user1}),
+                poolBalance2 : await poolToken.balanceOf(user2, {from: user2})
+            }
+
+            expect(before.userBalance1.sub(after.userBalance1).toNumber(), "User (1) should not receive any tokens").to.equal(0);
+            expect(before.userBalance2.sub(after.userBalance2).toNumber(), "User (2) should not receive any tokens").to.equal(0);
+            expect(before.poolBalance1.sub(after.poolBalance1).toNumber(), "User (1) should not receive new pool tokens").to.equal(0);
+            expect(before.poolBalance2.sub(after.poolBalance2).toNumber(), "User (2) should not receive new pool tokens").to.equal(0);
+
+
+        });
+
+        it('Deposit with some users earned yield', async () => {
+        });
+
     });
 
     describe('Yield distribution', () => {
         //The user gets yeild only if he has no on-hold deposits
 
     });
-
-
 
 
     describe('Full cycle', () => {
@@ -112,84 +196,45 @@ contract("VaultSavings", async ([_, owner, user1, user2, user3, defiops, protoco
         it('Full cycle of deposit->yield->withdraw', async () => {
         //Preliminary
         //Deposit 1
-            let user1BalanceBefore = await dai.balanceOf(user1, {from: user1});
             await dai.approve(vaultProtocol.address, 80, {from: user1});
-            await dai.approve(vaultSavings.address, 80, {from: user1});
             await (<any> vaultSavings).methods['deposit(address,address[],uint256[])'](vaultProtocol.address, [dai.address], [80], {from:user1});
 
             let user1PoolBalance = await poolToken.balanceOf(user1, {from: user1});
             expect(user1PoolBalance.toNumber(), "Pool tokens are not minted for user1").to.equal(80);
 
-            let vaultBalance = await dai.balanceOf(vaultProtocol.address, {from: owner});
-            expect(vaultBalance.toNumber(), "Tokens from (1) are not transferred to vault").to.equal(80);
-
-            let userOnHold = await vaultProtocol.amountOnHold(user1, dai.address, {from:owner});
-            expect(userOnHold.toNumber(), "On-hold record for (1) was not created").to.equal(80);
-
-            let user1BalanceAfter = await dai.balanceOf(user1, {from: user1});
-            expect(user1BalanceBefore.sub(user1BalanceAfter).toNumber(), "User (1) hasn't transfered tokens to vault").to.equal(80);
         //Deposit 2
-            let user2BalanceBefore = await dai.balanceOf(user2, {from: user2});
             await dai.approve(vaultProtocol.address, 50, {from: user2});
-            await dai.approve(vaultSavings.address, 50, {from: user2});
             await (<any> vaultSavings).methods['deposit(address,address[],uint256[])'](vaultProtocol.address, [dai.address], [50], {from:user2});
 
             let user2PoolBalance = await poolToken.balanceOf(user2, {from: user2});
             expect(user2PoolBalance.toNumber(), "Pool tokens are not minted for user2").to.equal(50);
 
-            vaultBalance = await dai.balanceOf(vaultProtocol.address, {from: owner});
-            expect(vaultBalance.toNumber(), "Tokens from (2) are not transferred to vault").to.equal(130);
-
-            userOnHold = await vaultProtocol.amountOnHold(user2, dai.address, {from:owner});
-            expect(userOnHold.toNumber(), "On-hold record for (2) was not created").to.equal(50);
-
-            let user2BalanceAfter = await dai.balanceOf(user2, {from: user2});
-            expect(user2BalanceBefore.sub(user2BalanceAfter).toNumber(), "User (2) hasn't transfered tokens to vault").to.equal(50);
-
         //Operator resolves deposits
-            user1BalanceBefore = await dai.balanceOf(user1, {from: user1});
-            user2BalanceBefore = await dai.balanceOf(user2, {from: user2});
             await vaultSavings.handleWithdrawRequests(vaultProtocol.address, {from: owner});
 
-            vaultBalance = await dai.balanceOf(vaultProtocol.address, {from: owner});
-            expect(vaultBalance.toNumber(), "Tokens are not deposited from vault").to.equal(0);
-
-            //Deposits are in the protocol
-            let protocolBalance = await dai.balanceOf(protocolStub, {from:owner});
-            expect(protocolBalance.toNumber(), "Tokens are not deposited").to.equal(130);
-
-            userOnHold = await vaultProtocol.amountOnHold(user1, dai.address, {from:owner});
-            expect(userOnHold.toNumber(), "On-hold record for (1) was not deleted").to.equal(0);
-
-            userOnHold = await vaultProtocol.amountOnHold(user2, dai.address, {from:owner});
-            expect(userOnHold.toNumber(), "On-hold record for (2) was not deleted").to.equal(0);
-
             //no yield yet - user balances are unchanged
-            user1BalanceAfter = await dai.balanceOf(user1, {from: user1});
-            expect(user1BalanceBefore.sub(user1BalanceAfter).toNumber(), "User (1) should not receive any tokens").to.equal(0);
-
-            user2BalanceAfter = await dai.balanceOf(user2, {from: user2});
-            expect(user2BalanceBefore.sub(user2BalanceAfter).toNumber(), "User (2) should not receive any tokens").to.equal(0);
-
             user1PoolBalance = await poolToken.balanceOf(user1, {from: user1});
-            expect(user1PoolBalance.toNumber(), "User (1) should not receive new pool tokens").to.equal(80);
+            expect(user1PoolBalance.toNumber(), "Np new pool tokens should be minted for user1").to.equal(80);
 
             user2PoolBalance = await poolToken.balanceOf(user2, {from: user2});
-            expect(user2PoolBalance.toNumber(), "User (2) should not receive new pool tokens").to.equal(50);
+            expect(user2PoolBalance.toNumber(), "Np new pool tokens should be  minted for user2").to.equal(50);
 
             let poolBalance = await poolToken.balanceOf(poolToken.address, {from: owner});
             expect(poolBalance.toNumber(), "No new pool tokens minted").to.equal(0);
 
         //First case
             //Add yield to the protocol
-            //Send tokens to protocol stub
+            await dai.transfer(protocolStub, 26, {from:owner});
 
             //Add yield for the strategy to the protocol
-            //add dai as a strategy yield
+//            await dai.transfer(protocolStub, 13, {from:owner});
 
-            //New deposit from User3
-//            await (<any> vaultSavings).methods['deposit(address,address,uint256)'](user3, dai.address, 120, {from:user3});
-            //expect user to get LP tokens
+        //Deposit from User3
+            await dai.approve(vaultProtocol.address, 20, {from: user3});
+            await (<any> vaultSavings).methods['deposit(address,address[],uint256[])'](vaultProtocol.address, [dai.address], [20], {from:user3});
+
+            let user3PoolBalance = await poolToken.balanceOf(user3, {from: user3});
+            expect(user3PoolBalance.toNumber(), "Pool tokens are not minted for user3").to.equal(20);
 
             //Operator checks yield from strategy
             //Yield distribution from strategy (on-hold deposit is not counted)
