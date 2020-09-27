@@ -5,6 +5,7 @@ import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/SafeERC20
 import "@openzeppelin/contracts-ethereum-package/contracts/math/SafeMath.sol";
 
 import "../../interfaces/defi/IVaultProtocol.sol";
+import "../../interfaces/token/IOperableToken.sol";
 import "../../common/Module.sol";
 import "./DefiOperatorRole.sol";
 
@@ -32,9 +33,13 @@ contract VaultProtocol is Module, IVaultProtocol, DefiOperatorRole {
     mapping(address => DepositData[]) internal balancesToClaim;
     uint256[] internal claimableTokens;
 
-    function initialize(address _pool) public initializer {
+    address public vaultPoolToken;
+
+    function initialize(address _pool, address _vaultPoolToken) public initializer {
         Module.initialize(_pool);
         DefiOperatorRole.initialize(_msgSender());
+
+        vaultPoolToken = _vaultPoolToken;
     }
 
 
@@ -65,6 +70,8 @@ contract VaultProtocol is Module, IVaultProtocol, DefiOperatorRole {
                 depositedAmount: _amount
             }) );
         }
+
+        IOperableToken(vaultPoolToken).increaseOnHoldValue(_user, _amount);
 
         emit DepositToVault(_user, _token, _amount);
     }
@@ -127,7 +134,7 @@ contract VaultProtocol is Module, IVaultProtocol, DefiOperatorRole {
         }
     }
 
-    function withdrawOperator() public onlyDefiOperator {
+    function withdrawOperator() public onlyDefiOperator returns(uint256, uint256) {
         //Yield distribution step based on actual deposits (excluding on-hold ones)
         // should be performed from the SavingsModule before other operator's actions
 
@@ -179,7 +186,8 @@ contract VaultProtocol is Module, IVaultProtocol, DefiOperatorRole {
                 claimableTokens[i] = claimableTokens[i].add(withdrawAmounts[i]);
             }
         }
-        emit WithdrawReqestsResolved();
+        emit WithdrawRequestsResolved(totalDeposit, totalWithdraw);
+        return (totalDeposit, totalWithdraw);
     }
 
     function quickWithdraw(address _user, uint256 _amount) public onlyDefiOperator {
@@ -341,6 +349,9 @@ contract VaultProtocol is Module, IVaultProtocol, DefiOperatorRole {
     function clearOnHoldDeposits() internal onlyDefiOperator {
         for (uint256 i = 0; i < usersDeposited.length; i++) {
             //We can delete the on-hold records now - the real balances will be deposited to protocol
+            for (uint256 j = 0; j < balancesOnHold[usersDeposited[i]].length; j++) {
+                IOperableToken(vaultPoolToken).decreaseOnHoldValue(usersDeposited[i], balancesOnHold[usersDeposited[i]][j].depositedAmount);
+            }
             delete balancesOnHold[usersDeposited[i]];
         }
         delete usersDeposited;

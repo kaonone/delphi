@@ -2,7 +2,7 @@ import {
     VaultProtocolStubContract, VaultProtocolStubInstance,
     TestErc20Contract, TestErc20Instance,
     VaultSavingsModuleContract, VaultSavingsModuleInstance,
-    PoolTokenContract, PoolTokenInstance,
+    VaultPoolTokenContract, VaultPoolTokenInstance,
     PoolContract, PoolInstance,
     AccessModuleContract, AccessModuleInstance
 } from "../../../types/truffle-contracts/index";
@@ -21,7 +21,7 @@ const ERC20 = artifacts.require("TestERC20");
 
 const VaultProtocol = artifacts.require("VaultProtocolStub");
 const VaultSavings = artifacts.require("VaultSavingsModule");
-const PoolToken = artifacts.require("PoolToken");
+const PoolToken = artifacts.require("VaultPoolToken");
 const Pool = artifacts.require("Pool");
 const AccessModule = artifacts.require("AccessModule");
 
@@ -29,7 +29,7 @@ contract("VaultSavings", async ([_, owner, user1, user2, user3, defiops, protoco
     let globalSnap: Snapshot;
     let vaultProtocol: VaultProtocolStubInstance;
     let vaultSavings: VaultSavingsModuleInstance;
-    let poolToken: PoolTokenInstance
+    let poolToken: VaultPoolTokenInstance
     let dai: TestErc20Instance;
     let usdc: TestErc20Instance;
     let busd: TestErc20Instance;
@@ -48,19 +48,21 @@ contract("VaultSavings", async ([_, owner, user1, user2, user3, defiops, protoco
 
         vaultSavings = await VaultSavings.new({from: owner});
         await (<any> vaultSavings).methods['initialize(address)'](pool.address, {from: owner});
+        await vaultSavings.addDefiOperator(defiops, {from:owner});
 
         await pool.set("savings", vaultSavings.address, true, {from:owner});
 
         poolToken = await PoolToken.new({from: owner});
         await (<any> poolToken).methods['initialize(address,string,string)'](pool.address, "VaultSavings", "VLT", {from: owner});
 
-        await poolToken.addMinter(vaultSavings.address, {from:owner});
-        await poolToken.addMinter(defiops, {from:owner});
-
         vaultProtocol = await VaultProtocol.new({from:owner});
-        await (<any> vaultProtocol).methods['initialize(address)'](pool.address, {from: owner});
+        await (<any> vaultProtocol).methods['initialize(address,address)'](pool.address, poolToken.address, {from: owner});
         await vaultProtocol.addDefiOperator(vaultSavings.address, {from:owner});
         await vaultProtocol.addDefiOperator(defiops, {from:owner});
+
+        await poolToken.addMinter(vaultSavings.address, {from:owner});
+        await poolToken.addMinter(vaultProtocol.address, {from:owner});
+        await poolToken.addMinter(defiops, {from:owner});
 
         //Deposit token 1
         dai = await ERC20.new({from:owner});
@@ -96,6 +98,7 @@ contract("VaultSavings", async ([_, owner, user1, user2, user3, defiops, protoco
     describe('Deposit into the vault', () => {
         beforeEach(async () => {
             await dai.approve(vaultProtocol.address, 80, {from: user1});
+            await dai.approve(vaultProtocol.address, 50, {from: user2});
         });
         afterEach(async () => {
             await globalSnap.revert();
@@ -123,6 +126,16 @@ contract("VaultSavings", async ([_, owner, user1, user2, user3, defiops, protoco
             let userBalanceAfter = await dai.balanceOf(user1, {from: user1});
             expect(userBalanceBefore.sub(userBalanceAfter).toNumber(), "User (1) hasn't transfered tokens to vault").to.equal(80);
         });
+
+        it('LP tokens are marked as on-hold while being in the Vault', async () => {
+            await (<any> vaultSavings).methods['deposit(address,address[],uint256[])'](vaultProtocol.address, [dai.address], [80], {from:user1});
+            await (<any> vaultSavings).methods['deposit(address,address[],uint256[])'](vaultProtocol.address, [dai.address], [50], {from:user2});
+
+            let onHoldPool = await poolToken.onHoldBalanceOf(user1, {from:owner});
+            expect(onHoldPool.toNumber(), "Pool tokens are not set on-hold for user (1)").to.equal(80);
+            onHoldPool = await poolToken.onHoldBalanceOf(user2, {from:owner});
+            expect(onHoldPool.toNumber(), "Pool tokens are not set on-hold for user (2)").to.equal(50);
+        });
     });
 
     describe('Operator resolves deposits through the VaultSavings', () => {
@@ -137,6 +150,16 @@ contract("VaultSavings", async ([_, owner, user1, user2, user3, defiops, protoco
             await globalSnap.revert();
         });
 
+        it('LP tokens are unmarked from being on-hold after deposit is resolved by operator', async () => {
+            await vaultSavings.handleWithdrawRequests(vaultProtocol.address, {from: defiops});
+
+
+            let onHoldPool = await poolToken.onHoldBalanceOf(user1, {from:owner});
+            expect(onHoldPool.toNumber(), "Pool tokens are not earning yield for user (1)").to.equal(0);
+            onHoldPool = await poolToken.onHoldBalanceOf(user2, {from:owner});
+            expect(onHoldPool.toNumber(), "Pool tokens are not earning yield for user (2)").to.equal(0);
+        });
+
         it('First deposit (no yield earned yet)', async () => {
             let before = {
                 userBalance1 : await dai.balanceOf(user1, {from: user1}),
@@ -145,7 +168,7 @@ contract("VaultSavings", async ([_, owner, user1, user2, user3, defiops, protoco
                 poolBalance2 : await poolToken.balanceOf(user2, {from: user2})
             }
             
-            await vaultSavings.handleWithdrawRequests(vaultProtocol.address, {from: owner});
+            await vaultSavings.handleWithdrawRequests(vaultProtocol.address, {from: defiops});
 
             let vaultBalance = await dai.balanceOf(vaultProtocol.address, {from: owner});
             expect(vaultBalance.toNumber(), "Tokens are not deposited from vault").to.equal(0);
@@ -158,6 +181,7 @@ contract("VaultSavings", async ([_, owner, user1, user2, user3, defiops, protoco
 
             userOnHold = await vaultProtocol.amountOnHold(user2, dai.address, {from:owner});
             expect(userOnHold.toNumber(), "On-hold record for (2) was not deleted").to.equal(0);
+
 
             let poolBalance = await poolToken.balanceOf(poolToken.address, {from: owner});
             expect(poolBalance.toNumber(), "No new pool tokens minted").to.equal(0);
@@ -173,9 +197,25 @@ contract("VaultSavings", async ([_, owner, user1, user2, user3, defiops, protoco
             expect(before.userBalance2.sub(after.userBalance2).toNumber(), "User (2) should not receive any tokens").to.equal(0);
             expect(before.poolBalance1.sub(after.poolBalance1).toNumber(), "User (1) should not receive new pool tokens").to.equal(0);
             expect(before.poolBalance2.sub(after.poolBalance2).toNumber(), "User (2) should not receive new pool tokens").to.equal(0);
-
-
         });
+
+        it('First deposit (no yield available)', async () => {
+            let before = {
+                yieldBalance1 : await poolToken.calculateUnclaimedDistributions(user1, {from: user1}),
+                yieldBalance2 : await poolToken.calculateUnclaimedDistributions(user2, {from: user2})
+            }
+            
+            await vaultSavings.handleWithdrawRequests(vaultProtocol.address, {from: defiops});
+
+            let after = {
+                yieldBalance1 : await poolToken.calculateUnclaimedDistributions(user1, {from: user1}),
+                yieldBalance2 : await poolToken.calculateUnclaimedDistributions(user2, {from: user2})
+            }
+
+            expect(before.yieldBalance1.sub(after.yieldBalance1).toNumber(), "No yield for user (1) yet").to.equal(0);
+            expect(before.yieldBalance2.sub(after.yieldBalance2).toNumber(), "No yield for user (2) yet").to.equal(0);
+        });
+
 
         it('Deposit with some users earned yield', async () => {
         });
@@ -198,31 +238,31 @@ contract("VaultSavings", async ([_, owner, user1, user2, user3, defiops, protoco
         //Deposit 1
             await dai.approve(vaultProtocol.address, 80, {from: user1});
             await (<any> vaultSavings).methods['deposit(address,address[],uint256[])'](vaultProtocol.address, [dai.address], [80], {from:user1});
-
-            let user1PoolBalance = await poolToken.balanceOf(user1, {from: user1});
-            expect(user1PoolBalance.toNumber(), "Pool tokens are not minted for user1").to.equal(80);
-
+    
         //Deposit 2
             await dai.approve(vaultProtocol.address, 50, {from: user2});
             await (<any> vaultSavings).methods['deposit(address,address[],uint256[])'](vaultProtocol.address, [dai.address], [50], {from:user2});
 
-            let user2PoolBalance = await poolToken.balanceOf(user2, {from: user2});
-            expect(user2PoolBalance.toNumber(), "Pool tokens are not minted for user2").to.equal(50);
-
-        //Operator resolves deposits
-            await vaultSavings.handleWithdrawRequests(vaultProtocol.address, {from: owner});
+            //Operator resolves deposits
+            await vaultSavings.handleWithdrawRequests(vaultProtocol.address, {from: defiops});
 
             //no yield yet - user balances are unchanged
-            user1PoolBalance = await poolToken.balanceOf(user1, {from: user1});
-            expect(user1PoolBalance.toNumber(), "Np new pool tokens should be minted for user1").to.equal(80);
+            let user1PoolBalance = await poolToken.balanceOf(user1, {from: user1});
+            expect(user1PoolBalance.toNumber(), "No new pool tokens should be minted for user1").to.equal(80);
 
-            user2PoolBalance = await poolToken.balanceOf(user2, {from: user2});
-            expect(user2PoolBalance.toNumber(), "Np new pool tokens should be  minted for user2").to.equal(50);
+            let user2PoolBalance = await poolToken.balanceOf(user2, {from: user2});
+            expect(user2PoolBalance.toNumber(), "No new pool tokens should be  minted for user2").to.equal(50);
 
             let poolBalance = await poolToken.balanceOf(poolToken.address, {from: owner});
             expect(poolBalance.toNumber(), "No new pool tokens minted").to.equal(0);
 
-        //First case
+            let unclaimedTokens = await poolToken.calculateUnclaimedDistributions(user1, {from:owner});
+            expect(unclaimedTokens.toNumber(), "No yield for user (1) yet").to.equal(0);
+
+            unclaimedTokens = await poolToken.calculateUnclaimedDistributions(user2, {from:owner});
+            expect(unclaimedTokens.toNumber(), "No yield for user (2) yet").to.equal(0);
+
+    //First case
             //Add yield to the protocol
             await dai.transfer(protocolStub, 26, {from:owner});
 
@@ -237,10 +277,55 @@ contract("VaultSavings", async ([_, owner, user1, user2, user3, defiops, protoco
             expect(user3PoolBalance.toNumber(), "Pool tokens are not minted for user3").to.equal(20);
 
             //Operator checks yield from strategy
-            //Yield distribution from strategy (on-hold deposit is not counted)
+//Yield distribution from strategy (on-hold deposit is not counted)
 
-            //Yield from pool is distributed before the new deposit (on-hold deposit is not counted)
             //Operator resolves deposits
+            await vaultSavings.handleWithdrawRequests(vaultProtocol.address, {from: defiops});
+            //Yield from pool is distributed before the new deposit (on-hold deposit is not counted)
+            //26 tokens of yield for deposits 80 + 50 = 130, 16 + 10 tokens of yield
+
+            poolBalance = await poolToken.balanceOf(poolToken.address, {from: owner});
+            expect(poolBalance.toNumber(), "Yield tokens are not minted").to.equal(26);
+
+            //Yield is not claimed yet
+            user1PoolBalance = await poolToken.balanceOf(user1, {from:user1});
+            expect(user1PoolBalance.toNumber(), "Yield tokens should not be claimed yet for user1").to.equal(80);
+
+            user2PoolBalance = await poolToken.balanceOf(user2, {from:user2});
+            expect(user2PoolBalance.toNumber(), "Yield tokens should not be claimed yet for user2").to.equal(50);
+
+            user3PoolBalance = await poolToken.balanceOf(user3, {from:user3});
+            expect(user3PoolBalance.toNumber(), "Yield tokens should not be claimed yet for user3").to.equal(20);
+
+            //Yield ready fo claim
+            unclaimedTokens = await poolToken.calculateUnclaimedDistributions(user1, {from:owner});
+            expect(unclaimedTokens.toNumber(), "Yield was not distributed for user1").to.equal(16);
+
+            unclaimedTokens = await poolToken.calculateUnclaimedDistributions(user2, {from:owner});
+            expect(unclaimedTokens.toNumber(), "Yield was not distributed for user2").to.equal(10);
+
+            unclaimedTokens = await poolToken.calculateUnclaimedDistributions(user3, {from:owner});
+            expect(unclaimedTokens.toNumber(), "Yield should not be distributed for user1").to.equal(0);
+
+
+            await dai.approve(vaultProtocol.address, 20, {from: user1});
+            await (<any> vaultSavings).methods['deposit(address,address[],uint256[])'](vaultProtocol.address, [dai.address], [20], {from:user1});
+
+
+            //await poolToken.methods['claimDistributions(address)'](pool.address, {from: owner});
+
+            user1PoolBalance = await poolToken.balanceOf(user1, {from: user1});
+            //80 + 16 LP tokens for yield
+     //       expect(user1PoolBalance.toNumber(), "No new pool tokens minted for user1").to.equal(96);
+
+            user2PoolBalance = await poolToken.balanceOf(user2, {from: user2});
+            //50 + 10 LP tokens for yield
+    //        expect(user2PoolBalance.toNumber(), "No new pool tokens minted for user2").to.equal(60);
+
+            user3PoolBalance = await poolToken.balanceOf(user3, {from: user3});
+    //        expect(user3PoolBalance.toNumber(), "No new pool tokens should be minted for user3").to.equal(20);
+
+
 
 
         //Second case

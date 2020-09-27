@@ -42,11 +42,15 @@ contract VaultProtocolStub is VaultProtocol {
     }
 
     function normalizedBalance() external returns(uint256) {
-        return 0;
+        uint256 amount = 0;
+        for (uint256 i = 0; i < registeredVaultTokens.length; i++) {
+            amount += IERC20(registeredVaultTokens[i]).balanceOf(protocolStub);
+        }
+        return amount;
     }
 
     function balanceOf(address token) public returns(uint256) {
-        return 0;
+        return IERC20(token).balanceOf(protocolStub);
     }
 
     function balanceOfAll() external returns(uint256[] memory) {

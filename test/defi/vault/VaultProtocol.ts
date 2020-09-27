@@ -1,5 +1,6 @@
 import { 
     VaultProtocolStubContract, VaultProtocolStubInstance,
+    VaultPoolTokenContract, VaultPoolTokenInstance,
     TestErc20Contract, TestErc20Instance
 } from "../../../types/truffle-contracts/index";
 
@@ -16,6 +17,7 @@ const w3random = require("../../utils/w3random");
 const ERC20 = artifacts.require("TestERC20");
 
 const VaultProtocol = artifacts.require("VaultProtocolStub");
+const PoolToken = artifacts.require("VaultPoolToken");
 
 contract("VaultProtocol", async ([_, owner, user1, user2, user3, pool, defiops, protocolStub, ...otherAccounts]) => {
     let globalSnap: Snapshot;
@@ -23,12 +25,20 @@ contract("VaultProtocol", async ([_, owner, user1, user2, user3, pool, defiops, 
     let dai: TestErc20Instance;
     let usdc: TestErc20Instance;
     let busd: TestErc20Instance;
+    let poolToken: VaultPoolTokenInstance;
 
 
     before(async () => {
+        poolToken = await PoolToken.new({from: owner});
+        await (<any> poolToken).methods['initialize(address,string,string)'](pool, "VaultSavings", "VLT", {from: owner});
+
         vaultProtocol = await VaultProtocol.new({from:owner});
-        await (<any> vaultProtocol).methods['initialize(address)'](pool, {from: owner});
+        await (<any> vaultProtocol).methods['initialize(address,address)'](pool, poolToken.address, {from: owner});
         await vaultProtocol.addDefiOperator(defiops, {from:owner});
+
+
+        await poolToken.addMinter(vaultProtocol.address, {from:owner});
+        await poolToken.addMinter(defiops, {from:owner});
         
         //Deposit token 1
         dai = await ERC20.new({from:owner});
@@ -622,7 +632,7 @@ contract("VaultProtocol", async ([_, owner, user1, user2, user3, pool, defiops, 
             let opResult = await vaultProtocol.withdrawOperator({from: defiops});
 
             expectEvent.notEmitted(opResult, 'WithdrawByOperator');
-            expectEvent(opResult, 'WithdrawReqestsResolved');
+            expectEvent(opResult, 'WithdrawRequestsResolved');
 
             //Withdraw requests are resolved
             let requested = await vaultProtocol.amountRequested(user1, dai.address);
@@ -682,7 +692,7 @@ contract("VaultProtocol", async ([_, owner, user1, user2, user3, pool, defiops, 
             let opResult = await vaultProtocol.withdrawOperator({from: defiops});
 
             expectEvent.notEmitted(opResult, 'DepositByOperator');
-            expectEvent(opResult, 'WithdrawReqestsResolved');
+            expectEvent(opResult, 'WithdrawRequestsResolved');
             expectEvent(opResult, 'WithdrawByOperator', {_amount: "160"});
 
             //Withdraw requests are resolved
@@ -741,7 +751,7 @@ contract("VaultProtocol", async ([_, owner, user1, user2, user3, pool, defiops, 
             // withdraw by operator 
             let opResult = await vaultProtocol.withdrawOperator({from: defiops});
 
-            expectEvent(opResult, 'WithdrawReqestsResolved');
+            expectEvent(opResult, 'WithdrawRequestsResolved');
             //On-hold deposit is moved to the protocol
             expectEvent(opResult, 'DepositByOperator', {_amount: "100"});
             //Full amount is withdrawn from the protocol

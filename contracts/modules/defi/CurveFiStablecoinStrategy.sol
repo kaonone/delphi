@@ -29,8 +29,8 @@ contract CurveFiStablecoinStrategy is VaultProtocol, IDefiStrategy {
 
 
     //Register stablecoins contracts addresses
-    function initialize(address _pool, address[] memory tokens, uint256 _daiInd) public initializer {
-        VaultProtocol.initialize(_pool);
+    function initialize(address _pool, address _vaultPoolToken, address[] memory tokens, uint256 _daiInd) public initializer {
+        VaultProtocol.initialize(_pool, _vaultPoolToken);
         for (uint256 i = 0; i < tokens.length; i++) {
             registeredVaultTokens.push(tokens[i]);
             claimableTokens.push(0);

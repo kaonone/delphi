@@ -9,7 +9,7 @@ contract IVaultProtocol is IDefiProtocol {
     event WithdrawRequestCreated(address indexed _user, address indexed _token, uint256 _amount);
     event DepositByOperator(uint256 _amount);
     event WithdrawByOperator(uint256 _amount);
-    event WithdrawReqestsResolved();
+    event WithdrawRequestsResolved(uint256 _totalDeposit, uint256 _totalWithdraw);
 
     function depositToVault(address _user, address _token, uint256 _amount) external;
     function depositToVault(address _user, address[] calldata  _tokens, uint256[] calldata _amounts) external;
@@ -17,7 +17,7 @@ contract IVaultProtocol is IDefiProtocol {
     function withdrawFromVault(address _user, address _token, uint256 _amount) external;
     function withdrawFromVault(address _user, address[] calldata  _tokens, uint256[] calldata _amounts) external;
 
-    function withdrawOperator() external;
+    function withdrawOperator() external returns(uint256, uint256);
 
         function quickWithdraw(address _user, uint256 _amount) external;
 

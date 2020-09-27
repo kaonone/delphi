@@ -6,6 +6,7 @@ import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/ERC20Deta
 import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/SafeERC20.sol";
 import "../../interfaces/defi/IVaultProtocol.sol";
 import "../../interfaces/savings/IVaultSavings.sol";
+import "../../interfaces/token/IOperableToken.sol";
 import "./SavingsModule.sol";
 import "../defi/DefiOperatorRole.sol";
 
@@ -123,20 +124,24 @@ contract VaultSavingsModule is SavingsModule, IVaultSavings, DefiOperatorRole {
     }
 
     function handleWithdrawRequests(address _vaultProtocol) public onlyDefiOperator {
+        uint256 totalDeposit;
+        uint256 totalWithdraw;
+
+        PoolToken poolToken = PoolToken(protocols[_vaultProtocol].poolToken);
+
         uint256 nBalanceBefore = distributeYieldInternal(_vaultProtocol);
-        IVaultProtocol(_vaultProtocol).withdrawOperator();
+        (totalDeposit, totalWithdraw) = IVaultProtocol(_vaultProtocol).withdrawOperator();
         uint256 nBalanceAfter = updateProtocolBalance(_vaultProtocol);
 
         uint256 yield;
-        if (nBalanceAfter > nBalanceBefore) {
-            yield = nBalanceAfter.sub(nBalanceBefore);
+        uint256 calcBalanceAfter = nBalanceBefore.add(totalDeposit).sub(totalWithdraw);
+        if (nBalanceAfter > calcBalanceAfter) {
+            yield = nBalanceAfter.sub(calcBalanceAfter);
         }
-
-        PoolToken poolToken = PoolToken(protocols[_vaultProtocol].poolToken);
 
         if (yield > 0) {
             createYieldDistribution(poolToken, yield);
         }
     }
-    
+
 }
