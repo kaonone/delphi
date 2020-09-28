@@ -36,7 +36,7 @@ contract VaultPoolToken is PoolToken, IOperableToken {
     }
 
     function distributionBalanceOf(address account) public view returns(uint256) {
-        return balanceOf(account).sub(onHoldAmount[account]);
+        return balanceOf(account).add(toBeMinted).sub(onHoldAmount[account]);
     }
 
     function distributionTotalSupply() public view returns(uint256){
