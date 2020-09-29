@@ -437,38 +437,90 @@ contract("VaultSavings", async ([_, owner, user1, user2, user3, defiops, protoco
             expect(unclaimedTokens.toNumber(), "Yield was not distributed for user1 (second case)").to.equal(29);
 
             user1PoolBalance = await poolToken.balanceOf(user1, {from: user1});
-            expect(user1PoolBalance.toNumber(), "No new pool tokens should be minted for user1 (seond case)").to.equal(116);
+            expect(user1PoolBalance.toNumber(), "No new pool tokens should be minted for user1 (second case)").to.equal(116);
 
             //User2: 0 LP + 0 LP yield
             unclaimedTokens = await poolToken.calculateUnclaimedDistributions(user2, {from:owner});
             expect(unclaimedTokens.toNumber(), "Yield should not be distributed for user2 (second case)").to.equal(0);
 
             user2PoolBalance = await poolToken.balanceOf(user2, {from: user2});
-            expect(user2PoolBalance.toNumber(), "No new pool tokens should be minted for user1 (seond case)").to.equal(0);
+            expect(user2PoolBalance.toNumber(), "No new pool tokens should be minted for user1 (second case)").to.equal(0);
 
             //User3: 20 LP + 5 LP yield
             unclaimedTokens = await poolToken.calculateUnclaimedDistributions(user3, {from:owner});
             expect(unclaimedTokens.toNumber(), "Yield was not distributed for user1 (second case)").to.equal(5);
 
             user3PoolBalance = await poolToken.balanceOf(user3, {from: user3});
-            expect(user3PoolBalance.toNumber(), "No new pool tokens should be minted for user1 (seond case)").to.equal(20);
+            expect(user3PoolBalance.toNumber(), "No new pool tokens should be minted for user1 (second case)").to.equal(20);
 
             //Users claim yield
             await poolToken.methods['claimDistributions(address)'](user1, {from: user1});
             await poolToken.methods['claimDistributions(address)'](user3, {from: user3});
 
+            //All LP tokens are claimed
+            //116 LP + 29 LP yield
+            user1PoolBalance = await poolToken.balanceOf(user1, {from: user1});
+            expect(user1PoolBalance.toNumber(), "Incorrect LP balance for user1 (second case)").to.equal(145);
+
+            //20 LP + 5 LP yield
+            user3PoolBalance = await poolToken.balanceOf(user3, {from: user3});
+            expect(user3PoolBalance.toNumber(), "Incorrect LP balance for user3 (second case)").to.equal(25);
+
         //Third case
-            //User1 requests particular withdraw - LP for requests creation are sent to the protocol
+            //User1 requests particular withdraw - LP tokens are sent to the protocol and burned
+            await vaultSavings.withdraw(vaultProtocol.address, dai.address, 45, 45, {from:user1});
+
+            user1PoolBalance = await poolToken.balanceOf(user1, {from: user1});
+            expect(user1PoolBalance.toNumber(), "User1 hasn't sent LP tokens to the protocol (third case)").to.equal(100);
+
+            poolBalance = await poolToken.balanceOf(vaultSavings.address, {from: owner});
+            expect(poolBalance.toNumber(), "Should be no pool tokens in VaultSavings").to.equal(0);
+            poolBalance = await poolToken.balanceOf(poolToken.address, {from: owner});
+            expect(poolBalance.toNumber(), "Pool tokens are not burned").to.equal(0);
+
 
             //Add yield to the protocol
+            //100 LP + 25 LP -> 4:1 -> 25 LP tokens yield -> 20 LP + 5 LP
+            await dai.transfer(protocolStub, 25, {from:owner});
 
             //Distribute yield
+            await blockTimeTravel(await vaultSavings.DISTRIBUTION_AGGREGATION_PERIOD());
+            await vaultSavings.distributeYield({from:defiops});
 
-            //Yield from pool is distributed before the request resolving (user1 and user3 receive yield according to their LP tokens amounts)
+            //Yield from pool is distributed before the request resolving
+            //user1 and user3 can claim yield according to their LP tokens amounts
+
+            //user1 gets the amount according to available LP tokens (100)
+            //user1: 100 LP + 20 LP yield
+            unclaimedTokens = await poolToken.calculateUnclaimedDistributions(user1, {from:owner});
+            expect(unclaimedTokens.toNumber(), "Yield was not distributed for user1 (third case)").to.equal(20);
+
+            user1PoolBalance = await poolToken.balanceOf(user1, {from: user1});
+            expect(user1PoolBalance.toNumber(), "No new pool tokens should be minted for user1 (third case)").to.equal(100);
+
+            //User3: 25 LP + 5 LP yield
+            unclaimedTokens = await poolToken.calculateUnclaimedDistributions(user3, {from:owner});
+            expect(unclaimedTokens.toNumber(), "Yield was not distributed for user3 (third case)").to.equal(5);
+
+            user3PoolBalance = await poolToken.balanceOf(user3, {from: user3});
+            expect(user3PoolBalance.toNumber(), "No new pool tokens should be minted for user3 (third case)").to.equal(25);
 
             //Operator resolves withdraw requests
+            await vaultSavings.handleWithdrawRequests(vaultProtocol.address, {from: defiops});
             
             //Unclaimed amounts are not changed
+            unclaimedTokens = await poolToken.calculateUnclaimedDistributions(user1, {from:owner});
+            expect(unclaimedTokens.toNumber(), "Yield was changed for user1 (third case)").to.equal(20);
+
+            unclaimedTokens = await poolToken.calculateUnclaimedDistributions(user3, {from:owner});
+            expect(unclaimedTokens.toNumber(), "Yield was changed for user3 (third case)").to.equal(5);
+
+            //User1 claimes requested coins
+            balanceBefore = await dai.balanceOf(user1);
+            await vaultSavings.claimAllRequested(vaultProtocol.address, {from:user1});
+            balanceAfter = await dai.balanceOf(user1);
+
+            expect(balanceAfter.sub(balanceBefore).toNumber(), "Requested tokens are not claimed by user1").to.equal(45);
         });
 
     });
