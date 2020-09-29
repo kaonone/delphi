@@ -5,6 +5,7 @@ import "../../interfaces/defi/IDefiStrategy.sol";
 import "../../interfaces/defi/ICurveFiDeposit.sol";
 import "../../interfaces/defi/ICurveFiDeposit_Y.sol";
 import "../../interfaces/defi/ICurveFiLiquidityGauge.sol";
+import "../../interfaces/defi/ICurveFiMinter.sol";
 import "../../interfaces/defi/ICurveFiSwap.sol";
 
 import "../../interfaces/defi/IUniswap.sol";
@@ -16,6 +17,7 @@ contract CurveFiStablecoinStrategy is VaultProtocol, IDefiStrategy {
     IERC20 public curveFiToken;
     ICurveFiLiquidityGauge public curveFiLPGauge;
     ICurveFiSwap public curveFiSwap;
+    ICurveFiMinter public curveFiMinter;
     uint256 public slippageMultiplier;
     address public crvToken;
     address public wethToken; // used for crv <> weth <> dai route
@@ -41,11 +43,12 @@ contract CurveFiStablecoinStrategy is VaultProtocol, IDefiStrategy {
         daiInd = _daiInd;
     }
 
-    function setProtocol(address _depositContract, address _liquidityGauge, address _crvToken, address _uniswapAddress, address _wethToken) public onlyDefiOperator {
+    function setProtocol(address _depositContract, address _liquidityGauge, address _curveFiMinter, address _crvToken, address _uniswapAddress, address _wethToken) public onlyDefiOperator {
         require(_depositContract != address(0), "Incorrect deposit contract address");
 
         curveFiDeposit = ICurveFiDeposit(_depositContract);
         curveFiLPGauge = ICurveFiLiquidityGauge(_liquidityGauge);
+        curveFiMinter = ICurveFiMinter(_curveFiMinter);
         curveFiSwap = ICurveFiSwap(curveFiDeposit.curve());
         crvToken = _crvToken;
 
@@ -130,6 +133,9 @@ contract CurveFiStablecoinStrategy is VaultProtocol, IDefiStrategy {
 
     function performStrategy() public onlyDefiOperator {
         address dai = registeredVaultTokens[daiInd];
+
+        claimRewardsFromProtocol();
+
         uint256 _crv = IERC20(crvToken).balanceOf(address(this));
         if (_crv > 0) {
             IERC20(crvToken).safeApprove(uniswapAddress, 0);
@@ -162,6 +168,10 @@ contract CurveFiStablecoinStrategy is VaultProtocol, IDefiStrategy {
         uint256 notStaked = curveFiToken.balanceOf(address(this));
         uint256 staked = curveFiLPGauge.balanceOf(address(this));
         return notStaked.add(staked);
+    }
+
+    function claimRewardsFromProtocol() internal {
+        curveFiMinter.mint(address(curveFiLPGauge));
     }
 
     function balanceOfAll() public returns(uint256[] memory balances) {
