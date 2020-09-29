@@ -197,6 +197,7 @@ contract VaultProtocol is Module, IVaultProtocol, DefiOperatorRole {
     }
 
     function claimRequested(address _user) public {
+        if (balancesToClaim[_user].length == 0) return;
         for (uint256 i = 0; i < balancesToClaim[_user].length; i++) {
             address token = balancesToClaim[_user][i].depositedToken;
             uint256 indReg = tokenRegisteredInd(token);

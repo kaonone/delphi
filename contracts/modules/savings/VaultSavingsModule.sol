@@ -89,7 +89,7 @@ contract VaultSavingsModule is SavingsModule, IVaultSavings, DefiOperatorRole {
         IVaultProtocol(_protocol).withdrawFromVault(_msgSender(), token, dnAmount);
 
         PoolToken poolToken = PoolToken(protocols[_protocol].poolToken);
-        poolToken.burnFrom(_msgSender(), dnAmount);
+        poolToken.burnFrom(_msgSender(), nAmount);
         emit WithdrawToken(_protocol, token, dnAmount);
         emit Withdraw(_protocol, _msgSender(), dnAmount, 0);
 
@@ -111,16 +111,10 @@ contract VaultSavingsModule is SavingsModule, IVaultSavings, DefiOperatorRole {
         return 0;
     }
 
-    function claimWithdraw(address _vaultProtocol, address _token, uint256 _amount)
-    public //operationAllowed(IAccessModule.Operation.Withdraw)
-    returns(uint256)
+    function claimAllRequested(address _vaultProtocol) public
     {
-        //stab
-
-        //The caller claims funds from the VaultProtocol after the fullfilled request.
-        //Tokens are simply transferred from the VaultProtocol
-        
-        return 0;
+        require(isProtocolRegistered(_vaultProtocol), "Protocol is not registered");
+        IVaultProtocol(_vaultProtocol).claimRequested(_msgSender());
     }
 
     function handleWithdrawRequests(address _vaultProtocol) public onlyDefiOperator {
@@ -143,5 +137,4 @@ contract VaultSavingsModule is SavingsModule, IVaultSavings, DefiOperatorRole {
             createYieldDistribution(poolToken, yield);
         }
     }
-
 }

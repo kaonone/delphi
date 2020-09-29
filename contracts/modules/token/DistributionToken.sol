@@ -27,7 +27,7 @@ contract DistributionToken is ERC20, ERC20Mintable {
     uint256 internal toBeMinted;
 
     function distribute(uint256 amount) external onlyMinter {
-        distributionAccumulator = distributionAccumulator.add(amount);
+        distributionAccumulator = distributionAccumulator.add(amount);        
         emit DistributionAccumulatorIncreased(amount);
         _createDistributionIfReady();
     }

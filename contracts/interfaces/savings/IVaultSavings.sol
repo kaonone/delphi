@@ -8,5 +8,5 @@ contract IVaultSavings is ISavingsModule {
     function quickWithdraw(address _vaultProtocol, address _token, uint256 _amount) external returns(uint256);
     function handleWithdrawRequests(address _vaultProtocol) external;
 
-    function claimWithdraw(address _vaultProtocol, address _token, uint256 _amount) external returns(uint256);
+    function claimAllRequested(address _vaultProtocol) external;
 }

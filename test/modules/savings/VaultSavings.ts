@@ -16,6 +16,7 @@ const { expect, should } = require('chai');
 const expectRevert= require("../../utils/expectRevert");
 const expectEqualBN = require("../../utils/expectEqualBN");
 const w3random = require("../../utils/w3random");
+const advanceBlockAtTime = require("../../utils/advanceBlockAtTime");
 
 const ERC20 = artifacts.require("TestERC20");
 
@@ -35,6 +36,14 @@ contract("VaultSavings", async ([_, owner, user1, user2, user3, defiops, protoco
     let busd: TestErc20Instance;
     let pool: PoolInstance;
     let accessModule: AccessModuleInstance;
+
+
+    let blockTimeTravel = async(delta: BN) => {
+        const block1 = await web3.eth.getBlock("pending");
+        let tm = new BN(block1.timestamp);
+
+        await advanceBlockAtTime(tm.add(delta).add(new BN(5)).toNumber());
+    }
 
 
     before(async () => {
@@ -288,6 +297,9 @@ contract("VaultSavings", async ([_, owner, user1, user2, user3, defiops, protoco
 
 
     describe('Full cycle', () => {
+        beforeEach(async () => {
+            dai.approve(vaultProtocol.address, 10000, {from:protocolStub});
+        });
         afterEach(async () => {
             await globalSnap.revert();
         });
@@ -383,36 +395,80 @@ contract("VaultSavings", async ([_, owner, user1, user2, user3, defiops, protoco
             //50 LP tokens + 10 LP yield
             expect(user2PoolBalance.toNumber(), "No new pool tokens minted for user2").to.equal(60);
 
+    //Second case
+            //Make sure, that all LP tokens are working
+            await vaultSavings.handleWithdrawRequests(vaultProtocol.address, {from: defiops});
+            
+        //Withdraw by user 2
+            await vaultSavings.withdraw(vaultProtocol.address, dai.address, 60, 60, {from:user2});
+            
+            //LP tokens from user2 are burned
+            user2PoolBalance = await poolToken.balanceOf(user2, {from: user2});
+            expect(user2PoolBalance.toNumber(), "LP tokens were not burned for user2").to.equal(0);
 
+            //Withdraw request is created
+            let requestedAmount = await vaultProtocol.amountRequested(user2, dai.address);
+            expect(requestedAmount.toNumber(), "Request should be created").to.equal(60);
+  
+        //Add yield to the protocol
+            //For ease of calculations: 34 = 29 + 5 -> in proportion for 116/136 (user1) and 20/136 (user3)
+            await dai.transfer(protocolStub, 34, {from:owner});
 
+            //Request handling
 
-        //Second case
-            //Add yield to the protocol
-            //Add yield for the strategy to the protocol
+            //Imitate distribution period
+            await blockTimeTravel(await vaultSavings.DISTRIBUTION_AGGREGATION_PERIOD());
+            
+            await vaultSavings.handleWithdrawRequests(vaultProtocol.address, {from: defiops});
 
-            //Withdraw by user 2 - LP for requests creation are sent to the protocol
+            //User2 can claim his requested tokens
+            let claimableTokens = await vaultProtocol.claimableAmount(user2, dai.address);
+            expect(claimableTokens.toNumber(), "No tokens can be claimed by user2").to.equal(60);
 
+            let balanceBefore = await dai.balanceOf(user2);
+            await vaultSavings.claimAllRequested(vaultProtocol.address, {from:user2});
+            let balanceAfter = await dai.balanceOf(user2);
 
-            //Operator checks yield from strategy
-            //Yield distribution from strategy (user2 is without LP tokens - only 1 and 3 receive yield)
+            expect(balanceAfter.sub(balanceBefore).toNumber(), "Requested tokens are not claimed by user2").to.equal(60);
 
-            //Yield from pool is distributed before the request resolving (user2 is without LP tokens - only 1 and 3 receive yield)
-            //Operator resolves withdraw requests
+            //Yield distribution (user2 is without LP tokens - only 1 and 3 receive yield)
+            //User1: 116 LP + 29 LP yield
+            unclaimedTokens = await poolToken.calculateUnclaimedDistributions(user1, {from:owner});
+            expect(unclaimedTokens.toNumber(), "Yield was not distributed for user1 (second case)").to.equal(29);
 
-            //User2 can claim the withdraw
+            user1PoolBalance = await poolToken.balanceOf(user1, {from: user1});
+            expect(user1PoolBalance.toNumber(), "No new pool tokens should be minted for user1 (seond case)").to.equal(116);
+
+            //User2: 0 LP + 0 LP yield
+            unclaimedTokens = await poolToken.calculateUnclaimedDistributions(user2, {from:owner});
+            expect(unclaimedTokens.toNumber(), "Yield should not be distributed for user2 (second case)").to.equal(0);
+
+            user2PoolBalance = await poolToken.balanceOf(user2, {from: user2});
+            expect(user2PoolBalance.toNumber(), "No new pool tokens should be minted for user1 (seond case)").to.equal(0);
+
+            //User3: 20 LP + 5 LP yield
+            unclaimedTokens = await poolToken.calculateUnclaimedDistributions(user3, {from:owner});
+            expect(unclaimedTokens.toNumber(), "Yield was not distributed for user1 (second case)").to.equal(5);
+
+            user3PoolBalance = await poolToken.balanceOf(user3, {from: user3});
+            expect(user3PoolBalance.toNumber(), "No new pool tokens should be minted for user1 (seond case)").to.equal(20);
+
+            //Users claim yield
+            await poolToken.methods['claimDistributions(address)'](user1, {from: user1});
+            await poolToken.methods['claimDistributions(address)'](user3, {from: user3});
 
         //Third case
-            //Add yield to the protocol
-            //Add yield for the strategy to the protocol
-
             //User1 requests particular withdraw - LP for requests creation are sent to the protocol
 
+            //Add yield to the protocol
 
-            //Operator checks yield from strategy
-            //Yield distribution from strategy (user1 and user3 receive yield according to their LP tokens amounts)
+            //Distribute yield
 
             //Yield from pool is distributed before the request resolving (user1 and user3 receive yield according to their LP tokens amounts)
+
             //Operator resolves withdraw requests
+            
+            //Unclaimed amounts are not changed
         });
 
     });

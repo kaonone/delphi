@@ -414,6 +414,13 @@ contract SavingsModule is Module, ISavingsModule, AccessChecker, RewardDistribut
         return currentBalance;
     }
 
+    function isProtocolRegistered(address _protocol) internal view returns(bool) {
+        for (uint256 i = 0; i < registeredProtocols.length; i++){
+            if (address(registeredProtocols[i]) == _protocol) return true;
+        }
+        return false;
+    }
+
     function isTokenRegistered(address token) private view returns(bool) {
         for (uint256 i = 0; i < registeredTokens.length; i++){
             if (registeredTokens[i] == token) return true;
