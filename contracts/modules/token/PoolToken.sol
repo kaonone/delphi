@@ -26,8 +26,7 @@ contract PoolToken is Module, ERC20, ERC20Detailed, ERC20Mintable, ERC20Burnable
      * @dev Overrides ERC20Burnable burnFrom to allow unlimited transfers by SavingsModule
      */
     function burnFrom(address from, uint256 value) public {
-        address savingsModule = getModuleAddress(MODULE_SAVINGS);
-        if (_msgSender() == savingsModule) {
+        if (isMinter(_msgSender())) {
             //Skip decrease allowance
             _burn(from, value);
         }else{
@@ -45,7 +44,7 @@ contract PoolToken is Module, ERC20, ERC20Detailed, ERC20Mintable, ERC20Burnable
     } 
 
     function userBalanceChanged(address account) internal {
-        IPoolTokenBalanceChangeRecipient savings = IPoolTokenBalanceChangeRecipient(getModuleAddress(MODULE_SAVINGS));
+        IPoolTokenBalanceChangeRecipient savings = IPoolTokenBalanceChangeRecipient(getModuleAddress(MODULE_REWARD_DISTR));
         savings.poolTokenBalanceChanged(account);
     }
 

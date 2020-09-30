@@ -4,12 +4,11 @@ import "@openzeppelin/contracts-ethereum-package/contracts/math/SafeMath.sol";
 import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/SafeERC20.sol";
 import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/IERC20.sol";
 import "../../common/Base.sol";
-import "../../interfaces/token/IPoolTokenBalanceChangeRecipient.sol";
 import "../../interfaces/defi/IDefiProtocol.sol";
 import "../access/AccessChecker.sol";
 import "../token/PoolToken.sol";
 
-contract RewardDistributions is Base, IPoolTokenBalanceChangeRecipient, AccessChecker {
+contract RewardDistributions is Base, AccessChecker {
     using SafeMath for uint256;
 
     struct RewardTokenDistribution {
