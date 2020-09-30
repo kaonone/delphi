@@ -11,6 +11,7 @@ contract ModuleNames {
     string internal constant MODULE_STAKING           = "staking";
     string internal constant MODULE_DCA               = "dca";
     string internal constant MODULE_REWARD            = "reward";
+    string internal constant MODULE_REWARD_DISTR      = "rewardDistributions";
 
     // Pool tokens
     string internal constant TOKEN_AKRO               = "akro";    
