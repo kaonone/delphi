@@ -13,7 +13,6 @@ import "./RewardDistributions.sol";
 
 contract SavingsModule is Module, AccessChecker, RewardDistributions, CapperRole {
     uint256 constant MAX_UINT256 = uint256(-1);
-    uint256 public constant DISTRIBUTION_AGGREGATION_PERIOD = 24*60*60;
 
     event ProtocolRegistered(address protocol, address poolToken);
     event YieldDistribution(address indexed poolToken, uint256 amount);
@@ -395,25 +394,6 @@ contract SavingsModule is Module, AccessChecker, RewardDistributions, CapperRole
         }
     }
 
-    /** 
-     * @notice Distributes reward tokens. May be called by bot, if there was no deposits/withdrawals
-     */
-    function distributeRewards() public {
-        for(uint256 i=0; i<registeredProtocols.length; i++) {
-            distributeRewardIfRequired(address(registeredProtocols[i]));
-        }
-    }
-
-    // function distributeRewards(address _protocol) public {
-    //     distributeRewardIfRequired(_protocol);
-    // }
-
-    function distributeRewardsForced(address _protocol) public onlyOwner {
-        ProtocolInfo storage pi = protocols[_protocol];
-        pi.lastRewardDistribution = now;
-        distributeReward(_protocol);
-    }
-
     function userCap(address _protocol, address user) public view returns(uint256) {
         // uint256 cap = protocols[_protocol].userCap[user];
         // if(cap == 0){
@@ -497,13 +477,6 @@ contract SavingsModule is Module, AccessChecker, RewardDistributions, CapperRole
         emit YieldDistribution(address(poolToken), yield);
     }
 
-    function distributeRewardIfRequired(address _protocol) internal {
-        if(!isRewardDistributionRequired(_protocol)) return;
-        ProtocolInfo storage pi = protocols[_protocol];
-        pi.lastRewardDistribution = now;
-        distributeReward(_protocol);
-    }
-
     /**
      * @notice Updates balance with result of deposit/withdraw
      * @dev MUST call this AFTER deposit/withdraw from protocol
@@ -529,10 +502,6 @@ contract SavingsModule is Module, AccessChecker, RewardDistributions, CapperRole
             if (address(protocols[address(protocol)].poolToken) == token) return true;
         }
         return false;
-    }
-
-    function isRewardDistributionRequired(address _protocol) internal view returns(bool) {
-        return now.sub(protocols[_protocol].lastRewardDistribution) > DISTRIBUTION_AGGREGATION_PERIOD;
     }
 
     function normalizeTokenAmount(address token, uint256 amount) private view returns(uint256) {
