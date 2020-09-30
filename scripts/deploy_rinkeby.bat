@@ -53,12 +53,12 @@ goto :done
 rem === ACTIONS ===
 :show
 echo npx oz create RewardDistributionModule --network rinkeby --init "initialize(address _pool)" --args %MODULE_POOL%
-echo npx oz send-tx --to %MODULE_POOL% --network rinkeby --method set --args "investing, %MODULE_INVESTING%, false"
-echo npx oz send-tx --to %PROTOCOL_COMPOUND_DAI% --network rinkeby --method addDefiOperator --args %MODULE_SAVINGS%
-echo npx oz send-tx --to %PROTOCOL_COMPOUND_USDC% --network rinkeby --method addDefiOperator --args %MODULE_SAVINGS%
-echo npx oz send-tx --to %PROTOCOL_CURVEFY_Y% --network rinkeby --method addDefiOperator --args %MODULE_SAVINGS%
-echo npx oz send-tx --to %PROTOCOL_CURVEFY_SBTC% --network rinkeby --method addDefiOperator --args %MODULE_SAVINGS%
-echo npx oz send-tx --to %PROTOCOL_CURVEFY_SUSD% --network rinkeby --method addDefiOperator --args %MODULE_SAVINGS%
+echo npx oz send-tx --to %MODULE_POOL% --network rinkeby --method set --args "rewardDistributions, %MODULE_REWARD_DISTR%, false"
+echo npx oz send-tx --to %PROTOCOL_COMPOUND_DAI% --network rinkeby --method addDefiOperator --args %MODULE_REWARD_DISTR%
+echo npx oz send-tx --to %PROTOCOL_COMPOUND_USDC% --network rinkeby --method addDefiOperator --args %MODULE_REWARD_DISTR%
+rem echo npx oz send-tx --to %PROTOCOL_CURVEFY_Y% --network rinkeby --method addDefiOperator --args %MODULE_REWARD_DISTR%
+rem echo npx oz send-tx --to %PROTOCOL_CURVEFY_SBTC% --network rinkeby --method addDefiOperator --args %MODULE_REWARD_DISTR%
+echo npx oz send-tx --to %PROTOCOL_CURVEFY_SUSD% --network rinkeby --method addDefiOperator --args %MODULE_REWARD_DISTR%
 goto :done
 
 
@@ -115,6 +115,7 @@ call npx oz send-tx --to %MODULE_POOL% --network rinkeby --method set --args "sa
 call npx oz send-tx --to %MODULE_POOL% --network rinkeby --method set --args "staking, %MODULE_STAKING%, false"
 call npx oz send-tx --to %MODULE_POOL% --network rinkeby --method set --args "stakingAdel, %MODULE_STAKING_ADEL%, false"
 call npx oz send-tx --to %MODULE_POOL% --network rinkeby --method set --args "reward, %MODULE_REWARD%, false"
+call npx oz send-tx --to %MODULE_POOL% --network rinkeby --method set --args "rewardDistributions, %MODULE_REWARD_DISTR%, false"
 call npx oz send-tx --to %MODULE_POOL% --network rinkeby --method set --args "akro, %EXT_TOKEN_AKRO%, false"
 call npx oz send-tx --to %MODULE_POOL% --network rinkeby --method set --args "adel, %EXT_TOKEN_ADEL%, false"
 goto :done
