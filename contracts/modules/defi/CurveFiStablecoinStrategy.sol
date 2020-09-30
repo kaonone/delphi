@@ -31,8 +31,8 @@ contract CurveFiStablecoinStrategy is VaultProtocol, IDefiStrategy {
 
 
     //Register stablecoins contracts addresses
-    function initialize(address _pool, address _vaultPoolToken, address[] memory tokens, uint256 _daiInd) public initializer {
-        VaultProtocol.initialize(_pool, _vaultPoolToken);
+    function initialize(address _pool, address[] memory tokens, uint256 _daiInd) public initializer {
+        VaultProtocol.initialize(_pool);
         for (uint256 i = 0; i < tokens.length; i++) {
             registeredVaultTokens.push(tokens[i]);
             claimableTokens.push(0);
@@ -148,20 +148,8 @@ contract CurveFiStablecoinStrategy is VaultProtocol, IDefiStrategy {
 
             IUniswap(uniswapAddress).swapExactTokensForTokens(_crv, uint256(0), path, address(this), now.add(1800));
         }
-
-
-
-        uint256 _dai = IERC20(dai).balanceOf(address(this));
-        yieldInDai = yieldInDai.add(_dai);
-    }
-
-    function withdrawStrategyYield(address beneficiary, uint256 _amount) public onlyDefiOperator {
-        require(beneficiary != address(0), "Incorrect address to withdraw");
-        require(yieldInDai >= _amount, "Incorrect amount to withdraw");
-
-        address dai = registeredVaultTokens[daiInd];
-        IERC20(dai).safeTransfer(beneficiary, yieldInDai);
-        yieldInDai = yieldInDai.sub(_amount);
+        //new dai tokens will be transferred to this procol, they will be deposited by the operator on the next round
+        //new LP tokens will be distributed automatically after the operator action
     }
 
     function curveFiTokenBalance() internal view returns(uint256) {

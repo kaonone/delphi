@@ -59,15 +59,17 @@ contract("VaultSavings", async ([_, owner, user1, user2, user3, defiops, protoco
         await (<any> vaultSavings).methods['initialize(address)'](pool.address, {from: owner});
         await vaultSavings.addDefiOperator(defiops, {from:owner});
 
-        await pool.set("savings", vaultSavings.address, true, {from:owner});
+        await pool.set("vault", vaultSavings.address, true, {from:owner});
 
         poolToken = await PoolToken.new({from: owner});
         await (<any> poolToken).methods['initialize(address,string,string)'](pool.address, "VaultSavings", "VLT", {from: owner});
 
         vaultProtocol = await VaultProtocol.new({from:owner});
-        await (<any> vaultProtocol).methods['initialize(address,address)'](pool.address, poolToken.address, {from: owner});
+        await (<any> vaultProtocol).methods['initialize(address)'](pool.address, {from: owner});
         await vaultProtocol.addDefiOperator(vaultSavings.address, {from:owner});
         await vaultProtocol.addDefiOperator(defiops, {from:owner});
+
+        await pool.set("strategy", vaultProtocol.address, true, {from:owner});
 
         await poolToken.addMinter(vaultSavings.address, {from:owner});
         await poolToken.addMinter(vaultProtocol.address, {from:owner});
@@ -114,7 +116,6 @@ contract("VaultSavings", async ([_, owner, user1, user2, user3, defiops, protoco
         });
 
         it('User gets LP tokens after the deposit through VaultSavings', async () => {
-            
             await (<any> vaultSavings).methods['deposit(address,address[],uint256[])'](vaultProtocol.address, [dai.address], [80], {from:user1});
 
             let userPoolBalance = await poolToken.balanceOf(user1, {from: user1});

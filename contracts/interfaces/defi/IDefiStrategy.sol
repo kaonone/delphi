@@ -5,5 +5,4 @@ import "./IDefiProtocol.sol";
 contract IDefiStrategy is IDefiProtocol { 
 
     function performStrategy() external;
-    function withdrawStrategyYield(address beneficiary, uint256 _amount) external;
 }

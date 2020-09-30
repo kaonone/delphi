@@ -1,7 +1,9 @@
 import { 
     VaultProtocolStubContract, VaultProtocolStubInstance,
     VaultPoolTokenContract, VaultPoolTokenInstance,
-    TestErc20Contract, TestErc20Instance
+    PoolContract, PoolInstance,
+    TestErc20Contract, TestErc20Instance,
+    VaultSavingsModuleContract, VaultSavingsModuleInstance
 } from "../../../types/truffle-contracts/index";
 
 // tslint:disable-next-line:no-var-requires
@@ -16,27 +18,40 @@ const w3random = require("../../utils/w3random");
 
 const ERC20 = artifacts.require("TestERC20");
 
+const Pool = artifacts.require("Pool");
+const VaultSavings = artifacts.require("VaultSavingsModule");
 const VaultProtocol = artifacts.require("VaultProtocolStub");
 const PoolToken = artifacts.require("VaultPoolToken");
 
-contract("VaultProtocol", async ([_, owner, user1, user2, user3, pool, defiops, protocolStub, ...otherAccounts]) => {
+contract("VaultProtocol", async ([_, owner, user1, user2, user3, defiops, protocolStub, ...otherAccounts]) => {
     let globalSnap: Snapshot;
     let vaultProtocol: VaultProtocolStubInstance;
     let dai: TestErc20Instance;
     let usdc: TestErc20Instance;
     let busd: TestErc20Instance;
     let poolToken: VaultPoolTokenInstance;
+    let pool: PoolInstance;
+    let vaultSavings: VaultSavingsModuleInstance;
 
 
     before(async () => {
-        poolToken = await PoolToken.new({from: owner});
-        await (<any> poolToken).methods['initialize(address,string,string)'](pool, "VaultSavings", "VLT", {from: owner});
+        pool = await Pool.new({from:owner});
+        await (<any> pool).methods['initialize()']({from: owner});
+
+        vaultSavings = await VaultSavings.new({from: owner});
+        await (<any> vaultSavings).methods['initialize(address)'](pool.address, {from: owner});
+        await vaultSavings.addDefiOperator(defiops, {from:owner});
+
+        await pool.set("vault", vaultSavings.address, true, {from:owner});
 
         vaultProtocol = await VaultProtocol.new({from:owner});
-        await (<any> vaultProtocol).methods['initialize(address,address)'](pool, poolToken.address, {from: owner});
+        await (<any> vaultProtocol).methods['initialize(address)'](pool.address, {from: owner});
         await vaultProtocol.addDefiOperator(defiops, {from:owner});
 
+        poolToken = await PoolToken.new({from: owner});
+        await (<any> poolToken).methods['initialize(address,string,string)'](pool.address, "VaultSavings", "VLT", {from: owner});
 
+        await poolToken.addMinter(vaultSavings.address, {from:owner});
         await poolToken.addMinter(vaultProtocol.address, {from:owner});
         await poolToken.addMinter(defiops, {from:owner});
         
@@ -64,6 +79,8 @@ contract("VaultProtocol", async ([_, owner, user1, user2, user3, pool, defiops, 
 
         await vaultProtocol.registerTokens([dai.address, usdc.address, busd.address], {from: defiops})
         await vaultProtocol.setProtocol(protocolStub, {from: defiops});
+
+        await vaultSavings.registerProtocol(vaultProtocol.address, poolToken.address, {from: owner});
 
         globalSnap = await Snapshot.create(web3.currentProvider);
     });

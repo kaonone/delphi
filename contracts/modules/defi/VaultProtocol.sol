@@ -5,6 +5,7 @@ import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/SafeERC20
 import "@openzeppelin/contracts-ethereum-package/contracts/math/SafeMath.sol";
 
 import "../../interfaces/defi/IVaultProtocol.sol";
+import "../../interfaces/savings/ISavingsModule.sol";
 import "../../interfaces/token/IOperableToken.sol";
 import "../../common/Module.sol";
 import "./DefiOperatorRole.sol";
@@ -33,15 +34,10 @@ contract VaultProtocol is Module, IVaultProtocol, DefiOperatorRole {
     mapping(address => DepositData[]) internal balancesToClaim;
     uint256[] internal claimableTokens;
 
-    address public vaultPoolToken;
-
-    function initialize(address _pool, address _vaultPoolToken) public initializer {
+    function initialize(address _pool) public initializer {
         Module.initialize(_pool);
         DefiOperatorRole.initialize(_msgSender());
-
-        vaultPoolToken = _vaultPoolToken;
     }
-
 
 //IVaultProtocol methods
     function depositToVault(address _user, address _token, uint256 _amount) public onlyDefiOperator {
@@ -70,8 +66,9 @@ contract VaultProtocol is Module, IVaultProtocol, DefiOperatorRole {
                 depositedAmount: _amount
             }) );
         }
-
-        IOperableToken(vaultPoolToken).increaseOnHoldValue(_user, _amount);
+        ISavingsModule vaultSavings = ISavingsModule(getModuleAddress(MODULE_VAULT));
+        IOperableToken vaultPoolToken = IOperableToken(vaultSavings.poolTokenByProtocol(address(this)));
+        vaultPoolToken.increaseOnHoldValue(_user, _amount);
 
         emit DepositToVault(_user, _token, _amount);
     }
@@ -348,10 +345,13 @@ contract VaultProtocol is Module, IVaultProtocol, DefiOperatorRole {
     }
 
     function clearOnHoldDeposits() internal onlyDefiOperator {
+        ISavingsModule vaultSavings = ISavingsModule(getModuleAddress(MODULE_VAULT));
+        IOperableToken vaultPoolToken = IOperableToken(vaultSavings.poolTokenByProtocol(address(this)));
+
         for (uint256 i = 0; i < usersDeposited.length; i++) {
             //We can delete the on-hold records now - the real balances will be deposited to protocol
             for (uint256 j = 0; j < balancesOnHold[usersDeposited[i]].length; j++) {
-                IOperableToken(vaultPoolToken).decreaseOnHoldValue(usersDeposited[i], balancesOnHold[usersDeposited[i]][j].depositedAmount);
+                vaultPoolToken.decreaseOnHoldValue(usersDeposited[i], balancesOnHold[usersDeposited[i]][j].depositedAmount);
             }
             delete balancesOnHold[usersDeposited[i]];
         }

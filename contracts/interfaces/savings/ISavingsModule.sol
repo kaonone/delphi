@@ -50,4 +50,6 @@ contract ISavingsModule {
      * @notice Distributes reward tokens. May be called by bot, if there was no deposits/withdrawals
      */
     function distributeRewards() external;
+
+    function poolTokenByProtocol(address _protocol) external view returns(address);
 }

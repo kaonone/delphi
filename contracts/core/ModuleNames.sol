@@ -10,6 +10,8 @@ contract ModuleNames {
     string internal constant MODULE_INVESTING         = "investing";
     string internal constant MODULE_STAKING           = "staking";
     string internal constant MODULE_DCA               = "dca";
+    string internal constant MODULE_VAULT             = "vault";
+    string internal constant MODULE_STRATEGY          = "strategy";
 
     // External Modules (used to store addresses of external contracts)
     string internal constant CONTRACT_RAY             = "ray";
