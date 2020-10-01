@@ -29,7 +29,7 @@ const YERC20 = artifacts.require("TestYERC20");
 
 const CurveStrategy = artifacts.require("CurveFiStablecoinStrategy");
 const VaultSavings = artifacts.require("VaultSavingsModule");
-const PoolToken = artifacts.require("VaultPoolToken");
+const VaultPoolToken = artifacts.require("VaultPoolToken");
 const Pool = artifacts.require("Pool");
 const AccessModule = artifacts.require("AccessModule");
 
@@ -44,7 +44,7 @@ contract("CurveFiStablecoinStrategy", async ([_, owner, user1, user2, user3, def
     let globalSnap: Snapshot;
     let vaultCurveStrategy: CurveFiStablecoinStrategyInstance;
     let vaultSavings: VaultSavingsModuleInstance;
-    let poolToken: VaultPoolTokenInstance
+    let vaultPoolToken: VaultPoolTokenInstance
     let dai: TestErc20Instance;
     let usdc: TestErc20Instance;
     let busd: TestErc20Instance;
@@ -146,20 +146,15 @@ contract("CurveFiStablecoinStrategy", async ([_, owner, user1, user2, user3, def
         await pool.set("strategy", vaultCurveStrategy.address, true, {from:owner});
 
     //Setup LP token
-        poolToken = await PoolToken.new({from: owner});
-        await (<any> poolToken).methods['initialize(address,string,string)'](pool.address, "VaultSavings", "VLT", {from: owner});
+        vaultPoolToken = await VaultPoolToken.new({from: owner});
+        await (<any> vaultPoolToken).methods['initialize(address,string,string)'](pool.address, "VaultSavings", "VLT", {from: owner});
 
-        await poolToken.addMinter(vaultSavings.address, {from:owner});
-        await poolToken.addMinter(vaultCurveStrategy.address, {from:owner});
-        await poolToken.addMinter(defiops, {from:owner});
+        await vaultPoolToken.addMinter(vaultSavings.address, {from:owner});
+        await vaultPoolToken.addMinter(vaultCurveStrategy.address, {from:owner});
+        await vaultPoolToken.addMinter(defiops, {from:owner});
 
-    console.log("16");
-
-    let a = await vaultCurveStrategy.curveFiTokenBalance({from:owner});
-    console.log(a.toNumber());
-    console.log("16");
     //Register vault strategy
-        await vaultSavings.registerProtocol(vaultCurveStrategy.address, poolToken.address, {from: owner});
+        await vaultSavings.registerProtocol(vaultCurveStrategy.address, vaultPoolToken.address, {from: owner});
 
         //Preliminary balances
         await dai.transfer(user1, 1000, {from:owner});
