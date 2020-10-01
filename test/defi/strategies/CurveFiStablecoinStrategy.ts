@@ -154,6 +154,14 @@ contract("CurveFiStablecoinStrategy", async ([_, owner, user1, user2, user3, def
         await vaultPoolToken.addMinter(defiops, {from:owner});
 
     //Register vault strategy
+        //Add liquidity to have some LP tokens minted
+        await ydai.approve(curveSwap.address, 1000, {from:owner});
+        await yusdc.approve(curveSwap.address, 1000, {from:owner});
+        await ybusd.approve(curveSwap.address, 1000, {from:owner});
+        await ytusd.approve(curveSwap.address, 1000, {from:owner});
+
+        await curveSwap.add_liquidity([100,100,100,100], 0, {from:owner});
+
         await vaultSavings.registerProtocol(vaultCurveStrategy.address, vaultPoolToken.address, {from: owner});
 
         //Preliminary balances
