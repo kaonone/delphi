@@ -203,6 +203,10 @@ BPT WETH/WBTC `0x95ec87ac8211E40a201cE8c5CF53f6BeBbf25aA1`
 * StakingPool `0x6887DF2f4296e8B772cb19479472A16E836dB9e0`
 * StakingPoolAdel `0x1a80540930B869df525981c4231Cd06b0Dcbf668`
 
+* VaultSavingsModule `0x7B851a5819Ea36a96ae5fD7c3b7BD79aD94296b4`
+* CurveFiStablecoinStrategy `0x915f4603576e90Ce838D3a540318A8cf6184EfcE`
+* PoolToken for CurveFiStablecoinStrategy `0xeE4F1428274518AbA59515D21fe40aE38B20a17F`
+
 #### Protocols
 ##### Curve.Fi Y [(y)DAI, (y)USDC, (y)USDT, (y)TUSD] - YFI
 * Protocol CurveFi Y 
