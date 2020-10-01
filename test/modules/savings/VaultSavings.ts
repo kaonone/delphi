@@ -77,13 +77,13 @@ contract("VaultSavings", async ([_, owner, user1, user2, user3, defiops, protoco
 
         //Deposit token 1
         dai = await ERC20.new({from:owner});
-        await dai.initialize("DAI", "DAI", 18, {from:owner})
+        await (<any> dai).methods['initialize(string,string,uint8)']("DAI", "DAI", 18, {from:owner});
         //Deposit token 2
         usdc = await ERC20.new({from:owner});
-        await usdc.initialize("USDC", "USDC", 18, {from:owner})
+        await (<any> usdc).methods['initialize(string,string,uint8)']("USDC", "USDC", 18, {from:owner});
         //Deposit token 3
         busd = await ERC20.new({from:owner});
-        await busd.initialize("BUSD", "BUSD", 18, {from:owner})
+        await (<any> busd).methods['initialize(string,string,uint8)']("BUSD", "BUSD", 18, {from:owner});
 
         await dai.transfer(user1, 1000, {from:owner});
         await dai.transfer(user2, 1000, {from:owner});

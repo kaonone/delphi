@@ -26,10 +26,6 @@ contract CurveFiStablecoinStrategy is VaultProtocol, IDefiStrategy {
     address public uniswapAddress;
     uint256 daiInd;
 
-    //Current yield from the CRV swap to DAI. Should be immidiately distributed by the DeFi operator
-    uint256 yieldInDai;
-
-
     //Register stablecoins contracts addresses
     function initialize(address _pool, address[] memory tokens, uint256 _daiInd) public initializer {
         VaultProtocol.initialize(_pool);
@@ -51,6 +47,8 @@ contract CurveFiStablecoinStrategy is VaultProtocol, IDefiStrategy {
         curveFiMinter = ICurveFiMinter(_curveFiMinter);
         curveFiSwap = ICurveFiSwap(curveFiDeposit.curve());
         crvToken = _crvToken;
+
+        curveFiToken = IERC20(curveFiDeposit.token());
 
         uniswapAddress = _uniswapAddress;
         wethToken = _wethToken;
@@ -162,6 +160,16 @@ contract CurveFiStablecoinStrategy is VaultProtocol, IDefiStrategy {
         curveFiMinter.mint(address(curveFiLPGauge));
     }
 
+    function balanceOf(address token) public returns(uint256) {
+        uint256 tokenIdx = getTokenIndex(token);
+
+        uint256 cfBalance = curveFiTokenBalance();
+        uint256 cfTotalSupply = curveFiToken.totalSupply();
+        uint256 tokenCurveFiBalance = curveFiSwap.balances(int128(tokenIdx));
+        
+        return tokenCurveFiBalance.mul(cfBalance).div(cfTotalSupply);
+    }
+
     function balanceOfAll() public returns(uint256[] memory balances) {
         uint256 cfBalance = curveFiTokenBalance();
         uint256 cfTotalSupply = curveFiToken.totalSupply();
@@ -171,6 +179,19 @@ contract CurveFiStablecoinStrategy is VaultProtocol, IDefiStrategy {
             uint256 tcfBalance = curveFiSwap.balances(int128(i));
             balances[i] = tcfBalance.mul(cfBalance).div(cfTotalSupply);
         }
+    }
+
+    function optimalProportions() public returns(uint256[] memory) {
+        uint256[] memory amounts = balanceOfAll();
+        uint256 summ;
+        for (uint256 i=0; i < registeredVaultTokens.length; i++){
+            amounts[i] = CalcUtils.normalizeAmount(registeredVaultTokens[i], amounts[i]);
+            summ = summ.add(amounts[i]);
+        }
+        for (uint256 i=0; i < registeredVaultTokens.length; i++){
+            amounts[i] = amounts[i].div(summ);
+        }
+        return amounts;
     }
 
     function normalizedBalance() public returns(uint256) {
@@ -189,6 +210,38 @@ contract CurveFiStablecoinStrategy is VaultProtocol, IDefiStrategy {
             amnts[i] = amounts[i];
         }
         return amnts;
+    }
+
+    function getTokenIndex(address token) public view returns(uint256) {
+        for (uint256 i=0; i < registeredVaultTokens.length; i++){
+            if (registeredVaultTokens[i] == token){
+                return i;
+            }
+        }
+        revert("CurveFiYProtocol: token not registered");
+    }
+
+//Stubs
+    function canSwapToToken(address token) external view returns(bool) {
+        return false;
+    }
+
+    function claimRewards() public returns(address[] memory tokens, uint256[] memory amounts) {
+        tokens = new address[](1);
+        amounts = new uint256[](1);
+    }
+
+    function withdrawReward(address token, address user, uint256 amount) public {
+
+    }
+
+    function supportedRewardTokens() external view returns(address[] memory) {
+        address[] memory a = new address[](1);
+        return a;
+    }
+
+    function isSupportedRewardToken(address token) external view returns(bool) {
+        return false;
     }
 
 
