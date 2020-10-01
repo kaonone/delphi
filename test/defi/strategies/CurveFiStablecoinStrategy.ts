@@ -137,7 +137,7 @@ contract("CurveFiStablecoinStrategy", async ([_, owner, user1, user2, user3, def
             {from: owner});
 
         await vaultCurveStrategy.setProtocol(
-            curveDeposit.address, curveGauge.address, curveMinter.address, crvToken.address, uniswap.address, weth.address, 
+            curveDeposit.address, curveGauge.address, curveMinter.address, uniswap.address, weth.address, 
             {from:owner});
 
         await vaultCurveStrategy.addDefiOperator(vaultSavings.address, {from:owner});
@@ -155,7 +155,7 @@ contract("CurveFiStablecoinStrategy", async ([_, owner, user1, user2, user3, def
 
     console.log("16");
 
-    let a = await vaultCurveStrategy.normalizedBalance.call({from:owner});
+    let a = await vaultCurveStrategy.curveFiTokenBalance({from:owner});
     console.log(a.toNumber());
     console.log("16");
     //Register vault strategy

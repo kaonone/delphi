@@ -39,16 +39,20 @@ contract CurveFiStablecoinStrategy is VaultProtocol, IDefiStrategy {
         daiInd = _daiInd;
     }
 
-    function setProtocol(address _depositContract, address _liquidityGauge, address _curveFiMinter, address _crvToken, address _uniswapAddress, address _wethToken) public onlyDefiOperator {
+    function setProtocol(address _depositContract, address _liquidityGauge, address _curveFiMinter, address _uniswapAddress, address _wethToken) public onlyDefiOperator {
         require(_depositContract != address(0), "Incorrect deposit contract address");
 
         curveFiDeposit = ICurveFiDeposit(_depositContract);
         curveFiLPGauge = ICurveFiLiquidityGauge(_liquidityGauge);
         curveFiMinter = ICurveFiMinter(_curveFiMinter);
         curveFiSwap = ICurveFiSwap(curveFiDeposit.curve());
-        crvToken = _crvToken;
 
         curveFiToken = IERC20(curveFiDeposit.token());
+
+        address lpToken = curveFiLPGauge.lp_token();
+        require(lpToken == address(curveFiToken), "CurveFiProtocol: LP tokens do not match");
+
+        crvToken = curveFiLPGauge.crv_token();
 
         uniswapAddress = _uniswapAddress;
         wethToken = _wethToken;
@@ -150,7 +154,7 @@ contract CurveFiStablecoinStrategy is VaultProtocol, IDefiStrategy {
         //new LP tokens will be distributed automatically after the operator action
     }
 
-    function curveFiTokenBalance() internal view returns(uint256) {
+    function curveFiTokenBalance() public view returns(uint256) {
         uint256 notStaked = curveFiToken.balanceOf(address(this));
         uint256 staked = curveFiLPGauge.balanceOf(address(this));
         return notStaked.add(staked);
