@@ -59,6 +59,13 @@ echo npx oz send-tx --to %PROTOCOL_COMPOUND_USDC% --network rinkeby --method add
 rem echo npx oz send-tx --to %PROTOCOL_CURVEFY_Y% --network rinkeby --method addDefiOperator --args %MODULE_REWARD_DISTR%
 rem echo npx oz send-tx --to %PROTOCOL_CURVEFY_SBTC% --network rinkeby --method addDefiOperator --args %MODULE_REWARD_DISTR%
 echo npx oz send-tx --to %PROTOCOL_CURVEFY_SUSD% --network rinkeby --method addDefiOperator --args %MODULE_REWARD_DISTR%
+
+echo npx oz send-tx --to %MODULE_REWARD_DISTR% --network rinkeby --method registerProtocol --args "%PROTOCOL_COMPOUND_DAI%, %POOL_TOKEN_COMPOUND_DAI%"
+echo npx oz send-tx --to %MODULE_REWARD_DISTR% --network rinkeby --method registerProtocol --args "%PROTOCOL_COMPOUND_USDC%, %POOL_TOKEN_COMPOUND_USDC%"
+rem echo npx oz send-tx --to %MODULE_REWARD_DISTR% --network rinkeby --method registerProtocol --args "%PROTOCOL_CURVEFY_Y%, %POOL_TOKEN_CURVEFY_Y%"
+rem echo npx oz send-tx --to %MODULE_REWARD_DISTR% --network rinkeby --method registerProtocol --args "%PROTOCOL_CURVEFY_SBTC%, %POOL_TOKEN_CURVEFY_SBTC%"
+echo npx oz send-tx --to %MODULE_REWARD_DISTR% --network rinkeby --method registerProtocol --args "%PROTOCOL_CURVEFY_SUSD%, %POOL_TOKEN_CURVEFY_SUSD%"
+
 goto :done
 
 
