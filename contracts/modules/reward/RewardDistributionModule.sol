@@ -8,6 +8,7 @@ import "../../interfaces/token/IPoolTokenBalanceChangeRecipient.sol";
 import "../../interfaces/defi/IDefiProtocol.sol";
 import "../access/AccessChecker.sol";
 import "../savings/SavingsModule.sol";
+import "../staking/StakingPool.sol";
 import "../token/PoolToken.sol";
 
 contract RewardDistributionModule is Module, IPoolTokenBalanceChangeRecipient, AccessChecker {
@@ -157,6 +158,27 @@ contract RewardDistributionModule is Module, IPoolTokenBalanceChangeRecipient, A
         address user = _msgSender();
         updateRewardBalance(user);
         return _withdrawReward(user, poolToken, rewardToken);
+    }
+
+    function withdrawReward(address[] memory poolTokens, address[] memory rewardTokens) 
+    public operationAllowed(IAccessModule.Operation.Withdraw)
+    returns(uint256[] memory){
+        require(poolTokens.length == rewardTokens.length, "RewardDistributionModule: array length mismatch");
+
+        address akroStaking = getModuleAddress(MODULE_STAKING_AKRO);
+        address adelStaking = getModuleAddress(MODULE_STAKING_AKRO);
+
+        uint256[] memory amounts = new uint256[](poolTokens.length);
+        address user = _msgSender();
+        updateRewardBalance(user);
+        for(uint256 i=0; i < poolTokens.length; i++) {
+            if(poolTokens[i] == akroStaking || poolTokens[i] == adelStaking){
+                amounts[i] = StakingPool(poolTokens[i]).withdrawRewardsFor(user, rewardTokens[i]);
+            }else{
+                amounts[i] = _withdrawReward(user, poolTokens[i], rewardTokens[i]);
+            }
+        }
+        return amounts;
     }
 
     // function rewardBalanceOf(address user, address[] memory rewardTokens) public view returns(uint256[] memory) {

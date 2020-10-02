@@ -32,6 +32,12 @@ contract StakingPool is StakingPoolBase {
     mapping(address=>RewardData) internal rewards;
     mapping(address=>UserRewardInfo) internal userRewards;
 
+
+    modifier onlyRewardDistributionModule() {
+        require(_msgSender() == getModuleAddress(MODULE_REWARD_DISTR), "StakingPool: calls allowed from RewardDistributionModule only");
+        _;
+    }
+
     function setRewardVesting(address _rewardVesting) public onlyOwner {
         rewardVesting = RewardVestingModule(_rewardVesting);
     }
@@ -60,6 +66,16 @@ contract StakingPool is StakingPoolBase {
     function withdrawRewards() public returns(uint256[] memory){
         return _withdrawRewards(_msgSender());
     }
+
+    function withdrawRewardsFor(address user, address rewardToken) public onlyRewardDistributionModule returns(uint256) {
+        return _withdrawRewards(user, rewardToken);
+    }
+
+    // function withdrawRewardsFor(address user, address[] memory rewardTokens) onlyRewardDistributionModule {
+    //     for(uint256 i=0; i < rewardTokens.length; i++) {
+    //         _withdrawRewards(user, rewardTokens[i]);
+    //     }
+    // }
 
     function rewardBalanceOf(address user, address token) public view returns(uint256) {
         RewardData storage rd = rewards[token];

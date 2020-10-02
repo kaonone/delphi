@@ -8,7 +8,8 @@ contract ModuleNames {
     string internal constant MODULE_ACCESS            = "access";
     string internal constant MODULE_SAVINGS           = "savings";
     string internal constant MODULE_INVESTING         = "investing";
-    string internal constant MODULE_STAKING           = "staking";
+    string internal constant MODULE_STAKING_AKRO      = "staking";
+    string internal constant MODULE_STAKING_ADEL      = "stakingAdel";
     string internal constant MODULE_DCA               = "dca";
     string internal constant MODULE_REWARD            = "reward";
     string internal constant MODULE_REWARD_DISTR      = "rewardDistributions";
