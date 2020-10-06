@@ -70,7 +70,7 @@ contract("RewardDistributionModule - migration", async ([owner, user, ...otherAc
         cDai = await deployProxy(CErc20Stub, [dai.address], UPGRADABLE_OPTS);
         comp = await deployProxy(FreeERC20, ["Compound", "COMP"], UPGRADABLE_OPTS);
         comptroller = await deployProxy(ComptrollerStub, [comp.address], UPGRADABLE_OPTS);
-        await comp.methods['mint(address,uint256)'](comptroller.address, web3.utils.fromWei(1000000000));
+        await comp.methods['mint(address,uint256)'](comptroller.address, web3.utils.fromWei('1000000000'));
 
         //Setup system contracts
         pool = await deployProxy(Pool, [], UPGRADABLE_OPTS);
