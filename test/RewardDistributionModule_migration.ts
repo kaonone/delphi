@@ -16,7 +16,11 @@ import {
 
 
 const { BN, constants, expectEvent, shouldFail, time } = require("@openzeppelin/test-helpers");
+
 const { deployProxy, upgradeProxy } = require('@openzeppelin/truffle-upgrades');
+const UPGRADABLE_OPTS = {
+    unsafeAllowCustomTypes: true
+};
 
 import Snapshot from "./utils/snapshot";
 const should = require("chai").should();
@@ -62,38 +66,38 @@ contract("RewardDistributionModule - migration", async ([owner, user, ...otherAc
 
     before(async () => {
         //Setup external contracts
-        dai = await deployProxy(FreeERC20, ["Dai Stablecoin", "DAI"]);
-        cDai = await deployProxy(CErc20Stub, [dai.address]);
-        comp = await deployProxy(FreeERC20, ["Compound", "COMP"]);
-        comptroller = await deployProxy(ComptrollerStub, [comp.address]);
+        dai = await deployProxy(FreeERC20, ["Dai Stablecoin", "DAI"], UPGRADABLE_OPTS);
+        cDai = await deployProxy(CErc20Stub, [dai.address], UPGRADABLE_OPTS);
+        comp = await deployProxy(FreeERC20, ["Compound", "COMP"], UPGRADABLE_OPTS);
+        comptroller = await deployProxy(ComptrollerStub, [comp.address], UPGRADABLE_OPTS);
         await comp.methods['mint(address,uint256)'](comptroller.address, web3.utils.fromWei(1000000000));
 
         //Setup system contracts
-        pool = await deployProxy(Pool, []);
+        pool = await deployProxy(Pool, [], UPGRADABLE_OPTS);
 
-        access = await deployProxy(AccessModule, [pool.address]);
+        access = await deployProxy(AccessModule, [pool.address], UPGRADABLE_OPTS);
         await pool.set('access', access.address, false);
 
-        savings = await deployProxy(SavingsModuleOld, [pool.address]);
+        savings = await deployProxy(SavingsModuleOld, [pool.address], UPGRADABLE_OPTS);
         await pool.set('savings', savings.address, false);
 
-        akro = await deployProxy(FreeERC20, ["Akropolis", "AKRO"]);
+        akro = await deployProxy(FreeERC20, ["Akropolis", "AKRO"], UPGRADABLE_OPTS);
         await pool.set('akro', akro.address, false);
-        adel = await deployProxy(FreeERC20, ["Akropolis Delphi", "ADEL"]);
+        adel = await deployProxy(FreeERC20, ["Akropolis Delphi", "ADEL"], UPGRADABLE_OPTS);
         await pool.set('adel', adel.address, false);
 
-        stakingPoolAkro = await deployProxy(StakingPool, [pool.address, akro.address, '0']);
+        stakingPoolAkro = await deployProxy(StakingPool, [pool.address, akro.address, '0'], UPGRADABLE_OPTS);
         await pool.set('staking', stakingPoolAkro.address, false);
-        stakingPoolAdel = await deployProxy(StakingPoolADEL, [pool.address, adel.address, '0']);
+        stakingPoolAdel = await deployProxy(StakingPoolADEL, [pool.address, adel.address, '0'], UPGRADABLE_OPTS);
         await pool.set('stakingAdel', stakingPoolAdel.address, false);
 
-        compoundProtocolDai = await deployProxy(CompoundProtocol, [pool.address, dai.address, cDai.address, comptroller.address]);
-        poolTokenCompoundProtocolDai = await deployProxy(PoolToken, [pool.address, "Delphi Compound DAI","dCDAI"]);
+        compoundProtocolDai = await deployProxy(CompoundProtocol, [pool.address, dai.address, cDai.address, comptroller.address], UPGRADABLE_OPTS);
+        poolTokenCompoundProtocolDai = await deployProxy(PoolToken, [pool.address, "Delphi Compound DAI","dCDAI"], UPGRADABLE_OPTS);
         await savings.registerProtocol(compoundProtocolDai.address, poolTokenCompoundProtocolDai.address);
         await compoundProtocolDai.addDefiOperator(savings.address);
 
 
-        rewardDistributions = await deployProxy(RewardDistributionModule, [pool.address]);
+        rewardDistributions = await deployProxy(RewardDistributionModule, [pool.address], UPGRADABLE_OPTS);
         await pool.set('rewardDistributions', rewardDistributions.address, false);
         await rewardDistributions.registerProtocol(compoundProtocolDai.address, poolTokenCompoundProtocolDai.address);
         await compoundProtocolDai.addDefiOperator(rewardDistributions.address);
@@ -125,7 +129,7 @@ contract("RewardDistributionModule - migration", async ([owner, user, ...otherAc
     });
 
     it('should upgrade savings', async () => {
-        savings = await upgradeProxy(savings.address, SavingsModule);
+        savings = await upgradeProxy(savings.address, SavingsModule, UPGRADABLE_OPTS);
     });        
 
     it('should still have rewards', async () => {
