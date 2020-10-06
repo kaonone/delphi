@@ -34,7 +34,7 @@ contract RewardDistributionModule is Module, IPoolTokenBalanceChangeRecipient, A
     }
     struct RewardBalance {
         uint256 nextDistribution;
-        mapping(address => UserProtocolRewards) rewardsByProtocol; //Maps PoolToken to ProtocolRewards struct (map of reward tokens to their balances);
+        mapping(address => UserProtocolRewards) rewardsByPT; //Maps PoolToken to ProtocolRewards struct (map of reward tokens to their balances);
     }
 
     struct ProtocolInfo {
@@ -103,7 +103,7 @@ contract RewardDistributionModule is Module, IPoolTokenBalanceChangeRecipient, A
 
         _updateRewardBalance(user, rewardDistributions.length);
         uint256 newAmount = PoolToken(token).distributionBalanceOf(user);
-        rewardBalances[user].rewardsByProtocol[token].shares = newAmount;
+        rewardBalances[user].rewardsByPT[token].shares = newAmount;
     }
 
     /** 
@@ -201,14 +201,14 @@ contract RewardDistributionModule is Module, IPoolTokenBalanceChangeRecipient, A
         }
 
         RewardBalance storage rb = rewardBalances[user];
-        UserProtocolRewards storage upr = rb.rewardsByProtocol[poolToken];
+        UserProtocolRewards storage upr = rb.rewardsByPT[poolToken];
         uint256 balance = upr.amounts[rewardToken];
         uint256 next = rb.nextDistribution;
         while (next < rewardDistributions.length) {
             RewardTokenDistribution storage d = rewardDistributions[next];
             next++;
 
-            uint256 sh = rb.rewardsByProtocol[d.poolToken].shares;
+            uint256 sh = rb.rewardsByPT[d.poolToken].shares;
             if (sh == 0 || poolToken != d.poolToken) continue;
             uint256 distrAmount = d.amounts[rewardToken];
             balance = balance.add(distrAmount.mul(sh).div(d.totalShares));
@@ -220,7 +220,7 @@ contract RewardDistributionModule is Module, IPoolTokenBalanceChangeRecipient, A
         if(!userRewardsMigrated[user]) return savingsModule().rewardBalanceOf(user, poolToken, rewardTokens);
 
         RewardBalance storage rb = rewardBalances[user];
-        UserProtocolRewards storage upr = rb.rewardsByProtocol[poolToken];
+        UserProtocolRewards storage upr = rb.rewardsByPT[poolToken];
         uint256[] memory balances = new uint256[](rewardTokens.length);
         uint256 i;
         for(i=0; i < rewardTokens.length; i++){
@@ -231,7 +231,7 @@ contract RewardDistributionModule is Module, IPoolTokenBalanceChangeRecipient, A
             RewardTokenDistribution storage d = rewardDistributions[next];
             next++;
 
-            uint256 sh = rb.rewardsByProtocol[d.poolToken].shares;
+            uint256 sh = rb.rewardsByPT[d.poolToken].shares;
             if (sh == 0 || poolToken != d.poolToken) continue;
             for(i=0; i < rewardTokens.length; i++){
                 uint256 distrAmount = d.amounts[rewardTokens[i]];
@@ -271,8 +271,8 @@ contract RewardDistributionModule is Module, IPoolTokenBalanceChangeRecipient, A
     returns(uint256 nextDistribution, uint256 poolTokenShares, uint256 storedReward) {
         RewardBalance storage rb = rewardBalances[user];
         nextDistribution = rb.nextDistribution;
-        poolTokenShares = rb.rewardsByProtocol[poolToken].shares;
-        storedReward = rb.rewardsByProtocol[poolToken].amounts[rewardToken];
+        poolTokenShares = rb.rewardsByPT[poolToken].shares;
+        storedReward = rb.rewardsByPT[poolToken].amounts[rewardToken];
     }
 
     function rewardDistribution(uint256 num) public view 
@@ -323,8 +323,8 @@ contract RewardDistributionModule is Module, IPoolTokenBalanceChangeRecipient, A
         IDefiProtocol[] memory protocols = sm.supportedProtocols();
         for(uint256 i=0; i<protocols.length; i++) {
             address _protocol = address(protocols[i]);
-            UserProtocolRewards storage upr = rb.rewardsByProtocol[_protocol];
             address _poolToken = protocolInfo[_protocol].poolToken;
+            UserProtocolRewards storage upr = rb.rewardsByPT[_poolToken];
             upr.shares = PoolToken(_poolToken).distributionBalanceOf(user);
             address[] memory rtkns = sm.rewardTokensByProtocol(_protocol);
             uint256[] memory balances = sm.rewardBalanceOf(user, _poolToken, rtkns);
@@ -339,10 +339,10 @@ contract RewardDistributionModule is Module, IPoolTokenBalanceChangeRecipient, A
         uint256 totalAmount;
         for(uint256 i=0; i < registeredPoolTokens.length; i++) {
             address poolToken = registeredPoolTokens[i];
-            uint256 amount = rewardBalances[user].rewardsByProtocol[poolToken].amounts[rewardToken];
+            uint256 amount = rewardBalances[user].rewardsByPT[poolToken].amounts[rewardToken];
             if(amount > 0){
                 totalAmount = totalAmount.add(amount);
-                rewardBalances[user].rewardsByProtocol[poolToken].amounts[rewardToken] = 0;
+                rewardBalances[user].rewardsByPT[poolToken].amounts[rewardToken] = 0;
                 IDefiProtocol protocol = IDefiProtocol(protocolByPoolToken(poolToken));
                 protocol.withdrawReward(rewardToken, user, amount);
             }
@@ -354,9 +354,9 @@ contract RewardDistributionModule is Module, IPoolTokenBalanceChangeRecipient, A
     }
 
     function _withdrawReward(address user, address poolToken, address rewardToken) internal returns(uint256) {
-        uint256 amount = rewardBalances[user].rewardsByProtocol[poolToken].amounts[rewardToken];
+        uint256 amount = rewardBalances[user].rewardsByPT[poolToken].amounts[rewardToken];
         require(amount > 0, "RewardDistributionModule: nothing to withdraw");
-        rewardBalances[user].rewardsByProtocol[poolToken].amounts[rewardToken] = 0;
+        rewardBalances[user].rewardsByPT[poolToken].amounts[rewardToken] = 0;
         IDefiProtocol protocol = IDefiProtocol(protocolByPoolToken(poolToken));
         protocol.withdrawReward(rewardToken, user, amount);
         emit RewardWithdraw(user, rewardToken, amount);
@@ -376,7 +376,7 @@ contract RewardDistributionModule is Module, IPoolTokenBalanceChangeRecipient, A
             bool hasDeposit;
             for(uint256 i=0; i< registeredPoolTokens.length; i++){
                 address poolToken = registeredPoolTokens[i];
-                if(rb.rewardsByProtocol[poolToken].shares != 0) {
+                if(rb.rewardsByPT[poolToken].shares != 0) {
                     hasDeposit = true;
                     break;
                 }
@@ -390,7 +390,7 @@ contract RewardDistributionModule is Module, IPoolTokenBalanceChangeRecipient, A
         while (next < toDistribution) {
             RewardTokenDistribution storage d = rewardDistributions[next];
             next++;
-            UserProtocolRewards storage upr = rb.rewardsByProtocol[d.poolToken]; 
+            UserProtocolRewards storage upr = rb.rewardsByPT[d.poolToken]; 
             uint256 sh = upr.shares;
             if (sh == 0) continue;
             for (uint256 i=0; i < d.rewardTokens.length; i++) {

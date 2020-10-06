@@ -1,3 +1,20 @@
+import { 
+    PoolContract, PoolInstance, 
+    AccessModuleContract, AccessModuleInstance,
+    SavingsModuleContract, SavingsModuleInstance,
+    SavingsModuleOldContract,SavingsModuleOldInstance,
+    RewardDistributionModuleContract,RewardDistributionModuleInstance,
+    CompoundProtocolContract,CompoundProtocolInstance,
+    PoolTokenContract,PoolTokenInstance,
+    StakingPoolContract,StakingPoolInstance,
+    StakingPoolAdelContract,StakingPoolAdelInstance,
+    FreeErc20Contract,FreeErc20Instance,
+    CErc20StubContract,CErc20StubInstance,
+    ComptrollerStubContract,ComptrollerStubInstance,
+
+} from "../types/truffle-contracts/index";
+
+
 const { BN, constants, expectEvent, shouldFail, time } = require("@openzeppelin/test-helpers");
 const { deployProxy, upgradeProxy } = require('@openzeppelin/truffle-upgrades');
 
@@ -25,22 +42,22 @@ const StakingPoolADEL  =  artifacts.require("StakingPoolADEL");
 contract("RewardDistributionModule - migration", async ([owner, user, ...otherAccounts]) => {
     let snap;
 
-    let dai;
-    let cDai;
-    let comp;
-    let comptroller;
+    let dai:FreeErc20Instance;
+    let cDai:CErc20StubInstance;
+    let comp:FreeErc20Instance;
+    let comptroller:ComptrollerStubInstance;
 
 
-    let pool;
-    let access;
-    let savings;
-    let rewardDistributions;
-    let compoundProtocolDai;
-    let poolTokenCompoundProtocolDai;    
-    let akro;
-    let adel;
-    let stakingPoolAkro;
-    let stakingPoolAdel;
+    let pool:PoolInstance;
+    let access:AccessModuleInstance;
+    let savings:SavingsModuleOldInstance|SavingsModuleInstance;
+    let rewardDistributions:RewardDistributionModuleInstance;
+    let compoundProtocolDai:CompoundProtocolInstance;
+    let poolTokenCompoundProtocolDai:PoolTokenInstance;    
+    let akro:FreeErc20Instance;
+    let adel:FreeErc20Instance;
+    let stakingPoolAkro:StakingPoolInstance;
+    let stakingPoolAdel:StakingPoolAdelInstance;
 
 
     before(async () => {
@@ -72,12 +89,14 @@ contract("RewardDistributionModule - migration", async ([owner, user, ...otherAc
 
         compoundProtocolDai = await deployProxy(CompoundProtocol, [pool.address, dai.address, cDai.address, comptroller.address]);
         poolTokenCompoundProtocolDai = await deployProxy(PoolToken, [pool.address, "Delphi Compound DAI","dCDAI"]);
-        await savings.registerProtocol(compoundProtocolDai, poolTokenCompoundProtocolDai);
+        await savings.registerProtocol(compoundProtocolDai.address, poolTokenCompoundProtocolDai.address);
+        await compoundProtocolDai.addDefiOperator(savings.address);
+
 
         rewardDistributions = await deployProxy(RewardDistributionModule, [pool.address]);
         await pool.set('rewardDistributions', rewardDistributions.address, false);
-        await rewardDistributions.registerProtocol(compoundProtocolDai, poolTokenCompoundProtocolDai);
-
+        await rewardDistributions.registerProtocol(compoundProtocolDai.address, poolTokenCompoundProtocolDai.address);
+        await compoundProtocolDai.addDefiOperator(rewardDistributions.address);
 
         //Save snapshot
         snap = await Snapshot.create(web3.currentProvider);
@@ -91,7 +110,7 @@ contract("RewardDistributionModule - migration", async ([owner, user, ...otherAc
         let amount = web3.utils.fromWei(1000);
         await dai.methods['mint(address,uint256)'](user, amount);
         await dai.approve(savings.address, amount);
-        await savings.methods['deposit(address,address[],uint256[])'](compoundProtocol.address, [dai.address], [amount]);
+        await savings.methods['deposit(address,address[],uint256[])'](compoundProtocolDai.address, [dai.address], [amount]);
 
         let lpAmount = poolTokenCompoundProtocolDai.balanceOf(user);
         expect(lpAmount).to.be.bignumber.gt(0);
@@ -99,9 +118,9 @@ contract("RewardDistributionModule - migration", async ([owner, user, ...otherAc
 
     it('should receive rewards', async () => {
         await time.increase(7*24*60*60);
-        await savings.distributeRewards();
+        await (<SavingsModuleOldInstance>savings).distributeRewards();
 
-        let userReward = await savings.rewardBalanceOf(user, poolTokenCompoundProtocolDai.address, comp.address);
+        let userReward = await (<any> savings).methods['rewardBalanceOf(address,address,address)'](user, poolTokenCompoundProtocolDai.address, comp.address);
         expect(userReward).to.be.bignumber.gt(0); 
     });
 
@@ -110,12 +129,12 @@ contract("RewardDistributionModule - migration", async ([owner, user, ...otherAc
     });        
 
     it('should still have rewards', async () => {
-        let userReward = await rewardDistributions.rewardBalanceOf(user, poolTokenCompoundProtocolDai.address, comp.address);
+        let userReward = await rewardDistributions.methods['rewardBalanceOf(address,address,address)'](user, poolTokenCompoundProtocolDai.address, comp.address);
         expect(userReward).to.be.bignumber.gt(0); 
     });
 
     it('should withdraw rewards', async () => {
-        await rewardDistributions.withdrawReward({from:user});
+        await rewardDistributions.methods['withdrawReward()']({from:user});
         let userReward = await comp.balanceOf(user);
         expect(userReward).to.be.bignumber.gt(0); 
     });

@@ -52,6 +52,9 @@ goto :done
 
 rem === ACTIONS ===
 :show
+echo npx oz send-tx --to %PROTOCOL_COMPOUND_DAI% --network rinkeby --method addDefiOperator --args %MODULE_REWARD_DISTR%
+echo npx oz send-tx --to %PROTOCOL_COMPOUND_USDC% --network rinkeby --method addDefiOperator --args %MODULE_REWARD_DISTR%
+echo npx oz send-tx --to %PROTOCOL_CURVEFY_SUSD% --network rinkeby --method addDefiOperator --args %MODULE_REWARD_DISTR%
 goto :done
 
 
