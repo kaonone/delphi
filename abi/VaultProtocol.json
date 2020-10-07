@@ -29,6 +29,44 @@
     "anonymous": false,
     "inputs": [
       {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "_amount",
+        "type": "uint256"
+      }
+    ],
+    "name": "DepositByOperator",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "_user",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "_token",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "_amount",
+        "type": "uint256"
+      }
+    ],
+    "name": "DepositToVault",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
         "indexed": true,
         "internalType": "address",
         "name": "previousOwner",
@@ -61,50 +99,83 @@
     "anonymous": false,
     "inputs": [
       {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "_amount",
+        "type": "uint256"
+      }
+    ],
+    "name": "WithdrawByOperator",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
         "indexed": true,
         "internalType": "address",
-        "name": "token",
+        "name": "_user",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "_token",
         "type": "address"
       },
       {
         "indexed": false,
         "internalType": "uint256",
-        "name": "amount",
+        "name": "_amount",
         "type": "uint256"
       }
     ],
-    "name": "RewardTokenClaimed",
+    "name": "WithdrawFromVault",
     "type": "event"
   },
   {
-    "constant": true,
-    "inputs": [],
-    "name": "aToken",
-    "outputs": [
+    "anonymous": false,
+    "inputs": [
       {
-        "internalType": "contract IAToken",
-        "name": "",
+        "indexed": true,
+        "internalType": "address",
+        "name": "_user",
         "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "_token",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "_amount",
+        "type": "uint256"
       }
     ],
-    "payable": false,
-    "stateMutability": "view",
-    "type": "function"
+    "name": "WithdrawRequestCreated",
+    "type": "event"
   },
   {
-    "constant": true,
-    "inputs": [],
-    "name": "aaveReferralCode",
-    "outputs": [
+    "anonymous": false,
+    "inputs": [
       {
-        "internalType": "uint16",
-        "name": "",
-        "type": "uint16"
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "_totalDeposit",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "_totalWithdraw",
+        "type": "uint256"
       }
     ],
-    "payable": false,
-    "stateMutability": "view",
-    "type": "function"
+    "name": "WithdrawRequestsResolved",
+    "type": "event"
   },
   {
     "constant": false,
@@ -159,21 +230,6 @@
   },
   {
     "constant": true,
-    "inputs": [],
-    "name": "baseToken",
-    "outputs": [
-      {
-        "internalType": "contract IERC20",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "constant": true,
     "inputs": [
       {
         "internalType": "address",
@@ -215,21 +271,6 @@
   },
   {
     "constant": true,
-    "inputs": [],
-    "name": "decimals",
-    "outputs": [
-      {
-        "internalType": "uint8",
-        "name": "",
-        "type": "uint8"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "constant": true,
     "inputs": [
       {
         "internalType": "string",
@@ -247,46 +288,6 @@
     ],
     "payable": false,
     "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "constant": false,
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "token",
-        "type": "address"
-      },
-      {
-        "internalType": "uint256",
-        "name": "amount",
-        "type": "uint256"
-      }
-    ],
-    "name": "handleDeposit",
-    "outputs": [],
-    "payable": false,
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "constant": false,
-    "inputs": [
-      {
-        "internalType": "address[]",
-        "name": "tokens",
-        "type": "address[]"
-      },
-      {
-        "internalType": "uint256[]",
-        "name": "amounts",
-        "type": "uint256[]"
-      }
-    ],
-    "name": "handleDeposit",
-    "outputs": [],
-    "payable": false,
-    "stateMutability": "nonpayable",
     "type": "function"
   },
   {
@@ -330,7 +331,7 @@
     "inputs": [
       {
         "internalType": "address",
-        "name": "",
+        "name": "token",
         "type": "address"
       }
     ],
@@ -340,36 +341,6 @@
         "internalType": "bool",
         "name": "",
         "type": "bool"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "constant": true,
-    "inputs": [],
-    "name": "lendingPool",
-    "outputs": [
-      {
-        "internalType": "contract IAaveLendingPool",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "constant": true,
-    "inputs": [],
-    "name": "lendingPoolCore",
-    "outputs": [
-      {
-        "internalType": "contract IAaveLendingPoolCore",
-        "name": "",
-        "type": "address"
       }
     ],
     "payable": false,
@@ -455,27 +426,6 @@
     "type": "function"
   },
   {
-    "constant": true,
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "name": "rewardBalances",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
     "constant": false,
     "inputs": [
       {
@@ -506,14 +456,244 @@
     "type": "function"
   },
   {
-    "constant": true,
+    "constant": false,
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "newOwner",
+        "type": "address"
+      }
+    ],
+    "name": "transferOwnership",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "token",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "user",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
+      }
+    ],
+    "name": "withdrawReward",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_pool",
+        "type": "address"
+      }
+    ],
+    "name": "initialize",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
     "inputs": [],
-    "name": "supportedTokens",
-    "outputs": [
+    "name": "initialize",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_user",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_token",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_amount",
+        "type": "uint256"
+      }
+    ],
+    "name": "depositToVault",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_user",
+        "type": "address"
+      },
       {
         "internalType": "address[]",
-        "name": "",
+        "name": "_tokens",
         "type": "address[]"
+      },
+      {
+        "internalType": "uint256[]",
+        "name": "_amounts",
+        "type": "uint256[]"
+      }
+    ],
+    "name": "depositToVault",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_user",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_token",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_amount",
+        "type": "uint256"
+      }
+    ],
+    "name": "withdrawFromVault",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_user",
+        "type": "address"
+      },
+      {
+        "internalType": "address[]",
+        "name": "_tokens",
+        "type": "address[]"
+      },
+      {
+        "internalType": "uint256[]",
+        "name": "_amounts",
+        "type": "uint256[]"
+      }
+    ],
+    "name": "withdrawFromVault",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [],
+    "name": "withdrawOperator",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_user",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_amount",
+        "type": "uint256"
+      }
+    ],
+    "name": "quickWithdraw",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_user",
+        "type": "address"
+      }
+    ],
+    "name": "claimRequested",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_user",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_token",
+        "type": "address"
+      }
+    ],
+    "name": "claimableAmount",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
       }
     ],
     "payable": false,
@@ -522,8 +702,66 @@
   },
   {
     "constant": true,
-    "inputs": [],
-    "name": "supportedTokensCount",
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_token",
+        "type": "address"
+      }
+    ],
+    "name": "totalClaimableAmount",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_user",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_token",
+        "type": "address"
+      }
+    ],
+    "name": "amountOnHold",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_user",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_token",
+        "type": "address"
+      }
+    ],
+    "name": "amountRequested",
     "outputs": [
       {
         "internalType": "uint256",
@@ -540,11 +778,36 @@
     "inputs": [
       {
         "internalType": "address",
-        "name": "newOwner",
+        "name": "token",
         "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
       }
     ],
-    "name": "transferOwnership",
+    "name": "handleDeposit",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "internalType": "address[]",
+        "name": "tokens",
+        "type": "address[]"
+      },
+      {
+        "internalType": "uint256[]",
+        "name": "amounts",
+        "type": "uint256[]"
+      }
+    ],
+    "name": "handleDeposit",
     "outputs": [],
     "payable": false,
     "stateMutability": "nonpayable",
@@ -596,82 +859,33 @@
     "type": "function"
   },
   {
-    "constant": false,
-    "inputs": [
+    "constant": true,
+    "inputs": [],
+    "name": "supportedTokens",
+    "outputs": [
       {
-        "internalType": "address",
-        "name": "token",
-        "type": "address"
-      },
-      {
-        "internalType": "address",
-        "name": "user",
-        "type": "address"
-      },
+        "internalType": "address[]",
+        "name": "",
+        "type": "address[]"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [],
+    "name": "supportedTokensCount",
+    "outputs": [
       {
         "internalType": "uint256",
-        "name": "amount",
+        "name": "",
         "type": "uint256"
       }
     ],
-    "name": "withdrawReward",
-    "outputs": [],
     "payable": false,
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "constant": false,
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "_pool",
-        "type": "address"
-      },
-      {
-        "internalType": "address",
-        "name": "_token",
-        "type": "address"
-      },
-      {
-        "internalType": "address",
-        "name": "aaveAddressProvider",
-        "type": "address"
-      },
-      {
-        "internalType": "uint16",
-        "name": "_aaveReferralCode",
-        "type": "uint16"
-      }
-    ],
-    "name": "initialize",
-    "outputs": [],
-    "payable": false,
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "constant": false,
-    "inputs": [],
-    "name": "initialize",
-    "outputs": [],
-    "payable": false,
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "constant": false,
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "_pool",
-        "type": "address"
-      }
-    ],
-    "name": "initialize",
-    "outputs": [],
-    "payable": false,
-    "stateMutability": "nonpayable",
+    "stateMutability": "view",
     "type": "function"
   }
 ]

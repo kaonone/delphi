@@ -29,6 +29,44 @@
     "anonymous": false,
     "inputs": [
       {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "_amount",
+        "type": "uint256"
+      }
+    ],
+    "name": "DepositByOperator",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "_user",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "_token",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "_amount",
+        "type": "uint256"
+      }
+    ],
+    "name": "DepositToVault",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
         "indexed": true,
         "internalType": "address",
         "name": "previousOwner",
@@ -61,19 +99,82 @@
     "anonymous": false,
     "inputs": [
       {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "_amount",
+        "type": "uint256"
+      }
+    ],
+    "name": "WithdrawByOperator",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
         "indexed": true,
         "internalType": "address",
-        "name": "token",
+        "name": "_user",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "_token",
         "type": "address"
       },
       {
         "indexed": false,
         "internalType": "uint256",
-        "name": "amount",
+        "name": "_amount",
         "type": "uint256"
       }
     ],
-    "name": "RewardTokenClaimed",
+    "name": "WithdrawFromVault",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "_user",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "_token",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "_amount",
+        "type": "uint256"
+      }
+    ],
+    "name": "WithdrawRequestCreated",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "_totalDeposit",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "_totalWithdraw",
+        "type": "uint256"
+      }
+    ],
+    "name": "WithdrawRequestsResolved",
     "type": "event"
   },
   {
@@ -93,11 +194,104 @@
   },
   {
     "constant": true,
-    "inputs": [],
-    "name": "baseToken",
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_user",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_token",
+        "type": "address"
+      }
+    ],
+    "name": "amountOnHold",
     "outputs": [
       {
-        "internalType": "contract IERC20",
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_user",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_token",
+        "type": "address"
+      }
+    ],
+    "name": "amountRequested",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_user",
+        "type": "address"
+      }
+    ],
+    "name": "claimRequested",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_user",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_token",
+        "type": "address"
+      }
+    ],
+    "name": "claimableAmount",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [],
+    "name": "crvToken",
+    "outputs": [
+      {
+        "internalType": "address",
         "name": "",
         "type": "address"
       }
@@ -109,10 +303,70 @@
   {
     "constant": true,
     "inputs": [],
-    "name": "cToken",
+    "name": "curveFiDeposit",
     "outputs": [
       {
-        "internalType": "contract ICErc20",
+        "internalType": "contract ICurveFiDeposit",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [],
+    "name": "curveFiLPGauge",
+    "outputs": [
+      {
+        "internalType": "contract ICurveFiLiquidityGauge",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [],
+    "name": "curveFiMinter",
+    "outputs": [
+      {
+        "internalType": "contract ICurveFiMinter",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [],
+    "name": "curveFiSwap",
+    "outputs": [
+      {
+        "internalType": "contract ICurveFiSwap",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [],
+    "name": "curveFiToken",
+    "outputs": [
+      {
+        "internalType": "contract IERC20",
         "name": "",
         "type": "address"
       }
@@ -123,67 +377,52 @@
   },
   {
     "constant": false,
-    "inputs": [],
-    "name": "claimRewards",
-    "outputs": [
+    "inputs": [
       {
-        "internalType": "address[]",
-        "name": "tokens",
-        "type": "address[]"
+        "internalType": "address",
+        "name": "_user",
+        "type": "address"
       },
       {
-        "internalType": "uint256[]",
-        "name": "amounts",
-        "type": "uint256[]"
+        "internalType": "address",
+        "name": "_token",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_amount",
+        "type": "uint256"
       }
     ],
+    "name": "depositToVault",
+    "outputs": [],
     "payable": false,
     "stateMutability": "nonpayable",
     "type": "function"
   },
   {
-    "constant": true,
-    "inputs": [],
-    "name": "compToken",
-    "outputs": [
+    "constant": false,
+    "inputs": [
       {
-        "internalType": "contract IERC20",
-        "name": "",
+        "internalType": "address",
+        "name": "_user",
         "type": "address"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "constant": true,
-    "inputs": [],
-    "name": "comptroller",
-    "outputs": [
+      },
       {
-        "internalType": "contract IComptroller",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "constant": true,
-    "inputs": [],
-    "name": "decimals",
-    "outputs": [
+        "internalType": "address[]",
+        "name": "_tokens",
+        "type": "address[]"
+      },
       {
-        "internalType": "uint8",
-        "name": "",
-        "type": "uint8"
+        "internalType": "uint256[]",
+        "name": "_amounts",
+        "type": "uint256[]"
       }
     ],
+    "name": "depositToVault",
+    "outputs": [],
     "payable": false,
-    "stateMutability": "view",
+    "stateMutability": "nonpayable",
     "type": "function"
   },
   {
@@ -275,6 +514,26 @@
   },
   {
     "constant": false,
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_user",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_amount",
+        "type": "uint256"
+      }
+    ],
+    "name": "quickWithdraw",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
     "inputs": [],
     "name": "renounceDefiOperator",
     "outputs": [],
@@ -289,27 +548,6 @@
     "outputs": [],
     "payable": false,
     "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "constant": true,
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "name": "rewardBalances",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "view",
     "type": "function"
   },
   {
@@ -328,6 +566,72 @@
     "type": "function"
   },
   {
+    "constant": true,
+    "inputs": [],
+    "name": "slippageMultiplier",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [],
+    "name": "supportedTokens",
+    "outputs": [
+      {
+        "internalType": "address[]",
+        "name": "",
+        "type": "address[]"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [],
+    "name": "supportedTokensCount",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_token",
+        "type": "address"
+      }
+    ],
+    "name": "totalClaimableAmount",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "constant": false,
     "inputs": [
       {
@@ -343,25 +647,140 @@
     "type": "function"
   },
   {
+    "constant": true,
+    "inputs": [],
+    "name": "uniswapAddress",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [],
+    "name": "wethToken",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "constant": false,
     "inputs": [
       {
         "internalType": "address",
-        "name": "token",
+        "name": "_user",
+        "type": "address"
+      },
+      {
+        "internalType": "address[]",
+        "name": "_tokens",
+        "type": "address[]"
+      },
+      {
+        "internalType": "uint256[]",
+        "name": "_amounts",
+        "type": "uint256[]"
+      }
+    ],
+    "name": "withdrawFromVault",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_user",
         "type": "address"
       },
       {
         "internalType": "address",
-        "name": "user",
+        "name": "_token",
         "type": "address"
       },
       {
         "internalType": "uint256",
-        "name": "amount",
+        "name": "_amount",
         "type": "uint256"
       }
     ],
-    "name": "withdrawReward",
+    "name": "withdrawFromVault",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [],
+    "name": "withdrawOperator",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_pool",
+        "type": "address"
+      }
+    ],
+    "name": "initialize",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_pool",
+        "type": "address"
+      },
+      {
+        "internalType": "address[]",
+        "name": "tokens",
+        "type": "address[]"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_daiInd",
+        "type": "uint256"
+      }
+    ],
+    "name": "initialize",
     "outputs": [],
     "payable": false,
     "stateMutability": "nonpayable",
@@ -381,41 +800,31 @@
     "inputs": [
       {
         "internalType": "address",
-        "name": "_pool",
+        "name": "_depositContract",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_liquidityGauge",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_curveFiMinter",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_uniswapAddress",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_wethToken",
         "type": "address"
       }
     ],
-    "name": "initialize",
-    "outputs": [],
-    "payable": false,
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "constant": false,
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "_pool",
-        "type": "address"
-      },
-      {
-        "internalType": "address",
-        "name": "_token",
-        "type": "address"
-      },
-      {
-        "internalType": "address",
-        "name": "_cToken",
-        "type": "address"
-      },
-      {
-        "internalType": "address",
-        "name": "_comptroller",
-        "type": "address"
-      }
-    ],
-    "name": "initialize",
+    "name": "setProtocol",
     "outputs": [],
     "payable": false,
     "stateMutability": "nonpayable",
@@ -508,6 +917,30 @@
   },
   {
     "constant": false,
+    "inputs": [],
+    "name": "performStrategy",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [],
+    "name": "curveFiTokenBalance",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": false,
     "inputs": [
       {
         "internalType": "address",
@@ -531,6 +964,21 @@
     "constant": false,
     "inputs": [],
     "name": "balanceOfAll",
+    "outputs": [
+      {
+        "internalType": "uint256[]",
+        "name": "balances",
+        "type": "uint256[]"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [],
+    "name": "optimalProportions",
     "outputs": [
       {
         "internalType": "uint256[]",
@@ -558,18 +1006,24 @@
     "type": "function"
   },
   {
-    "constant": false,
-    "inputs": [],
-    "name": "optimalProportions",
+    "constant": true,
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "token",
+        "type": "address"
+      }
+    ],
+    "name": "getTokenIndex",
     "outputs": [
       {
-        "internalType": "uint256[]",
+        "internalType": "uint256",
         "name": "",
-        "type": "uint256[]"
+        "type": "uint256"
       }
     ],
     "payable": false,
-    "stateMutability": "nonpayable",
+    "stateMutability": "view",
     "type": "function"
   },
   {
@@ -594,33 +1048,48 @@
     "type": "function"
   },
   {
-    "constant": true,
+    "constant": false,
     "inputs": [],
-    "name": "supportedTokens",
+    "name": "claimRewards",
     "outputs": [
       {
         "internalType": "address[]",
-        "name": "",
+        "name": "tokens",
         "type": "address[]"
+      },
+      {
+        "internalType": "uint256[]",
+        "name": "amounts",
+        "type": "uint256[]"
       }
     ],
     "payable": false,
-    "stateMutability": "view",
+    "stateMutability": "nonpayable",
     "type": "function"
   },
   {
-    "constant": true,
-    "inputs": [],
-    "name": "supportedTokensCount",
-    "outputs": [
+    "constant": false,
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "token",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "user",
+        "type": "address"
+      },
       {
         "internalType": "uint256",
-        "name": "",
+        "name": "amount",
         "type": "uint256"
       }
     ],
+    "name": "withdrawReward",
+    "outputs": [],
     "payable": false,
-    "stateMutability": "view",
+    "stateMutability": "nonpayable",
     "type": "function"
   },
   {

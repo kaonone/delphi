@@ -4,11 +4,16 @@
     "inputs": [
       {
         "internalType": "address",
-        "name": "gauge_addr",
+        "name": "_user",
         "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_amount",
+        "type": "uint256"
       }
     ],
-    "name": "mint",
+    "name": "increaseOnHoldValue",
     "outputs": [],
     "payable": false,
     "stateMutability": "nonpayable",
@@ -19,16 +24,31 @@
     "inputs": [
       {
         "internalType": "address",
-        "name": "_for",
+        "name": "_user",
         "type": "address"
       },
       {
+        "internalType": "uint256",
+        "name": "_amount",
+        "type": "uint256"
+      }
+    ],
+    "name": "decreaseOnHoldValue",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [
+      {
         "internalType": "address",
-        "name": "gauge_addr",
+        "name": "_user",
         "type": "address"
       }
     ],
-    "name": "minted",
+    "name": "onHoldBalanceOf",
     "outputs": [
       {
         "internalType": "uint256",
@@ -37,7 +57,7 @@
       }
     ],
     "payable": false,
-    "stateMutability": "nonpayable",
+    "stateMutability": "view",
     "type": "function"
   }
 ]

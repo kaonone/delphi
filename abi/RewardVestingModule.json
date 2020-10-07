@@ -5,24 +5,29 @@
       {
         "indexed": true,
         "internalType": "address",
-        "name": "account",
+        "name": "protocol",
         "type": "address"
-      }
-    ],
-    "name": "DefiOperatorAdded",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
+      },
       {
         "indexed": true,
         "internalType": "address",
-        "name": "account",
+        "name": "token",
         "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "epoch",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
       }
     ],
-    "name": "DefiOperatorRemoved",
+    "name": "EpochRewardAdded",
     "type": "event"
   },
   {
@@ -63,48 +68,81 @@
       {
         "indexed": true,
         "internalType": "address",
+        "name": "protocol",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
         "name": "token",
         "type": "address"
       },
       {
         "indexed": false,
         "internalType": "uint256",
-        "name": "amount",
+        "name": "claimPeriodStart",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "claimPeriodEnd",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "claimAmount",
         "type": "uint256"
       }
     ],
-    "name": "RewardTokenClaimed",
+    "name": "RewardClaimed",
     "type": "event"
   },
   {
-    "constant": true,
-    "inputs": [],
-    "name": "aToken",
-    "outputs": [
+    "anonymous": false,
+    "inputs": [
       {
-        "internalType": "contract IAToken",
-        "name": "",
+        "indexed": true,
+        "internalType": "address",
+        "name": "account",
         "type": "address"
       }
     ],
-    "payable": false,
-    "stateMutability": "view",
-    "type": "function"
+    "name": "RewardManagerAdded",
+    "type": "event"
   },
   {
-    "constant": true,
-    "inputs": [],
-    "name": "aaveReferralCode",
-    "outputs": [
+    "anonymous": false,
+    "inputs": [
       {
-        "internalType": "uint16",
-        "name": "",
-        "type": "uint16"
+        "indexed": true,
+        "internalType": "address",
+        "name": "account",
+        "type": "address"
       }
     ],
-    "payable": false,
-    "stateMutability": "view",
-    "type": "function"
+    "name": "RewardManagerRemoved",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "protocol",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "token",
+        "type": "address"
+      }
+    ],
+    "name": "RewardTokenRegistered",
+    "type": "event"
   },
   {
     "constant": false,
@@ -115,113 +153,21 @@
         "type": "address"
       }
     ],
-    "name": "addDefiOperator",
+    "name": "addRewardManager",
     "outputs": [],
     "payable": false,
     "stateMutability": "nonpayable",
     "type": "function"
   },
   {
-    "constant": false,
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "token",
-        "type": "address"
-      }
-    ],
-    "name": "balanceOf",
+    "constant": true,
+    "inputs": [],
+    "name": "defaultEpochLength",
     "outputs": [
       {
         "internalType": "uint256",
         "name": "",
         "type": "uint256"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "constant": false,
-    "inputs": [],
-    "name": "balanceOfAll",
-    "outputs": [
-      {
-        "internalType": "uint256[]",
-        "name": "",
-        "type": "uint256[]"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "constant": true,
-    "inputs": [],
-    "name": "baseToken",
-    "outputs": [
-      {
-        "internalType": "contract IERC20",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "constant": true,
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "token",
-        "type": "address"
-      }
-    ],
-    "name": "canSwapToToken",
-    "outputs": [
-      {
-        "internalType": "bool",
-        "name": "",
-        "type": "bool"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "constant": false,
-    "inputs": [],
-    "name": "claimRewards",
-    "outputs": [
-      {
-        "internalType": "address[]",
-        "name": "tokens",
-        "type": "address[]"
-      },
-      {
-        "internalType": "uint256[]",
-        "name": "amounts",
-        "type": "uint256[]"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "constant": true,
-    "inputs": [],
-    "name": "decimals",
-    "outputs": [
-      {
-        "internalType": "uint8",
-        "name": "",
-        "type": "uint8"
       }
     ],
     "payable": false,
@@ -250,67 +196,6 @@
     "type": "function"
   },
   {
-    "constant": false,
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "token",
-        "type": "address"
-      },
-      {
-        "internalType": "uint256",
-        "name": "amount",
-        "type": "uint256"
-      }
-    ],
-    "name": "handleDeposit",
-    "outputs": [],
-    "payable": false,
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "constant": false,
-    "inputs": [
-      {
-        "internalType": "address[]",
-        "name": "tokens",
-        "type": "address[]"
-      },
-      {
-        "internalType": "uint256[]",
-        "name": "amounts",
-        "type": "uint256[]"
-      }
-    ],
-    "name": "handleDeposit",
-    "outputs": [],
-    "payable": false,
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "constant": true,
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "account",
-        "type": "address"
-      }
-    ],
-    "name": "isDefiOperator",
-    "outputs": [
-      {
-        "internalType": "bool",
-        "name": "",
-        "type": "bool"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
     "constant": true,
     "inputs": [],
     "name": "isOwner",
@@ -330,11 +215,11 @@
     "inputs": [
       {
         "internalType": "address",
-        "name": "",
+        "name": "account",
         "type": "address"
       }
     ],
-    "name": "isSupportedRewardToken",
+    "name": "isRewardManager",
     "outputs": [
       {
         "internalType": "bool",
@@ -344,66 +229,6 @@
     ],
     "payable": false,
     "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "constant": true,
-    "inputs": [],
-    "name": "lendingPool",
-    "outputs": [
-      {
-        "internalType": "contract IAaveLendingPool",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "constant": true,
-    "inputs": [],
-    "name": "lendingPoolCore",
-    "outputs": [
-      {
-        "internalType": "contract IAaveLendingPoolCore",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "constant": false,
-    "inputs": [],
-    "name": "normalizedBalance",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "constant": false,
-    "inputs": [],
-    "name": "optimalProportions",
-    "outputs": [
-      {
-        "internalType": "uint256[]",
-        "name": "",
-        "type": "uint256[]"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "nonpayable",
     "type": "function"
   },
   {
@@ -439,7 +264,7 @@
   {
     "constant": false,
     "inputs": [],
-    "name": "renounceDefiOperator",
+    "name": "renounceOwnership",
     "outputs": [],
     "payable": false,
     "stateMutability": "nonpayable",
@@ -448,31 +273,10 @@
   {
     "constant": false,
     "inputs": [],
-    "name": "renounceOwnership",
+    "name": "renounceRewardManager",
     "outputs": [],
     "payable": false,
     "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "constant": true,
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "name": "rewardBalances",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "view",
     "type": "function"
   },
   {
@@ -488,51 +292,6 @@
     "outputs": [],
     "payable": false,
     "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "constant": true,
-    "inputs": [],
-    "name": "supportedRewardTokens",
-    "outputs": [
-      {
-        "internalType": "address[]",
-        "name": "",
-        "type": "address[]"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "constant": true,
-    "inputs": [],
-    "name": "supportedTokens",
-    "outputs": [
-      {
-        "internalType": "address[]",
-        "name": "",
-        "type": "address[]"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "constant": true,
-    "inputs": [],
-    "name": "supportedTokensCount",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "view",
     "type": "function"
   },
   {
@@ -555,93 +314,8 @@
     "inputs": [
       {
         "internalType": "address",
-        "name": "beneficiary",
-        "type": "address"
-      },
-      {
-        "internalType": "uint256[]",
-        "name": "amounts",
-        "type": "uint256[]"
-      }
-    ],
-    "name": "withdraw",
-    "outputs": [],
-    "payable": false,
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "constant": false,
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "beneficiary",
-        "type": "address"
-      },
-      {
-        "internalType": "address",
-        "name": "token",
-        "type": "address"
-      },
-      {
-        "internalType": "uint256",
-        "name": "amount",
-        "type": "uint256"
-      }
-    ],
-    "name": "withdraw",
-    "outputs": [],
-    "payable": false,
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "constant": false,
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "token",
-        "type": "address"
-      },
-      {
-        "internalType": "address",
-        "name": "user",
-        "type": "address"
-      },
-      {
-        "internalType": "uint256",
-        "name": "amount",
-        "type": "uint256"
-      }
-    ],
-    "name": "withdrawReward",
-    "outputs": [],
-    "payable": false,
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "constant": false,
-    "inputs": [
-      {
-        "internalType": "address",
         "name": "_pool",
         "type": "address"
-      },
-      {
-        "internalType": "address",
-        "name": "_token",
-        "type": "address"
-      },
-      {
-        "internalType": "address",
-        "name": "aaveAddressProvider",
-        "type": "address"
-      },
-      {
-        "internalType": "uint16",
-        "name": "_aaveReferralCode",
-        "type": "uint16"
       }
     ],
     "name": "initialize",
@@ -660,15 +334,257 @@
     "type": "function"
   },
   {
+    "constant": true,
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "protocol",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "token",
+        "type": "address"
+      }
+    ],
+    "name": "getRewardInfo",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "lastClaim",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "epochCount",
+        "type": "uint256"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "constant": false,
     "inputs": [
       {
         "internalType": "address",
-        "name": "_pool",
+        "name": "protocol",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "token",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "firstEpochStart",
+        "type": "uint256"
+      }
+    ],
+    "name": "registerRewardToken",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_defaultEpochLength",
+        "type": "uint256"
+      }
+    ],
+    "name": "setDefaultEpochLength",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "protocol",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "token",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "epoch",
+        "type": "uint256"
+      }
+    ],
+    "name": "getEpochInfo",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "epochStart",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "epochEnd",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "rewardAmount",
+        "type": "uint256"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "protocol",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "token",
         "type": "address"
       }
     ],
-    "name": "initialize",
+    "name": "getLastCreatedEpoch",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "protocol",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "token",
+        "type": "address"
+      }
+    ],
+    "name": "claimRewards",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [],
+    "name": "claimRewards",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "protocol",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "token",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "epochEnd",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
+      }
+    ],
+    "name": "createEpoch",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "protocol",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "token",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "epoch",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
+      }
+    ],
+    "name": "addReward",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "internalType": "address[]",
+        "name": "protocols",
+        "type": "address[]"
+      },
+      {
+        "internalType": "address[]",
+        "name": "tokens",
+        "type": "address[]"
+      },
+      {
+        "internalType": "uint256[]",
+        "name": "epochs",
+        "type": "uint256[]"
+      },
+      {
+        "internalType": "uint256[]",
+        "name": "amounts",
+        "type": "uint256[]"
+      }
+    ],
+    "name": "addRewards",
     "outputs": [],
     "payable": false,
     "stateMutability": "nonpayable",
