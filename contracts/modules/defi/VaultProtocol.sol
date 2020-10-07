@@ -5,23 +5,27 @@ import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/SafeERC20
 import "@openzeppelin/contracts-ethereum-package/contracts/math/SafeMath.sol";
 
 import "../../interfaces/defi/IVaultProtocol.sol";
-import "../../interfaces/savings/ISavingsModule.sol";
+import "../../interfaces/savings/IVaultSavings.sol";
 import "../../interfaces/token/IOperableToken.sol";
+import "../../interfaces/defi/IDefiStrategy.sol";
 import "../../common/Module.sol";
 import "./DefiOperatorRole.sol";
+
+import "../../utils/CalcUtils.sol";
 
 contract VaultProtocol is Module, IVaultProtocol, DefiOperatorRole {
     using SafeMath for uint256;
     using SafeERC20 for IERC20;
-//    using CalculationUtils for VaultProtocol;
 
     struct DepositData {
         address depositedToken;
         uint256 depositedAmount;
     }
 
+    address public strategy;
+
     //filled up in the overloaded adapter method
-    address[] internal registeredVaultTokens;
+    address[] public registeredVaultTokens;
 
     //deposits waiting for the defi operator's actions
     mapping(address => DepositData[]) internal balancesOnHold;
@@ -34,12 +38,25 @@ contract VaultProtocol is Module, IVaultProtocol, DefiOperatorRole {
     mapping(address => DepositData[]) internal balancesToClaim;
     uint256[] internal claimableTokens;
 
-    function initialize(address _pool) public initializer {
+    function initialize(address _pool, address[] memory tokens) public initializer {
         Module.initialize(_pool);
         DefiOperatorRole.initialize(_msgSender());
+
+        registeredVaultTokens = new address[](tokens.length);
+        claimableTokens = new uint256[](tokens.length);
+
+        for (uint256 i = 0; i < tokens.length; i++) {
+            registeredVaultTokens[i] = tokens[i];
+            claimableTokens[i] = 0;
+        }
     }
 
 //IVaultProtocol methods
+    function registerStrategy(address _strategy) public onlyDefiOperator {
+        strategy = _strategy;
+        IDefiStrategy(strategy).setVault(address(this));
+    }
+
     function depositToVault(address _user, address _token, uint256 _amount) public onlyDefiOperator {
         require(_user != address(0), "Incorrect user address");
         require(_token != address(0), "Incorrect token address");
@@ -66,9 +83,10 @@ contract VaultProtocol is Module, IVaultProtocol, DefiOperatorRole {
                 depositedAmount: _amount
             }) );
         }
-        ISavingsModule vaultSavings = ISavingsModule(getModuleAddress(MODULE_VAULT));
-        IOperableToken vaultPoolToken = IOperableToken(vaultSavings.poolTokenByProtocol(address(this)));
-        vaultPoolToken.increaseOnHoldValue(_user, _amount);
+
+        IVaultSavings vaultSavings = IVaultSavings(getModuleAddress(MODULE_VAULT));
+        address vaultPoolToken = vaultSavings.poolTokenByProtocol(address(this));
+        IOperableToken(vaultPoolToken).increaseOnHoldValue(_user, _amount);
 
         emit DepositToVault(_user, _token, _amount);
     }
@@ -166,17 +184,18 @@ contract VaultProtocol is Module, IVaultProtocol, DefiOperatorRole {
         uint256 totalDeposit = 0;
         for (uint256 i = 0; i < registeredVaultTokens.length; i++) {
             depositAmounts[i] = IERC20(registeredVaultTokens[i]).balanceOf(address(this)).sub(claimableTokens[i]);
+            IERC20(registeredVaultTokens[i]).approve(address(strategy), depositAmounts[i]);
             totalDeposit = totalDeposit.add(depositAmounts[i]);
         }
         //one of two things should happen for the same token: deposit or withdraw
         //simultaneous deposit and withdraw are applied to different tokens
         if (totalDeposit > 0) {
-            handleDeposit(registeredVaultTokens, depositAmounts);
+            IDefiStrategy(strategy).handleDeposit(registeredVaultTokens, depositAmounts);
             emit DepositByOperator(totalDeposit);
         }
 
         if (totalWithdraw > 0) {
-            withdraw(address(this), withdrawAmounts);
+            IDefiStrategy(strategy).withdraw(address(this), withdrawAmounts);
             emit WithdrawByOperator(totalWithdraw);
             //All just withdraw funds mark as claimable
             for (uint256 i = 0; i < claimableTokens.length; i++) {
@@ -333,7 +352,7 @@ contract VaultProtocol is Module, IVaultProtocol, DefiOperatorRole {
         return isReg;
     }
 
-    function tokenRegisteredInd(address _token) internal view returns (uint256) {
+    function tokenRegisteredInd(address _token) public view returns (uint256) {
         uint256 ind = 0;
         for (uint i = 0; i < registeredVaultTokens.length; i++) {
             if (registeredVaultTokens[i] == _token) {
@@ -358,22 +377,24 @@ contract VaultProtocol is Module, IVaultProtocol, DefiOperatorRole {
         delete usersDeposited;
     }
 
-//IDefiProtocol methods
-    //handleDeposit() and withdraw() methods should be overloaded in the adapter
-    function handleDeposit(address token, uint256 amount) public;
-
-    function handleDeposit(address[] memory tokens, uint256[] memory amounts) public; 
-
-    function withdraw(address beneficiary, address token, uint256 amount) public;
-
-    function withdraw(address beneficiary, uint256[] memory amounts) public;
-
-
     function supportedTokens() public view returns(address[] memory) {
         return registeredVaultTokens;
     }
 
     function supportedTokensCount() public view returns(uint256) {
         return registeredVaultTokens.length;
+    }
+
+    function normalizedVaultBalance() public view returns(uint256) {
+        uint256 summ;
+        for (uint256 i=0; i < registeredVaultTokens.length; i++) {
+            uint256 balance = IERC20(registeredVaultTokens[i]).balanceOf(address(this));
+            summ = summ.add(CalcUtils.normalizeAmount(registeredVaultTokens[i], balance));
+        }
+        return summ;
+    }
+
+    function normalizedBalance() public returns(uint256) {
+        return IDefiStrategy(strategy).normalizedBalance();
     }
 }

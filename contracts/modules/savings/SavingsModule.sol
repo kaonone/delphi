@@ -421,7 +421,7 @@ contract SavingsModule is Module, ISavingsModule, AccessChecker, RewardDistribut
         return false;
     }
 
-    function isTokenRegistered(address token) private view returns(bool) {
+    function isTokenRegistered(address token) internal view returns(bool) {
         for (uint256 i = 0; i < registeredTokens.length; i++){
             if (registeredTokens[i] == token) return true;
         }

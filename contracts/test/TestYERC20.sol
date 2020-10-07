@@ -16,11 +16,13 @@ contract TestYERC20 is IYErc20, ERC20Mintable, ERC20Detailed {
     }
 
     function deposit(uint256 amount) public {
-
+        IERC20(underlying).transferFrom(msg.sender, address(this), amount);
+        _mint(_msgSender(), amount);
     }
     
     function withdraw(uint256 shares) public {
-
+        IERC20(underlying).transfer(msg.sender, shares);
+        _burnFrom(_msgSender(), shares);
     }
     
     function getPricePerFullShare() public view returns (uint256) {

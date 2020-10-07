@@ -1,5 +1,6 @@
 import { 
     VaultPoolTokenContract, VaultPoolTokenInstance,
+    VaultProtocolContract, VaultProtocolInstance,
     PoolContract, PoolInstance,
     AccessModuleContract, AccessModuleInstance,
     TestErc20Contract, TestErc20Instance,
@@ -28,6 +29,7 @@ const ERC20 = artifacts.require("TestERC20");
 const YERC20 = artifacts.require("TestYERC20");
 
 const CurveStrategy = artifacts.require("CurveFiStablecoinStrategy");
+const VaultProtocol = artifacts.require("VaultProtocol");
 const VaultSavings = artifacts.require("VaultSavingsModule");
 const VaultPoolToken = artifacts.require("VaultPoolToken");
 const Pool = artifacts.require("Pool");
@@ -44,6 +46,7 @@ contract("CurveFiStablecoinStrategy", async ([_, owner, user1, user2, user3, def
     let globalSnap: Snapshot;
     let vaultCurveStrategy: CurveFiStablecoinStrategyInstance;
     let vaultSavings: VaultSavingsModuleInstance;
+    let vaultProtocol: VaultProtocolInstance;
     let vaultPoolToken: VaultPoolTokenInstance
     let dai: TestErc20Instance;
     let usdc: TestErc20Instance;
@@ -129,41 +132,47 @@ contract("CurveFiStablecoinStrategy", async ([_, owner, user1, user2, user3, def
         await vaultSavings.addDefiOperator(defiops, {from:owner});
 
         await pool.set("vault", vaultSavings.address, true, {from:owner});
+    //Setup Vault
+        vaultProtocol = await VaultProtocol.new({from:owner});
+
+        await (<any> vaultProtocol).methods['initialize(address,address[])'](pool.address, [dai.address, usdc.address, busd.address, tusd.address], {from: owner});
+
+        await vaultProtocol.addDefiOperator(vaultSavings.address, {from:owner});
+        await vaultProtocol.addDefiOperator(defiops, {from:owner});
 
     //Setup strategy
         vaultCurveStrategy = await CurveStrategy.new({from:owner});
-        await (<any> vaultCurveStrategy).methods['initialize(address,address[],uint256)'](
-            pool.address, [dai.address, usdc.address, busd.address, tusd.address], 0, 
-            {from: owner});
+        await (<any> vaultCurveStrategy).methods['initialize(address)'](pool.address, {from: owner});
 
         await vaultCurveStrategy.setProtocol(
-            curveDeposit.address, curveGauge.address, curveMinter.address, uniswap.address, weth.address, 
+            curveDeposit.address, curveGauge.address, curveMinter.address, uniswap.address, weth.address, 0, 
             {from:owner});
 
-        await vaultCurveStrategy.addDefiOperator(vaultSavings.address, {from:owner});
+        await vaultCurveStrategy.addDefiOperator(vaultProtocol.address, {from:owner});
         await vaultCurveStrategy.addDefiOperator(defiops, {from:owner});
 
-        await pool.set("strategy", vaultCurveStrategy.address, true, {from:owner});
+        //Register vault strategy
+        await vaultProtocol.registerStrategy(vaultCurveStrategy.address, {from:owner});
 
     //Setup LP token
         vaultPoolToken = await VaultPoolToken.new({from: owner});
+
         await (<any> vaultPoolToken).methods['initialize(address,string,string)'](pool.address, "VaultSavings", "VLT", {from: owner});
 
         await vaultPoolToken.addMinter(vaultSavings.address, {from:owner});
-        await vaultPoolToken.addMinter(vaultCurveStrategy.address, {from:owner});
+        await vaultPoolToken.addMinter(vaultProtocol.address, {from:owner});
         await vaultPoolToken.addMinter(defiops, {from:owner});
 
-    //Register vault strategy
         //Add liquidity to have some LP tokens minted
-        await ydai.approve(curveSwap.address, 1000, {from:owner});
-        await yusdc.approve(curveSwap.address, 1000, {from:owner});
-        await ybusd.approve(curveSwap.address, 1000, {from:owner});
-        await ytusd.approve(curveSwap.address, 1000, {from:owner});
+        await dai.approve(curveDeposit.address, 1000, {from:owner});
+        await usdc.approve(curveDeposit.address, 1000, {from:owner});
+        await busd.approve(curveDeposit.address, 1000, {from:owner});
+        await tusd.approve(curveDeposit.address, 1000, {from:owner});
 
-        await curveSwap.add_liquidity([100,100,100,100], 0, {from:owner});
+    //add into the deposit
+        await curveDeposit.add_liquidity([100,100,100,100], 0, {from:owner});
 
-        await vaultSavings.registerProtocol(vaultCurveStrategy.address, vaultPoolToken.address, {from: owner});
-
+        await vaultSavings.registerVault(vaultProtocol.address, vaultPoolToken.address, {from: owner});
         //Preliminary balances
         await dai.transfer(user1, 1000, {from:owner});
         await dai.transfer(user2, 1000, {from:owner});
@@ -206,9 +215,10 @@ contract("CurveFiStablecoinStrategy", async ([_, owner, user1, user2, user3, def
 
     describe('Full cycle', () => {
         beforeEach(async () =>{
-            await dai.approve(vaultCurveStrategy.address, 100, {from:user1});
-            await usdc.approve(vaultCurveStrategy.address, 100, {from:user1});
-            await busd.approve(vaultCurveStrategy.address, 100, {from:user1});
+            await dai.approve(vaultProtocol.address, 100, {from:user1});
+            await usdc.approve(vaultProtocol.address, 100, {from:user1});
+            await busd.approve(vaultProtocol.address, 100, {from:user1});
+            await tusd.approve(vaultProtocol.address, 100, {from:user1});
 
         });
 
@@ -217,10 +227,11 @@ contract("CurveFiStablecoinStrategy", async ([_, owner, user1, user2, user3, def
         });
 
         it('Full cycle', async () => {
-            await (<any> vaultCurveStrategy).methods['depositToVault(address,address,uint256)'](user1, dai.address, 10, {from:defiops});
-            await (<any> vaultCurveStrategy).methods['depositToVault(address,address,uint256)'](user1, usdc.address, 20, {from:defiops});
-            await (<any> vaultCurveStrategy).methods['depositToVault(address,address,uint256)'](user1, busd.address, 30, {from:defiops});
+            await (<any> vaultSavings).methods['deposit(address,address[],uint256[])'](vaultProtocol.address,
+                [dai.address, usdc.address, busd.address, tusd.address], [10, 20, 30, 40],
+                {from:user1});
 
+            await vaultSavings.handleWithdrawRequests(vaultProtocol.address, {from:defiops});
 
         });
     });

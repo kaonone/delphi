@@ -1,9 +1,10 @@
 import { 
-    VaultProtocolStubContract, VaultProtocolStubInstance,
+    VaultProtocolContract, VaultProtocolInstance,
     VaultPoolTokenContract, VaultPoolTokenInstance,
     PoolContract, PoolInstance,
     TestErc20Contract, TestErc20Instance,
-    VaultSavingsModuleContract, VaultSavingsModuleInstance
+    VaultSavingsModuleContract, VaultSavingsModuleInstance,
+    VaultStrategyStubContract, VaultStrategyStubInstance
 } from "../../../types/truffle-contracts/index";
 
 // tslint:disable-next-line:no-var-requires
@@ -20,41 +21,23 @@ const ERC20 = artifacts.require("TestERC20");
 
 const Pool = artifacts.require("Pool");
 const VaultSavings = artifacts.require("VaultSavingsModule");
-const VaultProtocol = artifacts.require("VaultProtocolStub");
+const VaultProtocol = artifacts.require("VaultProtocol");
+const VaultStrategy = artifacts.require("VaultStrategyStub");
 const PoolToken = artifacts.require("VaultPoolToken");
 
 contract("VaultProtocol", async ([_, owner, user1, user2, user3, defiops, protocolStub, ...otherAccounts]) => {
     let globalSnap: Snapshot;
-    let vaultProtocol: VaultProtocolStubInstance;
+    let vaultProtocol: VaultProtocolInstance;
     let dai: TestErc20Instance;
     let usdc: TestErc20Instance;
     let busd: TestErc20Instance;
     let poolToken: VaultPoolTokenInstance;
     let pool: PoolInstance;
     let vaultSavings: VaultSavingsModuleInstance;
+    let strategy: VaultStrategyStubInstance;
 
 
-    before(async () => {
-        pool = await Pool.new({from:owner});
-        await (<any> pool).methods['initialize()']({from: owner});
-
-        vaultSavings = await VaultSavings.new({from: owner});
-        await (<any> vaultSavings).methods['initialize(address)'](pool.address, {from: owner});
-        await vaultSavings.addDefiOperator(defiops, {from:owner});
-
-        await pool.set("vault", vaultSavings.address, true, {from:owner});
-
-        vaultProtocol = await VaultProtocol.new({from:owner});
-        await (<any> vaultProtocol).methods['initialize(address)'](pool.address, {from: owner});
-        await vaultProtocol.addDefiOperator(defiops, {from:owner});
-
-        poolToken = await PoolToken.new({from: owner});
-        await (<any> poolToken).methods['initialize(address,string,string)'](pool.address, "VaultSavings", "VLT", {from: owner});
-
-        await poolToken.addMinter(vaultSavings.address, {from:owner});
-        await poolToken.addMinter(vaultProtocol.address, {from:owner});
-        await poolToken.addMinter(defiops, {from:owner});
-        
+    before(async () => {        
         //Deposit token 1
         dai = await ERC20.new({from:owner});
         await (<any> dai).methods['initialize(string,string,uint8)']("DAI", "DAI", 18, {from:owner});
@@ -76,11 +59,38 @@ contract("VaultProtocol", async ([_, owner, user1, user2, user3, defiops, protoc
         await busd.transfer(user1, 1000, {from:owner});
         await busd.transfer(user2, 1000, {from:owner});
         await busd.transfer(user3, 1000, {from:owner});
+    //------
+        pool = await Pool.new({from:owner});
+        await (<any> pool).methods['initialize()']({from: owner});
+    //------
+        vaultSavings = await VaultSavings.new({from: owner});
+        await (<any> vaultSavings).methods['initialize(address)'](pool.address, {from: owner});
+        await vaultSavings.addDefiOperator(defiops, {from:owner});
 
-        await vaultProtocol.registerTokens([dai.address, usdc.address, busd.address], {from: defiops})
-        await vaultProtocol.setProtocol(protocolStub, {from: defiops});
+        await pool.set("vault", vaultSavings.address, true, {from:owner});
+    //------
+        vaultProtocol = await VaultProtocol.new({from:owner});
+        await (<any> vaultProtocol).methods['initialize(address,address[])'](pool.address, [dai.address, usdc.address, busd.address], {from: owner});
+        await vaultProtocol.addDefiOperator(defiops, {from:owner});
+    //------
+        poolToken = await PoolToken.new({from: owner});
+        await (<any> poolToken).methods['initialize(address,string,string)'](pool.address, "VaultSavings", "VLT", {from: owner});
 
-        await vaultSavings.registerProtocol(vaultProtocol.address, poolToken.address, {from: owner});
+        await poolToken.addMinter(vaultSavings.address, {from:owner});
+        await poolToken.addMinter(vaultProtocol.address, {from:owner});
+        await poolToken.addMinter(defiops, {from:owner});
+    //------
+        strategy = await VaultStrategy.new({from:owner});
+        await (<any> strategy).methods['initialize()']({from: owner});
+        await strategy.setProtocol(protocolStub, {from: owner});
+
+        await strategy.addDefiOperator(defiops, {from:owner});
+        await strategy.addDefiOperator(vaultProtocol.address, {from:owner});
+    //------
+        await vaultProtocol.registerStrategy(strategy.address, {from: defiops})
+        
+    //------
+        await vaultSavings.registerVault(vaultProtocol.address, poolToken.address, {from: owner});
 
         globalSnap = await Snapshot.create(web3.currentProvider);
     });
@@ -94,7 +104,7 @@ contract("VaultProtocol", async ([_, owner, user1, user2, user3, defiops, protoc
                 userBalance: await dai.balanceOf(user1),
                 vaultBalance: await dai.balanceOf(vaultProtocol.address)
             };
-
+            
             let onhold = await vaultProtocol.amountOnHold(user1, dai.address);
             expect(onhold.toNumber(), "Deposit is not empty").to.equal(0);
 
@@ -556,9 +566,9 @@ contract("VaultProtocol", async ([_, owner, user1, user2, user3, defiops, protoc
             await usdc.transfer(protocolStub, 1000, {from: owner});
             await busd.transfer(protocolStub, 1000, {from: owner});
 
-            await dai.approve(vaultProtocol.address, 1000, {from:protocolStub});
-            await usdc.approve(vaultProtocol.address, 1000, {from:protocolStub});
-            await busd.approve(vaultProtocol.address, 1000, {from:protocolStub});
+            await dai.approve(strategy.address, 1000, {from:protocolStub});
+            await usdc.approve(strategy.address, 1000, {from:protocolStub});
+            await busd.approve(strategy.address, 1000, {from:protocolStub});
 
             snap = await Snapshot.create(web3.currentProvider);
         });
@@ -590,7 +600,6 @@ contract("VaultProtocol", async ([_, owner, user1, user2, user3, defiops, protoc
 
             // withdraw by operator 
             let opResult = await vaultProtocol.withdrawOperator({from: defiops});
-
             expectEvent(opResult, 'DepositByOperator', {_amount: "160"});
 
             let onhold = await vaultProtocol.amountOnHold(user1, dai.address);
@@ -817,9 +826,9 @@ contract("VaultProtocol", async ([_, owner, user1, user2, user3, defiops, protoc
             await usdc.transfer(protocolStub, 1000, {from: owner});
             await busd.transfer(protocolStub, 1000, {from: owner});
 
-            await dai.approve(vaultProtocol.address, 1000, {from:protocolStub});
-            await usdc.approve(vaultProtocol.address, 1000, {from:protocolStub});
-            await busd.approve(vaultProtocol.address, 1000, {from:protocolStub});
+            await dai.approve(strategy.address, 1000, {from:protocolStub});
+            await usdc.approve(strategy.address, 1000, {from:protocolStub});
+            await busd.approve(strategy.address, 1000, {from:protocolStub});
 
             //Create some claimable amounts
             await (<any> vaultProtocol).methods['withdrawFromVault(address,address[],uint256[])'](
@@ -1083,15 +1092,13 @@ contract("VaultProtocol", async ([_, owner, user1, user2, user3, defiops, protoc
     });
 
     describe('Registered tokens only', () => {
-        //operation with not registered token
-        //supportedTokens()
-        //supportedtokensCount()
-
-        it('Supported tokens count', async () => {
-            //Check already registered
-            let tokensRegistered = await vaultProtocol.supportedTokensCount();
-            expect(tokensRegistered.toNumber(), "Incorrect number of registered tokens").to.equal(3);
-        });
+        //with new VaultProtocol
+        //supportedTokens() - returns correct registered tokens (check for one, two and 4)
+        //supportedtokensCount() - returns correct number
+        //
+        //With current vaultprotocol (from global before)
+        //check that deposit works with registered token
+        //check that withdraw works with registered token
     });
     
 });

@@ -1,10 +1,11 @@
 import { 
-    VaultProtocolStubContract, VaultProtocolStubInstance,
+    VaultProtocolContract, VaultProtocolInstance,
     TestErc20Contract, TestErc20Instance,
     VaultSavingsModuleContract, VaultSavingsModuleInstance,
     VaultPoolTokenContract, VaultPoolTokenInstance,
     PoolContract, PoolInstance,
-    AccessModuleContract, AccessModuleInstance
+    AccessModuleContract, AccessModuleInstance,
+    VaultStrategyStubContract, VaultStrategyStubInstance
 } from "../../../types/truffle-contracts/index";
 
 // tslint:disable-next-line:no-var-requires
@@ -20,15 +21,16 @@ const advanceBlockAtTime = require("../../utils/advanceBlockAtTime");
 
 const ERC20 = artifacts.require("TestERC20");
 
-const VaultProtocol = artifacts.require("VaultProtocolStub");
+const VaultProtocol = artifacts.require("VaultProtocol");
 const VaultSavings = artifacts.require("VaultSavingsModule");
+const VaultStrategy = artifacts.require("VaultStrategyStub");
 const PoolToken = artifacts.require("VaultPoolToken");
 const Pool = artifacts.require("Pool");
 const AccessModule = artifacts.require("AccessModule");
 
 contract("VaultSavings", async ([_, owner, user1, user2, user3, defiops, protocolStub, ...otherAccounts]) => {
     let globalSnap: Snapshot;
-    let vaultProtocol: VaultProtocolStubInstance;
+    let vaultProtocol: VaultProtocolInstance;
     let vaultSavings: VaultSavingsModuleInstance;
     let poolToken: VaultPoolTokenInstance
     let dai: TestErc20Instance;
@@ -36,6 +38,7 @@ contract("VaultSavings", async ([_, owner, user1, user2, user3, defiops, protoco
     let busd: TestErc20Instance;
     let pool: PoolInstance;
     let accessModule: AccessModuleInstance;
+    let strategy: VaultStrategyStubInstance;
 
 
     let blockTimeTravel = async(delta: BN) => {
@@ -47,34 +50,6 @@ contract("VaultSavings", async ([_, owner, user1, user2, user3, defiops, protoco
 
 
     before(async () => {
-        pool = await Pool.new({from:owner});
-        await (<any> pool).methods['initialize()']({from: owner});
-
-        accessModule = await AccessModule.new({from: owner});
-        await accessModule.methods['initialize(address)'](pool.address, {from: owner});
-
-        await pool.set("access", accessModule.address, true, {from:owner});
-
-        vaultSavings = await VaultSavings.new({from: owner});
-        await (<any> vaultSavings).methods['initialize(address)'](pool.address, {from: owner});
-        await vaultSavings.addDefiOperator(defiops, {from:owner});
-
-        await pool.set("vault", vaultSavings.address, true, {from:owner});
-
-        poolToken = await PoolToken.new({from: owner});
-        await (<any> poolToken).methods['initialize(address,string,string)'](pool.address, "VaultSavings", "VLT", {from: owner});
-
-        vaultProtocol = await VaultProtocol.new({from:owner});
-        await (<any> vaultProtocol).methods['initialize(address)'](pool.address, {from: owner});
-        await vaultProtocol.addDefiOperator(vaultSavings.address, {from:owner});
-        await vaultProtocol.addDefiOperator(defiops, {from:owner});
-
-        await pool.set("strategy", vaultProtocol.address, true, {from:owner});
-
-        await poolToken.addMinter(vaultSavings.address, {from:owner});
-        await poolToken.addMinter(vaultProtocol.address, {from:owner});
-        await poolToken.addMinter(defiops, {from:owner});
-
         //Deposit token 1
         dai = await ERC20.new({from:owner});
         await (<any> dai).methods['initialize(string,string,uint8)']("DAI", "DAI", 18, {from:owner});
@@ -96,11 +71,43 @@ contract("VaultSavings", async ([_, owner, user1, user2, user3, defiops, protoco
         await busd.transfer(user1, 1000, {from:owner});
         await busd.transfer(user2, 1000, {from:owner});
         await busd.transfer(user3, 1000, {from:owner});
+    //------
+        pool = await Pool.new({from:owner});
+        await (<any> pool).methods['initialize()']({from: owner});
+    //------
+        accessModule = await AccessModule.new({from: owner});
+        await accessModule.methods['initialize(address)'](pool.address, {from: owner});
 
-        await vaultProtocol.registerTokens([dai.address, usdc.address, busd.address], {from: defiops})
-        await vaultProtocol.setProtocol(protocolStub, {from: defiops});
+        await pool.set("access", accessModule.address, true, {from:owner});
+    //------
+        vaultSavings = await VaultSavings.new({from: owner});
+        await (<any> vaultSavings).methods['initialize(address)'](pool.address, {from: owner});
+        await vaultSavings.addDefiOperator(defiops, {from:owner});
 
-        await vaultSavings.registerProtocol(vaultProtocol.address, poolToken.address, {from: owner});
+        await pool.set("vault", vaultSavings.address, true, {from:owner});
+    //------
+        vaultProtocol = await VaultProtocol.new({from:owner});
+        await (<any> vaultProtocol).methods['initialize(address,address[])'](pool.address, [dai.address, usdc.address, busd.address], {from: owner});
+        await vaultProtocol.addDefiOperator(vaultSavings.address, {from:owner});
+        await vaultProtocol.addDefiOperator(defiops, {from:owner});
+    //------
+        poolToken = await PoolToken.new({from: owner});
+        await (<any> poolToken).methods['initialize(address,string,string)'](pool.address, "VaultSavings", "VLT", {from: owner});
+        
+        await poolToken.addMinter(vaultSavings.address, {from:owner});
+        await poolToken.addMinter(vaultProtocol.address, {from:owner});
+        await poolToken.addMinter(defiops, {from:owner});
+    //------
+        strategy = await VaultStrategy.new({from:owner});
+        await (<any> strategy).methods['initialize()']({from: owner});
+        await strategy.setProtocol(protocolStub, {from: owner});
+
+        await strategy.addDefiOperator(defiops, {from:owner});
+        await strategy.addDefiOperator(vaultProtocol.address, {from:owner});
+    //------
+        await vaultProtocol.registerStrategy(strategy.address, {from: defiops})
+    //------
+        await vaultSavings.registerVault(vaultProtocol.address, poolToken.address, {from: owner});
 
         globalSnap = await Snapshot.create(web3.currentProvider);
     });
@@ -191,7 +198,6 @@ contract("VaultSavings", async ([_, owner, user1, user2, user3, defiops, protoco
 
             userOnHold = await vaultProtocol.amountOnHold(user2, dai.address, {from:owner});
             expect(userOnHold.toNumber(), "On-hold record for (2) was not deleted").to.equal(0);
-
 
             let poolBalance = await poolToken.balanceOf(poolToken.address, {from: owner});
             expect(poolBalance.toNumber(), "No new pool tokens minted").to.equal(0);
@@ -299,7 +305,7 @@ contract("VaultSavings", async ([_, owner, user1, user2, user3, defiops, protoco
 
     describe('Full cycle', () => {
         beforeEach(async () => {
-            dai.approve(vaultProtocol.address, 10000, {from:protocolStub});
+            dai.approve(strategy.address, 10000, {from:protocolStub});
         });
         afterEach(async () => {
             await globalSnap.revert();

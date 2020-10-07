@@ -13,8 +13,6 @@ contract ISavingsModule {
     event WithdrawToken(address indexed protocol, address indexed token, uint256 dnAmount);
     event Withdraw(address indexed protocol, address indexed user, uint256 nAmount, uint256 nFee);
 
-    function registerProtocol(IDefiProtocol protocol, PoolToken poolToken) external;
-
     /**
      * @notice Deposit tokens to several protocols
      * @param _protocols Array of protocols to deposit tokens (each protocol only once)
@@ -45,11 +43,6 @@ contract ISavingsModule {
      * @notice Distributes yield. May be called by bot, if there was no deposits/withdrawals
      */
     function distributeYield() external;
-
-    /** 
-     * @notice Distributes reward tokens. May be called by bot, if there was no deposits/withdrawals
-     */
-    function distributeRewards() external;
 
     function poolTokenByProtocol(address _protocol) external view returns(address);
 }

@@ -1,7 +1,14 @@
 pragma solidity ^0.5.12;
 
-import "./VaultProtocol.sol";
+import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/SafeERC20.sol";
+import "@openzeppelin/contracts-ethereum-package/contracts/math/SafeMath.sol";
+
+import "../../common/Module.sol";
+import "./DefiOperatorRole.sol";
+
 import "../../interfaces/defi/IDefiStrategy.sol";
+import "../../interfaces/defi/IVaultProtocol.sol";
 import "../../interfaces/defi/ICurveFiDeposit.sol";
 import "../../interfaces/defi/ICurveFiDeposit_Y.sol";
 import "../../interfaces/defi/ICurveFiLiquidityGauge.sol";
@@ -12,7 +19,13 @@ import "../../interfaces/defi/IUniswap.sol";
 
 import "../../utils/CalcUtils.sol";
 
-contract CurveFiStablecoinStrategy is VaultProtocol, IDefiStrategy {
+
+contract CurveFiStablecoinStrategy is Module, IDefiStrategy, DefiOperatorRole {
+    using SafeMath for uint256;
+    using SafeERC20 for IERC20;
+
+    address public vault;
+
     ICurveFiDeposit public curveFiDeposit;
     IERC20 public curveFiToken;
     ICurveFiLiquidityGauge public curveFiLPGauge;
@@ -21,25 +34,20 @@ contract CurveFiStablecoinStrategy is VaultProtocol, IDefiStrategy {
     uint256 public slippageMultiplier;
     address public crvToken;
     address public wethToken; // used for crv <> weth <> dai route
-
-
-    address public uniswapAddress;
+    
+    address public uniswapRouter;
     uint256 daiInd;
 
     //Register stablecoins contracts addresses
-    function initialize(address _pool, address[] memory tokens, uint256 _daiInd) public initializer {
-        VaultProtocol.initialize(_pool);
-        for (uint256 i = 0; i < tokens.length; i++) {
-            registeredVaultTokens.push(tokens[i]);
-            claimableTokens.push(0);
-        }
-
+    function initialize(address _pool) public initializer {
+        Module.initialize(_pool);
+        DefiOperatorRole.initialize(_msgSender());
         slippageMultiplier = 1.01*1e18;
 
-        daiInd = _daiInd;
+        
     }
 
-    function setProtocol(address _depositContract, address _liquidityGauge, address _curveFiMinter, address _uniswapAddress, address _wethToken) public onlyDefiOperator {
+    function setProtocol(address _depositContract, address _liquidityGauge, address _curveFiMinter, address _uniswapRouter, address _wethToken, uint256 _daiInd) public onlyDefiOperator {
         require(_depositContract != address(0), "Incorrect deposit contract address");
 
         curveFiDeposit = ICurveFiDeposit(_depositContract);
@@ -54,17 +62,26 @@ contract CurveFiStablecoinStrategy is VaultProtocol, IDefiStrategy {
 
         crvToken = curveFiLPGauge.crv_token();
 
-        uniswapAddress = _uniswapAddress;
+        uniswapRouter = _uniswapRouter;
         wethToken = _wethToken;
+
+        daiInd = _daiInd;
+    }
+
+    function setVault(address _vault) public onlyDefiOperator {
+        vault = _vault;
     }
 
     function handleDeposit(address token, uint256 amount) public onlyDefiOperator {
-        uint256[] memory amounts = new uint256[](registeredVaultTokens.length);
-        uint256 ind = tokenRegisteredInd(token);
+        uint256 nTokens = IVaultProtocol(vault).supportedTokensCount();
+        uint256[] memory amounts = new uint256[](nTokens);
+        uint256 ind = IVaultProtocol(vault).tokenRegisteredInd(token);
 
-        for (uint256 i=0; i < registeredVaultTokens.length; i++) {
+        for (uint256 i=0; i < nTokens; i++) {
             amounts[i] = uint256(0);
         }
+        IERC20(token).transferFrom(vault, address(this), amount);
+        IERC20(token).approve(address(curveFiDeposit), amount);
         amounts[ind] = amount;
 
         ICurveFiDeposit_Y(address(curveFiDeposit)).add_liquidity(convertArray(amounts), 0);
@@ -75,7 +92,12 @@ contract CurveFiStablecoinStrategy is VaultProtocol, IDefiStrategy {
 
     function handleDeposit(address[] memory tokens, uint256[] memory amounts) public onlyDefiOperator {
         require(tokens.length == amounts.length, "Count of tokens does not match count of amounts");
-        require(amounts.length == registeredVaultTokens.length, "Amounts count does not match registered tokens");
+        require(amounts.length == IVaultProtocol(vault).supportedTokensCount(), "Amounts count does not match registered tokens");
+
+        for (uint256 i=0; i < tokens.length; i++) {
+            IERC20(tokens[i]).transferFrom(vault, address(this), amounts[i]);
+            IERC20(tokens[i]).approve(address(curveFiDeposit), amounts[i]);
+        }
 
         //Check for sufficient amounts on the Vault balances is checked in the WithdrawOperator()
         //Correct amounts are also set in WithdrawOperator()
@@ -83,13 +105,15 @@ contract CurveFiStablecoinStrategy is VaultProtocol, IDefiStrategy {
         //Deposit stablecoins into the protocol
         ICurveFiDeposit_Y(address(curveFiDeposit)).add_liquidity(convertArray(amounts), 0);
 
+
         //Deposit yPool tokens into the y-pool to get CRV token
         uint256 cftBalance = curveFiToken.balanceOf(address(this));
+        curveFiToken.approve(address(curveFiLPGauge), cftBalance);
         curveFiLPGauge.deposit(cftBalance);
     }
 
     function withdraw(address beneficiary, address token, uint256 amount) public onlyDefiOperator {
-        uint256 tokenIdx = tokenRegisteredInd(token);
+        uint256 tokenIdx = IVaultProtocol(vault).tokenRegisteredInd(token);
 
         //All withdrawn tokens are marked as claimable, so anyway we need to withdraw from the protocol
 
@@ -108,6 +132,7 @@ contract CurveFiStablecoinStrategy is VaultProtocol, IDefiStrategy {
     }
 
     function withdraw(address beneficiary, uint256[] memory amounts) public onlyDefiOperator {
+        address[] memory registeredVaultTokens = IVaultProtocol(vault).supportedTokens();
         require(amounts.length == registeredVaultTokens.length, "Wrong amounts array length");
 
         //All withdrawn tokens are marked as claimable, so anyway we need to withdraw from the protocol
@@ -134,21 +159,22 @@ contract CurveFiStablecoinStrategy is VaultProtocol, IDefiStrategy {
     }
 
     function performStrategy() public onlyDefiOperator {
+        address[] memory registeredVaultTokens = IVaultProtocol(vault).supportedTokens();
         address dai = registeredVaultTokens[daiInd];
 
         claimRewardsFromProtocol();
 
         uint256 _crv = IERC20(crvToken).balanceOf(address(this));
         if (_crv > 0) {
-            IERC20(crvToken).safeApprove(uniswapAddress, 0);
-            IERC20(crvToken).safeApprove(uniswapAddress, _crv);
+            IERC20(crvToken).safeApprove(uniswapRouter, 0);
+            IERC20(crvToken).safeApprove(uniswapRouter, _crv);
 
             address[] memory path = new address[](3);
             path[0] = crvToken;
             path[1] = wethToken;
             path[2] = dai;
 
-            IUniswap(uniswapAddress).swapExactTokensForTokens(_crv, uint256(0), path, address(this), now.add(1800));
+            IUniswap(uniswapRouter).swapExactTokensForTokens(_crv, uint256(0), path, address(this), now.add(1800));
         }
         //new dai tokens will be transferred to this procol, they will be deposited by the operator on the next round
         //new LP tokens will be distributed automatically after the operator action
@@ -177,15 +203,21 @@ contract CurveFiStablecoinStrategy is VaultProtocol, IDefiStrategy {
     function balanceOfAll() public returns(uint256[] memory balances) {
         uint256 cfBalance = curveFiTokenBalance();
         uint256 cfTotalSupply = curveFiToken.totalSupply();
+        uint256 nTokens = IVaultProtocol(vault).supportedTokensCount();
 
-        balances = new uint256[](registeredVaultTokens.length);
-        for (uint256 i=0; i < registeredVaultTokens.length; i++){
-            uint256 tcfBalance = curveFiSwap.balances(int128(i));
+        require(cfTotalSupply > 0, "No Curve pool tokens minted");
+
+        balances = new uint256[](nTokens);
+
+        uint256 tcfBalance;
+        for (uint256 i=0; i < nTokens; i++){
+            tcfBalance = curveFiSwap.balances(int128(i));
             balances[i] = tcfBalance.mul(cfBalance).div(cfTotalSupply);
         }
     }
 
     function optimalProportions() public returns(uint256[] memory) {
+        address[] memory registeredVaultTokens = IVaultProtocol(vault).supportedTokens();
         uint256[] memory amounts = balanceOfAll();
         uint256 summ;
         for (uint256 i=0; i < registeredVaultTokens.length; i++){
@@ -199,7 +231,9 @@ contract CurveFiStablecoinStrategy is VaultProtocol, IDefiStrategy {
     }
 
     function normalizedBalance() public returns(uint256) {
+        address[] memory registeredVaultTokens = IVaultProtocol(vault).supportedTokens();
         uint256[] memory balances = balanceOfAll();
+
         uint256 summ;
         for (uint256 i=0; i < registeredVaultTokens.length; i++){
             summ = summ.add(CalcUtils.normalizeAmount(registeredVaultTokens[i], balances[i]));
@@ -217,6 +251,7 @@ contract CurveFiStablecoinStrategy is VaultProtocol, IDefiStrategy {
     }
 
     function getTokenIndex(address token) public view returns(uint256) {
+        address[] memory registeredVaultTokens = IVaultProtocol(vault).supportedTokens();
         for (uint256 i=0; i < registeredVaultTokens.length; i++){
             if (registeredVaultTokens[i] == token){
                 return i;
@@ -224,29 +259,4 @@ contract CurveFiStablecoinStrategy is VaultProtocol, IDefiStrategy {
         }
         revert("CurveFiYProtocol: token not registered");
     }
-
-//Stubs
-    function canSwapToToken(address token) external view returns(bool) {
-        return false;
-    }
-
-    function claimRewards() public returns(address[] memory tokens, uint256[] memory amounts) {
-        tokens = new address[](1);
-        amounts = new uint256[](1);
-    }
-
-    function withdrawReward(address token, address user, uint256 amount) public {
-
-    }
-
-    function supportedRewardTokens() external view returns(address[] memory) {
-        address[] memory a = new address[](1);
-        return a;
-    }
-
-    function isSupportedRewardToken(address token) external view returns(bool) {
-        return false;
-    }
-
-
 }
