@@ -70,7 +70,7 @@ contract("RewardDistributionModule - migration", async ([owner, user, ...otherAc
         cDai = await deployProxy(CErc20Stub, [dai.address], UPGRADABLE_OPTS);
         comp = await deployProxy(FreeERC20, ["Compound", "COMP"], UPGRADABLE_OPTS);
         comptroller = await deployProxy(ComptrollerStub, [comp.address], UPGRADABLE_OPTS);
-        await comp.methods['mint(address,uint256)'](comptroller.address, web3.utils.fromWei('1000000000'));
+        await comp.methods['mint(address,uint256)'](comptroller.address, web3.utils.toWei('1000000000'));
 
         //Setup system contracts
         pool = await deployProxy(Pool, [], UPGRADABLE_OPTS);
@@ -95,7 +95,7 @@ contract("RewardDistributionModule - migration", async ([owner, user, ...otherAc
         poolTokenCompoundProtocolDai = await deployProxy(PoolToken, [pool.address, "Delphi Compound DAI","dCDAI"], UPGRADABLE_OPTS);
         await savings.registerProtocol(compoundProtocolDai.address, poolTokenCompoundProtocolDai.address);
         await compoundProtocolDai.addDefiOperator(savings.address);
-
+        await poolTokenCompoundProtocolDai.addMinter(savings.address);
 
         rewardDistributions = await deployProxy(RewardDistributionModule, [pool.address], UPGRADABLE_OPTS);
         await pool.set('rewardDistributions', rewardDistributions.address, false);
@@ -110,13 +110,21 @@ contract("RewardDistributionModule - migration", async ([owner, user, ...otherAc
         //await snap.revert();
     });
 
-    it('should deposit', async () => {
-        let amount = web3.utils.fromWei(1000);
+    it.only('should deposit', async () => {
+        let amount = web3.utils.toWei('1000');
         await dai.methods['mint(address,uint256)'](user, amount);
-        await dai.approve(savings.address, amount);
-        await savings.methods['deposit(address,address[],uint256[])'](compoundProtocolDai.address, [dai.address], [amount]);
+        await dai.approve(savings.address, amount, {from:user});
+let daiAmount = await dai.balanceOf(user);
+console.log('daiAmount', daiAmount, web3.utils.fromWei(daiAmount));
+let daiAllowance = await dai.allowance(user, savings.address);
+console.log('daiAllowance', daiAllowance, web3.utils.fromWei(daiAllowance));
+
+console.log('2 deposit', compoundProtocolDai.address, [dai.address], [amount]);        
+        await savings.methods['deposit(address,address[],uint256[])'](compoundProtocolDai.address, [dai.address], [amount], {from:user});
+console.log('3');        
 
         let lpAmount = poolTokenCompoundProtocolDai.balanceOf(user);
+console.log('lpAmount', lpAmount);        
         expect(lpAmount).to.be.bignumber.gt(0);
     });
 
