@@ -114,10 +114,13 @@ contract("RewardDistributionModule - migration", async ([owner, user, ...otherAc
         let amount = web3.utils.toWei('1000');
         await dai.methods['mint(address,uint256)'](user, amount);
         await dai.approve(savings.address, amount, {from:user});
-let daiAmount = await dai.balanceOf(user);
-console.log('daiAmount', daiAmount, web3.utils.fromWei(daiAmount));
-let daiAllowance = await dai.allowance(user, savings.address);
-console.log('daiAllowance', daiAllowance, web3.utils.fromWei(daiAllowance));
+// let daiAmount = await dai.balanceOf(user);
+// console.log('daiAmount', daiAmount, web3.utils.fromWei(daiAmount));
+// let daiAllowance = await dai.allowance(user, savings.address);
+// console.log('daiAllowance', daiAllowance, web3.utils.fromWei(daiAllowance));
+let isMinter = await poolTokenCompoundProtocolDai.isMinter(savings.address);
+console.log('isMinter', isMinter);
+
 
 console.log('2 deposit', compoundProtocolDai.address, [dai.address], [amount]);        
         await savings.methods['deposit(address,address[],uint256[])'](compoundProtocolDai.address, [dai.address], [amount], {from:user});
