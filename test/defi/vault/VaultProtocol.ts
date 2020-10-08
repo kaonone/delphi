@@ -850,7 +850,7 @@ contract("VaultProtocol", async ([_, owner, user1, user2, user3, defiops, protoc
             snap = await Snapshot.create(web3.currentProvider);
         });
 
-        afterEach(async () => {
+        after(async () => {
             await globalSnap.revert();
         });
 
@@ -1130,7 +1130,7 @@ contract("VaultProtocol", async ([_, owner, user1, user2, user3, defiops, protoc
             return _vaultProtocol;
         }
 
-        after(async() => await globalSnap.revert());
+        afterEach(async() => await globalSnap.revert());
 
         it('The addresses of registered tokens are correct', async() => {
             const vaultOneToken = await VaultProtocol.new({ from: owner });
