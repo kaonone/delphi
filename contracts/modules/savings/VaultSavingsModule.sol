@@ -71,7 +71,7 @@ contract VaultSavingsModule is Module, IVaultSavings, AccessChecker, RewardDistr
                 poolToken.mint(_msgSender(), normalizedBalance.sub(ts));
             }
         }
-        emit ProtocolRegistered(address(protocol), address(poolToken));
+        emit VaultRegistered(address(protocol), address(poolToken));
     }
 
 // Inherited from ISavingsModule
@@ -186,15 +186,15 @@ contract VaultSavingsModule is Module, IVaultSavings, AccessChecker, RewardDistr
         IVaultProtocol(_vaultProtocol).claimRequested(_msgSender());
     }
 
-    function handleWithdrawRequests(address _vaultProtocol) public onlyDefiOperator {
+    function handleOperatorActions(address _vaultProtocol, address _strategy) public onlyDefiOperator {
         uint256 totalDeposit;
         uint256 totalWithdraw;
 
         VaultPoolToken poolToken = VaultPoolToken(vaults[_vaultProtocol].poolToken);
 
-        uint256 nBalanceBefore = distributeYieldInternal(_vaultProtocol);
-        (totalDeposit, totalWithdraw) = IVaultProtocol(_vaultProtocol).withdrawOperator();
-        uint256 nBalanceAfter = updateProtocolBalance(_vaultProtocol);
+        uint256 nBalanceBefore = distributeYieldInternal(_vaultProtocol, _strategy);
+        (totalDeposit, totalWithdraw) = IVaultProtocol(_vaultProtocol).operatorAction(_strategy);
+        uint256 nBalanceAfter = updateProtocolBalance(_vaultProtocol, _strategy);
 
         uint256 yield;
         uint256 calcBalanceAfter = nBalanceBefore.add(totalDeposit).sub(totalWithdraw);
@@ -210,21 +210,28 @@ contract VaultSavingsModule is Module, IVaultSavings, AccessChecker, RewardDistr
         /** 
      * @notice Distributes yield. May be called by bot, if there was no deposits/withdrawals
      */
-    function distributeYield() public {
-        for(uint256 i=0; i<registeredVaults.length; i++) {
-            distributeYieldInternal(address(registeredVaults[i]));
+    function distributeYield(address _vaultProtocol) public {
+        address[] memory availableStrategies = IVaultProtocol(_vaultProtocol).registeredStrategies();
+        for (uint256 i = 0; i < availableStrategies.length; i++) {
+            distributeYieldInternal(_vaultProtocol, availableStrategies[i]);
         }
     }
 
-        /**
-     * @notice Calculates difference from previous action with a protocol and distributes yield
-     * @dev MUST call this BEFORE deposit/withdraw from protocol
-     * @param _protocol to check
-     * @return Current balance of the protocol
-     */
-    function distributeYieldInternal(address _protocol) internal returns(uint256){
-        uint256 currentBalance = IVaultProtocol(_protocol).normalizedBalance();
-        VaultInfo storage pi = vaults[_protocol];
+/*    function distributeYieldInternal(address _vaultProtocol) internal returns(uint256){
+        uint256 currentBalance = IVaultProtocol(_vaultProtocol).normalizedBalance();
+        VaultInfo storage pi = vaults[_vaultProtocol];
+        VaultPoolToken poolToken = VaultPoolToken(pi.poolToken);
+        if(currentBalance > pi.previousBalance) {
+            uint256 yield = currentBalance.sub(pi.previousBalance);
+            pi.previousBalance = currentBalance;
+            createYieldDistribution(poolToken, yield);
+        }
+        return currentBalance;
+    }*/
+
+    function distributeYieldInternal(address _vaultProtocol, address _strategy) internal returns(uint256){
+        uint256 currentBalance = IVaultProtocol(_vaultProtocol).normalizedBalance(_strategy);
+        VaultInfo storage pi = vaults[_vaultProtocol];
         VaultPoolToken poolToken = VaultPoolToken(pi.poolToken);
         if(currentBalance > pi.previousBalance) {
             uint256 yield = currentBalance.sub(pi.previousBalance);
@@ -239,8 +246,8 @@ contract VaultSavingsModule is Module, IVaultSavings, AccessChecker, RewardDistr
         emit YieldDistribution(address(poolToken), yield);
     }
 
-    function poolTokenByProtocol(address _protocol) public view returns(address) {
-        return address(vaults[_protocol].poolToken);
+    function poolTokenByProtocol(address _vaultProtocol) public view returns(address) {
+        return address(vaults[_vaultProtocol].poolToken);
     }
 
     function protocolByPoolToken(address _poolToken) public view returns(address) {
@@ -278,8 +285,8 @@ contract VaultSavingsModule is Module, IVaultSavings, AccessChecker, RewardDistr
         return false;
     }
 
-    function updateProtocolBalance(address _protocol) internal returns(uint256){
-        uint256 currentBalance = IVaultProtocol(_protocol).normalizedBalance();
+    function updateProtocolBalance(address _protocol, address _strategy) internal returns(uint256){
+        uint256 currentBalance = IVaultProtocol(_protocol).normalizedBalance(_strategy);
         vaults[_protocol].previousBalance = currentBalance;
         return currentBalance;
     }

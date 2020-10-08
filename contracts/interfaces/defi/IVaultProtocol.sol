@@ -14,8 +14,11 @@ contract IVaultProtocol {
     function tokenRegisteredInd(address _token) external view returns(uint256);
 
     function normalizedBalance() external returns(uint256);
+    function normalizedBalance(address _strategy) external returns(uint256);
 
     function registerStrategy(address _strategy) external;
+    function isStrategyRegistered(address _strategy) external view returns(bool);
+    function registeredStrategies() external view returns(address[] memory);
 
     function depositToVault(address _user, address _token, uint256 _amount) external;
     function depositToVault(address _user, address[] calldata  _tokens, uint256[] calldata _amounts) external;
@@ -23,7 +26,7 @@ contract IVaultProtocol {
     function withdrawFromVault(address _user, address _token, uint256 _amount) external;
     function withdrawFromVault(address _user, address[] calldata  _tokens, uint256[] calldata _amounts) external;
 
-    function withdrawOperator() external returns(uint256, uint256);
+    function operatorAction(address _strategy) external returns(uint256, uint256);
 
         function quickWithdraw(address _user, uint256 _amount) external;
 

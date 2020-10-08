@@ -1,15 +1,27 @@
 pragma solidity ^0.5.12;
 
-import "./ISavingsModule.sol";
 import "../defi/IVaultProtocol.sol";
 import "../../modules/token/VaultPoolToken.sol";
 
 //solhint-disable func-order
-contract IVaultSavings is ISavingsModule {
+contract IVaultSavings {
+    event VaultRegistered(address protocol, address poolToken);
+    event YieldDistribution(address indexed poolToken, uint256 amount);
+    event DepositToken(address indexed protocol, address indexed token, uint256 dnAmount);
+    event Deposit(address indexed protocol, address indexed user, uint256 nAmount, uint256 nFee);
+    event WithdrawToken(address indexed protocol, address indexed token, uint256 dnAmount);
+    event Withdraw(address indexed protocol, address indexed user, uint256 nAmount, uint256 nFee);
+
+    function deposit(address[] calldata _protocols, address[] calldata _tokens, uint256[] calldata _dnAmounts) external returns(uint256[] memory);
+    function deposit(address _protocol, address[] calldata _tokens, uint256[] calldata _dnAmounts) external returns(uint256);
+    function withdraw(address _protocol, address token, uint256 dnAmount, uint256 maxNAmount) external returns(uint256);
+ 
+
+    function poolTokenByProtocol(address _protocol) external view returns(address);
     function registerVault(IVaultProtocol protocol, VaultPoolToken poolToken) external;
 
     function quickWithdraw(address _vaultProtocol, address _token, uint256 _amount) external returns(uint256);
-    function handleWithdrawRequests(address _vaultProtocol) external;
+    function handleOperatorActions(address _vaultProtocol, address _strategy) external;
 
     function claimAllRequested(address _vaultProtocol) external;
 }

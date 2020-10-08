@@ -22,10 +22,8 @@ contract VaultProtocol is Module, IVaultProtocol, DefiOperatorRole {
         uint256 depositedAmount;
     }
 
-    address public strategy;
-
-    //filled up in the overloaded adapter method
-    address[] public registeredVaultTokens;
+    address[] internal strategies;
+    address[] internal registeredVaultTokens;
 
     //deposits waiting for the defi operator's actions
     mapping(address => DepositData[]) internal balancesOnHold;
@@ -53,8 +51,8 @@ contract VaultProtocol is Module, IVaultProtocol, DefiOperatorRole {
 
 //IVaultProtocol methods
     function registerStrategy(address _strategy) public onlyDefiOperator {
-        strategy = _strategy;
-        IDefiStrategy(strategy).setVault(address(this));
+        strategies.push(_strategy);
+        IDefiStrategy(_strategy).setVault(address(this));
     }
 
     function depositToVault(address _user, address _token, uint256 _amount) public onlyDefiOperator {
@@ -149,12 +147,13 @@ contract VaultProtocol is Module, IVaultProtocol, DefiOperatorRole {
         }
     }
 
-    function withdrawOperator() public onlyDefiOperator returns(uint256, uint256) {
+    function operatorAction(address _strategy) public onlyDefiOperator returns(uint256, uint256) {
+        require(isStrategyRegistered(_strategy), "Strategy is not registered");
         //Yield distribution step based on actual deposits (excluding on-hold ones)
         // should be performed from the SavingsModule before other operator's actions
 
         clearOnHoldDeposits();
-        
+
         uint256 totalWithdraw = 0;
         uint256[] memory withdrawAmounts = new uint256[](registeredVaultTokens.length);
         for (uint256 i = 0; i < usersRequested.length; i++) {
@@ -175,7 +174,7 @@ contract VaultProtocol is Module, IVaultProtocol, DefiOperatorRole {
                         totalWithdraw = totalWithdraw.add(amount);
                     }
                 }
-            }            
+            }
             delete balancesRequested[usersRequested[i]];
         }
         delete usersRequested;
@@ -184,18 +183,18 @@ contract VaultProtocol is Module, IVaultProtocol, DefiOperatorRole {
         uint256 totalDeposit = 0;
         for (uint256 i = 0; i < registeredVaultTokens.length; i++) {
             depositAmounts[i] = IERC20(registeredVaultTokens[i]).balanceOf(address(this)).sub(claimableTokens[i]);
-            IERC20(registeredVaultTokens[i]).approve(address(strategy), depositAmounts[i]);
+            IERC20(registeredVaultTokens[i]).approve(address(_strategy), depositAmounts[i]);
             totalDeposit = totalDeposit.add(depositAmounts[i]);
         }
         //one of two things should happen for the same token: deposit or withdraw
         //simultaneous deposit and withdraw are applied to different tokens
         if (totalDeposit > 0) {
-            IDefiStrategy(strategy).handleDeposit(registeredVaultTokens, depositAmounts);
+            IDefiStrategy(_strategy).handleDeposit(registeredVaultTokens, depositAmounts);
             emit DepositByOperator(totalDeposit);
         }
 
         if (totalWithdraw > 0) {
-            IDefiStrategy(strategy).withdraw(address(this), withdrawAmounts);
+            IDefiStrategy(_strategy).withdraw(address(this), withdrawAmounts);
             emit WithdrawByOperator(totalWithdraw);
             //All just withdraw funds mark as claimable
             for (uint256 i = 0; i < claimableTokens.length; i++) {
@@ -363,8 +362,17 @@ contract VaultProtocol is Module, IVaultProtocol, DefiOperatorRole {
         return ind;
     }
 
+    function isStrategyRegistered(address _strategy) public view returns(bool) {
+        for (uint256 i = 0; i < strategies.length; i++) {
+            if (strategies[i] == _strategy) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     function clearOnHoldDeposits() internal onlyDefiOperator {
-        ISavingsModule vaultSavings = ISavingsModule(getModuleAddress(MODULE_VAULT));
+        IVaultSavings vaultSavings = IVaultSavings(getModuleAddress(MODULE_VAULT));
         IOperableToken vaultPoolToken = IOperableToken(vaultSavings.poolTokenByProtocol(address(this)));
 
         for (uint256 i = 0; i < usersDeposited.length; i++) {
@@ -385,6 +393,10 @@ contract VaultProtocol is Module, IVaultProtocol, DefiOperatorRole {
         return registeredVaultTokens.length;
     }
 
+    function registeredStrategies() public view returns(address[] memory) {
+        return strategies;
+    }
+
     function normalizedVaultBalance() public view returns(uint256) {
         uint256 summ;
         for (uint256 i=0; i < registeredVaultTokens.length; i++) {
@@ -394,7 +406,16 @@ contract VaultProtocol is Module, IVaultProtocol, DefiOperatorRole {
         return summ;
     }
 
+    function normalizedBalance(address _strategy) public returns(uint256) {
+        require(isStrategyRegistered(_strategy), "Strategy is not registered");
+        return IDefiStrategy(_strategy).normalizedBalance();
+    }
+
     function normalizedBalance() public returns(uint256) {
-        return IDefiStrategy(strategy).normalizedBalance();
+        uint256 total;
+        for (uint256 i = 0; i < strategies.length; i++) {
+            total = total.add(IDefiStrategy(strategies[i]).normalizedBalance());
+        }
+        return total;
     }
 }
