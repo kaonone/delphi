@@ -298,7 +298,39 @@ contract("VaultSavings", async ([_, owner, user1, user2, user3, defiops, protoco
 
             //additional deposit will not participate in distribution
             let distrBalance = await poolToken.distributionBalanceOf(user1, {from:owner});
-            expect(distrBalance.toNumber(), "Ob-hold tokens should not participate in distribution").to.equal(80);
+            expect(distrBalance.toNumber(), "On-hold tokens should not participate in distribution").to.equal(80);
+        });
+
+        it('New deposit does not participate in distribution', async () => {
+            await vaultSavings.handleWithdrawRequests(vaultProtocol.address, {from: defiops});
+
+            //additional deposit - 80 in protocol and 20 on-hold
+            await dai.approve(vaultProtocol.address, 20, {from: user1});
+            await (<any> vaultSavings).methods['deposit(address,address[],uint256[])'](vaultProtocol.address, [dai.address], [20], {from:user1});
+
+            //Add yield to the protocol
+            await dai.transfer(protocolStub, 26, {from:owner});
+
+            //move additional deposit into the protocol
+            await vaultSavings.handleWithdrawRequests(vaultProtocol.address, {from: defiops});
+
+            //User1 has received his yield - because his shared part has changed
+            //80 (working) + 20 (new) + 16 (yield)
+            let user1PoolBalance = await poolToken.balanceOf(user1, {from: user1});
+            expect(user1PoolBalance.toNumber(), "Incorrect amount of pool tokens").to.equal(116);
+
+            //User1 has received his yield after distribution created by operator
+            let poolBalance = await poolToken.balanceOf(poolToken.address, {from: owner});
+            expect(poolBalance.toNumber(), "Incorrect amount of yield left").to.equal(10);
+
+
+            //User1 has already received his yield (by old amount)
+            let unclaimedTokens = await poolToken.calculateUnclaimedDistributions(user1, {from:owner});
+            expect(unclaimedTokens.toNumber(), "No yield for user (1) should be left").to.equal(0);
+
+            //Unchanged yield for user2
+            unclaimedTokens = await poolToken.calculateUnclaimedDistributions(user2, {from:owner});
+            expect(unclaimedTokens.toNumber(), "No yield for user (2)").to.equal(10);
         });
     });
 

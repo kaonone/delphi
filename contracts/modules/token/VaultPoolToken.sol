@@ -15,11 +15,15 @@ contract VaultPoolToken is PoolToken, IOperableToken {
 
     function decreaseOnHoldValue(address _user, uint256 _amount) public onlyMinter {
         if (onHoldAmount[_user] >= _amount) {
+            _updateUserBalance(_user);
+
             onHoldAmount[_user] = onHoldAmount[_user].sub(_amount);
             if (distributions.length > 0 && nextDistributions[_user] < distributions.length) {
                 nextDistributions[_user] = distributions.length;
             }
             totalOnHold = totalOnHold.sub(_amount);
+
+            userBalanceChanged(_user);
         }
     }
 
