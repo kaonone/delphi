@@ -31,6 +31,7 @@ contract("VaultProtocol", async ([_, owner, user1, user2, user3, defiops, protoc
     let dai: TestErc20Instance;
     let usdc: TestErc20Instance;
     let busd: TestErc20Instance;
+    let usdt: TestErc20Instance;
     let poolToken: VaultPoolTokenInstance;
     let pool: PoolInstance;
     let vaultSavings: VaultSavingsModuleInstance;
@@ -39,14 +40,17 @@ contract("VaultProtocol", async ([_, owner, user1, user2, user3, defiops, protoc
 
     before(async () => {        
         //Deposit token 1
-        dai = await ERC20.new({from:owner});
-        await (<any> dai).methods['initialize(string,string,uint8)']("DAI", "DAI", 18, {from:owner});
+        dai = await ERC20.new({ from:owner });
+        await (<any> dai).methods['initialize(string,string,uint8)']("DAI", "DAI", 18, { from:owner });
         //Deposit token 2
-        usdc = await ERC20.new({from:owner});
-        await (<any> usdc).methods['initialize(string,string,uint8)']("USDC", "USDC", 18, {from:owner});
+        usdc = await ERC20.new({ from:owner });
+        await (<any> usdc).methods['initialize(string,string,uint8)']("USDC", "USDC", 18, { from:owner });
         //Deposit token 3
-        busd = await ERC20.new({from:owner});
-        await (<any> busd).methods['initialize(string,string,uint8)']("BUSD", "BUSD", 18, {from:owner});
+        busd = await ERC20.new({ from:owner });
+        await (<any> busd).methods['initialize(string,string,uint8)']("BUSD", "BUSD", 18, { from:owner });
+        //Deposit token 4
+        usdt = await ERC20.new({ from: owner });
+        await (<any> usdt).methods['initialize(string,string,uint8)']("USDT", "USDT", 18, { from: owner });
 
         await dai.transfer(user1, 1000, {from:owner});
         await dai.transfer(user2, 1000, {from:owner});
@@ -846,7 +850,7 @@ contract("VaultProtocol", async ([_, owner, user1, user2, user3, defiops, protoc
             snap = await Snapshot.create(web3.currentProvider);
         });
 
-        after(async () => {
+        afterEach(async () => {
             await globalSnap.revert();
         });
 
@@ -1098,13 +1102,141 @@ contract("VaultProtocol", async ([_, owner, user1, user2, user3, defiops, protoc
     });
 
     describe('Registered tokens only', () => {
-        //with new VaultProtocol
-        //supportedTokens() - returns correct registered tokens (check for one, two and 4)
-        //supportedtokensCount() - returns correct number
-        //
-        //With current vaultprotocol (from global before)
-        //check that deposit works with registered token
-        //check that withdraw works with registered token
+
+        async function vaultSetup(tokens: Array<string>) {
+            const _vaultProtocol = await VaultProtocol.new({ from: owner });
+            await (<any>_vaultProtocol).methods['initialize(address,address[])'](pool.address, tokens, { from: owner });
+            await _vaultProtocol.addDefiOperator(defiops, { from: owner });
+            //------
+            const _poolToken = await PoolToken.new({ from: owner });
+            await (<any>_poolToken).methods['initialize(address,string,string)'](pool.address, "VaultSavings", "VLT", { from: owner });
+
+            await _poolToken.addMinter(vaultSavings.address, { from: owner });
+            await _poolToken.addMinter(_vaultProtocol.address, { from: owner });
+            await _poolToken.addMinter(defiops, { from: owner });
+            //------
+            const _strategy = await VaultStrategy.new({ from: owner });
+            await (<any>_strategy).methods['initialize()']({ from: owner });
+            await _strategy.setProtocol(protocolStub, { from: owner });
+
+            await _strategy.addDefiOperator(defiops, { from: owner });
+            await _strategy.addDefiOperator(_vaultProtocol.address, { from: owner });
+            //------
+            await _vaultProtocol.registerStrategy(_strategy.address, { from: defiops })
+
+            //------
+            await vaultSavings.registerVault(_vaultProtocol.address, _poolToken.address, { from: owner });
+
+            return _vaultProtocol;
+        }
+
+        after(async() => await globalSnap.revert());
+
+        it('The addresses of registered tokens are correct', async() => {
+            const vaultOneToken = await VaultProtocol.new({ from: owner });
+            await (<any>vaultOneToken).methods['initialize(address,address[])']
+                (pool.address, [dai.address], { from: owner });
+            const supportedTokensOne = await (<any>vaultOneToken).supportedTokens({ from: owner });
+
+            const vaultTwoTokens = await VaultProtocol.new({ from: owner });
+            await (<any>vaultTwoTokens).methods['initialize(address,address[])']
+                (pool.address, [dai.address, usdc.address], { from: owner });
+            const supportedTokensTwo = await (<any>vaultTwoTokens).supportedTokens({ from: owner });
+
+            const vaultManyTokens = await VaultProtocol.new({ from: owner });
+            await (<any>vaultManyTokens).methods['initialize(address,address[])']
+                (pool.address, [dai.address, usdc.address, usdt.address, busd.address], { from: owner });
+            const supportedTokensMany = await (<any>vaultManyTokens).supportedTokens({ from: owner });
+
+            expect(supportedTokensOne).to.eql([dai.address]);
+            expect(supportedTokensTwo).to.eql([dai.address, usdc.address]);
+            expect(supportedTokensMany).to.eql([dai.address, usdc.address, usdt.address, busd.address]);
+        });
+
+        it('The number of registered tokens is correct', async () => {
+            const vaultOneToken = await VaultProtocol.new({ from: owner });
+            await (<any>vaultOneToken).methods['initialize(address,address[])']
+                (pool.address, [dai.address], { from: owner });
+            const supportedTokensCountOne = await (<any>vaultOneToken).supportedTokensCount({ from: owner });
+
+            const vaultTwoTokens = await VaultProtocol.new({ from: owner });
+            await (<any>vaultTwoTokens).methods['initialize(address,address[])']
+                (pool.address, [dai.address, usdc.address], { from: owner });
+            const supportedTokensCountTwo = await (<any>vaultTwoTokens).supportedTokensCount({ from: owner });
+
+            const vaultManyTokens = await VaultProtocol.new({ from: owner });
+            await (<any>vaultManyTokens).methods['initialize(address,address[])']
+                (pool.address, [dai.address, usdc.address, usdt.address, busd.address], { from: owner });
+            const supportedTokensCountMany = await (<any>vaultManyTokens).supportedTokensCount({ from: owner });
+
+            expect(supportedTokensCountOne.toNumber()).to.equal(1);
+            expect(supportedTokensCountTwo.toNumber()).to.equal(2);
+            expect(supportedTokensCountMany.toNumber()).to.equal(4);
+        });
+
+        it('Cannot deposit a token that wasn\'t registered (one registered)', async() => {
+            let tokens = [dai.address];
+            const vaultOneToken = await vaultSetup(tokens);
+
+            await usdc.approve(vaultOneToken.address, 50, { from: user1 });
+            await expectRevert(
+                (<any>vaultOneToken).methods['depositToVault(address,address,uint256)']
+                    (user1, usdc.address, 50, { from: defiops }),
+                'Token is not registered in the vault'
+            );
+        });
+
+        it('Cannot deposit a token that wasn\'t registered (many registered)', async() => {
+            const vaultTwoTokens = await vaultSetup([dai.address, busd.address]);
+
+            await busd.approve(vaultTwoTokens.address, 50, { from: user1 });
+            await usdc.approve(vaultTwoTokens.address, 30, { from: user1 });
+            await expectRevert(
+                (<any>vaultTwoTokens).methods['depositToVault(address,address[],uint256[])']
+                    (user1, [busd.address, usdc.address], [50, 30], { from: defiops }),
+                'Token is not registered in the vault'
+            );
+
+            const vaultManyTokens = await vaultSetup([usdt.address, busd.address, usdc.address]);
+
+            await dai.approve(vaultManyTokens.address, 10, { from: user1 });
+            await busd.approve(vaultManyTokens.address, 20, { from: user1 });
+            await usdc.approve(vaultManyTokens.address, 30, { from: user1 });
+            await usdt.approve(vaultManyTokens.address, 40, { from: user1 });
+
+            await expectRevert(
+                (<any>vaultManyTokens).methods['depositToVault(address,address[],uint256[])']
+                    (user1, [dai.address], [10], { from: defiops }),
+                'Token is not registered in the vault'
+            );
+        });
+
+        it('Cannot withdraw a token that wasn\'t registered (one registered)', async() => {
+            const tokens = [dai.address];
+            const vaultOneToken = await vaultSetup(tokens);
+
+            await expectRevert(
+                (<any>vaultOneToken).methods['withdrawFromVault(address,address,uint256)']
+                    (user1, usdc.address, 100, { from: defiops }),
+                'Token is not registered in the vault'
+            );
+        });
+
+        it('Cannot withdraw a token that wasn\'t registered (many registered)', async() => {
+            const vaultTwoTokens = await vaultSetup([dai.address, busd.address]);
+            const vaultManyTokens = await vaultSetup([usdt.address, busd.address, usdc.address]);
+
+            await expectRevert(
+                (<any>vaultTwoTokens).methods['withdrawFromVault(address,address[],uint256[])']
+                    (user1, [busd.address, usdc.address], [50, 30], { from: defiops }),
+                'Token is not registered in the vault'
+            );
+            await expectRevert(
+                (<any>vaultManyTokens).methods['withdrawFromVault(address,address[],uint256[])']
+                    (user1, [dai.address], [10], { from: defiops }),
+                'Token is not registered in the vault'
+            );
+        });
     });
     
 });
