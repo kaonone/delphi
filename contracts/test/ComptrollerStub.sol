@@ -49,7 +49,6 @@ contract ComptrollerStub is Base, IComptroller {
             for(uint256 j=0; j < _cTokens.length; j++){
                 if(ai.lastUpdate != 0 && ai.lastUpdate < now) {
                     sendComp(holder, _cTokens[j]);
-                    revert('after sendComp');
                 }
             }
             updateTokenBalances(holder);
@@ -73,32 +72,18 @@ contract ComptrollerStub is Base, IComptroller {
             address token = cTokens[i];
             uint256 prevBalance = ai.cBalances[token];
             if(prevBalance == 0) continue;
-            // uint256 compAmount += prevBalance
-            //     .mul(period).div(ANNUAL_SECONDS)
-            //     .mul(targetAPY).div(EXP)
-            //     .mul(EXP).div(baseCTokenToCompRatio);
             compAmount = compAmount.add(prevBalance.mul(period).mul(targetAPY).div(ANNUAL_SECONDS).div(baseCTokenToCompRatio));
         }
         comp.safeTransfer(holder, compAmount);
     }
 
     function sendComp(address holder, address cToken) private {
-        revert('send comp start 1');
         AddressInfo storage ai = cHolders[holder];
         uint256 period = now.sub(ai.lastUpdate);
         uint256 prevBalance = ai.cBalances[cToken];
         if(prevBalance == 0) return;
-        // uint256 compAmount += prevBalance
-        //     .mul(period).div(ANNUAL_SECONDS)
-        //     .mul(targetAPY).div(EXP)
-        //     .mul(EXP).div(baseCTokenToCompRatio);
         uint256 compAmount = prevBalance.mul(period).mul(targetAPY).div(ANNUAL_SECONDS).div(baseCTokenToCompRatio);
         comp.safeTransfer(holder, compAmount);
-        if(compAmount > 0) {
-            revert('comp sent > 0');
-        }else{
-            revert('comp sent == 0');
-        }        
     }
 
     function setSupportedCTokens(address[] memory _cTokens) public {
@@ -119,6 +104,11 @@ contract ComptrollerStub is Base, IComptroller {
 
     function supportedCTokens() public view returns (address[] memory) {
         return cTokens;
+    }
+
+    function getStoredBalance(address holder, address cToken) public view returns(uint256){
+        AddressInfo storage ai = cHolders[holder];
+        return ai.cBalances[cToken];
     }
 }
 
