@@ -48,7 +48,7 @@ const StakingPool  =  artifacts.require("StakingPool");
 const StakingPoolADEL  =  artifacts.require("StakingPoolADEL");
 
 contract("RewardDistributionModule - migration", async ([owner, user, ...otherAccounts]) => {
-    let snap;
+    //let snap:Snapshot;
 
     let dai:FreeErc20Instance;
     let cDai:CErc20StubInstance;
@@ -112,7 +112,7 @@ contract("RewardDistributionModule - migration", async ([owner, user, ...otherAc
         await compoundProtocolDai.addDefiOperator(rewardDistributions.address);
 
         //Save snapshot
-        snap = await Snapshot.create(web3.currentProvider);
+        //snap = await Snapshot.create(web3.currentProvider);
     });
 
     beforeEach(async () => {
@@ -154,7 +154,20 @@ contract("RewardDistributionModule - migration", async ([owner, user, ...otherAc
         expect(userReward).to.be.bignumber.gt('0'); 
     });
 
-    it('should withdraw rewards', async () => {
+    it('should withdraw rewards after centralized upgrade', async () => {
+        let snap = await Snapshot.create(web3.currentProvider);
+
+        await rewardDistributions.migrateRewards([user]);
+
+        await rewardDistributions.methods['withdrawReward()']({from:user});
+        let userReward = await comp.balanceOf(user);
+        expect(userReward).to.be.bignumber.gt('0'); 
+
+        await snap.revert();
+    });
+
+
+    it('should withdraw rewards without centralized upgrade', async () => {
         await rewardDistributions.methods['withdrawReward()']({from:user});
         let userReward = await comp.balanceOf(user);
         expect(userReward).to.be.bignumber.gt('0'); 
