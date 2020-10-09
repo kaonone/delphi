@@ -1244,12 +1244,12 @@ contract("VaultProtocol", async ([_, owner, user1, user2, user3, defiops, protoc
         it('A strategy identifier should be correct', async() => {
             let _strategy = await VaultStrategy.new({ from: owner });
             await (<any>_strategy).methods['initialize(string)']('123', { from: owner });
-            let strategyId = await _strategy.getStrategy({ from: owner });
+            let strategyId = await _strategy.getStrategyId({ from: owner });
             expect(strategyId).to.equal('123');
 
             _strategy = await VaultStrategy.new({ from: owner });
             await (<any>_strategy).methods['initialize(string)']('2384358972357', { from: owner });
-            strategyId = await _strategy.getStrategy({ from: owner });
+            strategyId = await _strategy.getStrategyId({ from: owner });
             expect(strategyId).to.equal('2384358972357');
         });
 

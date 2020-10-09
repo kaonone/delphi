@@ -65,7 +65,7 @@ contract VaultStrategyStub is IDefiStrategy, DefiOperatorRole {
         return summ;
     }
 
-    function getStrategy() public view returns(string memory) {
+    function getStrategyId() public view returns(string memory) {
         return strategyId;
     }
 }

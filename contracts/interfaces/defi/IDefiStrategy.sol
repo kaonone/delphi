@@ -21,5 +21,5 @@ contract IDefiStrategy {
 
     function normalizedBalance() external returns(uint256);
 
-    function getStrategy() external view returns(string memory);
+    function getStrategyId() external view returns(string memory);
 }
