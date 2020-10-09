@@ -37,14 +37,14 @@ contract CurveFiStablecoinStrategy is Module, IDefiStrategy, DefiOperatorRole {
     
     address public uniswapRouter;
     uint256 daiInd;
+    string internal strategyId;
 
     //Register stablecoins contracts addresses
-    function initialize(address _pool) public initializer {
+    function initialize(address _pool, string memory _strategyId) public initializer {
         Module.initialize(_pool);
         DefiOperatorRole.initialize(_msgSender());
         slippageMultiplier = 1.01*1e18;
-
-        
+        strategyId = _strategyId;
     }
 
     function setProtocol(address _depositContract, address _liquidityGauge, address _curveFiMinter, address _uniswapRouter, address _wethToken, uint256 _daiInd) public onlyDefiOperator {
@@ -239,6 +239,10 @@ contract CurveFiStablecoinStrategy is Module, IDefiStrategy, DefiOperatorRole {
             summ = summ.add(CalcUtils.normalizeAmount(registeredVaultTokens[i], balances[i]));
         }
         return summ;
+    }
+
+    function getStrategy() public view returns(string memory) {
+        return strategyId;
     }
 
     function convertArray(uint256[] memory amounts) internal pure returns(uint256[4] memory) {

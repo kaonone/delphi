@@ -14,8 +14,11 @@ contract VaultStrategyStub is IDefiStrategy, DefiOperatorRole {
     address protocolStub;
     address vault;
 
-    function initialize() public initializer {
+    string internal strategyId;
+
+    function initialize(string memory _strategyId) public initializer {
         DefiOperatorRole.initialize(msg.sender);
+        strategyId = _strategyId;
     }
 
     function setProtocol(address _protocol) public onlyDefiOperator {
@@ -60,5 +63,9 @@ contract VaultStrategyStub is IDefiStrategy, DefiOperatorRole {
             summ = summ.add(CalcUtils.normalizeAmount(registeredVaultTokens[i], balance));
         }
         return summ;
+    }
+
+    function getStrategy() public view returns(string memory) {
+        return strategyId;
     }
 }

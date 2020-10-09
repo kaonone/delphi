@@ -84,8 +84,8 @@ contract("VaultProtocol", async ([_, owner, user1, user2, user3, defiops, protoc
         await poolToken.addMinter(vaultProtocol.address, {from:owner});
         await poolToken.addMinter(defiops, {from:owner});
     //------
-        strategy = await VaultStrategy.new({from:owner});
-        await (<any> strategy).methods['initialize()']({from: owner});
+        strategy = await VaultStrategy.new({ from: owner });
+        await (<any> strategy).methods['initialize(string)']('1', { from: owner });
         await strategy.setProtocol(protocolStub, {from: owner});
 
         await strategy.addDefiOperator(defiops, {from:owner});
@@ -1116,7 +1116,7 @@ contract("VaultProtocol", async ([_, owner, user1, user2, user3, defiops, protoc
             await _poolToken.addMinter(defiops, { from: owner });
             //------
             const _strategy = await VaultStrategy.new({ from: owner });
-            await (<any>_strategy).methods['initialize()']({ from: owner });
+            await (<any>_strategy).methods['initialize(string)']('1', { from: owner });
             await _strategy.setProtocol(protocolStub, { from: owner });
 
             await _strategy.addDefiOperator(defiops, { from: owner });
@@ -1239,4 +1239,19 @@ contract("VaultProtocol", async ([_, owner, user1, user2, user3, defiops, protoc
         });
     });
     
+    describe('Identifier of a strategy', async() => {
+
+        it('A strategy identifier should be correct', async() => {
+            let _strategy = await VaultStrategy.new({ from: owner });
+            await (<any>_strategy).methods['initialize(string)']('123', { from: owner });
+            let strategyId = await _strategy.getStrategy({ from: owner });
+            expect(strategyId).to.equal('123');
+
+            _strategy = await VaultStrategy.new({ from: owner });
+            await (<any>_strategy).methods['initialize(string)']('2384358972357', { from: owner });
+            strategyId = await _strategy.getStrategy({ from: owner });
+            expect(strategyId).to.equal('2384358972357');
+        });
+
+    });
 });

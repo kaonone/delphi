@@ -20,4 +20,6 @@ contract IDefiStrategy {
     function setVault(address _vault) external;
 
     function normalizedBalance() external returns(uint256);
+
+    function getStrategy() external view returns(string memory);
 }
