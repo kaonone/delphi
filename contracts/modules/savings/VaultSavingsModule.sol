@@ -85,6 +85,7 @@ contract VaultSavingsModule is Module, IVaultSavings, AccessChecker, RewardDistr
     public operationAllowed(IAccessModule.Operation.Deposit)
     returns(uint256) 
     {
+        require(isVaultRegistered(_protocol), "Vault is not registered");
         depositToProtocol(_protocol, _tokens, _dnAmounts);
 
         uint256 nAmount;
@@ -121,7 +122,7 @@ contract VaultSavingsModule is Module, IVaultSavings, AccessChecker, RewardDistr
     public operationAllowed(IAccessModule.Operation.Deposit) 
     returns(uint256[] memory) 
     {
-        require(_protocols.length == _tokens.length && _tokens.length == _dnAmounts.length, "SavingsModule: size of arrays does not match");
+        require(_protocols.length == _tokens.length && _tokens.length == _dnAmounts.length, "VaultSavingsModule: size of arrays does not match");
         uint256[] memory ptAmounts = new uint256[](_protocols.length);
         for (uint256 i=0; i < _protocols.length; i++) {
             address[] memory tkns = new address[](1);
@@ -129,6 +130,35 @@ contract VaultSavingsModule is Module, IVaultSavings, AccessChecker, RewardDistr
             uint256[] memory amnts = new uint256[](1);
             amnts[0] = _dnAmounts[i];
             ptAmounts[i] = deposit(_protocols[i], tkns, amnts);
+        }
+        return ptAmounts;
+    }
+
+    function depositAll(address[] memory _protocols, address[] memory _tokens, uint256[] memory _dnAmounts) 
+    public operationAllowed(IAccessModule.Operation.Deposit) 
+    returns(uint256[] memory) 
+    {
+        require(_tokens.length == _dnAmounts.length, "VaultSavingsModule: size of arrays does not match");
+
+        uint256[] memory ptAmounts = new uint256[](_protocols.length);
+        uint256 curInd;
+        for (uint256 i=0; i < _protocols.length; i++) {
+            uint256 nTokens = IVaultProtocol(_protocols[i]).supportedTokensCount();
+            uint256 lim = curInd + nTokens;
+            
+            require(_tokens.length >= lim, "Incorrect tokens length");
+            
+            address[] memory tkns = new address[](nTokens);
+            uint256[] memory amnts = new uint256[](nTokens);
+
+            for (uint256 j = curInd; j < lim; j++) {
+                tkns[j-curInd] = _tokens[j];
+                amnts[j-curInd] = _dnAmounts[j];
+            }
+
+            ptAmounts[i] = deposit(_protocols[i], tkns, amnts);
+
+            curInd += nTokens;
         }
         return ptAmounts;
     }

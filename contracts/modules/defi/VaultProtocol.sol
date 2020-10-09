@@ -60,12 +60,12 @@ contract VaultProtocol is Module, IVaultProtocol, DefiOperatorRole {
         require(_token != address(0), "Incorrect token address");
         require(_amount > 0, "No tokens to be deposited");
 
+        require(isTokenRegistered(_token), "Token is not registered in the vault");
+
         IERC20(_token).transferFrom(_user, address(this), _amount);
 
         uint256 ind;
         bool hasToken;
-
-        require(isTokenRegistered(_token), "Token is not registered in the vault");
 
         (hasToken, ind) = hasOnHoldToken(_user, _token);
 
