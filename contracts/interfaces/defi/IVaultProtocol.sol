@@ -9,16 +9,8 @@ contract IVaultProtocol {
     event WithdrawByOperator(uint256 _amount);
     event WithdrawRequestsResolved(uint256 _totalDeposit, uint256 _totalWithdraw);
 
-    function supportedTokens() external view returns(address[] memory);
-    function supportedTokensCount() external view returns(uint256);
-    function tokenRegisteredInd(address _token) external view returns(uint256);
-
-    function normalizedBalance() external returns(uint256);
-    function normalizedBalance(address _strategy) external returns(uint256);
 
     function registerStrategy(address _strategy) external;
-    function isStrategyRegistered(address _strategy) external view returns(bool);
-    function registeredStrategies() external view returns(address[] memory);
 
     function depositToVault(address _user, address _token, uint256 _amount) external;
     function depositToVault(address _user, address[] calldata  _tokens, uint256[] calldata _amounts) external;
@@ -31,11 +23,23 @@ contract IVaultProtocol {
         function quickWithdraw(address _user, uint256 _amount) external;
 
     function claimRequested(address _user) external;
+
+    function normalizedBalance() external returns(uint256);
+    function normalizedBalance(address _strategy) external returns(uint256);
+
+    function supportedTokens() external view returns(address[] memory);
+    function supportedTokensCount() external view returns(uint256);
+
+    function isStrategyRegistered(address _strategy) external view returns(bool);
+    function registeredStrategies() external view returns(address[] memory);
+
+    function isTokenRegistered(address _token) external view returns (bool);
+    function tokenRegisteredInd(address _token) external view returns(uint256);
+
+    function totalClaimableAmount(address _token) external view returns (uint256);
     function claimableAmount(address _user, address _token) external view returns (uint256);
 
     function amountOnHold(address _user, address _token) external view returns (uint256);
-    function hasOnHoldToken(address _user, address _token) internal view returns (bool, uint256);
 
     function amountRequested(address _user, address _token) external view returns (uint256);
-    function hasRequestedToken(address _user, address _token) internal view returns (bool, uint256);
 }
