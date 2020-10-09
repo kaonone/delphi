@@ -142,7 +142,7 @@ contract("CurveFiStablecoinStrategy", async ([_, owner, user1, user2, user3, def
 
     //Setup strategy
         vaultCurveStrategy = await CurveStrategy.new({from:owner});
-        await (<any> vaultCurveStrategy).methods['initialize(address)'](pool.address, {from: owner});
+        await (<any> vaultCurveStrategy).methods['initialize(address,string)'](pool.address, "CRV-UNI-DAI", {from: owner});
 
         await vaultCurveStrategy.setProtocol(
             curveDeposit.address, curveGauge.address, curveMinter.address, uniswap.address, weth.address, 0, 
