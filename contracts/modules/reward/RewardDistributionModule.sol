@@ -166,7 +166,7 @@ contract RewardDistributionModule is Module, IPoolTokenBalanceChangeRecipient, A
         require(poolTokens.length == rewardTokens.length, "RewardDistributionModule: array length mismatch");
 
         address akroStaking = getModuleAddress(MODULE_STAKING_AKRO);
-        address adelStaking = getModuleAddress(MODULE_STAKING_AKRO);
+        address adelStaking = getModuleAddress(MODULE_STAKING_ADEL);
 
         uint256[] memory amounts = new uint256[](poolTokens.length);
         address user = _msgSender();
