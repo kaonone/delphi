@@ -348,6 +348,7 @@ contract('VaultSavings', async([ _, owner, user1, user2, user3, defiops, protoco
 
         it('LP tokens are unmarked from being on-hold after deposit is resolved by operator', async() => {
             await vaultSavings.handleOperatorActions(vaultProtocol.address, strategy.address, { from: defiops });
+            await vaultSavings.clearProtocolStorage(vaultProtocol.address, { from: defiops });
 
 
             let onHoldPool = await poolToken.onHoldBalanceOf(user1, { from: owner });
@@ -365,6 +366,7 @@ contract('VaultSavings', async([ _, owner, user1, user2, user3, defiops, protoco
             };
 
             await vaultSavings.handleOperatorActions(vaultProtocol.address, strategy.address, { from: defiops });
+            await vaultSavings.clearProtocolStorage(vaultProtocol.address, { from: defiops });
 
             const vaultBalance = await dai.balanceOf(vaultProtocol.address, { from: owner });
             expect(vaultBalance.toNumber(), 'Tokens are not deposited from vault').to.equal(0);
@@ -405,6 +407,7 @@ contract('VaultSavings', async([ _, owner, user1, user2, user3, defiops, protoco
             };
 
             await vaultSavings.handleOperatorActions(vaultProtocol.address, strategy.address, { from: defiops });
+            await vaultSavings.clearProtocolStorage(vaultProtocol.address, { from: defiops });
 
             const after = {
                 yieldBalance1: await poolToken.calculateUnclaimedDistributions(user1, { from: user1 }),
@@ -442,6 +445,7 @@ contract('VaultSavings', async([ _, owner, user1, user2, user3, defiops, protoco
 
         it('Yield is distributed for the user after new tokens minted', async() => {
             await vaultSavings.handleOperatorActions(vaultProtocol.address, strategy.address, { from: defiops });
+            await vaultSavings.clearProtocolStorage(vaultProtocol.address, { from: defiops });
 
             //Add yield to the protocol
             await dai.transfer(protocolStub, 26, { from: owner });
@@ -472,6 +476,7 @@ contract('VaultSavings', async([ _, owner, user1, user2, user3, defiops, protoco
 
         it('Additional deposit does not influence yield while being on-hold', async() => {
             await vaultSavings.handleOperatorActions(vaultProtocol.address, strategy.address, { from: defiops });
+            await vaultSavings.clearProtocolStorage(vaultProtocol.address, { from: defiops });
 
             //additional deposit
             await dai.approve(vaultProtocol.address, 20, { from: user1 });
@@ -494,6 +499,7 @@ contract('VaultSavings', async([ _, owner, user1, user2, user3, defiops, protoco
 
         it('New deposit does not participate in distribution', async() => {
             await vaultSavings.handleOperatorActions(vaultProtocol.address, strategy.address, { from: defiops });
+            await vaultSavings.clearProtocolStorage(vaultProtocol.address, { from: defiops });
 
             //additional deposit - 80 in protocol and 20 on-hold
             await dai.approve(vaultProtocol.address, 20, { from: user1 });
@@ -505,6 +511,7 @@ contract('VaultSavings', async([ _, owner, user1, user2, user3, defiops, protoco
 
             //move additional deposit into the protocol
             await vaultSavings.handleOperatorActions(vaultProtocol.address, strategy.address, { from: defiops });
+            await vaultSavings.clearProtocolStorage(vaultProtocol.address, { from: defiops });
 
             //User1 has received his yield - because his shared part has changed
             //80 (working) + 20 (new) + 16 (yield)
@@ -547,6 +554,7 @@ contract('VaultSavings', async([ _, owner, user1, user2, user3, defiops, protoco
 
             // Operator resolves deposits
             await vaultSavings.handleOperatorActions(vaultProtocol.address, strategy.address, { from: defiops });
+            await vaultSavings.clearProtocolStorage(vaultProtocol.address, { from: defiops });
 
             // no yield yet - user balances are unchanged
             let user1PoolBalance = await poolToken.balanceOf(user1, { from: user1 });
@@ -578,6 +586,7 @@ contract('VaultSavings', async([ _, owner, user1, user2, user3, defiops, protoco
 
             //Operator resolves deposits
             await vaultSavings.handleOperatorActions(vaultProtocol.address, strategy.address, { from: defiops });
+            await vaultSavings.clearProtocolStorage(vaultProtocol.address, { from: defiops });
             //Yield from pool is distributed before the new deposit (on-hold deposit is not counted)
             //26 tokens of yield for deposits 80 + 50 = 130, 16 + 10 tokens of yield
 
@@ -631,6 +640,7 @@ contract('VaultSavings', async([ _, owner, user1, user2, user3, defiops, protoco
             //Second case
             //Make sure, that all LP tokens are working
             await vaultSavings.handleOperatorActions(vaultProtocol.address, strategy.address, { from: defiops });
+            await vaultSavings.clearProtocolStorage(vaultProtocol.address, { from: defiops });
 
             //Withdraw by user 2
             await vaultSavings.withdraw(vaultProtocol.address, dai.address, 60, 60, { from: user2 });
@@ -653,6 +663,7 @@ contract('VaultSavings', async([ _, owner, user1, user2, user3, defiops, protoco
             await blockTimeTravel(await vaultSavings.DISTRIBUTION_AGGREGATION_PERIOD());
 
             await vaultSavings.handleOperatorActions(vaultProtocol.address, strategy.address, { from: defiops });
+            await vaultSavings.clearProtocolStorage(vaultProtocol.address, { from: defiops });
 
             //User2 can claim his requested tokens
             const claimableTokens = await vaultProtocol.claimableAmount(user2, dai.address);
@@ -747,6 +758,7 @@ contract('VaultSavings', async([ _, owner, user1, user2, user3, defiops, protoco
 
             //Operator resolves withdraw requests
             await vaultSavings.handleOperatorActions(vaultProtocol.address, strategy.address, { from: defiops });
+            await vaultSavings.clearProtocolStorage(vaultProtocol.address, { from: defiops });
 
             //Unclaimed amounts are not changed
             unclaimedTokens = await poolToken.calculateUnclaimedDistributions(user1, { from: owner });

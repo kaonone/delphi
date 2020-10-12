@@ -671,6 +671,9 @@ contract('VaultProtocol', async([ _, owner, user1, user2, user3, defiops, protoc
             const opResult = await vaultProtocol.operatorAction(strategy.address, { from: defiops });
             expectEvent(opResult, 'DepositByOperator', { _amount: '160' });
 
+            await vaultProtocol.clearWithdrawRequests({ from: defiops });
+            await vaultProtocol.clearOnHoldDeposits({ from: defiops });
+
             let onhold = await vaultProtocol.amountOnHold(user1, dai.address);
             expect(onhold.toNumber(), 'On-hold record (1) should be deleted').to.equal(0);
             onhold = await vaultProtocol.amountOnHold(user1, usdc.address);
@@ -738,6 +741,9 @@ contract('VaultProtocol', async([ _, owner, user1, user2, user3, defiops, protoc
             // withdraw by operator
             const opResult = await vaultProtocol.operatorAction(strategy.address, { from: defiops });
 
+            await vaultProtocol.clearWithdrawRequests({ from: defiops });
+            await vaultProtocol.clearOnHoldDeposits({ from: defiops });
+
             expectEvent.notEmitted(opResult, 'WithdrawByOperator');
             expectEvent(opResult, 'WithdrawRequestsResolved');
 
@@ -804,6 +810,9 @@ contract('VaultProtocol', async([ _, owner, user1, user2, user3, defiops, protoc
             // withdraw by operator
             const opResult = await vaultProtocol.operatorAction(strategy.address, { from: defiops });
 
+            await vaultProtocol.clearWithdrawRequests({ from: defiops });
+            await vaultProtocol.clearOnHoldDeposits({ from: defiops });
+
             expectEvent.notEmitted(opResult, 'DepositByOperator');
             expectEvent(opResult, 'WithdrawRequestsResolved');
             expectEvent(opResult, 'WithdrawByOperator', { _amount: '160' });
@@ -869,6 +878,9 @@ contract('VaultProtocol', async([ _, owner, user1, user2, user3, defiops, protoc
             // withdraw by operator
             const opResult = await vaultProtocol.operatorAction(strategy.address, { from: defiops });
 
+            await vaultProtocol.clearWithdrawRequests({ from: defiops });
+            await vaultProtocol.clearOnHoldDeposits({ from: defiops });
+
             expectEvent(opResult, 'WithdrawRequestsResolved');
             //On-hold deposit is moved to the protocol
             expectEvent(opResult, 'DepositByOperator', { _amount: '100' });
@@ -930,6 +942,8 @@ contract('VaultProtocol', async([ _, owner, user1, user2, user3, defiops, protoc
             await (<any> vaultProtocol).methods['withdrawFromVault(address,address,uint256)'](
                 user2, dai.address, 80, { from: defiops });
             await vaultProtocol.operatorAction(strategy.address, { from: defiops });
+            await vaultProtocol.clearWithdrawRequests({ from: defiops });
+            await vaultProtocol.clearOnHoldDeposits({ from: defiops });
 
 
             snap = await Snapshot.create(web3.currentProvider);
@@ -1005,6 +1019,8 @@ contract('VaultProtocol', async([ _, owner, user1, user2, user3, defiops, protoc
             const claimableTotalBefore = await vaultProtocol.totalClaimableAmount(dai.address);
 
             const opResult = await vaultProtocol.operatorAction(strategy.address, { from: defiops });
+            await vaultProtocol.clearWithdrawRequests({ from: defiops });
+            await vaultProtocol.clearOnHoldDeposits({ from: defiops });
 
             //On-hold tokens are deposited
             expectEvent(opResult, 'DepositByOperator');
@@ -1025,6 +1041,8 @@ contract('VaultProtocol', async([ _, owner, user1, user2, user3, defiops, protoc
             const claimableTotalBefore = await vaultProtocol.totalClaimableAmount(dai.address);
 
             const opResult = await vaultProtocol.operatorAction(strategy.address, { from: defiops });
+            await vaultProtocol.clearWithdrawRequests({ from: defiops });
+            await vaultProtocol.clearOnHoldDeposits({ from: defiops });
 
             //Additional amount requested
             expectEvent(opResult, 'WithdrawByOperator');
@@ -1119,6 +1137,8 @@ contract('VaultProtocol', async([ _, owner, user1, user2, user3, defiops, protoc
                 user3, busd.address, 180, { from: defiops });
 
             await vaultProtocol.operatorAction(strategy.address, { from: defiops });
+            await vaultProtocol.clearWithdrawRequests({ from: defiops });
+            await vaultProtocol.clearOnHoldDeposits({ from: defiops });
 
 
             const claimable1 = await vaultProtocol.totalClaimableAmount(dai.address);

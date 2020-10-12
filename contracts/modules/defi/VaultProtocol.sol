@@ -102,7 +102,7 @@ contract VaultProtocol is Module, IVaultProtocol, DefiOperatorRole {
 
             emit WithdrawFromVault(_user, _token, _amount);
 
-            updateOnHoldDeposit(_user, _token, _amount);
+            decreaseOnHoldDeposit(_user, _token, _amount);
         }
         else {
             if (balancesRequested[_user].length == 0) {
@@ -129,7 +129,8 @@ contract VaultProtocol is Module, IVaultProtocol, DefiOperatorRole {
         //Yield distribution step based on actual deposits (excluding on-hold ones)
         // should be performed from the SavingsModule before other operator's actions
 
-        clearOnHoldDeposits();
+        processOnHoldDeposit();
+        //On-hold records can be cleared now
 
         address _user;
         uint256 totalWithdraw = 0;
@@ -152,9 +153,8 @@ contract VaultProtocol is Module, IVaultProtocol, DefiOperatorRole {
                     }
                 }
             }
-            balancesRequested[_user].length = 0;
         }
-        delete usersRequested;
+        //Withdraw requests records can be cleared now
 
         uint256[] memory depositAmounts = new uint256[](registeredVaultTokens.length);
         uint256 totalDeposit = 0;
@@ -180,6 +180,25 @@ contract VaultProtocol is Module, IVaultProtocol, DefiOperatorRole {
         }
         emit WithdrawRequestsResolved(totalDeposit, totalWithdraw);
         return (totalDeposit, totalWithdraw);
+    }
+
+    function clearOnHoldDeposits() public onlyDefiOperator {
+        address _user;
+        for (uint256 i = 0; i < usersDeposited.length; i++) {
+            //We can delete the on-hold records now - the real balances will be deposited to protocol
+            _user = usersDeposited[i];
+            balancesOnHold[_user].length = 0;
+        }
+        delete usersDeposited;
+    }
+
+    function clearWithdrawRequests() public onlyDefiOperator {
+        address _user;
+        for (uint256 i = 0; i < usersRequested.length; i++) {
+            _user = usersRequested[i];
+            balancesRequested[_user].length = 0;
+        }
+        delete usersRequested;
     }
 
     function quickWithdraw(address _user, uint256 _amount) public onlyDefiOperator {
@@ -304,20 +323,7 @@ contract VaultProtocol is Module, IVaultProtocol, DefiOperatorRole {
         return (isToken, ind);
     }
 
-    function updateOnHoldDeposit(address _user, address _token, uint256 _amount) internal {
-        uint256 ind = tokenRegisteredInd(_token);
-
-        if (balancesOnHold[_user].length != 0) {
-            if (balancesOnHold[_user][ind] > _amount) {
-                balancesOnHold[_user][ind] = balancesOnHold[_user][ind].sub(_amount);
-            }
-            else {
-                balancesOnHold[_user][ind] = 0;
-            }
-        }
-    }
-
-    function clearOnHoldDeposits() internal onlyDefiOperator {
+    function processOnHoldDeposit() internal {
         IVaultSavings vaultSavings = IVaultSavings(getModuleAddress(MODULE_VAULT));
         IOperableToken vaultPoolToken = IOperableToken(vaultSavings.poolTokenByProtocol(address(this)));
 
@@ -328,9 +334,34 @@ contract VaultProtocol is Module, IVaultProtocol, DefiOperatorRole {
             for (uint256 j = 0; j < balancesOnHold[_user].length; j++) {
                 vaultPoolToken.decreaseOnHoldValue(_user, balancesOnHold[_user][j]);
             }
-            balancesOnHold[_user].length = 0;
         }
-        delete usersDeposited;
+    }
+
+    function processOnHoldDeposit(uint256 coinNum) internal {
+        require(coinNum < supportedTokensCount(), "Incorrect coin index");
+        IVaultSavings vaultSavings = IVaultSavings(getModuleAddress(MODULE_VAULT));
+        IOperableToken vaultPoolToken = IOperableToken(vaultSavings.poolTokenByProtocol(address(this)));
+
+        address _user;
+        for (uint256 i = 0; i < usersDeposited.length; i++) {
+            //We can delete the on-hold records now - the real balances will be deposited to protocol
+            _user = usersDeposited[i];
+            vaultPoolToken.decreaseOnHoldValue(_user, balancesOnHold[_user][coinNum]);
+
+        }
+    }
+
+    function decreaseOnHoldDeposit(address _user, address _token, uint256 _amount) internal {
+        uint256 ind = tokenRegisteredInd(_token);
+
+        if (balancesOnHold[_user].length != 0) {
+            if (balancesOnHold[_user][ind] > _amount) {
+                balancesOnHold[_user][ind] = balancesOnHold[_user][ind].sub(_amount);
+            }
+            else {
+                balancesOnHold[_user][ind] = 0;
+            }
+        }
     }
 
     function addClaim(address _user, address _token, uint256 _amount) internal {

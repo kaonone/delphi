@@ -224,6 +224,7 @@ contract VaultSavingsModule is Module, IVaultSavings, AccessChecker, RewardDistr
 
         uint256 nBalanceBefore = distributeYieldInternal(_vaultProtocol, _strategy);
         (totalDeposit, totalWithdraw) = IVaultProtocol(_vaultProtocol).operatorAction(_strategy);
+        //Protocol records can be cleared now
         uint256 nBalanceAfter = updateProtocolBalance(_vaultProtocol, _strategy);
 
         uint256 yield;
@@ -235,6 +236,11 @@ contract VaultSavingsModule is Module, IVaultSavings, AccessChecker, RewardDistr
         if (yield > 0) {
             createYieldDistribution(poolToken, yield);
         }
+    }
+
+    function clearProtocolStorage(address _vaultProtocol) public onlyDefiOperator {
+        IVaultProtocol(_vaultProtocol).clearOnHoldDeposits();
+        IVaultProtocol(_vaultProtocol).clearWithdrawRequests();
     }
 
         /** 
