@@ -22,10 +22,12 @@ SET EXT_CURVEFY_Y_GAUGE=0x2cbc5d838883598ad8523b817f7edde25d2cc76e
 rem ==== Akropolis ====
 SET MODULE_POOL=0x6CEEd89849f5890392D7c2Ecb429888e2123E99b
 SET MODULE_ACCESS=0xbFC891b6c83b36aFC9493957065D304661c4189A
-SET MODULE_VAULT_SAVINGS=0x7B851a5819Ea36a96ae5fD7c3b7BD79aD94296b4
+SET MODULE_VAULT_SAVINGS=
 
-SET MODULE_CURVE_STRATEGY=0x915f4603576e90Ce838D3a540318A8cf6184EfcE
-SET POOL_TOKEN_CURVE_STRATEGY=0xeE4F1428274518AbA59515D21fe40aE38B20a17F
+SET VAULT_CURVE=
+SET POOL_TOKEN_VAULT_CURVE=
+
+SET CURVE_STRATEGY=
 
 rem === GOTO REQUESTED OP===
 if "%1" neq "" goto :%1
@@ -37,23 +39,27 @@ goto :done
 
 :create
 call npx oz create VaultSavingsModule --network rinkeby --init "initialize(address _pool)" --args %MODULE_POOL%
-call npx oz create CurveFiStablecoinStrategy --network rinkeby --init "initialize(address _pool, address[] memory tokens, uint256 _daiInd)" --args "%MODULE_POOL%,[%EXT_TOKEN_DAI%,%EXT_TOKEN_USDC%,%EXT_TOKEN_USDT%,%EXT_TOKEN_TUSD%],0"
+call npx oz create VaultProtocol --network rinkeby --init "initialize(address _pool, address[] memory tokens)" --args "%MODULE_POOL%,[%EXT_TOKEN_DAI%,%EXT_TOKEN_USDC%,%EXT_TOKEN_USDT%,%EXT_TOKEN_TUSD%]"
+call npx oz create CurveFiStablecoinStrategy --network rinkeby --init "initialize(address _pool, string memory _strategyId)" --args "%MODULE_POOL%,CRV-UNI-DAI"
 call npx oz create VaultPoolToken --network rinkeby --init "initialize(address _pool, string memory poolName, string memory poolSymbol)" --args "%MODULE_POOL%,AkropolisCurveFiStrategy,adsCRV"
 goto :done
 
 :setup
 call npx oz send-tx --to %MODULE_POOL% --network rinkeby --method set --args "vault, %MODULE_VAULT_SAVINGS%, false"
-call npx oz send-tx --to %MODULE_POOL% --network rinkeby --method set --args "strategy, %MODULE_CURVE_STRATEGY%, false"
 
-call npx oz send-tx --to %MODULE_CURVE_STRATEGY% --network rinkeby --method setProtocol --args "%EXT_CURVEFY_Y_DEPOSIT%,%EXT_CURVEFY_Y_GAUGE%,%EXT_CURVEFY_Y_MINTER%,%EXT_UNISWAP_ROUTER%,%EXT_TOKEN_WETH%"
-call npx oz send-tx --to %MODULE_CURVE_STRATEGY% --network rinkeby --method addDefiOperator --args %MODULE_VAULT_SAVINGS%
+call npx oz send-tx --to %VAULT_CURVE% --network rinkeby --method addDefiOperator --args %MODULE_VAULT_SAVINGS%
 
-call npx oz send-tx --to %POOL_TOKEN_CURVE_STRATEGY% --network rinkeby --method addMinter --args %MODULE_VAULT_SAVINGS%
-call npx oz send-tx --to %POOL_TOKEN_CURVE_STRATEGY% --network rinkeby --method addMinter --args %MODULE_CURVE_STRATEGY%
+call npx oz send-tx --to %CURVE_STRATEGY% --network rinkeby --method setProtocol --args "%EXT_CURVEFY_Y_DEPOSIT%,%EXT_CURVEFY_Y_GAUGE%,%EXT_CURVEFY_Y_MINTER%,%EXT_UNISWAP_ROUTER%,%EXT_TOKEN_WETH%"
+call npx oz send-tx --to %CURVE_STRATEGY% --network rinkeby --method addDefiOperator --args %VAULT_CURVE%
+
+call npx oz send-tx --to %VAULT_CURVE% --network rinkeby --method registerStrategy --args %CURVE_STRATEGY%
+
+call npx oz send-tx --to %POOL_TOKEN_VAULT_CURVE% --network rinkeby --method addMinter --args %MODULE_VAULT_SAVINGS%
+call npx oz send-tx --to %POOL_TOKEN_VAULT_CURVE% --network rinkeby --method addMinter --args %VAULT_CURVE%
 goto :done
 
 :setup2
-call npx oz send-tx --to %MODULE_VAULT_SAVINGS% --network rinkeby --method registerProtocol --args "%MODULE_CURVE_STRATEGY%,%POOL_TOKEN_CURVE_STRATEGY%"
+call npx oz send-tx --to %MODULE_VAULT_SAVINGS% --network rinkeby --method registerProtocol --args "%VAULT_CURVE%,%POOL_TOKEN_VAULT_CURVE%"
 goto :done
 
 
