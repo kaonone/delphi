@@ -13,7 +13,7 @@ import {
     FreeErc20Contract,FreeErc20Instance,
     CErc20StubContract,CErc20StubInstance,
     ComptrollerStubContract,ComptrollerStubInstance
-} from "../types/truffle-contracts/index";
+} from "../../types/truffle-contracts/index";
 
 
 const { BN, constants, expectEvent, shouldFail, time } = require("@openzeppelin/test-helpers");
@@ -23,12 +23,12 @@ const UPGRADABLE_OPTS = {
     unsafeAllowCustomTypes: true
 };
 
-import Snapshot from "./utils/snapshot";
+import Snapshot from "../utils/snapshot";
 const should = require("chai").should();
 var expect = require("chai").expect;
-const expectRevert= require("./utils/expectRevert");
-const expectEqualBN = require("./utils/expectEqualBN");
-const w3random = require("./utils/w3random");
+const expectRevert= require("../utils/expectRevert");
+const expectEqualBN = require("../utils/expectEqualBN");
+const w3random = require("../utils/w3random");
 
 const FreeERC20 = artifacts.require("FreeERC20");
 const CErc20Stub = artifacts.require("CErc20Stub");
@@ -47,7 +47,7 @@ const PoolTokenOld = artifacts.require("PoolTokenOld");
 const StakingPool  =  artifacts.require("StakingPool");
 const StakingPoolADEL  =  artifacts.require("StakingPoolADEL");
 
-contract("RewardDistributionModule - migration", async ([owner, user, ...otherAccounts]) => {
+contract("Upgrades: migrate rewards from Savings to RewardDistribution", async ([owner, user, ...otherAccounts]) => {
     //let snap:Snapshot;
 
     let dai:FreeErc20Instance;

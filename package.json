@@ -7,7 +7,7 @@
     "license": "MIT",
     "scripts": {
         "ganache": "npx ganache-cli --gasLimit 0xfffffffffff -e 10000000 --port 8545",
-        "generate-types": "truffle compile --all && typechain --target=truffle-v5 build/contracts/*.json",
+        "generate-types": "truffle compile --all && typechain --target=truffle-v5 \"build/contracts/*.json\"",
         "postinstall": "npm run generate-types"
     },
     "dependencies": {
