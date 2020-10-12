@@ -11,6 +11,11 @@ contract FreeERC20 is Base, ERC20Detailed, ERC20Burnable {
         ERC20Detailed.initialize(name, symbol, 18);
     }
 
+    function initialize(string memory name, string memory symbol, uint8 decimals) public initializer {
+        Base.initialize();
+        ERC20Detailed.initialize(name, symbol, decimals);
+    }
+
     /**
     * @notice Allows mintinf of this token
     * @param amount Amount to  mint
