@@ -71,7 +71,7 @@
         "type": "address"
       }
     ],
-    "name": "ProtocolRegistered",
+    "name": "VaultRegistered",
     "type": "event"
   },
   {
@@ -213,65 +213,6 @@
   },
   {
     "constant": false,
-    "inputs": [],
-    "name": "distributeRewards",
-    "outputs": [],
-    "payable": false,
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "constant": false,
-    "inputs": [],
-    "name": "distributeYield",
-    "outputs": [],
-    "payable": false,
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "constant": true,
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "_protocol",
-        "type": "address"
-      }
-    ],
-    "name": "poolTokenByProtocol",
-    "outputs": [
-      {
-        "internalType": "address",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "constant": false,
-    "inputs": [
-      {
-        "internalType": "contract IDefiProtocol",
-        "name": "protocol",
-        "type": "address"
-      },
-      {
-        "internalType": "contract PoolToken",
-        "name": "poolToken",
-        "type": "address"
-      }
-    ],
-    "name": "registerProtocol",
-    "outputs": [],
-    "payable": false,
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "constant": false,
     "inputs": [
       {
         "internalType": "address",
@@ -302,6 +243,78 @@
         "type": "uint256"
       }
     ],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_vault",
+        "type": "address"
+      },
+      {
+        "internalType": "address[]",
+        "name": "_tokens",
+        "type": "address[]"
+      },
+      {
+        "internalType": "uint256[]",
+        "name": "_dnAmounts",
+        "type": "uint256[]"
+      }
+    ],
+    "name": "withdraw",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_protocol",
+        "type": "address"
+      }
+    ],
+    "name": "poolTokenByProtocol",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "internalType": "contract IVaultProtocol",
+        "name": "protocol",
+        "type": "address"
+      },
+      {
+        "internalType": "contract VaultPoolToken",
+        "name": "poolToken",
+        "type": "address"
+      }
+    ],
+    "name": "registerVault",
+    "outputs": [],
     "payable": false,
     "stateMutability": "nonpayable",
     "type": "function"
@@ -344,9 +357,14 @@
         "internalType": "address",
         "name": "_vaultProtocol",
         "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_strategy",
+        "type": "address"
       }
     ],
-    "name": "handleWithdrawRequests",
+    "name": "handleOperatorActions",
     "outputs": [],
     "payable": false,
     "stateMutability": "nonpayable",
