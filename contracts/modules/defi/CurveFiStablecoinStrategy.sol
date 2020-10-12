@@ -174,7 +174,7 @@ contract CurveFiStablecoinStrategy is Module, IDefiStrategy, DefiOperatorRole {
             path[1] = wethToken;
             path[2] = dai;
 
-            IUniswap(uniswapRouter).swapExactTokensForTokens(_crv, uint256(0), path, address(this), now.add(1800));
+            IUniswap(uniswapRouter).swapExactTokensForTokens(_crv, uint256(0), path, vault, now.add(1800));
         }
         //new dai tokens will be transferred to this procol, they will be deposited by the operator on the next round
         //new LP tokens will be distributed automatically after the operator action
