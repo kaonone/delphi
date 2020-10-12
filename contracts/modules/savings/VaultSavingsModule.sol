@@ -56,14 +56,6 @@ contract VaultSavingsModule is Module, IVaultSavings, AccessChecker, RewardDistr
 
         poolTokenToVault[address(poolToken)] = address(protocol);
 
- //       address[] memory supportedTokens = protocol.supportedTokens();
- //       for (i = 0; i < supportedTokens.length; i++) {
- //           address tkn = supportedTokens[i];
- //           if (!isTokenRegistered(tkn)){
- //               registeredTokens.push(tkn);
- //               tokens[tkn].decimals = ERC20Detailed(tkn).decimals();
- //           }
- //       }
         uint256 normalizedBalance = vaults[address(protocol)].previousBalance;
         if(normalizedBalance > 0) {
             uint256 ts = poolToken.totalSupply();
@@ -74,13 +66,7 @@ contract VaultSavingsModule is Module, IVaultSavings, AccessChecker, RewardDistr
         emit VaultRegistered(address(protocol), address(poolToken));
     }
 
-// Inherited from ISavingsModule
- /**
-     * @notice Deposit from user to be transfered to the Vault
-     * @param _protocol Protocol to deposit tokens
-     * @param _tokens Array of tokens to deposit
-     * @param _dnAmounts Array of amounts (denormalized to token decimals)
-     */
+    //Deposits several tokens into single Vault
     function deposit(address _protocol, address[] memory _tokens, uint256[] memory _dnAmounts)
     public operationAllowed(IAccessModule.Operation.Deposit)
     returns(uint256) 
@@ -108,16 +94,7 @@ contract VaultSavingsModule is Module, IVaultSavings, AccessChecker, RewardDistr
         return nAmount;
     }
 
-    function depositToProtocol(address _protocol, address[] memory _tokens, uint256[] memory _dnAmounts) internal {
-        require(_tokens.length == _dnAmounts.length, "SavingsModule: count of tokens does not match count of amounts");
-
-        for (uint256 i=0; i < _tokens.length; i++) {
-            address tkn = _tokens[i];
-            IVaultProtocol(_protocol).depositToVault(_msgSender(), tkn, _dnAmounts[i]);
-            emit DepositToken(_protocol, tkn, _dnAmounts[i]);
-        }
-    }
-
+    //Deposits into several vaults but one coin at time
     function deposit(address[] memory _protocols, address[] memory _tokens, uint256[] memory _dnAmounts) 
     public operationAllowed(IAccessModule.Operation.Deposit) 
     returns(uint256[] memory) 
@@ -134,6 +111,7 @@ contract VaultSavingsModule is Module, IVaultSavings, AccessChecker, RewardDistr
         return ptAmounts;
     }
 
+    //Deposits into several vaults in several coins
     function depositAll(address[] memory _protocols, address[] memory _tokens, uint256[] memory _dnAmounts) 
     public operationAllowed(IAccessModule.Operation.Deposit) 
     returns(uint256[] memory) 
@@ -163,40 +141,88 @@ contract VaultSavingsModule is Module, IVaultSavings, AccessChecker, RewardDistr
         return ptAmounts;
     }
 
-    function withdrawAll(address _protocol, uint256 nAmount)
-    public operationAllowed(IAccessModule.Operation.Withdraw)
-    returns(uint256) 
-    {
-        //stub
+    function depositToProtocol(address _protocol, address[] memory _tokens, uint256[] memory _dnAmounts) internal {
+        require(_tokens.length == _dnAmounts.length, "SavingsModule: count of tokens does not match count of amounts");
 
-        return 0;
+        for (uint256 i=0; i < _tokens.length; i++) {
+            address tkn = _tokens[i];
+            IVaultProtocol(_protocol).depositToVault(_msgSender(), tkn, _dnAmounts[i]);
+            emit DepositToken(_protocol, tkn, _dnAmounts[i]);
+        }
     }
 
-    /**
-     * Withdraw token from protocol
-     * @param _protocol Protocol to withdraw from
-     * @param token Token to withdraw
-     * @param dnAmount Amount to withdraw (denormalized)
-     * @param maxNAmount Max amount of PoolToken to burn
-     * @return Amount of PoolToken burned from user
-     */
-    function withdraw(address _protocol, address token, uint256 dnAmount, uint256 maxNAmount)
+    //Withdraw one token from a Vault
+    function withdraw(address _vault, address token, uint256 dnAmount, uint256 maxNAmount)
     public operationAllowed(IAccessModule.Operation.Withdraw)
     returns(uint256){
         uint256 nAmount = CalcUtils.normalizeAmount(token, dnAmount);
 
-        IVaultProtocol(_protocol).withdrawFromVault(_msgSender(), token, dnAmount);
+        IVaultProtocol(_vault).withdrawFromVault(_msgSender(), token, dnAmount);
 
-        VaultPoolToken poolToken = VaultPoolToken(vaults[_protocol].poolToken);
+        VaultPoolToken poolToken = VaultPoolToken(vaults[_vault].poolToken);
         poolToken.burnFrom(_msgSender(), nAmount);
-        emit WithdrawToken(_protocol, token, dnAmount);
-        emit Withdraw(_protocol, _msgSender(), dnAmount, 0);
+        emit WithdrawToken(_vault, token, dnAmount);
+        emit Withdraw(_vault, _msgSender(), dnAmount, 0);
 
         return dnAmount;
     }
 
+    //Withdraw several tokens from a Vault
+    function withdraw(address _vault, address[] memory _tokens, uint256[] memory _dnAmounts)
+    public operationAllowed(IAccessModule.Operation.Withdraw)
+    returns(uint256) 
+    {
+        require(_tokens.length == _dnAmounts.length, "VaultSavingsModule: size of arrays does not match");
+
+        uint256[] memory amounts = new uint256[](_tokens.length);
+        uint256 actualAmount;
+        for (uint256 i = 0; i < amounts.length; i++) {
+            amounts[i] = CalcUtils.normalizeAmount(_tokens[i], _dnAmounts[i]);
+            actualAmount = actualAmount.add(amounts[i]);
+
+            emit WithdrawToken(address(_vault), _tokens[i], amounts[i]);
+        }
+        IVaultProtocol(_vault).withdrawFromVault(_msgSender(), _tokens, amounts);
 
 
+        VaultPoolToken poolToken = VaultPoolToken(vaults[_vault].poolToken);
+        poolToken.burnFrom(_msgSender(), actualAmount);
+        emit Withdraw(_vault, _msgSender(), actualAmount, 0);
+
+        return actualAmount;
+    }
+
+    //Withdraw several tokens from several Vaults
+    function withdrawAll(address[] memory _vaults, address[] memory _tokens, uint256[] memory _dnAmounts)
+    public operationAllowed(IAccessModule.Operation.Withdraw)
+    returns(uint256[] memory) 
+    {
+        require(_tokens.length == _dnAmounts.length, "VaultSavingsModule: size of arrays does not match");
+
+        uint256[] memory ptAmounts = new uint256[](_vaults.length);
+        uint256 curInd;
+        uint256 lim;
+        uint256 nTokens;
+        for (uint256 i=0; i < _vaults.length; i++) {
+            nTokens = IVaultProtocol(_vaults[i]).supportedTokensCount();
+            lim = curInd + nTokens;
+            
+            require(_tokens.length >= lim, "Incorrect tokens length");
+            
+            address[] memory tkns = new address[](nTokens);
+            uint256[] memory amnts = new uint256[](nTokens);
+
+            for (uint256 j = curInd; j < lim; j++) {
+                tkns[j-curInd] = _tokens[j];
+                amnts[j-curInd] = _dnAmounts[j];
+            }
+
+            ptAmounts[i] = withdraw(_vaults[i], tkns, amnts);
+
+            curInd += nTokens;
+        }
+        return ptAmounts;
+    }
 
 // inherited from IVaultSavings
     function quickWithdraw(address _vaultProtocol, address _token, uint256 _amount)

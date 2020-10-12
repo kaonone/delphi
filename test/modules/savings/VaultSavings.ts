@@ -330,6 +330,32 @@ contract('VaultSavings', async([ _, owner, user1, user2, user3, defiops, protoco
 
     });
 
+    describe('Withdraw through VaultSavings', () => {
+        afterEach(async() => await globalSnap.revert());
+
+        it('User burns LP tokens', async() => {
+            //Check that LP tokens are burnt
+        });
+
+        it('Withdraw request is created for one token', async() => {
+            //Call withdraw for one token
+            //Check request in the vault
+        });
+
+        it('Withdraw requests are created for several tokens in the Vault', async() => {
+            //Call withdraw with several coins from a vault
+            //Check request in the vault
+        });
+
+        it('Withdraw request are created for several Vaults (many tokens)', async() => {
+            //Call withdraw with several coins from several vaults (withdrawAll)
+
+            //Check that LP tokens are burnt
+            //Check that each vault gets requests
+        });
+
+    });
+
     describe('Operator resolves deposits through the VaultSavings', () => {
 
         beforeEach(async() => {
@@ -643,7 +669,7 @@ contract('VaultSavings', async([ _, owner, user1, user2, user3, defiops, protoco
             await vaultSavings.clearProtocolStorage(vaultProtocol.address, { from: defiops });
 
             //Withdraw by user 2
-            await vaultSavings.withdraw(vaultProtocol.address, dai.address, 60, 60, { from: user2 });
+            await vaultSavings.methods['withdraw(address,address,uint256,uint256)'](vaultProtocol.address, dai.address, 60, 60, { from: user2 });
 
             //LP tokens from user2 are burned
             user2PoolBalance = await poolToken.balanceOf(user2, { from: user2 });
@@ -716,7 +742,7 @@ contract('VaultSavings', async([ _, owner, user1, user2, user3, defiops, protoco
 
             //Third case
             //User1 requests particular withdraw - LP tokens are sent to the protocol and burned
-            await vaultSavings.withdraw(vaultProtocol.address, dai.address, 45, 45, { from: user1 });
+            await vaultSavings.methods['withdraw(address,address,uint256,uint256)'](vaultProtocol.address, dai.address, 45, 45, { from: user1 });
 
             user1PoolBalance = await poolToken.balanceOf(user1, { from: user1 });
             expect(user1PoolBalance.toNumber(), 'User1 hasn\'t sent LP tokens to the protocol (third case)')
