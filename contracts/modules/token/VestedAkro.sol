@@ -13,7 +13,7 @@ import "./VestedAkroSenderRole.sol";
  * @notice VestedAkro token represents AKRO token vested for a vestingPeriod set by owner of this VestedAkro token.
  * Generic holders of this token CAN NOT transfer it. They only can redeem AKRO from unlocked vAKRO.
  * Minters can mint unlocked vAKRO from AKRO to special VestedAkroSenders.
- * VestedAkroSender can send his unlocked vAKRO to generic holders, and this vAKRO will be vested.
+ * VestedAkroSender can send his unlocked vAKRO to generic holders, and this vAKRO will be vested. He can not redeem AKRO himself.
  */
 contract VestedAkro is Initializable, Context, Ownable, IERC20, ERC20Detailed, MinterRole, VestedAkroSenderRole {
     using SafeMath for uint256;
@@ -60,6 +60,10 @@ contract VestedAkro is Initializable, Context, Ownable, IERC20, ERC20Detailed, M
         return true;
     }
     function transferFrom(address sender, address recipient, uint256 amount) public onlySender returns (bool) {
+        // We require both sender and _msgSender() to have VestedAkroSender role
+        // to prevent sender from redeem and prevent unauthorized transfers via transferFrom.
+        require(isSender(sender), "VestedAkro: sender should have VestedAkroSender role");
+
         _transfer(sender, recipient, amount);
         _approve(sender, _msgSender(), allowances[sender][_msgSender()].sub(amount, "VestedAkro: transfer amount exceeds allowance"));
         return true;
@@ -110,7 +114,9 @@ contract VestedAkro is Initializable, Context, Ownable, IERC20, ERC20Detailed, M
      */
     function redeemAllUnlocked() public returns(uint256){
         address beneficiary = _msgSender();
+        require(!isSender(beneficiary), "VestedAkro: VestedAkroSender is not allowed to redeem");
         uint256 amount = holders[beneficiary].unlocked;
+        if(amount == 0) return 0;
 
         holders[beneficiary].unlocked = 0;
         totalSupply = totalSupply.sub(amount);
