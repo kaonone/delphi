@@ -65,7 +65,7 @@ contract VestedAkro is Initializable, Context, Ownable, IERC20, ERC20Detailed, M
     }
 
     function mint(address beneficiary, uint256 amount) public onlyMinter {
-        akro.transferFrom(_msgSender(), amount);
+        akro.transferFrom(_msgSender(), address(this), amount);
         totalSupply = totalSupply.add(amount);
         holders[beneficiary].unlocked = holders[beneficiary].unlocked.add(amount);
         emit Transfer(address(0), beneficiary, amount);
@@ -83,7 +83,7 @@ contract VestedAkro is Initializable, Context, Ownable, IERC20, ERC20Detailed, M
     }
 
     function balanceOf(address account) public view returns (uint256) {
-        Balance storage b = holders[holder];
+        Balance storage b = holders[account];
         return b.locked.add(b.unlocked);
     }
 
