@@ -68,7 +68,7 @@ contract VaultProtocol is Module, IVaultProtocol, DefiOperatorRole {
         (hasToken, ind) = tokenInfo(_token, registeredVaultTokens);
         require(hasToken, "Token is not registered in the vault");
 
-        IERC20(_token).transferFrom(_user, address(this), _amount);
+        //At this point token is transfered from VaultSavings
 
         if (balancesOnHold[_user].length == 0) {
             balancesOnHold[_user] = new uint256[](supportedTokensCount());

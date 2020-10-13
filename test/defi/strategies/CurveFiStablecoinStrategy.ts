@@ -15,6 +15,8 @@ import {
     UniswapStubContract, UniswapStubInstance
 } from "../../../types/truffle-contracts/index";
 
+const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
+
 // tslint:disable-next-line:no-var-requires
 const { BN, constants, expectEvent, shouldFail, time } = require("@openzeppelin/test-helpers");
 // tslint:disable-next-line:no-var-requires
@@ -217,10 +219,10 @@ contract("CurveFiStablecoinStrategy", async ([_, owner, user1, user2, user3, def
 
     describe('Full cycle', () => {
         beforeEach(async () =>{
-            await dai.approve(vaultProtocol.address, 100, {from:user1});
-            await usdc.approve(vaultProtocol.address, 100, {from:user1});
-            await busd.approve(vaultProtocol.address, 100, {from:user1});
-            await tusd.approve(vaultProtocol.address, 100, {from:user1});
+            await dai.approve(vaultSavings.address, 100, {from:user1});
+            await usdc.approve(vaultSavings.address, 100, {from:user1});
+            await busd.approve(vaultSavings.address, 100, {from:user1});
+            await tusd.approve(vaultSavings.address, 100, {from:user1});
 
         });
 
@@ -233,7 +235,7 @@ contract("CurveFiStablecoinStrategy", async ([_, owner, user1, user2, user3, def
                 [dai.address, usdc.address, busd.address, tusd.address], [10, 20, 30, 40],
                 {from:user1});
 
-            await vaultSavings.methods['handleOperatorActions(address,address)'](vaultProtocol.address, vaultCurveStrategy.address, {from:defiops});
+            await vaultSavings.handleOperatorActions(vaultProtocol.address, vaultCurveStrategy.address, ZERO_ADDRESS, {from:defiops});
 
         });
     });

@@ -8,6 +8,8 @@ import {
     VaultStrategyStubContract, VaultStrategyStubInstance
 } from '../../../types/truffle-contracts/index';
 
+const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
+
 // tslint:disable-next-line:no-var-requires
 const { BN, constants, expectEvent, shouldFail, time } = require('@openzeppelin/test-helpers');
 // tslint:disable-next-line:no-var-requires
@@ -69,18 +71,24 @@ contract('VaultSavings', async([ _, owner, user1, user2, user3, defiops, protoco
         await busd.transfer(user1, 1000, { from: owner });
         await busd.transfer(user2, 1000, { from: owner });
         await busd.transfer(user3, 1000, { from: owner });
+
         //------
         pool = await Pool.new({ from: owner });
         await (<any> pool).methods['initialize()']({ from: owner });
+
         //------
         accessModule = await AccessModule.new({ from: owner });
         await accessModule.methods['initialize(address)'](pool.address, { from: owner });
 
+        
         await pool.set('access', accessModule.address, true, { from: owner });
         //------
         vaultSavings = await VaultSavings.new({ from: owner });
+
         await (<any> vaultSavings).methods['initialize(address)'](pool.address, { from: owner });
+
         await vaultSavings.addDefiOperator(defiops, { from: owner });
+        
 
         await pool.set('vault', vaultSavings.address, true, { from: owner });
         //------
@@ -89,6 +97,7 @@ contract('VaultSavings', async([ _, owner, user1, user2, user3, defiops, protoco
             pool.address, [dai.address, usdc.address, busd.address], { from: owner });
         await vaultProtocol.addDefiOperator(vaultSavings.address, { from: owner });
         await vaultProtocol.addDefiOperator(defiops, { from: owner });
+
         //------
         poolToken = await PoolToken.new({ from: owner });
         await (<any> poolToken).methods['initialize(address,string,string)'](
@@ -104,11 +113,14 @@ contract('VaultSavings', async([ _, owner, user1, user2, user3, defiops, protoco
 
         await strategy.addDefiOperator(defiops, { from: owner });
         await strategy.addDefiOperator(vaultProtocol.address, { from: owner });
+
         //------
         await vaultProtocol.registerStrategy(strategy.address, { from: defiops });
+
         //------
         await vaultSavings.registerVault(vaultProtocol.address, poolToken.address, { from: owner });
 
+        
         await vaultProtocol.setAvailableEnabled(true, { from: owner });
 
         globalSnap = await Snapshot.create(web3.currentProvider);
@@ -117,8 +129,8 @@ contract('VaultSavings', async([ _, owner, user1, user2, user3, defiops, protoco
     describe('Deposit into the vault', () => {
 
         beforeEach(async() => {
-            await dai.approve(vaultProtocol.address, 80, { from: user1 });
-            await dai.approve(vaultProtocol.address, 50, { from: user2 });
+            await dai.approve(vaultSavings.address, 80, { from: user1 });
+            await dai.approve(vaultSavings.address, 50, { from: user2 });
         });
 
         afterEach(async() => await globalSnap.revert());
@@ -207,9 +219,8 @@ contract('VaultSavings', async([ _, owner, user1, user2, user3, defiops, protoco
             after(async() => await globalSnap.revert());
 
             it('User gets LP tokens after a deposit into multiple vaults', async() => {
-                await dai.approve(vaultProtocol.address, 30, { from: user1 });
-                await dai.approve(vault2.address, 50, { from: user1 });
-                await busd.approve(vault3.address, 20, { from: user1 });
+                await dai.approve(vaultSavings.address, 30 + 50, { from: user1 });
+                await busd.approve(vaultSavings.address, 20, { from: user1 });
 
                 const before = {
                     vault1Balance: await dai.balanceOf(vaultProtocol.address),
@@ -252,12 +263,9 @@ contract('VaultSavings', async([ _, owner, user1, user2, user3, defiops, protoco
             });
 
             it('User can deposit into all vault tokens', async() => {
-                await dai.approve(vaultProtocol.address, 80, { from: user1 });
-                await usdc.approve(vaultProtocol.address, 50, { from: user1 });
-                await busd.approve(vaultProtocol.address, 100, { from: user1 });
-                await dai.approve(vault2.address, 20, { from: user1 });
-                await usdc.approve(vault2.address, 30, { from: user1 });
-                await busd.approve(vault3.address, 90, { from: user1 });
+                await dai.approve(vaultSavings.address, 80 + 20, { from: user1 });
+                await usdc.approve(vaultSavings.address, 50 + 30, { from: user1 });
+                await busd.approve(vaultSavings.address, 100 + 90, { from: user1 });
 
                 const before = {
                     vault1Balance: {
@@ -397,12 +405,9 @@ contract('VaultSavings', async([ _, owner, user1, user2, user3, defiops, protoco
             await vault3.registerStrategy(strategy3.address, { from: defiops });
 
 
-            await dai.approve(vaultProtocol.address, 200, { from: user1 });
-            await usdc.approve(vaultProtocol.address, 200, { from: user1 });
-            await busd.approve(vaultProtocol.address, 200, { from: user1 });
-            await dai.approve(vault2.address, 200, { from: user1 });
-            await usdc.approve(vault2.address, 200, { from: user1 });
-            await busd.approve(vault3.address, 200, { from: user1 });
+            await dai.approve(vaultSavings.address, 400, { from: user1 });
+            await usdc.approve(vaultSavings.address, 400, { from: user1 });
+            await busd.approve(vaultSavings.address, 400, { from: user1 });
 
             await (<any>vaultSavings).methods['depositAll(address[],address[],uint256[])'](
                 [vaultProtocol.address, vault2.address, vault3.address],
@@ -411,9 +416,9 @@ contract('VaultSavings', async([ _, owner, user1, user2, user3, defiops, protoco
                 { from: user1 }
             );
 
-            await vaultSavings.methods['handleOperatorActions(address,address)'](vaultProtocol.address, strategy.address, { from: defiops });
-            await vaultSavings.methods['handleOperatorActions(address,address)'](vault2.address, strategy2.address, { from: defiops });
-            await vaultSavings.methods['handleOperatorActions(address,address)'](vault3.address, strategy3.address, { from: defiops });
+            await vaultSavings.handleOperatorActions(vaultProtocol.address, strategy.address, ZERO_ADDRESS, { from: defiops });
+            await vaultSavings.handleOperatorActions(vault2.address, strategy2.address, ZERO_ADDRESS, { from: defiops });
+            await vaultSavings.handleOperatorActions(vault3.address, strategy3.address, ZERO_ADDRESS, { from: defiops });
 
         });
 
@@ -443,11 +448,11 @@ contract('VaultSavings', async([ _, owner, user1, user2, user3, defiops, protoco
     describe('Operator resolves deposits through the VaultSavings', () => {
 
         beforeEach(async() => {
-            await dai.approve(vaultProtocol.address, 80, { from: user1 });
+            await dai.approve(vaultSavings.address, 80, { from: user1 });
             await (<any> vaultSavings).methods['deposit(address,address[],uint256[])'](
                 vaultProtocol.address, [dai.address], [80], { from: user1 });
 
-            await dai.approve(vaultProtocol.address, 50, { from: user2 });
+            await dai.approve(vaultSavings.address, 50, { from: user2 });
             await (<any> vaultSavings).methods['deposit(address,address[],uint256[])'](
                 vaultProtocol.address, [dai.address], [50], { from: user2 });
         });
@@ -457,7 +462,7 @@ contract('VaultSavings', async([ _, owner, user1, user2, user3, defiops, protoco
         });
 
         it('LP tokens are unmarked from being on-hold after deposit is resolved by operator', async() => {
-            await vaultSavings.methods['handleOperatorActions(address,address)'](vaultProtocol.address, strategy.address, { from: defiops });
+            await vaultSavings.handleOperatorActions(vaultProtocol.address, strategy.address, ZERO_ADDRESS, { from: defiops });
             await vaultSavings.clearProtocolStorage(vaultProtocol.address, { from: defiops });
 
 
@@ -475,7 +480,7 @@ contract('VaultSavings', async([ _, owner, user1, user2, user3, defiops, protoco
                 poolBalance2: await poolToken.balanceOf(user2, { from: user2 })
             };
 
-            await vaultSavings.methods['handleOperatorActions(address,address)'](vaultProtocol.address, strategy.address, { from: defiops });
+            await vaultSavings.handleOperatorActions(vaultProtocol.address, strategy.address, ZERO_ADDRESS, { from: defiops });
             await vaultSavings.clearProtocolStorage(vaultProtocol.address, { from: defiops });
 
             const vaultBalance = await dai.balanceOf(vaultProtocol.address, { from: owner });
@@ -516,7 +521,7 @@ contract('VaultSavings', async([ _, owner, user1, user2, user3, defiops, protoco
                 yieldBalance2: await poolToken.calculateUnclaimedDistributions(user2, { from: user2 })
             };
 
-            await vaultSavings.methods['handleOperatorActions(address,address)'](vaultProtocol.address, strategy.address, { from: defiops });
+            await vaultSavings.handleOperatorActions(vaultProtocol.address, strategy.address, ZERO_ADDRESS, { from: defiops });
             await vaultSavings.clearProtocolStorage(vaultProtocol.address, { from: defiops });
 
             const after = {
@@ -536,9 +541,9 @@ contract('VaultSavings', async([ _, owner, user1, user2, user3, defiops, protoco
 
     describe('Single token action', () => {
         beforeEach(async() => {
-            await dai.approve(vaultProtocol.address, 100, { from: user1 });
-            await usdc.approve(vaultProtocol.address, 100, { from: user1 });
-            await busd.approve(vaultProtocol.address, 100, { from: user1 });
+            await dai.approve(vaultSavings.address, 100, { from: user1 });
+            await usdc.approve(vaultSavings.address, 100, { from: user1 });
+            await busd.approve(vaultSavings.address, 100, { from: user1 });
         });
 
         afterEach(async() => {
@@ -569,11 +574,11 @@ contract('VaultSavings', async([ _, owner, user1, user2, user3, defiops, protoco
     describe('Yield distribution', () => {
 
         beforeEach(async() => {
-            await dai.approve(vaultProtocol.address, 80, { from: user1 });
+            await dai.approve(vaultSavings.address, 80, { from: user1 });
             await (<any> vaultSavings).methods['deposit(address,address[],uint256[])'](
                 vaultProtocol.address, [dai.address], [80], { from: user1 });
 
-            await dai.approve(vaultProtocol.address, 50, { from: user2 });
+            await dai.approve(vaultSavings.address, 50, { from: user2 });
             await (<any> vaultSavings).methods['deposit(address,address[],uint256[])'](
                 vaultProtocol.address, [dai.address], [50], { from: user2 });
         });
@@ -585,7 +590,7 @@ contract('VaultSavings', async([ _, owner, user1, user2, user3, defiops, protoco
         //The user gets yeild only if he has no on-hold deposits
 
         it('Yield is distributed for the user after new tokens minted', async() => {
-            await vaultSavings.methods['handleOperatorActions(address,address)'](vaultProtocol.address, strategy.address, { from: defiops });
+            await vaultSavings.handleOperatorActions(vaultProtocol.address, strategy.address, ZERO_ADDRESS, { from: defiops });
             await vaultSavings.clearProtocolStorage(vaultProtocol.address, { from: defiops });
 
             //Add yield to the protocol
@@ -598,7 +603,7 @@ contract('VaultSavings', async([ _, owner, user1, user2, user3, defiops, protoco
             expect(unclaimedTokens.toNumber(), 'No yield for user (1) yet').to.equal(16);
 
             //additional deposit
-            await dai.approve(vaultProtocol.address, 20, { from: user1 });
+            await dai.approve(vaultSavings.address, 20, { from: user1 });
             await (<any> vaultSavings).methods['deposit(address,address[],uint256[])'](
                 vaultProtocol.address, [dai.address], [20], { from: user1 });
 
@@ -616,11 +621,11 @@ contract('VaultSavings', async([ _, owner, user1, user2, user3, defiops, protoco
         });
 
         it('Additional deposit does not influence yield while being on-hold', async() => {
-            await vaultSavings.methods['handleOperatorActions(address,address)'](vaultProtocol.address, strategy.address, { from: defiops });
+            await vaultSavings.handleOperatorActions(vaultProtocol.address, strategy.address, ZERO_ADDRESS, { from: defiops });
             await vaultSavings.clearProtocolStorage(vaultProtocol.address, { from: defiops });
 
             //additional deposit
-            await dai.approve(vaultProtocol.address, 20, { from: user1 });
+            await dai.approve(vaultSavings.address, 20, { from: user1 });
             await (<any> vaultSavings).methods['deposit(address,address[],uint256[])'](
                 vaultProtocol.address, [dai.address], [20], { from: user1 });
 
@@ -639,11 +644,11 @@ contract('VaultSavings', async([ _, owner, user1, user2, user3, defiops, protoco
         });
 
         it('New deposit does not participate in distribution', async() => {
-            await vaultSavings.methods['handleOperatorActions(address,address)'](vaultProtocol.address, strategy.address, { from: defiops });
+            await vaultSavings.handleOperatorActions(vaultProtocol.address, strategy.address, ZERO_ADDRESS, { from: defiops });
             await vaultSavings.clearProtocolStorage(vaultProtocol.address, { from: defiops });
 
             //additional deposit - 80 in protocol and 20 on-hold
-            await dai.approve(vaultProtocol.address, 20, { from: user1 });
+            await dai.approve(vaultSavings.address, 20, { from: user1 });
             await (<any> vaultSavings).methods['deposit(address,address[],uint256[])'](
                 vaultProtocol.address, [dai.address], [20], { from: user1 });
 
@@ -651,7 +656,7 @@ contract('VaultSavings', async([ _, owner, user1, user2, user3, defiops, protoco
             await dai.transfer(protocolStub, 26, { from: owner });
 
             //move additional deposit into the protocol
-            await vaultSavings.methods['handleOperatorActions(address,address)'](vaultProtocol.address, strategy.address, { from: defiops });
+            await vaultSavings.handleOperatorActions(vaultProtocol.address, strategy.address, ZERO_ADDRESS, { from: defiops });
             await vaultSavings.clearProtocolStorage(vaultProtocol.address, { from: defiops });
 
             //User1 has received his yield - because his shared part has changed
@@ -684,17 +689,17 @@ contract('VaultSavings', async([ _, owner, user1, user2, user3, defiops, protoco
         it('Full cycle of deposit->yield->withdraw', async() => {
             // Preliminary
             // Deposit from user1
-            await dai.approve(vaultProtocol.address, 80, { from: user1 });
+            await dai.approve(vaultSavings.address, 80, { from: user1 });
             await (<VaultSavingsModuleInstance> vaultSavings).methods['deposit(address,address[],uint256[])'](
                 vaultProtocol.address, [dai.address], [80], { from: user1 });
 
             // Deposit from user2
-            await dai.approve(vaultProtocol.address, 50, { from: user2 });
+            await dai.approve(vaultSavings.address, 50, { from: user2 });
             await (<VaultSavingsModuleInstance> vaultSavings).methods['deposit(address,address[],uint256[])'](
                 vaultProtocol.address, [dai.address], [50], { from: user2 });
 
             // Operator resolves deposits
-            await vaultSavings.methods['handleOperatorActions(address,address)'](vaultProtocol.address, strategy.address, { from: defiops });
+            await vaultSavings.handleOperatorActions(vaultProtocol.address, strategy.address, ZERO_ADDRESS, { from: defiops });
             await vaultSavings.clearProtocolStorage(vaultProtocol.address, { from: defiops });
 
             // no yield yet - user balances are unchanged
@@ -718,7 +723,7 @@ contract('VaultSavings', async([ _, owner, user1, user2, user3, defiops, protoco
             await dai.transfer(protocolStub, 26, { from: owner });
 
             //Deposit from User3
-            await dai.approve(vaultProtocol.address, 20, { from: user3 });
+            await dai.approve(vaultSavings.address, 20, { from: user3 });
             await (<VaultSavingsModuleInstance> vaultSavings).methods['deposit(address,address[],uint256[])'](
                 vaultProtocol.address, [dai.address], [20], { from: user3 });
 
@@ -726,7 +731,7 @@ contract('VaultSavings', async([ _, owner, user1, user2, user3, defiops, protoco
             expect(user3PoolBalance.toNumber(), 'Pool tokens are not minted for user3').to.equal(20);
 
             //Operator resolves deposits
-            await vaultSavings.methods['handleOperatorActions(address,address)'](vaultProtocol.address, strategy.address, { from: defiops });
+            await vaultSavings.handleOperatorActions(vaultProtocol.address, strategy.address, ZERO_ADDRESS, { from: defiops });
             await vaultSavings.clearProtocolStorage(vaultProtocol.address, { from: defiops });
             //Yield from pool is distributed before the new deposit (on-hold deposit is not counted)
             //26 tokens of yield for deposits 80 + 50 = 130, 16 + 10 tokens of yield
@@ -755,7 +760,7 @@ contract('VaultSavings', async([ _, owner, user1, user2, user3, defiops, protoco
             expect(unclaimedTokens.toNumber(), 'Yield should not be distributed for user1').to.equal(0);
 
             //Additional deposit from user1
-            await dai.approve(vaultProtocol.address, 20, { from: user1 });
+            await dai.approve(vaultSavings.address, 20, { from: user1 });
             await (<VaultSavingsModuleInstance> vaultSavings).methods['deposit(address,address[],uint256[])'](
                 vaultProtocol.address, [dai.address], [20], { from: user1 });
 
@@ -780,11 +785,11 @@ contract('VaultSavings', async([ _, owner, user1, user2, user3, defiops, protoco
 
             //Second case
             //Make sure, that all LP tokens are working
-            await vaultSavings.methods['handleOperatorActions(address,address)'](vaultProtocol.address, strategy.address, { from: defiops });
+            await vaultSavings.handleOperatorActions(vaultProtocol.address, strategy.address, ZERO_ADDRESS, { from: defiops });
             await vaultSavings.clearProtocolStorage(vaultProtocol.address, { from: defiops });
 
             //Withdraw by user 2
-            await vaultSavings.methods['withdraw(address,address,uint256)'](vaultProtocol.address, dai.address, 60, { from: user2 });
+            await vaultSavings.withdraw(vaultProtocol.address, [dai.address], [60], { from: user2 });
 
             //LP tokens from user2 are burned
             user2PoolBalance = await poolToken.balanceOf(user2, { from: user2 });
@@ -803,7 +808,7 @@ contract('VaultSavings', async([ _, owner, user1, user2, user3, defiops, protoco
             //Imitate distribution period
             await blockTimeTravel(await vaultSavings.DISTRIBUTION_AGGREGATION_PERIOD());
 
-            await vaultSavings.methods['handleOperatorActions(address,address)'](vaultProtocol.address, strategy.address, { from: defiops });
+            await vaultSavings.handleOperatorActions(vaultProtocol.address, strategy.address, ZERO_ADDRESS, { from: defiops });
             await vaultSavings.clearProtocolStorage(vaultProtocol.address, { from: defiops });
 
             //User2 can claim his requested tokens
@@ -857,7 +862,7 @@ contract('VaultSavings', async([ _, owner, user1, user2, user3, defiops, protoco
 
             //Third case
             //User1 requests particular withdraw - LP tokens are sent to the protocol and burned
-            await vaultSavings.methods['withdraw(address,address,uint256)'](vaultProtocol.address, dai.address, 45, { from: user1 });
+            await vaultSavings.withdraw(vaultProtocol.address, [dai.address], [45], { from: user1 });
 
             user1PoolBalance = await poolToken.balanceOf(user1, { from: user1 });
             expect(user1PoolBalance.toNumber(), 'User1 hasn\'t sent LP tokens to the protocol (third case)')
@@ -898,7 +903,7 @@ contract('VaultSavings', async([ _, owner, user1, user2, user3, defiops, protoco
                 .to.equal(25);
 
             //Operator resolves withdraw requests
-            await vaultSavings.methods['handleOperatorActions(address,address)'](vaultProtocol.address, strategy.address, { from: defiops });
+            await vaultSavings.handleOperatorActions(vaultProtocol.address, strategy.address, ZERO_ADDRESS, { from: defiops });
             await vaultSavings.clearProtocolStorage(vaultProtocol.address, { from: defiops });
 
             //Unclaimed amounts are not changed

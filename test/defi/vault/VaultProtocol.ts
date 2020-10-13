@@ -127,7 +127,7 @@ contract('VaultProtocol', async([ _, owner, user1, user2, user3, defiops, protoc
             let onhold = await vaultProtocol.amountOnHold(user1, dai.address);
             expect(onhold.toNumber(), 'Deposit is not empty').to.equal(0);
 
-            await dai.approve(vaultProtocol.address, 100, { from: user1 });
+            await dai.transfer(vaultProtocol.address, 10, { from: user1 });
             const depositResult = await (<any> vaultProtocol)
                 .methods['depositToVault(address,address,uint256)'](user1, dai.address, 10, { from: defiops });
 
@@ -153,13 +153,13 @@ contract('VaultProtocol', async([ _, owner, user1, user2, user3, defiops, protoc
                 vaultBalance3: await busd.balanceOf(vaultProtocol.address)
             };
 
-            await dai.approve(vaultProtocol.address, 100, { from: user1 });
+            await dai.transfer(vaultProtocol.address, 10, { from: user1 });
             await (<any> vaultProtocol)
                 .methods['depositToVault(address,address,uint256)'](user1, dai.address, 10, { from: defiops });
-            await usdc.approve(vaultProtocol.address, 100, { from: user1 });
+            await usdc.transfer(vaultProtocol.address, 20, { from: user1 });
             await (<any> vaultProtocol)
                 .methods['depositToVault(address,address,uint256)'](user1, usdc.address, 20, { from: defiops });
-            await busd.approve(vaultProtocol.address, 100, { from: user1 });
+            await busd.transfer(vaultProtocol.address, 30, { from: user1 });
             await (<any> vaultProtocol)
                 .methods['depositToVault(address,address,uint256)'](user1, busd.address, 30, { from: defiops });
 
@@ -192,9 +192,9 @@ contract('VaultProtocol', async([ _, owner, user1, user2, user3, defiops, protoc
                 vaultBalance3: await busd.balanceOf(vaultProtocol.address)
             };
 
-            await dai.approve(vaultProtocol.address, 100, { from: user1 });
-            await usdc.approve(vaultProtocol.address, 100, { from: user1 });
-            await busd.approve(vaultProtocol.address, 100, { from: user1 });
+            await dai.transfer(vaultProtocol.address, 10, { from: user1 });
+            await usdc.transfer(vaultProtocol.address, 20, { from: user1 });
+            await busd.transfer(vaultProtocol.address, 30, { from: user1 });
 
             await (<any> vaultProtocol).methods['depositToVault(address,address[],uint256[])'](
                 user1, [dai.address, usdc.address, busd.address], [10, 20, 30],
@@ -227,10 +227,10 @@ contract('VaultProtocol', async([ _, owner, user1, user2, user3, defiops, protoc
                 vaultBalance: await dai.balanceOf(vaultProtocol.address)
             };
 
-            await dai.approve(vaultProtocol.address, 100, { from: user1 });
+            await dai.transfer(vaultProtocol.address, 10, { from: user1 });
             await (<any> vaultProtocol).methods['depositToVault(address,address,uint256)'](
                 user1, dai.address, 10, { from: defiops });
-            await dai.approve(vaultProtocol.address, 100, { from: user2 });
+            await dai.transfer(vaultProtocol.address, 20, { from: user2 });
             await (<any> vaultProtocol).methods['depositToVault(address,address,uint256)'](
                 user2, dai.address, 20, { from: defiops });
 
@@ -253,7 +253,7 @@ contract('VaultProtocol', async([ _, owner, user1, user2, user3, defiops, protoc
                 vaultBalance: await dai.balanceOf(vaultProtocol.address)
             };
 
-            await dai.approve(vaultProtocol.address, 100, { from: user1 });
+            await dai.transfer(vaultProtocol.address, 30, { from: user1 });
             await (<any> vaultProtocol).methods['depositToVault(address,address,uint256)'](
                 user1, dai.address, 10, { from: defiops });
             const depositResult = await (<any> vaultProtocol).methods['depositToVault(address,address,uint256)'](
@@ -284,9 +284,9 @@ contract('VaultProtocol', async([ _, owner, user1, user2, user3, defiops, protoc
             await usdc.transfer(vaultProtocol.address, 100, { from: owner });
             await busd.transfer(vaultProtocol.address, 100, { from: owner });
 
-            await dai.approve(vaultProtocol.address, 100, { from: user1 });
-            await usdc.approve(vaultProtocol.address, 100, { from: user1 });
-            await busd.approve(vaultProtocol.address, 100, { from: user1 });
+            await dai.transfer(vaultProtocol.address, 100, { from: user1 });
+            await usdc.transfer(vaultProtocol.address, 100, { from: user1 });
+            await busd.transfer(vaultProtocol.address, 100, { from: user1 });
             await (<any> vaultProtocol).methods['depositToVault(address,address[],uint256[])'](
                 user1, [dai.address, usdc.address, busd.address], [100, 100, 100],
                 { from: defiops });
@@ -444,7 +444,7 @@ contract('VaultProtocol', async([ _, owner, user1, user2, user3, defiops, protoc
         });
 
         it('Withdraw several tokens (one of tokens is on-hold)', async() => {
-            await dai.approve(vaultProtocol.address, 50, { from: user2 });
+            await dai.transfer(vaultProtocol.address, 50, { from: user2 });
             await (<any> vaultProtocol).methods['depositToVault(address,address,uint256)'](
                 user2, dai.address, 50, { from: defiops });
 
@@ -489,13 +489,9 @@ contract('VaultProtocol', async([ _, owner, user1, user2, user3, defiops, protoc
         let snap: Snapshot;
 
         before(async() => {
-            await dai.transfer(vaultProtocol.address, 100, { from: owner });
-            await usdc.transfer(vaultProtocol.address, 100, { from: owner });
-            await busd.transfer(vaultProtocol.address, 100, { from: owner });
-
-            await dai.approve(vaultProtocol.address, 100, { from: user1 });
-            await usdc.approve(vaultProtocol.address, 100, { from: user1 });
-            await busd.approve(vaultProtocol.address, 100, { from: user1 });
+            await dai.transfer(vaultProtocol.address, 100, { from: user1 });
+            await usdc.transfer(vaultProtocol.address, 100, { from: user1 });
+            await busd.transfer(vaultProtocol.address, 100, { from: user1 });
             await (<any> vaultProtocol).methods['depositToVault(address,address[],uint256[])'](
                 user1, [dai.address, usdc.address, busd.address], [100, 100, 100],
                 { from: defiops });
@@ -510,7 +506,7 @@ contract('VaultProtocol', async([ _, owner, user1, user2, user3, defiops, protoc
         it('Withdraw token (no on-hold tokens, not enough liquidity)', async() => {
             //Liquidity is withdrawn by another user
             await (<any> vaultProtocol).methods['withdrawFromVault(address,address,uint256)'](
-                user3, dai.address, 150, { from: defiops });
+                user3, dai.address, 100, { from: defiops });
 
             const before = {
                 userBalance: await dai.balanceOf(user2),
@@ -547,7 +543,7 @@ contract('VaultProtocol', async([ _, owner, user1, user2, user3, defiops, protoc
 
             //Liquidity is withdrawn by another user
             await (<any> vaultProtocol).methods['withdrawFromVault(address,address,uint256)'](
-                user2, dai.address, 150, { from: defiops });
+                user2, dai.address, 100, { from: defiops });
 
             const before = {
                 userBalance: await dai.balanceOf(user1),
@@ -588,7 +584,7 @@ contract('VaultProtocol', async([ _, owner, user1, user2, user3, defiops, protoc
         it('Withdraw several tokens - not enough liquidity for one of them', async() => {
             //Liquidity is withdrawn by another user
             await (<any> vaultProtocol).methods['withdrawFromVault(address,address,uint256)'](
-                user3, dai.address, 150, { from: defiops });
+                user3, dai.address, 100, { from: defiops });
 
             const before = {
                 vaultBalance1: await dai.balanceOf(vaultProtocol.address),
@@ -633,14 +629,6 @@ contract('VaultProtocol', async([ _, owner, user1, user2, user3, defiops, protoc
         let snap: Snapshot;
 
         before(async() => {
-            await dai.approve(vaultProtocol.address, 1000, { from: user1 });
-            await usdc.approve(vaultProtocol.address, 1000, { from: user1 });
-            await busd.approve(vaultProtocol.address, 1000, { from: user1 });
-
-            await dai.approve(vaultProtocol.address, 1000, { from: user2 });
-            await usdc.approve(vaultProtocol.address, 1000, { from: user2 });
-            await busd.approve(vaultProtocol.address, 1000, { from: user2 });
-
             await dai.transfer(protocolStub, 1000, { from: owner });
             await usdc.transfer(protocolStub, 1000, { from: owner });
             await busd.transfer(protocolStub, 1000, { from: owner });
@@ -672,6 +660,9 @@ contract('VaultProtocol', async([ _, owner, user1, user2, user3, defiops, protoc
             //Imitate LP tokens minting
             await poolToken.mint(user1, 160, { from: defiops });
 
+            await dai.transfer(vaultProtocol.address, 100, { from: user1 });
+            await usdc.transfer(vaultProtocol.address, 50, { from: user1 });
+            await busd.transfer(vaultProtocol.address, 10, { from: user1 });
             await (<any> vaultProtocol).methods['depositToVault(address,address,uint256)'](
                 user1, dai.address, 100, { from: defiops });
             await (<any> vaultProtocol).methods['depositToVault(address,address,uint256)'](
@@ -742,6 +733,9 @@ contract('VaultProtocol', async([ _, owner, user1, user2, user3, defiops, protoc
             await poolToken.mint(user2, 160, { from: defiops });
 
             //Deposits to create the exact liquidity
+            await dai.transfer(vaultProtocol.address, 100, { from: user2 });
+            await usdc.transfer(vaultProtocol.address, 50, { from: user2 });
+            await busd.transfer(vaultProtocol.address, 10, { from: user2 });
             await (<any> vaultProtocol).methods['depositToVault(address,address,uint256)'](
                 user2, dai.address, 100, { from: defiops });
             await (<any> vaultProtocol).methods['depositToVault(address,address,uint256)'](
@@ -874,6 +868,7 @@ contract('VaultProtocol', async([ _, owner, user1, user2, user3, defiops, protoc
             //Withdraw should not be fullfilled particulary
 
             //Create on-hold record
+            await dai.transfer(vaultProtocol.address, 100, { from: user1 });
             await (<any> vaultProtocol).methods['depositToVault(address,address,uint256)'](
                 user1, dai.address, 100, { from: defiops });
 
@@ -928,18 +923,6 @@ contract('VaultProtocol', async([ _, owner, user1, user2, user3, defiops, protoc
     describe('Claimable tokens functionality', () => {
         let snap: Snapshot;
         before(async() => {
-            await dai.approve(vaultProtocol.address, 1000, { from: user1 });
-            await usdc.approve(vaultProtocol.address, 1000, { from: user1 });
-            await busd.approve(vaultProtocol.address, 1000, { from: user1 });
-
-            await dai.approve(vaultProtocol.address, 1000, { from: user2 });
-            await usdc.approve(vaultProtocol.address, 1000, { from: user2 });
-            await busd.approve(vaultProtocol.address, 1000, { from: user2 });
-
-            await dai.approve(vaultProtocol.address, 1000, { from: user3 });
-            await usdc.approve(vaultProtocol.address, 1000, { from: user3 });
-            await busd.approve(vaultProtocol.address, 1000, { from: user3 });
-
             await dai.approve(strategy.address, 1000, { from: protocolStub });
             await usdc.approve(strategy.address, 1000, { from: protocolStub });
             await busd.approve(strategy.address, 1000, { from: protocolStub });
@@ -969,6 +952,7 @@ contract('VaultProtocol', async([ _, owner, user1, user2, user3, defiops, protoc
             const claimableBefore = await vaultProtocol.claimableAmount(user1, dai.address);
             const claimableTotalBefore = await vaultProtocol.totalClaimableAmount(dai.address);
 
+            await dai.transfer(vaultProtocol.address, 150, { from: user1 });
             await (<any> vaultProtocol).methods['depositToVault(address,address,uint256)'](
                 user1, dai.address, 150, { from: defiops });
 
@@ -982,6 +966,7 @@ contract('VaultProtocol', async([ _, owner, user1, user2, user3, defiops, protoc
 
         it('Withdraw by user (from liquidity on vault) does not influence claimable amount', async() => {
             //Create some liquidity in the vault
+            await dai.transfer(vaultProtocol.address, 200, { from: user3 });
             await (<any> vaultProtocol).methods['depositToVault(address,address,uint256)'](
                 user3, dai.address, 200, { from: defiops });
 
@@ -1021,6 +1006,7 @@ contract('VaultProtocol', async([ _, owner, user1, user2, user3, defiops, protoc
 
         it('Deposit by operator does not influence claimable tokens', async() => {
             //Create on-hold record to be resolved
+            await dai.transfer(vaultProtocol.address, 80, { from: user1 });
             await (<any> vaultProtocol).methods['depositToVault(address,address,uint256)'](
                 user1, dai.address, 80, { from: defiops });
 
@@ -1140,9 +1126,9 @@ contract('VaultProtocol', async([ _, owner, user1, user2, user3, defiops, protoc
         it('Total claimable calculated correctly', async() => {
             //[180, 50, 20] - initial from before()
             // + additional
-            await dai.transfer(protocolStub, 50, { from: owner });
-            await usdc.transfer(protocolStub, 80, { from: owner });
-            await busd.transfer(protocolStub, 180, { from: owner });
+            await dai.transfer(protocolStub, 50, { from: user1 });
+            await usdc.transfer(protocolStub, 80, { from: user1 });
+            await busd.transfer(protocolStub, 180, { from: user1 });
             await (<any> vaultProtocol).methods['withdrawFromVault(address,address,uint256)'](
                 user1, dai.address, 50, { from: defiops });
             await (<any> vaultProtocol).methods['withdrawFromVault(address,address,uint256)'](
@@ -1170,26 +1156,6 @@ contract('VaultProtocol', async([ _, owner, user1, user2, user3, defiops, protoc
         let localSnap: Snapshot;
 
         before(async() => {
-            await dai.approve(vaultProtocol.address, 1000, { from: user1 });
-            await usdc.approve(vaultProtocol.address, 1000, { from: user1 });
-            await busd.approve(vaultProtocol.address, 1000, { from: user1 });
-            await usdt.approve(vaultProtocol.address, 1000, { from: user1 });
-
-            await dai.approve(vaultProtocol.address, 1000, { from: user2 });
-            await usdc.approve(vaultProtocol.address, 1000, { from: user2 });
-            await busd.approve(vaultProtocol.address, 1000, { from: user2 });
-            await usdt.approve(vaultProtocol.address, 1000, { from: user2 });
-
-            await dai.approve(vaultProtocol.address, 1000, { from: user3 });
-            await usdc.approve(vaultProtocol.address, 1000, { from: user3 });
-            await busd.approve(vaultProtocol.address, 1000, { from: user3 });
-            await usdt.approve(vaultProtocol.address, 1000, { from: user3 });
-
-            await dai.approve(vaultProtocol.address, 5000, { from: owner });
-            await usdc.approve(vaultProtocol.address, 5000, { from: owner });
-            await busd.approve(vaultProtocol.address, 5000, { from: owner });
-            await usdt.approve(vaultProtocol.address, 5000, { from: owner });
-
             await dai.approve(strategy.address, 5000, { from: protocolStub });
             await usdc.approve(strategy.address, 5000, { from: protocolStub });
             await busd.approve(strategy.address, 5000, { from: protocolStub });
@@ -1265,18 +1231,27 @@ contract('VaultProtocol', async([ _, owner, user1, user2, user3, defiops, protoc
              *************************/
             // First deposits from 3 users
             // Deposits from user1
+            await dai.transfer(vaultProtocol.address, sent.user1.dai, { from: user1 });
+            await usdc.transfer(vaultProtocol.address, sent.user1.usdc, { from: user1 });
+            await usdt.transfer(vaultProtocol.address, sent.user1.usdt, { from: user1 });
             await vaultProtocol.methods['depositToVault(address,address[],uint256[])'](user1,
                 [dai.address, usdc.address, usdt.address], Object.values(sent.user1), { from: defiops });
             // Send the same amount of pool tokens for user stablecoins
             await poolToken.mint(user1, totalByUser.user1, { from: defiops });
 
             // Deposits from user2
+            await dai.transfer(vaultProtocol.address, sent.user2.dai, { from: user2 });
+            await usdc.transfer(vaultProtocol.address, sent.user2.usdc, { from: user2 });
             await vaultProtocol.methods['depositToVault(address,address[],uint256[])'](user2,
                 [dai.address, usdc.address], Object.values(sent.user2), { from: defiops });
             // Send the same amount of pool tokens for user stablecoins
             await poolToken.mint(user2, totalByUser.user2, { from: defiops });
 
             // Deposits from user3
+            await dai.transfer(vaultProtocol.address, sent.user3.dai, { from: user3 });
+            await usdc.transfer(vaultProtocol.address, sent.user3.usdc, { from: user3 });
+            await busd.transfer(vaultProtocol.address, sent.user3.busd, { from: user3 });
+            await usdt.transfer(vaultProtocol.address, sent.user3.usdt, { from: user3 });
             await vaultProtocol.methods['depositToVault(address,address[],uint256[])'](user3,
                 [dai.address, usdc.address, busd.address, usdt.address], Object.values(sent.user3), { from: defiops });
             // Send the same amount of pool tokens for user stablecoins
@@ -1395,9 +1370,11 @@ contract('VaultProtocol', async([ _, owner, user1, user2, user3, defiops, protoc
             const toUser2 = sent.user2.dai + profits.user2.dai;
             const toUser3 = sent.user3.dai + profits.user3.dai;
             const values = { dai: toUser2 + toUser3 - 1 };
+            
+            await dai.transfer(vaultProtocol.address, values.dai, { from: user1 });
             await vaultProtocol.methods['depositToVault(address,address[],uint256[])'](
                 user1, [dai.address], [values.dai], { from: defiops });
-            await poolToken.mint(user2, values.dai, { from: defiops });
+            await poolToken.mint(user1, values.dai, { from: defiops });
 
             const before = {
                 user2: await dai.balanceOf(user2),
@@ -1432,9 +1409,10 @@ contract('VaultProtocol', async([ _, owner, user1, user2, user3, defiops, protoc
             expect(before.vault.sub(after.vault).toNumber()).to.equal(toUser2);
 
             // Put enough DAI for the user3 to the vault
+            await dai.transfer(vaultProtocol.address, 1, { from: user1 });
             await vaultProtocol.methods['depositToVault(address,address[],uint256[])'](
                 user1, [dai.address], [1], { from: defiops });
-            await poolToken.mint(user2, 1, { from: defiops });
+            await poolToken.mint(user1, 1, { from: defiops });
             
             // Call operator action
             const user3BalanceBefore = await dai.balanceOf(user3);
@@ -1466,6 +1444,7 @@ contract('VaultProtocol', async([ _, owner, user1, user2, user3, defiops, protoc
 
             // User1 deposits more
             const sendMore = { user1: { dai: 30 } };
+            await dai.transfer(vaultProtocol.address, sendMore.user1.dai, { from: user1 });
             await vaultProtocol.methods['depositToVault(address,address,uint256)'](
                 user1, dai.address, sendMore.user1.dai, { from: defiops });
             await poolToken.mint(user2, sendMore.user1.dai, { from: defiops });
@@ -1492,11 +1471,14 @@ contract('VaultProtocol', async([ _, owner, user1, user2, user3, defiops, protoc
                 user1: { usdc: 15, usdt: 100 },
                 user2: { dai: 50 },
             };
+            await usdc.transfer(vaultProtocol.address, more.user1.usdc, { from: user1 });
+            await usdt.transfer(vaultProtocol.address, more.user1.usdt, { from: user1 });
             await vaultProtocol.methods['depositToVault(address,address[],uint256[])'](user1,
                 [usdc.address, usdt.address], Object.values(more.user1), { from: defiops });
             // Send the same amount of pool tokens for user stablecoins
             await poolToken.mint(user1, Object.values(more.user1).reduce((acc, x) => acc += x), { from: defiops });
 
+            await dai.transfer(vaultProtocol.address, more.user2.dai, { from: user2 });
             await vaultProtocol.methods['depositToVault(address,address[],uint256[])'](user2,
                 [dai.address], Object.values(more.user2), { from: defiops });
             // Send the same amount of pool tokens for user stablecoins

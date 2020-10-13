@@ -58,7 +58,7 @@ contract VaultProtocolOneCoin is Module, IVaultProtocol, DefiOperatorRole {
 
         require(_token == registeredVaultToken, "Token is not registered in the vault");
 
-        IERC20(_token).transferFrom(_user, address(this), _amount);
+        //At this point token is transfered from VaultSavings
 
         usersDeposited.push(_user);
         balancesOnHold[_user] = balancesOnHold[_user].add(_amount);

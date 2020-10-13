@@ -146,25 +146,10 @@ contract VaultSavingsModule is Module, IVaultSavings, AccessChecker, RewardDistr
 
         for (uint256 i=0; i < _tokens.length; i++) {
             address tkn = _tokens[i];
+            IERC20(tkn).safeTransferFrom(_msgSender(), _protocol, _dnAmounts[i]);
             IVaultProtocol(_protocol).depositToVault(_msgSender(), tkn, _dnAmounts[i]);
             emit DepositToken(_protocol, tkn, _dnAmounts[i]);
         }
-    }
-
-    //Withdraw one token from a Vault
-    function withdraw(address _vault, address token, uint256 dnAmount)
-    public operationAllowed(IAccessModule.Operation.Withdraw)
-    returns(uint256){
-        uint256 nAmount = CalcUtils.normalizeAmount(token, dnAmount);
-
-        IVaultProtocol(_vault).withdrawFromVault(_msgSender(), token, dnAmount);
-
-        VaultPoolToken poolToken = VaultPoolToken(vaults[_vault].poolToken);
-        poolToken.burnFrom(_msgSender(), nAmount);
-        emit WithdrawToken(_vault, token, dnAmount);
-        emit Withdraw(_vault, _msgSender(), dnAmount, 0);
-
-        return dnAmount;
     }
 
     //Withdraw several tokens from a Vault
@@ -242,28 +227,6 @@ contract VaultSavingsModule is Module, IVaultSavings, AccessChecker, RewardDistr
         IVaultProtocol(_vaultProtocol).claimRequested(_msgSender());
     }
 
-    function handleOperatorActions(address _vaultProtocol, address _strategy) public onlyDefiOperator {
-        uint256 totalDeposit;
-        uint256 totalWithdraw;
-
-        VaultPoolToken poolToken = VaultPoolToken(vaults[_vaultProtocol].poolToken);
-
-        uint256 nBalanceBefore = distributeYieldInternal(_vaultProtocol, _strategy);
-        (totalDeposit, totalWithdraw) = IVaultProtocol(_vaultProtocol).operatorAction(_strategy);
-        //Protocol records can be cleared now
-        uint256 nBalanceAfter = updateProtocolBalance(_vaultProtocol, _strategy);
-
-        uint256 yield;
-        uint256 calcBalanceAfter = nBalanceBefore.add(totalDeposit).sub(totalWithdraw);
-        if (nBalanceAfter > calcBalanceAfter) {
-            yield = nBalanceAfter.sub(calcBalanceAfter);
-        }
-
-        if (yield > 0) {
-            createYieldDistribution(poolToken, yield);
-        }
-    }
-
     function handleOperatorActions(address _vaultProtocol, address _strategy, address _token) public onlyDefiOperator {
         uint256 totalDeposit;
         uint256 totalWithdraw;
@@ -271,7 +234,12 @@ contract VaultSavingsModule is Module, IVaultSavings, AccessChecker, RewardDistr
         VaultPoolToken poolToken = VaultPoolToken(vaults[_vaultProtocol].poolToken);
 
         uint256 nBalanceBefore = distributeYieldInternal(_vaultProtocol, _strategy);
-        (totalDeposit, totalWithdraw) = IVaultProtocol(_vaultProtocol).operatorActionOneCoin(_strategy, _token);
+        if (_token == address(0)) {
+            (totalDeposit, totalWithdraw) = IVaultProtocol(_vaultProtocol).operatorAction(_strategy);
+        }
+        else {
+            (totalDeposit, totalWithdraw) = IVaultProtocol(_vaultProtocol).operatorActionOneCoin(_strategy, _token);
+        }
         //Protocol records can be cleared now
         uint256 nBalanceAfter = updateProtocolBalance(_vaultProtocol, _strategy);
 

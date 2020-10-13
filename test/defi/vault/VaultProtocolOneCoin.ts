@@ -108,7 +108,7 @@ contract('VaultProtocolOneCoin', async([ _, owner, user1, user2, user3, defiops,
             let onhold = await vaultProtocol.amountOnHold(user1, dai.address);
             expect(onhold.toNumber(), 'Deposit is not empty').to.equal(0);
 
-            await dai.approve(vaultProtocol.address, 100, { from: user1 });
+            await dai.transfer(vaultProtocol.address, 10, { from: user1 });
             const depositResult = await (<any> vaultProtocol)
                 .methods['depositToVault(address,address,uint256)'](user1, dai.address, 10, { from: defiops });
 
