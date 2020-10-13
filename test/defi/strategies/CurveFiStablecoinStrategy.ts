@@ -231,7 +231,7 @@ contract("CurveFiStablecoinStrategy", async ([_, owner, user1, user2, user3, def
                 [dai.address, usdc.address, busd.address, tusd.address], [10, 20, 30, 40],
                 {from:user1});
 
-            await vaultSavings.handleOperatorActions(vaultProtocol.address, vaultCurveStrategy.address, {from:defiops});
+            await vaultSavings.methods['handleOperatorActions(address,address)'](vaultProtocol.address, vaultCurveStrategy.address, {from:defiops});
 
         });
     });

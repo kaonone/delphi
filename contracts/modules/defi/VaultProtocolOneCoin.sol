@@ -33,11 +33,12 @@ contract VaultProtocolOneCoin is Module, IVaultProtocol, DefiOperatorRole {
     mapping(address => uint256) internal balancesToClaim;
     uint256 internal claimableTokens;
 
-    function initialize(address _pool, address _token) public initializer {
+    function initialize(address _pool, address[] memory _tokens) public initializer {
+        require(_tokens.length == 1, "Incorrect number of tokens");
         Module.initialize(_pool);
         DefiOperatorRole.initialize(_msgSender());
 
-        registeredVaultToken = _token;
+        registeredVaultToken = _tokens[0];
     }
 
     function registerStrategy(address _strategy) public onlyDefiOperator {
@@ -152,6 +153,11 @@ contract VaultProtocolOneCoin is Module, IVaultProtocol, DefiOperatorRole {
         }
         emit WithdrawRequestsResolved(totalDeposit, totalWithdraw);
         return (totalDeposit, totalWithdraw);
+    }
+
+    function operatorActionOneCoin(address _strategy, address _token) public onlyDefiOperator returns(uint256, uint256) {
+        require(isTokenRegistered(_token), "Token is not registered");
+        return operatorAction(_strategy);
     }
 
     function clearOnHoldDeposits() public onlyDefiOperator {

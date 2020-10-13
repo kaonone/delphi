@@ -19,6 +19,7 @@ contract IVaultProtocol {
     function withdrawFromVault(address _user, address[] calldata  _tokens, uint256[] calldata _amounts) external;
 
     function operatorAction(address _strategy) external returns(uint256, uint256);
+    function operatorActionOneCoin(address _strategy, address _token) external returns(uint256, uint256);
     function clearOnHoldDeposits() external;
     function clearWithdrawRequests() external;
 

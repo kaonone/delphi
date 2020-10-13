@@ -152,7 +152,7 @@ contract VaultSavingsModule is Module, IVaultSavings, AccessChecker, RewardDistr
     }
 
     //Withdraw one token from a Vault
-    function withdraw(address _vault, address token, uint256 dnAmount, uint256 maxNAmount)
+    function withdraw(address _vault, address token, uint256 dnAmount)
     public operationAllowed(IAccessModule.Operation.Withdraw)
     returns(uint256){
         uint256 nAmount = CalcUtils.normalizeAmount(token, dnAmount);
@@ -250,6 +250,28 @@ contract VaultSavingsModule is Module, IVaultSavings, AccessChecker, RewardDistr
 
         uint256 nBalanceBefore = distributeYieldInternal(_vaultProtocol, _strategy);
         (totalDeposit, totalWithdraw) = IVaultProtocol(_vaultProtocol).operatorAction(_strategy);
+        //Protocol records can be cleared now
+        uint256 nBalanceAfter = updateProtocolBalance(_vaultProtocol, _strategy);
+
+        uint256 yield;
+        uint256 calcBalanceAfter = nBalanceBefore.add(totalDeposit).sub(totalWithdraw);
+        if (nBalanceAfter > calcBalanceAfter) {
+            yield = nBalanceAfter.sub(calcBalanceAfter);
+        }
+
+        if (yield > 0) {
+            createYieldDistribution(poolToken, yield);
+        }
+    }
+
+    function handleOperatorActions(address _vaultProtocol, address _strategy, address _token) public onlyDefiOperator {
+        uint256 totalDeposit;
+        uint256 totalWithdraw;
+
+        VaultPoolToken poolToken = VaultPoolToken(vaults[_vaultProtocol].poolToken);
+
+        uint256 nBalanceBefore = distributeYieldInternal(_vaultProtocol, _strategy);
+        (totalDeposit, totalWithdraw) = IVaultProtocol(_vaultProtocol).operatorActionOneCoin(_strategy, _token);
         //Protocol records can be cleared now
         uint256 nBalanceAfter = updateProtocolBalance(_vaultProtocol, _strategy);
 
