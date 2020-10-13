@@ -4942,6 +4942,300 @@
         ],
         "storageDiff": []
       }
+    },
+    "VestedAkro": {
+      "address": "0xeD2e9F9C4b6a955d87B48A06e1F43AcAa9cDE14D",
+      "constructorCode": "6080604052612522806100136000396000f3fe",
+      "bodyBytecodeHash": "a007a3147eefccb3b7f30cc7fdfe5e644720f7ab544bbf5cc943db47407ed108",
+      "localBytecodeHash": "489bcfd9a04e046aaecb67ddb4c1499a5bbf9a78ce0105469b1902b807aef9a7",
+      "deployedBytecodeHash": "489bcfd9a04e046aaecb67ddb4c1499a5bbf9a78ce0105469b1902b807aef9a7",
+      "types": {
+        "t_bool": {
+          "id": "t_bool",
+          "kind": "elementary",
+          "label": "bool"
+        },
+        "t_uint256": {
+          "id": "t_uint256",
+          "kind": "elementary",
+          "label": "uint256"
+        },
+        "t_array:50<t_uint256>": {
+          "id": "t_array:50<t_uint256>",
+          "valueType": "t_uint256",
+          "length": "50",
+          "kind": "array",
+          "label": "uint256[50]"
+        },
+        "t_address": {
+          "id": "t_address",
+          "kind": "elementary",
+          "label": "address"
+        },
+        "t_string": {
+          "id": "t_string",
+          "kind": "elementary",
+          "label": "string"
+        },
+        "t_uint8": {
+          "id": "t_uint8",
+          "kind": "elementary",
+          "label": "uint8"
+        },
+        "t_struct<Roles.Role>": {
+          "id": "t_struct<Roles.Role>",
+          "kind": "struct",
+          "label": "Roles.Role",
+          "members": [
+            {
+              "label": "bearer",
+              "astId": 26352,
+              "type": "t_mapping<t_bool>",
+              "src": "150:32:106"
+            }
+          ]
+        },
+        "t_mapping<t_bool>": {
+          "id": "t_mapping<t_bool>",
+          "valueType": "t_bool",
+          "label": "mapping(key => bool)",
+          "kind": "mapping"
+        },
+        "t_mapping<t_uint256>": {
+          "id": "t_mapping<t_uint256>",
+          "valueType": "t_uint256",
+          "label": "mapping(key => uint256)",
+          "kind": "mapping"
+        },
+        "t_struct<VestedAkro.Balance>": {
+          "id": "t_struct<VestedAkro.Balance>",
+          "kind": "struct",
+          "label": "VestedAkro.Balance",
+          "members": [
+            {
+              "label": "batches",
+              "astId": 16356,
+              "type": "t_array:dyn<t_struct<VestedAkro.VestedBatch>>",
+              "src": "1625:21:83"
+            },
+            {
+              "label": "locked",
+              "astId": 16358,
+              "type": "t_uint256",
+              "src": "1685:14:83"
+            },
+            {
+              "label": "unlocked",
+              "astId": 16360,
+              "type": "t_uint256",
+              "src": "1745:16:83"
+            },
+            {
+              "label": "firstUnclaimedBatch",
+              "astId": 16362,
+              "type": "t_uint256",
+              "src": "1868:27:83"
+            }
+          ]
+        },
+        "t_struct<VestedAkro.VestedBatch>": {
+          "id": "t_struct<VestedAkro.VestedBatch>",
+          "kind": "struct",
+          "label": "VestedAkro.VestedBatch",
+          "members": [
+            {
+              "label": "amount",
+              "astId": 16346,
+              "type": "t_uint256",
+              "src": "1326:14:83"
+            },
+            {
+              "label": "start",
+              "astId": 16348,
+              "type": "t_uint256",
+              "src": "1399:13:83"
+            },
+            {
+              "label": "end",
+              "astId": 16350,
+              "type": "t_uint256",
+              "src": "1450:11:83"
+            },
+            {
+              "label": "claimed",
+              "astId": 16352,
+              "type": "t_uint256",
+              "src": "1498:15:83"
+            }
+          ]
+        },
+        "t_array:dyn<t_struct<VestedAkro.VestedBatch>>": {
+          "id": "t_array:dyn<t_struct<VestedAkro.VestedBatch>>",
+          "valueType": "t_struct<VestedAkro.VestedBatch>",
+          "length": "dyn",
+          "kind": "array",
+          "label": "VestedAkro.VestedBatch[]"
+        },
+        "t_mapping<t_struct<VestedAkro.Balance>>": {
+          "id": "t_mapping<t_struct<VestedAkro.Balance>>",
+          "valueType": "t_struct<VestedAkro.Balance>",
+          "label": "mapping(key => VestedAkro.Balance)",
+          "kind": "mapping"
+        }
+      },
+      "storage": [
+        {
+          "contract": "Initializable",
+          "path": "@openzeppelin\\upgrades\\contracts\\Initializable.sol",
+          "label": "initialized",
+          "astId": 28422,
+          "type": "t_bool",
+          "src": "757:24:123"
+        },
+        {
+          "contract": "Initializable",
+          "path": "@openzeppelin\\upgrades\\contracts\\Initializable.sol",
+          "label": "initializing",
+          "astId": 28424,
+          "type": "t_bool",
+          "src": "876:25:123"
+        },
+        {
+          "contract": "Initializable",
+          "path": "@openzeppelin\\upgrades\\contracts\\Initializable.sol",
+          "label": "______gap",
+          "astId": 28486,
+          "type": "t_array:50<t_uint256>",
+          "src": "1982:29:123"
+        },
+        {
+          "contract": "Ownable",
+          "path": "@openzeppelin\\contracts-ethereum-package\\contracts\\ownership\\Ownable.sol",
+          "label": "_owner",
+          "astId": 27355,
+          "type": "t_address",
+          "src": "526:22:114"
+        },
+        {
+          "contract": "Ownable",
+          "path": "@openzeppelin\\contracts-ethereum-package\\contracts\\ownership\\Ownable.sol",
+          "label": "______gap",
+          "astId": 27468,
+          "type": "t_array:50<t_uint256>",
+          "src": "2471:29:114"
+        },
+        {
+          "contract": "ERC20Detailed",
+          "path": "@openzeppelin\\contracts-ethereum-package\\contracts\\token\\ERC20\\ERC20Detailed.sol",
+          "label": "_name",
+          "astId": 27932,
+          "type": "t_string",
+          "src": "224:20:117"
+        },
+        {
+          "contract": "ERC20Detailed",
+          "path": "@openzeppelin\\contracts-ethereum-package\\contracts\\token\\ERC20\\ERC20Detailed.sol",
+          "label": "_symbol",
+          "astId": 27934,
+          "type": "t_string",
+          "src": "250:22:117"
+        },
+        {
+          "contract": "ERC20Detailed",
+          "path": "@openzeppelin\\contracts-ethereum-package\\contracts\\token\\ERC20\\ERC20Detailed.sol",
+          "label": "_decimals",
+          "astId": 27936,
+          "type": "t_uint8",
+          "src": "278:23:117"
+        },
+        {
+          "contract": "ERC20Detailed",
+          "path": "@openzeppelin\\contracts-ethereum-package\\contracts\\token\\ERC20\\ERC20Detailed.sol",
+          "label": "______gap",
+          "astId": 27988,
+          "type": "t_array:50<t_uint256>",
+          "src": "1654:29:117"
+        },
+        {
+          "contract": "MinterRole",
+          "path": "@openzeppelin\\contracts-ethereum-package\\contracts\\access\\roles\\MinterRole.sol",
+          "label": "_minters",
+          "astId": 26572,
+          "type": "t_struct<Roles.Role>",
+          "src": "327:27:108"
+        },
+        {
+          "contract": "MinterRole",
+          "path": "@openzeppelin\\contracts-ethereum-package\\contracts\\access\\roles\\MinterRole.sol",
+          "label": "______gap",
+          "astId": 26672,
+          "type": "t_array:50<t_uint256>",
+          "src": "1193:29:108"
+        },
+        {
+          "contract": "VestedAkroSenderRole",
+          "path": "..\\..\\..\\D\\projects\\akropolis\\savings-pool\\contracts\\modules\\token\\VestedAkroSenderRole.sol",
+          "label": "_senders",
+          "astId": 17223,
+          "type": "t_struct<Roles.Role>",
+          "src": "436:27:84"
+        },
+        {
+          "contract": "VestedAkroSenderRole",
+          "path": "..\\..\\..\\D\\projects\\akropolis\\savings-pool\\contracts\\modules\\token\\VestedAkroSenderRole.sol",
+          "label": "______gap",
+          "astId": 17323,
+          "type": "t_array:50<t_uint256>",
+          "src": "1302:29:84"
+        },
+        {
+          "contract": "VestedAkro",
+          "path": "..\\..\\..\\D\\projects\\akropolis\\savings-pool\\contracts\\modules\\token\\VestedAkro.sol",
+          "label": "totalSupply",
+          "astId": 16365,
+          "type": "t_uint256",
+          "src": "1950:26:83"
+        },
+        {
+          "contract": "VestedAkro",
+          "path": "..\\..\\..\\D\\projects\\akropolis\\savings-pool\\contracts\\modules\\token\\VestedAkro.sol",
+          "label": "akro",
+          "astId": 16367,
+          "type": "t_address",
+          "src": "1982:18:83"
+        },
+        {
+          "contract": "VestedAkro",
+          "path": "..\\..\\..\\D\\projects\\akropolis\\savings-pool\\contracts\\modules\\token\\VestedAkro.sol",
+          "label": "vestingPeriod",
+          "astId": 16369,
+          "type": "t_uint256",
+          "src": "2006:28:83"
+        },
+        {
+          "contract": "VestedAkro",
+          "path": "..\\..\\..\\D\\projects\\akropolis\\savings-pool\\contracts\\modules\\token\\VestedAkro.sol",
+          "label": "allowances",
+          "astId": 16375,
+          "type": "t_mapping<t_uint256>",
+          "src": "2080:68:83"
+        },
+        {
+          "contract": "VestedAkro",
+          "path": "..\\..\\..\\D\\projects\\akropolis\\savings-pool\\contracts\\modules\\token\\VestedAkro.sol",
+          "label": "holders",
+          "astId": 16379,
+          "type": "t_mapping<t_struct<VestedAkro.Balance>>",
+          "src": "2154:44:83"
+        }
+      ],
+      "warnings": {
+        "hasConstructor": false,
+        "hasSelfDestruct": false,
+        "hasDelegateCall": false,
+        "hasInitialValuesInDeclarations": false,
+        "uninitializedBaseContracts": []
+      }
     }
   },
   "solidityLibs": {},
@@ -5095,6 +5389,15 @@
         "address": "0x586C698698f316D9f10332A4300859DD8A82B130",
         "version": "1.0.0",
         "implementation": "0x2EEf46F84c8E4008fd07FD3Cb7574236F30024d5",
+        "admin": "0x7B27e0dAED14F0DFA17aa8a23f39c5dbF6FaAF12",
+        "kind": "Upgradeable"
+      }
+    ],
+    "akropolis-savings-pool/VestedAkro": [
+      {
+        "address": "0x7F41426c0D4Dd87B72AaF636A18747087866FD2a",
+        "version": "1.0.0",
+        "implementation": "0xeD2e9F9C4b6a955d87B48A06e1F43AcAa9cDE14D",
         "admin": "0x7B27e0dAED14F0DFA17aa8a23f39c5dbF6FaAF12",
         "kind": "Upgradeable"
       }
