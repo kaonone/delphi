@@ -8,7 +8,7 @@ import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/ERC20Burn
 import "../common/Base.sol";
 
 
-contract CurveFiTokenStub_Y is Base, ERC20, ERC20Detailed, ERC20Mintable, ERC20Burnable {
+contract CurveFiTokenStub_BUSD is Base, ERC20, ERC20Detailed, ERC20Mintable, ERC20Burnable {
     function initialize() public initializer {
         Base.initialize();
         ERC20Mintable.initialize(_msgSender());
