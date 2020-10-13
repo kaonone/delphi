@@ -44,6 +44,7 @@ contract VestedAkro is Initializable, Context, Ownable, IERC20, ERC20Detailed, M
 
     function initialize(address _akro, uint256 _vestingPeriod) public initializer {
         Ownable.initialize(_msgSender());
+        MinterRole(_msgSender());
         VestedAkroSenderRole(_msgSender());
         ERC20Detailed.initialize("Vested AKRO", "vAKRO", 18);
         akro = IERC20(_akro);
