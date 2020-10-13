@@ -11,7 +11,9 @@ import "./VestedAkroSenderRole.sol";
 
 /**
  * @note VestedAkro token represents AKRO token vested for a vestingPeriod set by owner of this VestedAkro token.
- * Generic holders of this token CAN NOT transfer it. They only can 
+ * Generic holders of this token CAN NOT transfer it. They only can redeem AKRO from unlocked vAKRO.
+ * Minters can mint unlocked vAKRO from AKRO to special VestedAkroSenders.
+ * VestedAkroSender can send his unlocked vAKRO to generic holders, and this vAKRO will be vested.
  */
 contract VestedAkro is Initializable, Context, Ownable, IERC20, ERC20Detailed, MinterRole, VestedAkroSenderRole {
     using SafeMath for uint256;
@@ -23,13 +25,13 @@ contract VestedAkro is Initializable, Context, Ownable, IERC20, ERC20Detailed, M
         uint256 amount;     // Full amount of vAKRO vested in this batch
         uint256 start;      // Vesting start time;
         uint256 end;        // Vesting end time
-        uint256 claimed;    // vAKRO already claimed from this batch
+        uint256 claimed;    // vAKRO already claimed from this batch to unlocked balance of holder
     }
 
     struct Balance {
         VestedBatch[] batches;  // Array of vesting batches
         uint256 locked;         // Amount locked in batches
-        uint256 unlocked;       // Amount of unlocked vAKRO (which probably was previously claimed)
+        uint256 unlocked;       // Amount of unlocked vAKRO (which either was previously claimed, or received from Minter)
         uint256 firstUnclaimedBatch; // First batch which is not fully claimed
     }
 
@@ -120,14 +122,6 @@ contract VestedAkro is Initializable, Context, Ownable, IERC20, ERC20Detailed, M
         Balance storage b = holders[account];
         return b.locked.add(b.unlocked);
     }
-
-    // function unlockedBalanceOf(address account) public view returns (uint256) {
-    //     return holders[account].unlocked;
-    // }
-
-    // function unlockableBalanceOf(address account) public view returns (uint256) {
-    //     return calculateClaimableFromBatches(account);
-    // }
 
     function balanceInfoOf(address account) public view returns(uint256 locked, uint256 unlocked, uint256 unlockable) {
         Balance storage b = holders[account];
