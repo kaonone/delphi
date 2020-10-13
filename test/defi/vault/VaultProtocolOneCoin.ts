@@ -90,6 +90,8 @@ contract('VaultProtocolOneCoin', async([ _, owner, user1, user2, user3, defiops,
         //------
         await vaultSavings.registerVault(vaultProtocol.address, poolToken.address, { from: owner });
 
+        await vaultProtocol.setAvailableEnabled(true, { from: owner });
+
         globalSnap = await Snapshot.create(web3.currentProvider);
     });
 

@@ -33,12 +33,17 @@ contract VaultProtocolOneCoin is Module, IVaultProtocol, DefiOperatorRole {
     mapping(address => uint256) internal balancesToClaim;
     uint256 internal claimableTokens;
 
+    //Quick disable of direct withdraw
+    bool internal availableEnabled;
+
     function initialize(address _pool, address[] memory _tokens) public initializer {
         require(_tokens.length == 1, "Incorrect number of tokens");
         Module.initialize(_pool);
         DefiOperatorRole.initialize(_msgSender());
 
         registeredVaultToken = _tokens[0];
+
+        availableEnabled = false;
     }
 
     function registerStrategy(address _strategy) public onlyDefiOperator {
@@ -82,7 +87,7 @@ contract VaultProtocolOneCoin is Module, IVaultProtocol, DefiOperatorRole {
         require(_token == registeredVaultToken, "Token is not registered in the vault");
 
 
-        if (IERC20(_token).balanceOf(address(this)).sub(claimableTokens) >= _amount) {
+        if (availableEnabled && IERC20(_token).balanceOf(address(this)).sub(claimableTokens) >= _amount) {
             IERC20(_token).transfer(_user, _amount);
 
             emit WithdrawFromVault(_user, _token, _amount);
@@ -204,6 +209,10 @@ contract VaultProtocolOneCoin is Module, IVaultProtocol, DefiOperatorRole {
             total = total.add(IDefiStrategy(strategies[i]).normalizedBalance());
         }
         return total;
+    }
+
+    function setAvailableEnabled(bool value) public onlyDefiOperator {
+        availableEnabled = value;
     }
 
     function normalizedVaultBalance() public view returns(uint256) {

@@ -109,6 +109,8 @@ contract('VaultSavings', async([ _, owner, user1, user2, user3, defiops, protoco
         //------
         await vaultSavings.registerVault(vaultProtocol.address, poolToken.address, { from: owner });
 
+        await vaultProtocol.setAvailableEnabled(true, { from: owner });
+
         globalSnap = await Snapshot.create(web3.currentProvider);
     });
 
@@ -172,11 +174,15 @@ contract('VaultSavings', async([ _, owner, user1, user2, user3, defiops, protoco
                 await vault2.addDefiOperator(vaultSavings.address, { from: owner });
                 await vault2.addDefiOperator(defiops, { from: owner });
 
+                await vault2.setAvailableEnabled(true, { from: owner });
+
                 vault3 = await VaultProtocol.new({ from: owner });
                 await (<VaultProtocolInstance>vault3).methods['initialize(address,address[])'](
                     pool.address, [busd.address], { from: owner });
                 await vault3.addDefiOperator(vaultSavings.address, { from: owner });
                 await vault3.addDefiOperator(defiops, { from: owner });
+
+                await vault3.setAvailableEnabled(true, { from: owner });
 
                 poolToken2 = await PoolToken.new({ from: owner });
                 await (<VaultPoolTokenInstance>poolToken2).methods['initialize(address,string,string)'](
@@ -347,11 +353,15 @@ contract('VaultSavings', async([ _, owner, user1, user2, user3, defiops, protoco
             await vault2.addDefiOperator(vaultSavings.address, { from: owner });
             await vault2.addDefiOperator(defiops, { from: owner });
 
+            await vault2.setAvailableEnabled(true, { from: owner });
+
             vault3 = await VaultProtocol.new({ from: owner });
             await (<VaultProtocolInstance>vault3).methods['initialize(address,address[])'](
                 pool.address, [busd.address], { from: owner });
             await vault3.addDefiOperator(vaultSavings.address, { from: owner });
             await vault3.addDefiOperator(defiops, { from: owner });
+
+            await vault3.setAvailableEnabled(true, { from: owner });
 
             poolToken2 = await PoolToken.new({ from: owner });
             await (<VaultPoolTokenInstance>poolToken2).methods['initialize(address,string,string)'](
