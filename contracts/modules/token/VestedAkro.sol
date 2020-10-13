@@ -10,7 +10,7 @@ import "@openzeppelin/contracts-ethereum-package/contracts/access/roles/MinterRo
 import "./VestedAkroSenderRole.sol";
 
 /**
- * @note VestedAkro token represents AKRO token vested for a vestingPeriod set by owner of this VestedAkro token.
+ * @notice VestedAkro token represents AKRO token vested for a vestingPeriod set by owner of this VestedAkro token.
  * Generic holders of this token CAN NOT transfer it. They only can redeem AKRO from unlocked vAKRO.
  * Minters can mint unlocked vAKRO from AKRO to special VestedAkroSenders.
  * VestedAkroSender can send his unlocked vAKRO to generic holders, and this vAKRO will be vested.
@@ -37,7 +37,7 @@ contract VestedAkro is Initializable, Context, Ownable, IERC20, ERC20Detailed, M
 
     uint256 public totalSupply;
     IERC20 public akro;
-    uint256 public vestingPeriod set by owner of this VestedAkro token;
+    uint256 public vestingPeriod; //set by owner of this VestedAkro token
     mapping (address => mapping (address => uint256)) private allowances;
     mapping (address => Balance) private holders;
 
@@ -221,7 +221,7 @@ contract VestedAkro is Initializable, Context, Ownable, IERC20, ERC20Detailed, M
      * @return claimable amount and bool which is true if batch is fully claimable
      */
     function calculateClaimableFromBatch(VestedBatch storage vb) internal view returns(uint256, bool) {
-        //if(now < vb.start) return 0; // this should never happen becuse we have no cliff period
+        //if(now < vb.start) return (0, false); // this should never happen because we have no cliff period
         if(now >= vb.end) {
             return (vb.amount.sub(vb.claimed), true);
         }
