@@ -67,9 +67,8 @@ contract VaultProtocol is Module, IVaultProtocol, DefiOperatorRole {
 
         if (balancesOnHold[_user].length == 0) {
             balancesOnHold[_user] = new uint256[](supportedTokensCount());
-            usersDeposited.push(_user);
         }
-
+        usersDeposited.push(_user);
         balancesOnHold[_user][ind] = balancesOnHold[_user][ind].add(_amount);
 
         IVaultSavings vaultSavings = IVaultSavings(getModuleAddress(MODULE_VAULT));
@@ -110,8 +109,8 @@ contract VaultProtocol is Module, IVaultProtocol, DefiOperatorRole {
         else {
             if (balancesRequested[_user].length == 0) {
                 balancesRequested[_user] = new uint256[](supportedTokensCount());
-                usersRequested.push(_user);
             }
+            usersRequested.push(_user);
             balancesRequested[_user][indReg] = balancesRequested[_user][indReg].add(_amount);
 
             emit WithdrawRequestCreated(_user, _token, _amount);
