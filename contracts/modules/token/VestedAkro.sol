@@ -12,6 +12,9 @@ import "./VestedAkroSenderRole.sol";
 contract VestedAkro is Initializable, Context, Ownable, IERC20, ERC20Detailed, MinterRole, VestedAkroSenderRole {
     using SafeMath for uint256;
 
+    event Locked(address indexed holder, uint256 amount);
+    event Unlocked(address indexed holder, uint256 amount);
+
     struct VestedBatch {
         uint256 amount;     // Full amount of vAKRO vested in this batch
         uint256 start;      // Vesting start time;
@@ -73,6 +76,11 @@ contract VestedAkro is Initializable, Context, Ownable, IERC20, ERC20Detailed, M
         emit Transfer(address(0), beneficiary, amount);
     }
 
+    function unlockAvailable(address holder) public returns(uint256) {
+        claimAllFromBatches(holder)
+        return holders[account].unlocked;
+    }
+
     function swapAllUnlocked() public {
         address beneficiary = _msgSender();
         claimAllFromBatches(beneficiary);
@@ -87,6 +95,10 @@ contract VestedAkro is Initializable, Context, Ownable, IERC20, ERC20Detailed, M
     function balanceOf(address account) public view returns (uint256) {
         Balance storage b = holders[account];
         return b.locked.add(b.unlocked);
+    }
+
+    function unlockedBalanceOf(address account) public view returns (uint256) {
+        return holders[account].unlocked;
     }
 
     function _approve(address owner, address spender, uint256 amount) internal {
@@ -117,6 +129,7 @@ contract VestedAkro is Initializable, Context, Ownable, IERC20, ERC20Detailed, M
             claimed: 0
         }));
         b.locked = b.locked.add(amount);
+        emit Locked(holder, amount);
     }
 
     function claimAllFromBatches(address holder) internal {
@@ -134,10 +147,13 @@ contract VestedAkro is Initializable, Context, Ownable, IERC20, ERC20Detailed, M
                 firstUnclaimedFound = true;
             }
         }
-        b.locked = b.locked.sub(claiming);
-        b.unlocked = b.unlocked.add(claiming);
         if(!firstUnclaimedFound) {
             b.firstUnclaimedBatch = b.batches.length;
+        }
+        if(claiming > 0){
+            b.locked = b.locked.sub(claiming);
+            b.unlocked = b.unlocked.add(claiming);
+            emit Unlocked(holder, claiming);
         }
     }
 
