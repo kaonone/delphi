@@ -4,7 +4,7 @@ import {
     PoolContract, PoolInstance,
     TestErc20Contract, TestErc20Instance,
     VaultSavingsModuleContract, VaultSavingsModuleInstance,
-    VaultStrategyStubContract, VaultStrategyStubInstance
+    VaultStrategyStubContract, VaultStrategyStubInstance, AccessModuleInstance
 } from '../../../types/truffle-contracts/index';
 
 // tslint:disable-next-line:no-var-requires
@@ -24,6 +24,7 @@ const VaultSavings = artifacts.require('VaultSavingsModule');
 const VaultProtocol = artifacts.require('VaultProtocol');
 const VaultStrategy = artifacts.require('VaultStrategyStub');
 const PoolToken = artifacts.require('VaultPoolToken');
+const AccessModule = artifacts.require('AccessModule');
 
 contract('VaultProtocol', async([ _, owner, user1, user2, user3, defiops, protocolStub, ...otherAccounts ]) => {
 
@@ -37,7 +38,7 @@ contract('VaultProtocol', async([ _, owner, user1, user2, user3, defiops, protoc
     let pool: PoolInstance;
     let vaultSavings: VaultSavingsModuleInstance;
     let strategy: VaultStrategyStubInstance;
-
+    let accessModule: AccessModuleInstance;
 
     before(async() => {
         //Deposit token 1
@@ -64,9 +65,18 @@ contract('VaultProtocol', async([ _, owner, user1, user2, user3, defiops, protoc
         await busd.transfer(user1, 1000, { from: owner });
         await busd.transfer(user2, 1000, { from: owner });
         await busd.transfer(user3, 1000, { from: owner });
+
+        await usdt.transfer(user1, 1000, { from: owner });
+        await usdt.transfer(user2, 1000, { from: owner });
+        await usdt.transfer(user3, 1000, { from: owner });
         //------
         pool = await Pool.new({ from: owner });
         await (<any> pool).methods['initialize()']({ from: owner });
+        //------
+        accessModule = await AccessModule.new({ from: owner });
+        await accessModule.methods['initialize(address)'](pool.address, { from: owner });
+
+        await pool.set('access', accessModule.address, true, { from: owner });
         //------
         vaultSavings = await VaultSavings.new({ from: owner });
         await (<any> vaultSavings).methods['initialize(address)'](pool.address, { from: owner });
@@ -76,7 +86,8 @@ contract('VaultProtocol', async([ _, owner, user1, user2, user3, defiops, protoc
         //------
         vaultProtocol = await VaultProtocol.new({ from: owner });
         await (<any> vaultProtocol).methods['initialize(address,address[])'](
-            pool.address, [dai.address, usdc.address, busd.address], { from: owner });
+            pool.address, [dai.address, usdc.address, busd.address, usdt.address], { from: owner });
+        await vaultProtocol.addDefiOperator(vaultSavings.address, { from: owner });
         await vaultProtocol.addDefiOperator(defiops, { from: owner });
         //------
         poolToken = await PoolToken.new({ from: owner });
@@ -95,7 +106,6 @@ contract('VaultProtocol', async([ _, owner, user1, user2, user3, defiops, protoc
         await strategy.addDefiOperator(vaultProtocol.address, { from: owner });
         //------
         await vaultProtocol.registerStrategy(strategy.address, { from: defiops });
-
         //------
         await vaultSavings.registerVault(vaultProtocol.address, poolToken.address, { from: owner });
 
@@ -949,13 +959,10 @@ contract('VaultProtocol', async([ _, owner, user1, user2, user3, defiops, protoc
             snap = await Snapshot.create(web3.currentProvider);
         });
 
-        after(async() => {
-            await globalSnap.revert();
-        });
+        after(async() => await globalSnap.revert());
 
-        afterEach(async() => {
-            await snap.revert();
-        });
+        afterEach(async() => await snap.revert());
+
         it('Deposit from user does not influence claimable amount', async() => {
             const claimableBefore = await vaultProtocol.claimableAmount(user1, dai.address);
             const claimableTotalBefore = await vaultProtocol.totalClaimableAmount(dai.address);
@@ -1158,45 +1165,491 @@ contract('VaultProtocol', async([ _, owner, user1, user2, user3, defiops, protoc
 
     describe('Full cycle', () => {
 
-        let snap: Snapshot;
+        let localSnap: Snapshot;
 
         before(async() => {
             await dai.approve(vaultProtocol.address, 1000, { from: user1 });
             await usdc.approve(vaultProtocol.address, 1000, { from: user1 });
             await busd.approve(vaultProtocol.address, 1000, { from: user1 });
+            await usdt.approve(vaultProtocol.address, 1000, { from: user1 });
 
             await dai.approve(vaultProtocol.address, 1000, { from: user2 });
             await usdc.approve(vaultProtocol.address, 1000, { from: user2 });
             await busd.approve(vaultProtocol.address, 1000, { from: user2 });
+            await usdt.approve(vaultProtocol.address, 1000, { from: user2 });
 
-            await dai.approve(vaultProtocol.address, 1000, { from: user2 });
-            await usdc.approve(vaultProtocol.address, 1000, { from: user2 });
-            await busd.approve(vaultProtocol.address, 1000, { from: user2 });
+            await dai.approve(vaultProtocol.address, 1000, { from: user3 });
+            await usdc.approve(vaultProtocol.address, 1000, { from: user3 });
+            await busd.approve(vaultProtocol.address, 1000, { from: user3 });
+            await usdt.approve(vaultProtocol.address, 1000, { from: user3 });
 
-            snap = await Snapshot.create(web3.currentProvider);
+            await dai.approve(vaultProtocol.address, 5000, { from: owner });
+            await usdc.approve(vaultProtocol.address, 5000, { from: owner });
+            await busd.approve(vaultProtocol.address, 5000, { from: owner });
+            await usdt.approve(vaultProtocol.address, 5000, { from: owner });
+
+            await dai.approve(strategy.address, 5000, { from: protocolStub });
+            await usdc.approve(strategy.address, 5000, { from: protocolStub });
+            await busd.approve(strategy.address, 5000, { from: protocolStub });
+            await usdt.approve(strategy.address, 5000, { from: protocolStub });
+
+            localSnap = await Snapshot.create(web3.currentProvider);
         });
 
         after(async() => await globalSnap.revert());
 
-        afterEach(async() => await snap.revert());
+        afterEach(async() => await localSnap.revert());
 
         it('All deposited funds plus yeild equal to all withdrawn funds', async() => {
-            //First deposits
+            const sent = {
+                user1: { dai: 15, usdc: 50, usdt: 100 },
+                user2: { dai: 20, usdc: 80 },
+                user3: { dai: 50, usdc: 20, busd: 50, usdt: 50 },
+            };
+            const vaultBalancesBefore = {
+                dai: await dai.balanceOf(vaultProtocol.address),
+                usdc: await usdc.balanceOf(vaultProtocol.address),
+                busd: await busd.balanceOf(vaultProtocol.address),
+                usdt: await usdt.balanceOf(vaultProtocol.address)
+            };
+            const onHoldBefore = {
+                user1: {
+                    dai: await vaultProtocol.amountOnHold(user1, dai.address),
+                    usdc: await vaultProtocol.amountOnHold(user1, usdc.address),
+                    busd: await vaultProtocol.amountOnHold(user1, busd.address),
+                    usdt: await vaultProtocol.amountOnHold(user1, usdt.address),
+                },
+                user2: {
+                    dai: await vaultProtocol.amountOnHold(user2, dai.address),
+                    usdc: await vaultProtocol.amountOnHold(user2, usdc.address),
+                    busd: await vaultProtocol.amountOnHold(user2, busd.address),
+                    usdt: await vaultProtocol.amountOnHold(user2, usdt.address),
+                },
+                user3: {
+                    dai: await vaultProtocol.amountOnHold(user3, dai.address),
+                    usdc: await vaultProtocol.amountOnHold(user3, usdc.address),
+                    busd: await vaultProtocol.amountOnHold(user3, busd.address),
+                    usdt: await vaultProtocol.amountOnHold(user3, usdt.address),
+                },
+            };
+            const totalByUser = {
+                user1: sent.user1.dai + sent.user1.usdc + sent.user1.usdt,
+                user2: sent.user2.dai + sent.user2.usdc,
+                user3: sent.user3.dai + sent.user3.usdc + sent.user3.busd + sent.user3.usdt
+            };
+            const balanceBefore = {
+                user1: {
+                    dai: await dai.balanceOf(user1),
+                    usdc: await usdc.balanceOf(user1),
+                    busd: await busd.balanceOf(user1),
+                    usdt: await usdt.balanceOf(user1),
+                },
+                user2: {
+                    dai: await dai.balanceOf(user2),
+                    usdc: await usdc.balanceOf(user2),
+                    busd: await busd.balanceOf(user2),
+                    usdt: await usdt.balanceOf(user2),
+                },
+                user3: {
+                    dai: await dai.balanceOf(user3),
+                    usdc: await usdc.balanceOf(user3),
+                    busd: await busd.balanceOf(user3),
+                    usdt: await usdt.balanceOf(user3),
+                },
+            };
 
-            //operator handles deposits to the protocol
+            /**************************
+             * 1. Users make deposits *
+             *************************/
+            // First deposits from 3 users
+            // Deposits from user1
+            await vaultProtocol.methods['depositToVault(address,address[],uint256[])'](user1,
+                [dai.address, usdc.address, usdt.address], Object.values(sent.user1), { from: defiops });
+            // Send the same amount of pool tokens for user stablecoins
+            await poolToken.mint(user1, totalByUser.user1, { from: defiops });
 
-            //yield on the protocol (+20 to everyone)
+            // Deposits from user2
+            await vaultProtocol.methods['depositToVault(address,address[],uint256[])'](user2,
+                [dai.address, usdc.address], Object.values(sent.user2), { from: defiops });
+            // Send the same amount of pool tokens for user stablecoins
+            await poolToken.mint(user2, totalByUser.user2, { from: defiops });
 
-            //half of deposit and half of withdraw requests
-            //half of withdraws are fullfilled and half is requested
+            // Deposits from user3
+            await vaultProtocol.methods['depositToVault(address,address[],uint256[])'](user3,
+                [dai.address, usdc.address, busd.address, usdt.address], Object.values(sent.user3), { from: defiops });
+            // Send the same amount of pool tokens for user stablecoins
+            await poolToken.mint(user3, totalByUser.user3, { from: defiops });
 
-            //operator handles deposits/requests to the protocol
+            // Valut receives tokens
+            const vaultBalancesAfter = {
+                dai: await dai.balanceOf(vaultProtocol.address),
+                usdc: await usdc.balanceOf(vaultProtocol.address),
+                busd: await busd.balanceOf(vaultProtocol.address),
+                usdt: await usdt.balanceOf(vaultProtocol.address)
+            };
+            const onHoldAfter = {
+                user1: {
+                    dai: await vaultProtocol.amountOnHold(user1, dai.address),
+                    usdc: await vaultProtocol.amountOnHold(user1, usdc.address),
+                    usdt: await vaultProtocol.amountOnHold(user1, usdt.address),
+                },
+                user2: {
+                    dai: await vaultProtocol.amountOnHold(user2, dai.address),
+                    usdc: await vaultProtocol.amountOnHold(user2, usdc.address),
+                },
+                user3: {
+                    dai: await vaultProtocol.amountOnHold(user3, dai.address),
+                    usdc: await vaultProtocol.amountOnHold(user3, usdc.address),
+                    busd: await vaultProtocol.amountOnHold(user3, busd.address),
+                    usdt: await vaultProtocol.amountOnHold(user3, usdt.address),
+                },
+            };
+            const totalByToken = {
+                dai: sent.user1.dai + sent.user2.dai + sent.user3.dai,
+                usdc: sent.user1.usdc + sent.user2.usdc + sent.user3.usdc,
+                busd: sent.user3.busd,
+                usdt: sent.user1.usdt + sent.user3.usdt
+            };
 
-            //yield 2 on the protocol (+20 to everyone with deposit)
+            expect(onHoldAfter.user1.dai.sub(onHoldBefore.user1.dai).toNumber(),
+                'User1: on hold DAI amount should change').to.equal(sent.user1.dai);
+            expect(onHoldAfter.user1.usdc.sub(onHoldBefore.user1.usdc).toNumber(),
+                'User1: on hold USDC amount should change').to.equal(sent.user1.usdc);
+            expect(onHoldAfter.user1.usdt.sub(onHoldBefore.user1.usdt).toNumber(),
+                'User1: on hold USDT amount should change').to.equal(sent.user1.usdt);
 
-            //Total withdraws
+            expect(onHoldAfter.user2.dai.sub(onHoldBefore.user2.dai).toNumber(),
+                'User2: on hold DAI amount should change').to.equal(sent.user2.dai);
+            expect(onHoldAfter.user2.usdc.sub(onHoldBefore.user2.usdc).toNumber(),
+                'User2: on hold USDC amount should change').to.equal(sent.user2.usdc);
 
-            //user balances are the same + yeild
+            expect(onHoldAfter.user3.dai.sub(onHoldBefore.user3.dai).toNumber(),
+                'User3: on hold DAI amount should change').to.equal(sent.user3.dai);
+            expect(onHoldAfter.user3.usdc.sub(onHoldBefore.user3.usdc).toNumber(),
+                'User3: on hold USDC amount should change').to.equal(sent.user3.usdc);
+            expect(onHoldAfter.user3.busd.sub(onHoldBefore.user3.busd).toNumber(),
+                'User3: on hold BUSD amount should change').to.equal(sent.user3.busd);
+            expect(onHoldAfter.user3.usdt.sub(onHoldBefore.user3.usdt).toNumber(),
+                'User3: on hold USDT amount should change').to.equal(sent.user3.usdt);
+
+            expect(vaultBalancesAfter.dai.sub(vaultBalancesBefore.dai).toNumber(),
+                'Vault: on hold DAI amount should change').to.equal(totalByToken.dai);
+            expect(vaultBalancesAfter.usdc.sub(vaultBalancesBefore.usdc).toNumber(),
+                'Vault: on hold USDC amount should change').to.equal(totalByToken.usdc);
+            expect(vaultBalancesAfter.busd.sub(vaultBalancesBefore.busd).toNumber(),
+                'Vault: on hold BUSD amount should change').to.equal(totalByToken.busd);
+            expect(vaultBalancesAfter.usdt.sub(vaultBalancesBefore.usdt).toNumber(),
+                'Vault: on hold USDT amount should change').to.equal(totalByToken.usdt);
+
+            // Operator resolves deposits to the strategy
+            const stubBalanceBeforeAction = {
+                dai: await dai.balanceOf(protocolStub),
+                usdc: await usdc.balanceOf(protocolStub),
+                busd: await busd.balanceOf(protocolStub),
+                usdt: await usdt.balanceOf(protocolStub),
+            };
+
+            await vaultProtocol.operatorAction(strategy.address, { from: defiops });
+
+            const stubBalanceAfterAction = {
+                dai: await dai.balanceOf(protocolStub),
+                usdc: await usdc.balanceOf(protocolStub),
+                busd: await busd.balanceOf(protocolStub),
+                usdt: await usdt.balanceOf(protocolStub),
+            };
+
+            expect(stubBalanceAfterAction.dai.sub(stubBalanceBeforeAction.dai).toNumber(),
+                'All DAI should be on the strategy').to.equal(totalByToken.dai);
+            expect(stubBalanceAfterAction.usdc.sub(stubBalanceBeforeAction.usdc).toNumber(),
+                'All USDC should be on the strategy').to.equal(totalByToken.usdc);
+            expect(stubBalanceAfterAction.busd.sub(stubBalanceBeforeAction.busd).toNumber(),
+                'All BUSD should be on the strategy').to.equal(totalByToken.busd);
+            expect(stubBalanceAfterAction.usdt.sub(stubBalanceBeforeAction.usdt).toNumber(),
+                'All USDT should be on the strategy').to.equal(totalByToken.usdt);
+
+            /*************************
+             * 2. Yield is generated *
+             ************************/
+            // Add some yields to the protocol
+            const yields = { dai: 10, usdc: 20, busd: 30, usdt: 40 };
+            
+            // Transfer yield
+            await dai.transfer(protocolStub, yields.dai, { from: owner });
+            await usdc.transfer(protocolStub, yields.usdc, { from: owner });
+            await busd.transfer(protocolStub, yields.busd, { from: owner });
+            await usdt.transfer(protocolStub, yields.usdt, { from: owner });
+
+            // Hardcode profits for users
+            const profits = {
+                user1: { dai: 7, usdc: 14, usdt: 15 },
+                user2: { dai: 1, usdc: 3, busd: 10 },
+                user3: { dai: 2, usdc: 3, busd: 20, usdt: 25 },
+            };
+
+            /*****************************************
+             * 3. Some withdraws, some deposits more *
+             ****************************************/
+            // Put enough DAI for user2 but not for user3
+            const toUser2 = sent.user2.dai + profits.user2.dai;
+            const toUser3 = sent.user3.dai + profits.user3.dai;
+            const values = { dai: toUser2 + toUser3 - 1 };
+            await vaultProtocol.methods['depositToVault(address,address[],uint256[])'](
+                user1, [dai.address], [values.dai], { from: defiops });
+            await poolToken.mint(user2, values.dai, { from: defiops });
+
+            const before = {
+                user2: await dai.balanceOf(user2),
+                user3: await dai.balanceOf(user3),
+                vault: await dai.balanceOf(vaultProtocol.address)
+            };
+
+            // Withdraws DAI successfully
+            await vaultProtocol.methods['withdrawFromVault(address,address,uint256)'](
+                user2, dai.address, toUser2, { from: defiops });
+
+            // Ask to withdraw DAI when the contract doesn't have enough of them
+            await vaultProtocol.methods['withdrawFromVault(address,address,uint256)'](
+                user3, dai.address, toUser3, { from: defiops });
+
+            const requested = {
+                user2: await vaultProtocol.amountRequested(user2, dai.address),
+                user3: await vaultProtocol.amountRequested(user3, dai.address)
+            };
+            const claimable = { user3: await vaultProtocol.claimableAmount(user3, dai.address) };
+            const after = {
+                user2: await dai.balanceOf(user2),
+                user3: await dai.balanceOf(user3),
+                vault: await dai.balanceOf(vaultProtocol.address)
+            };
+
+            expect(after.user2.sub(before.user2).toNumber(), 'User2: should successfully withdraw').to.equal(toUser2);
+            expect(requested.user2.toNumber(), 'User2: shouldn\'t have a requested amount').to.equal(0);
+            expect(after.user3.sub(before.user3).toNumber(), 'User3: balance shouldn\'t change').to.equal(0);
+            expect(requested.user3.toNumber(), 'User3: requested amount should be as in withdraw').to.equal(toUser3);
+            expect(claimable.user3.toNumber(), 'User3: shouldn\'t have a claimable amount').to.equal(0);
+            expect(before.vault.sub(after.vault).toNumber()).to.equal(toUser2);
+
+            // Put enough DAI for the user3 to the vault
+            await vaultProtocol.methods['depositToVault(address,address[],uint256[])'](
+                user1, [dai.address], [1], { from: defiops });
+            await poolToken.mint(user2, 1, { from: defiops });
+            
+            // Call operator action
+            const user3BalanceBefore = await dai.balanceOf(user3);
+            await vaultProtocol.operatorAction(strategy.address, { from: defiops });
+
+            const user3Stat = {
+                requested: await vaultProtocol.amountRequested(user3, dai.address),
+                claimable: await vaultProtocol.claimableAmount(user3, dai.address)
+            };
+
+            // Now the stablecoins could be withdrawn
+            expect(user3Stat.claimable.toNumber(), 'User3: claimable amount should be as in withdraw')
+                .to.equal(toUser3);
+            expect(user3Stat.requested.toNumber(), 'User3: requested amount should be zero').to.equal(0);
+
+            // Withdraw
+            await vaultProtocol.claimRequested(user3, { from: user3 });
+            const user3BalanceAfter = await dai.balanceOf(user3);
+
+            expect(user3BalanceAfter.sub(user3BalanceBefore).toNumber(), 'User3: all tokens should be withdrawn')
+                .to.equal(toUser3);
+
+            // User1 asks to withdraw DAI when the contract doesn't have enough of them
+            const toUser1 = sent.user1.dai + profits.user1.dai + values.dai + 1;
+            await vaultProtocol.methods['withdrawFromVault(address,address,uint256)'](
+                user1, dai.address, toUser1, { from: defiops });
+
+            await vaultProtocol.operatorAction(strategy.address, { from: defiops });
+
+            // User1 deposits more
+            const sendMore = { user1: { dai: 30 } };
+            await vaultProtocol.methods['depositToVault(address,address,uint256)'](
+                user1, dai.address, sendMore.user1.dai, { from: defiops });
+            await poolToken.mint(user2, sendMore.user1.dai, { from: defiops });
+
+            await vaultProtocol.operatorAction(strategy.address, { from: defiops });
+
+            // Withdraws DAI successfully
+            const user1BalanceBefore = await dai.balanceOf(user1);
+            await vaultProtocol.methods['withdrawFromVault(address,address,uint256)'](
+                user1, dai.address, sendMore.user1.dai, { from: defiops });
+            await vaultProtocol.operatorAction(strategy.address, { from: defiops });
+            await vaultProtocol.claimRequested(user1, { from: user1 });
+
+            const user1BalanceAfter = await dai.balanceOf(user1);
+
+            expect(user1BalanceAfter.sub(user1BalanceBefore).toNumber(),
+                'User1: all DAI should be withdrawn').to.equal(toUser1 + sendMore.user1.dai);
+
+            /************************************************
+             * 4. More deposits but without operator action *
+             ***********************************************/
+            // Deposits from users 1 & 2
+            const more = {
+                user1: { usdc: 15, usdt: 100 },
+                user2: { dai: 50 },
+            };
+            await vaultProtocol.methods['depositToVault(address,address[],uint256[])'](user1,
+                [usdc.address, usdt.address], Object.values(more.user1), { from: defiops });
+            // Send the same amount of pool tokens for user stablecoins
+            await poolToken.mint(user1, Object.values(more.user1).reduce((acc, x) => acc += x), { from: defiops });
+
+            await vaultProtocol.methods['depositToVault(address,address[],uint256[])'](user2,
+                [dai.address], Object.values(more.user2), { from: defiops });
+            // Send the same amount of pool tokens for user stablecoins
+            await poolToken.mint(user2, Object.values(more.user2).reduce((acc, x) => acc += x), { from: defiops });
+
+            /*********************************
+             * 5. Everyone claims everything *
+             ********************************/
+            await vaultProtocol.methods['withdrawFromVault(address,address[],uint256[])'](
+                user1, [usdc.address, usdt.address],
+                [
+                    sent.user1.usdc + more.user1.usdc + profits.user1.usdc,
+                    sent.user1.usdt + more.user1.usdt + profits.user1.usdt
+                ], { from: defiops });
+            await vaultProtocol.methods['withdrawFromVault(address,address[],uint256[])'](
+                user2, [dai.address, usdc.address, busd.address],
+                [
+                    more.user2.dai,
+                    sent.user2.usdc + profits.user2.usdc,
+                    profits.user2.busd,
+                ], { from: defiops });
+            await vaultProtocol.methods['withdrawFromVault(address,address[],uint256[])'](
+                user3, [usdc.address, busd.address, usdt.address],
+                [
+                    sent.user3.usdc + profits.user3.usdc,
+                    sent.user3.busd + profits.user3.busd,
+                    sent.user3.usdt + profits.user3.usdt
+                ], { from: defiops });
+
+            await vaultProtocol.operatorAction(strategy.address, { from: defiops });
+
+            await vaultProtocol.claimRequested(user1, { from: user1 });
+            await vaultProtocol.claimRequested(user2, { from: user2 });
+            await vaultProtocol.claimRequested(user3, { from: user3 });
+
+            // clearWithdrawRequests
+            const balanceAfter = {
+                user1: {
+                    dai: await dai.balanceOf(user1),
+                    usdc: await usdc.balanceOf(user1),
+                    busd: await busd.balanceOf(user1),
+                    usdt: await usdt.balanceOf(user1),
+                },
+                user2: {
+                    dai: await dai.balanceOf(user2),
+                    usdc: await usdc.balanceOf(user2),
+                    busd: await busd.balanceOf(user2),
+                    usdt: await usdt.balanceOf(user2),
+                },
+                user3: {
+                    dai: await dai.balanceOf(user3),
+                    usdc: await usdc.balanceOf(user3),
+                    busd: await busd.balanceOf(user3),
+                    usdt: await usdt.balanceOf(user3),
+                },
+            };
+
+            expect(balanceAfter.user1.dai.toNumber(), 'User1: dai incorrect balance')
+                .to.equal(balanceBefore.user1.dai.toNumber() + profits.user1.dai);
+            expect(balanceAfter.user1.usdc.toNumber(), 'User1: usdc incorrect balance')
+                .to.equal(balanceBefore.user1.usdc.toNumber() + profits.user1.usdc);
+            expect(balanceAfter.user1.busd.toNumber(), 'User1: busd incorrect balance')
+                .to.equal(balanceBefore.user1.busd.toNumber());
+            expect(balanceAfter.user1.usdt.toNumber(), 'User1: usdt incorrect balance')
+                .to.equal(balanceBefore.user1.usdt.toNumber() + profits.user1.usdt);
+
+            expect(balanceAfter.user2.dai.toNumber(), 'User2: dai incorrect balance')
+                .to.equal(balanceBefore.user2.dai.toNumber() + profits.user2.dai);
+            expect(balanceAfter.user2.usdc.toNumber(), 'User2: usdc incorrect balance')
+                .to.equal(balanceBefore.user2.usdc.toNumber() + profits.user2.usdc);
+            expect(balanceAfter.user2.busd.toNumber(), 'User2: busd incorrect balance')
+                .to.equal(balanceBefore.user2.busd.toNumber() + profits.user2.busd);
+            expect(balanceAfter.user2.usdt.toNumber(), 'User2: usdt incorrect balance')
+                .to.equal(balanceBefore.user2.usdt.toNumber());
+
+            expect(balanceAfter.user3.dai.toNumber(), 'User3: dai incorrect balance')
+                .to.equal(balanceBefore.user3.dai.toNumber() + profits.user3.dai);
+            expect(balanceAfter.user3.usdc.toNumber(), 'User3: usdc incorrect balance')
+                .to.equal(balanceBefore.user3.usdc.toNumber() + profits.user3.usdc);
+            expect(balanceAfter.user3.busd.toNumber(), 'User3: busd incorrect balance')
+                .to.equal(balanceBefore.user3.busd.toNumber() + profits.user3.busd);
+            expect(balanceAfter.user3.usdt.toNumber(), 'User3: usdt incorrect balance')
+                .to.equal(balanceBefore.user3.usdt.toNumber() + profits.user3.usdt);
+
+            expect((await dai.balanceOf(vaultProtocol.address)).toNumber(),
+                'Vault: DAI balance should be 0').to.equal(0);
+            expect((await usdc.balanceOf(vaultProtocol.address)).toNumber(),
+                'Vault: USDC balance should be 0').to.equal(0);
+            expect((await busd.balanceOf(vaultProtocol.address)).toNumber(),
+                'Vault: BUSD balance should be 0').to.equal(0);
+            expect((await usdt.balanceOf(vaultProtocol.address)).toNumber(),
+                'Vault: USDT balance should be 0').to.equal(0);
+
+            expect((await dai.balanceOf(protocolStub)).toNumber(),
+                'Protocol stub: DAI balance should be 0').to.equal(0);
+            expect((await usdc.balanceOf(protocolStub)).toNumber(),
+                'Protocol stub: DAI balance should be 0').to.equal(0);
+            expect((await busd.balanceOf(protocolStub)).toNumber(),
+                'Protocol stub: DAI balance should be 0').to.equal(0);
+            expect((await usdt.balanceOf(protocolStub)).toNumber(),
+                'Protocol stub: DAI balance should be 0').to.equal(0);
+
+            expect((await vaultProtocol.claimableAmount(user1, dai.address)).toNumber(),
+                'User1: expect no claimable DAI').to.equal(0);
+            expect((await vaultProtocol.claimableAmount(user1, usdc.address)).toNumber(),
+                'User1: expect no claimable USDC').to.equal(0);
+            expect((await vaultProtocol.claimableAmount(user1, busd.address)).toNumber(),
+                'User1: expect no claimable BUSD').to.equal(0);
+            expect((await vaultProtocol.claimableAmount(user1, usdt.address)).toNumber(),
+                'User1: expect no claimable USDT').to.equal(0);
+
+            expect((await vaultProtocol.claimableAmount(user2, dai.address)).toNumber(),
+                'User2: expect no claimable DAI').to.equal(0);
+            expect((await vaultProtocol.claimableAmount(user2, usdc.address)).toNumber(),
+                'User2: expect no claimable USDC').to.equal(0);
+            expect((await vaultProtocol.claimableAmount(user2, busd.address)).toNumber(),
+                'User2: expect no claimable BUSD').to.equal(0);
+            expect((await vaultProtocol.claimableAmount(user2, usdt.address)).toNumber(),
+                'User2: expect no claimable USDT').to.equal(0);
+
+            expect((await vaultProtocol.claimableAmount(user3, dai.address)).toNumber(),
+                'User3: expect no claimable DAI').to.equal(0);
+            expect((await vaultProtocol.claimableAmount(user3, usdc.address)).toNumber(),
+                'User3: expect no claimable USDC').to.equal(0);
+            expect((await vaultProtocol.claimableAmount(user3, busd.address)).toNumber(),
+                'User3: expect no claimable BUSD').to.equal(0);
+            expect((await vaultProtocol.claimableAmount(user3, usdt.address)).toNumber(),
+                'User3: expect no claimable USDT').to.equal(0);
+
+            expect((await vaultProtocol.amountOnHold(user1, dai.address)).toNumber(),
+                'User1: expect no DAI on hold').to.equal(0);
+            expect((await vaultProtocol.amountOnHold(user1, usdc.address)).toNumber(),
+                'User1: expect no USDC on hold').to.equal(0);
+            expect((await vaultProtocol.amountOnHold(user1, busd.address)).toNumber(),
+                'User1: expect no BUSD on hold').to.equal(0);
+            expect((await vaultProtocol.amountOnHold(user1, usdt.address)).toNumber(),
+                'User1: expect no USDT on hold').to.equal(0);
+
+            expect((await vaultProtocol.amountOnHold(user2, dai.address)).toNumber(),
+                'User2: expect no DAI on hold').to.equal(0);
+            expect((await vaultProtocol.amountOnHold(user2, usdc.address)).toNumber(),
+                'User2: expect no USDC on hold').to.equal(0);
+            expect((await vaultProtocol.amountOnHold(user2, busd.address)).toNumber(),
+                'User2: expect no BUSD on hold').to.equal(0);
+            expect((await vaultProtocol.amountOnHold(user2, usdt.address)).toNumber(),
+                'User2: expect no USDT on hold').to.equal(0);
+
+            expect((await vaultProtocol.amountOnHold(user3, dai.address)).toNumber(),
+                'User3: expect no DAI on hold').to.equal(0);
+            expect((await vaultProtocol.amountOnHold(user3, usdc.address)).toNumber(),
+                'User3: expect no USDC on hold').to.equal(0);
+            expect((await vaultProtocol.amountOnHold(user3, busd.address)).toNumber(),
+                'User3: expect no BUSD on hold').to.equal(0);
+            expect((await vaultProtocol.amountOnHold(user3, usdt.address)).toNumber(),
+                'User3: expect no USDT on hold').to.equal(0);
         });
 
     });
