@@ -116,6 +116,7 @@ contract VaultProtocolOneCoin is Module, IVaultProtocol, DefiOperatorRole {
 
         address _user;
         uint256 totalWithdraw = 0;
+        uint256 tokenBalance;
         for (uint256 i = lastProcessedRequest; i < usersRequested.length; i++) {
             _user = usersRequested[i];
             uint256 amount = balancesRequested[_user];
@@ -123,11 +124,18 @@ contract VaultProtocolOneCoin is Module, IVaultProtocol, DefiOperatorRole {
                 addClaim(_user, registeredVaultToken, amount);
                     
                 //move tokens to claim if there is a liquidity
-                if (IERC20(registeredVaultToken).balanceOf(address(this)).sub(claimableTokens) >= amount) {
+                tokenBalance = IERC20(registeredVaultToken).balanceOf(address(this)).sub(claimableTokens);
+                if (tokenBalance >= amount) {
                     claimableTokens = claimableTokens.add(amount);
                 }
                 else {
-                    totalWithdraw = totalWithdraw.add(amount);
+                    if (tokenBalance > 0) {
+                        claimableTokens = claimableTokens.add(tokenBalance);
+                        totalWithdraw = totalWithdraw.add(amount.sub(tokenBalance));
+                    }
+                    else {
+                        totalWithdraw = totalWithdraw.add(amount);
+                    }
                 }
                 balancesRequested[_user] = 0;
             }

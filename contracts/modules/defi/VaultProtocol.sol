@@ -137,6 +137,7 @@ contract VaultProtocol is Module, IVaultProtocol, DefiOperatorRole {
         address _user;
         uint256[] memory withdrawAmounts = new uint256[](registeredVaultTokens.length);
         uint256 lastProcessedRequest = minProcessed(lastProcessedRequests);
+        uint256 tokenBalance;
 
         for (uint256 i = lastProcessedRequest; i < usersRequested.length; i++) {
             _user = usersRequested[i];
@@ -147,11 +148,18 @@ contract VaultProtocol is Module, IVaultProtocol, DefiOperatorRole {
                     addClaim(_user, token, amount);
                     
                     //move tokens to claim if there is a liquidity
-                    if (IERC20(token).balanceOf(address(this)).sub(claimableTokens[j]) >= amount) {
+                    tokenBalance = IERC20(token).balanceOf(address(this)).sub(claimableTokens[j]);
+                    if (tokenBalance >= amount) {
                         claimableTokens[j] = claimableTokens[j].add(amount);
                     }
                     else {
-                        withdrawAmounts[j] = withdrawAmounts[j].add(amount);
+                        if (tokenBalance > 0) {
+                            claimableTokens[j] = claimableTokens[j].add(tokenBalance);
+                            withdrawAmounts[j] = withdrawAmounts[j].add(amount.sub(tokenBalance));
+                        }
+                        else {
+                            withdrawAmounts[j] = withdrawAmounts[j].add(amount);
+                        }
                     }
 
                     balancesRequested[_user][j] = 0;
@@ -207,6 +215,7 @@ contract VaultProtocol is Module, IVaultProtocol, DefiOperatorRole {
 
         address _user;
         uint256 totalWithdraw = 0;
+        uint256 tokenBalance;
         for (uint256 i = lastProcessedRequests[ind]; i < usersRequested.length; i++) {
             _user = usersRequested[i];
             uint256 amount = balancesRequested[_user][ind];
@@ -215,11 +224,18 @@ contract VaultProtocol is Module, IVaultProtocol, DefiOperatorRole {
                 addClaim(_user, _token, amount);
                     
                 //move tokens to claim if there is a liquidity
-                if (IERC20(_token).balanceOf(address(this)).sub(claimableTokens[ind]) >= amount) {
+                tokenBalance = IERC20(_token).balanceOf(address(this)).sub(claimableTokens[ind]);
+                if (tokenBalance >= amount) {
                     claimableTokens[ind] = claimableTokens[ind].add(amount);
                 }
                 else {
-                    totalWithdraw = totalWithdraw.add(amount);
+                    if (tokenBalance > 0) {
+                        claimableTokens[ind] = claimableTokens[ind].add(tokenBalance);
+                        totalWithdraw = totalWithdraw.add(amount.sub(tokenBalance));
+                    }
+                    else {
+                        totalWithdraw = totalWithdraw.add(amount);
+                    }
                 }
 
                 balancesRequested[_user][ind] = 0;

@@ -882,10 +882,10 @@ contract('VaultProtocol', async([ _, owner, user1, user2, user3, defiops, protoc
             await vaultProtocol.clearOnHoldDeposits({ from: defiops });
 
             expectEvent(opResult, 'WithdrawRequestsResolved');
-            //On-hold deposit is moved to the protocol
-            expectEvent(opResult, 'DepositByOperator', { _amount: '100' });
-            //Full amount is withdrawn from the protocol
-            expectEvent(opResult, 'WithdrawByOperator', { _amount: '150' });
+            //On-hold deposit is resolved into claimable
+            expectEvent.notEmitted(opResult, 'DepositByOperator');
+            //Part of amount is withdrawn from the protocol - other taken from current liquidity
+            expectEvent(opResult, 'WithdrawByOperator', { _amount: '50' });
 
             //Withdraw request is resolved
             const requested = await vaultProtocol.amountRequested(user1, dai.address);
@@ -928,15 +928,15 @@ contract('VaultProtocol', async([ _, owner, user1, user2, user3, defiops, protoc
             await usdc.approve(vaultProtocol.address, 1000, { from: user3 });
             await busd.approve(vaultProtocol.address, 1000, { from: user3 });
 
-            await dai.transfer(protocolStub, 1000, { from: owner });
-            await usdc.transfer(protocolStub, 1000, { from: owner });
-            await busd.transfer(protocolStub, 1000, { from: owner });
-
             await dai.approve(strategy.address, 1000, { from: protocolStub });
             await usdc.approve(strategy.address, 1000, { from: protocolStub });
             await busd.approve(strategy.address, 1000, { from: protocolStub });
 
             //Create some claimable amounts
+            await dai.transfer(protocolStub, 180, { from: owner });
+            await usdc.transfer(protocolStub, 50, { from: owner });
+            await busd.transfer(protocolStub, 20, { from: owner });
+
             await (<any> vaultProtocol).methods['withdrawFromVault(address,address[],uint256[])'](
                 user1, [dai.address, usdc.address, busd.address], [100, 50, 20], { from: defiops });
             await (<any> vaultProtocol).methods['withdrawFromVault(address,address,uint256)'](
@@ -1034,6 +1034,7 @@ contract('VaultProtocol', async([ _, owner, user1, user2, user3, defiops, protoc
         });
 
         it('Withdraw request resolving increases claimable amount', async() => {
+            await dai.transfer(protocolStub, 100, { from: owner });
             await (<any> vaultProtocol).methods['withdrawFromVault(address,address,uint256)'](
                 user1, dai.address, 100, { from: defiops });
 
@@ -1129,6 +1130,10 @@ contract('VaultProtocol', async([ _, owner, user1, user2, user3, defiops, protoc
 
         it('Total claimable calculated correctly', async() => {
             //[180, 50, 20] - initial from before()
+            // + additional
+            await dai.transfer(protocolStub, 50, { from: owner });
+            await usdc.transfer(protocolStub, 80, { from: owner });
+            await busd.transfer(protocolStub, 180, { from: owner });
             await (<any> vaultProtocol).methods['withdrawFromVault(address,address,uint256)'](
                 user1, dai.address, 50, { from: defiops });
             await (<any> vaultProtocol).methods['withdrawFromVault(address,address,uint256)'](
