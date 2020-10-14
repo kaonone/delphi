@@ -15,9 +15,10 @@ contract IDefiStrategy {
 
     function withdraw(address beneficiary, uint256[] calldata amounts) external;
 
-    function performStrategy() external;
-
     function setVault(address _vault) external;
+
+    function performStrategyStep1() external;
+    function performStrategyStep2(bytes calldata _data, address _token) external;
 
     function normalizedBalance() external returns(uint256);
 

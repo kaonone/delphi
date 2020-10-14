@@ -4,6 +4,31 @@
     "inputs": [
       {
         "indexed": true,
+        "internalType": "string",
+        "name": "id",
+        "type": "string"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "strategy",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
+      }
+    ],
+    "name": "CrvClaimed",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
         "internalType": "address",
         "name": "account",
         "type": "address"
@@ -154,6 +179,36 @@
     "outputs": [
       {
         "internalType": "contract IERC20",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [],
+    "name": "dexagApproveHandler",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [],
+    "name": "dexagProxy",
+    "outputs": [
+      {
+        "internalType": "address",
         "name": "",
         "type": "address"
       }
@@ -315,37 +370,7 @@
   {
     "constant": true,
     "inputs": [],
-    "name": "uniswapRouter",
-    "outputs": [
-      {
-        "internalType": "address",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "constant": true,
-    "inputs": [],
     "name": "vault",
-    "outputs": [
-      {
-        "internalType": "address",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "constant": true,
-    "inputs": [],
-    "name": "wethToken",
     "outputs": [
       {
         "internalType": "address",
@@ -421,18 +446,8 @@
       },
       {
         "internalType": "address",
-        "name": "_uniswapRouter",
+        "name": "_dexagProxy",
         "type": "address"
-      },
-      {
-        "internalType": "address",
-        "name": "_wethToken",
-        "type": "address"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_daiInd",
-        "type": "uint256"
       }
     ],
     "name": "setProtocol",
@@ -544,7 +559,27 @@
   {
     "constant": false,
     "inputs": [],
-    "name": "performStrategy",
+    "name": "performStrategyStep1",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "internalType": "bytes",
+        "name": "dexagSwapData",
+        "type": "bytes"
+      },
+      {
+        "internalType": "address",
+        "name": "swapStablecoin",
+        "type": "address"
+      }
+    ],
+    "name": "performStrategyStep2",
     "outputs": [],
     "payable": false,
     "stateMutability": "nonpayable",

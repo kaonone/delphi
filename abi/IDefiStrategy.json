@@ -86,8 +86,23 @@
   },
   {
     "constant": false,
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_vault",
+        "type": "address"
+      }
+    ],
+    "name": "setVault",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
     "inputs": [],
-    "name": "performStrategy",
+    "name": "performStrategyStep1",
     "outputs": [],
     "payable": false,
     "stateMutability": "nonpayable",
@@ -97,12 +112,17 @@
     "constant": false,
     "inputs": [
       {
+        "internalType": "bytes",
+        "name": "_data",
+        "type": "bytes"
+      },
+      {
         "internalType": "address",
-        "name": "_vault",
+        "name": "_token",
         "type": "address"
       }
     ],
-    "name": "setVault",
+    "name": "performStrategyStep2",
     "outputs": [],
     "payable": false,
     "stateMutability": "nonpayable",
