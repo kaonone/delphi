@@ -142,32 +142,14 @@ contract VaultProtocol is Module, IVaultProtocol, DefiOperatorRole {
         address _user;
         uint256[] memory withdrawAmounts = new uint256[](registeredVaultTokens.length);
         uint256 lastProcessedRequest = minProcessed(lastProcessedRequests);
-        uint256 tokenBalance;
+        uint256 amountToWithdraw;
 
         for (uint256 i = lastProcessedRequest; i < usersRequested.length; i++) {
             _user = usersRequested[i];
             for (uint256 j = 0; j < balancesRequested[_user].length; j++) {
-                uint256 amount = balancesRequested[_user][j];
-                address token = registeredVaultTokens[j];
-                if (amount > 0) {
-                    addClaim(_user, token, amount);
-                    
-                    //move tokens to claim if there is a liquidity
-                    tokenBalance = IERC20(token).balanceOf(address(this)).sub(claimableTokens[j]);
-                    if (tokenBalance >= amount) {
-                        claimableTokens[j] = claimableTokens[j].add(amount);
-                    }
-                    else {
-                        if (tokenBalance > 0) {
-                            claimableTokens[j] = claimableTokens[j].add(tokenBalance);
-                            withdrawAmounts[j] = withdrawAmounts[j].add(amount.sub(tokenBalance));
-                        }
-                        else {
-                            withdrawAmounts[j] = withdrawAmounts[j].add(amount);
-                        }
-                    }
-
-                    balancesRequested[_user][j] = 0;
+                amountToWithdraw = requestToClaim(_user, j);
+                if (amountToWithdraw > 0) {
+                    withdrawAmounts[j] = withdrawAmounts[j].add(amountToWithdraw);
                 }
             }
         }
@@ -220,30 +202,14 @@ contract VaultProtocol is Module, IVaultProtocol, DefiOperatorRole {
 
         address _user;
         uint256 totalWithdraw = 0;
-        uint256 tokenBalance;
+        uint256 amountToWithdraw;
         for (uint256 i = lastProcessedRequests[ind]; i < usersRequested.length; i++) {
             _user = usersRequested[i];
-            uint256 amount = balancesRequested[_user][ind];
-            
-            if (amount > 0) {
-                addClaim(_user, _token, amount);
-                    
-                //move tokens to claim if there is a liquidity
-                tokenBalance = IERC20(_token).balanceOf(address(this)).sub(claimableTokens[ind]);
-                if (tokenBalance >= amount) {
-                    claimableTokens[ind] = claimableTokens[ind].add(amount);
-                }
-                else {
-                    if (tokenBalance > 0) {
-                        claimableTokens[ind] = claimableTokens[ind].add(tokenBalance);
-                        totalWithdraw = totalWithdraw.add(amount.sub(tokenBalance));
-                    }
-                    else {
-                        totalWithdraw = totalWithdraw.add(amount);
-                    }
-                }
 
-                balancesRequested[_user][ind] = 0;
+            amountToWithdraw = requestToClaim(_user, ind);
+            
+            if (amountToWithdraw > 0) {
+                totalWithdraw = totalWithdraw.add(amountToWithdraw);
             }
         }
         lastProcessedRequests[ind] = usersRequested.length;
@@ -270,6 +236,8 @@ contract VaultProtocol is Module, IVaultProtocol, DefiOperatorRole {
     }
 
     function clearOnHoldDeposits() public onlyDefiOperator {
+        require(minProcessed(lastProcessedDeposits) == usersDeposited.length, "There are unprocessed deposits");
+
         address _user;
         for (uint256 i = 0; i < usersDeposited.length; i++) {
             //We can delete the on-hold records now - the real balances will be deposited to protocol
@@ -278,9 +246,12 @@ contract VaultProtocol is Module, IVaultProtocol, DefiOperatorRole {
         }
         delete usersDeposited;
         setProcessed(lastProcessedDeposits, 0);
+        emit DepositsCleared(address(this));
     }
 
     function clearWithdrawRequests() public onlyDefiOperator {
+        require(minProcessed(lastProcessedRequests) == usersRequested.length, "There are unprocessed requests");
+
         address _user;
         for (uint256 i = 0; i < usersRequested.length; i++) {
             _user = usersRequested[i];
@@ -288,6 +259,7 @@ contract VaultProtocol is Module, IVaultProtocol, DefiOperatorRole {
         }
         delete usersRequested;
         setProcessed(lastProcessedRequests, 0);
+        emit RequestsCleared(address(this));
     }
 
     function quickWithdraw(address _user, uint256 _amount) public onlyDefiOperator {
@@ -302,8 +274,11 @@ contract VaultProtocol is Module, IVaultProtocol, DefiOperatorRole {
             address token = registeredVaultTokens[i];
             uint256 amount = balancesToClaim[_user][i];
 
-            IERC20(token).transfer(_user, amount);
-            claimableTokens[i] = claimableTokens[i].sub(amount);
+            if (amount > 0) {
+                IERC20(token).transfer(_user, amount);
+                claimableTokens[i] = claimableTokens[i].sub(amount);
+                emit Claimed(address(this), _user, token, amount);
+            }
         }
         delete balancesToClaim[_user];
     }
@@ -475,6 +450,34 @@ contract VaultProtocol is Module, IVaultProtocol, DefiOperatorRole {
             balancesToClaim[_user] = new uint256[](supportedTokensCount());
         }
         balancesToClaim[_user][ind] = balancesToClaim[_user][ind].add(_amount);
+    }
+
+    function requestToClaim(address _user, uint256 _ind) internal returns(uint256) {
+        uint256 amount = balancesRequested[_user][_ind];
+        address token = registeredVaultTokens[_ind];
+        uint256 amountToWithdraw;
+        uint256 tokenBalance;
+        if (amount > 0) {
+            addClaim(_user, token, amount);
+                    
+            //move tokens to claim if there is a liquidity
+            tokenBalance = IERC20(token).balanceOf(address(this)).sub(claimableTokens[_ind]);
+            if (tokenBalance >= amount) {
+                claimableTokens[_ind] = claimableTokens[_ind].add(amount);
+            }
+            else {
+                if (tokenBalance > 0) {
+                    claimableTokens[_ind] = claimableTokens[_ind].add(tokenBalance);
+                    amountToWithdraw = amount.sub(tokenBalance);
+                }
+                else {
+                    amountToWithdraw = amount;
+                }
+            }
+
+            balancesRequested[_user][_ind] = 0;
+        }
+        return amountToWithdraw;
     }
 
     function setProcessed(uint256[] storage processedValues, uint256 value) internal {

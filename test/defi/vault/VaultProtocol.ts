@@ -1149,6 +1149,22 @@ contract('VaultProtocol', async([ _, owner, user1, user2, user3, defiops, protoc
             expect(claimable2.toNumber(), 'Incorrect total claimable (2)').to.equal(130);
             expect(claimable3.toNumber(), 'Incorrect total claimable (3)').to.equal(200);
         });
+
+        it('Event generated after claim', async() => {
+            await dai.transfer(protocolStub, 50, { from: user3 });
+            await usdc.transfer(protocolStub, 80, { from: user3 });
+            await busd.transfer(protocolStub, 100, { from: user3 });
+            await (<any> vaultProtocol).methods['withdrawFromVault(address,address[],uint256[])'](
+                user3, [dai.address, usdc.address, busd.address], [50, 80, 100], { from: defiops });
+
+            await vaultProtocol.operatorAction(strategy.address, { from: defiops });
+
+            const res = await vaultProtocol.claimRequested(user3, { from: user1 });
+
+            expectEvent(res, 'Claimed', { _vault: vaultProtocol.address, _user: user3, _token: dai.address, _amount: '50' });
+            expectEvent(res, 'Claimed', { _vault: vaultProtocol.address, _user: user3, _token: usdc.address, _amount: '80' });
+            expectEvent(res, 'Claimed', { _vault: vaultProtocol.address, _user: user3, _token: busd.address, _amount: '100' });
+        });
     });
 
     describe('Full cycle', () => {
@@ -1826,6 +1842,65 @@ contract('VaultProtocol', async([ _, owner, user1, user2, user3, defiops, protoc
             expect(strategyId).to.equal('2384358972357');
         });
 
+    });
+
+    describe('Storage clearing', async() => {
+        let snap: Snapshot;
+        before(async() => {
+            await dai.approve(strategy.address, 1000, { from: protocolStub });
+            await dai.transfer(protocolStub, 180, { from: owner });
+
+            snap = await Snapshot.create(web3.currentProvider);
+        });
+
+        after(async() => await globalSnap.revert());
+
+        afterEach(async() => await snap.revert());
+
+        it('Cannot clear deposits storage with active deposit', async() => {
+            await dai.transfer(vaultProtocol.address, 80, { from: user1 });
+            await poolToken.mint(user1, 80, { from: defiops });
+
+            await vaultProtocol.methods['depositToVault(address,address[],uint256[])'](user1,
+                [dai.address], [80], { from: defiops });
+
+            await expectRevert(vaultProtocol.clearOnHoldDeposits({ from: defiops }),
+                'There are unprocessed deposits'
+            );
+        });
+
+        it('Cannot clear requests storage with active request', async() => {
+            await vaultProtocol.methods['withdrawFromVault(address,address[],uint256[])'](
+                user1, [dai.address], [80], { from: defiops });
+
+            await expectRevert(vaultProtocol.clearWithdrawRequests({ from: defiops }),
+                'There are unprocessed requests'
+            );
+        });
+
+        it('Clear deposits storage with resolved deposits', async() => {
+            await dai.transfer(vaultProtocol.address, 80, { from: user1 });
+            await poolToken.mint(user1, 80, { from: defiops });
+
+            await vaultProtocol.methods['depositToVault(address,address[],uint256[])'](user1,
+                [dai.address], [80], { from: defiops });
+
+            await vaultProtocol.operatorAction(strategy.address, { from: defiops });
+
+            const res = await vaultProtocol.clearOnHoldDeposits({ from: defiops });
+            expectEvent(res, 'DepositsCleared', {_vault: vaultProtocol.address});
+            
+        });
+
+        it('Clear requests storage with resolved requests', async() => {
+            await vaultProtocol.methods['withdrawFromVault(address,address[],uint256[])'](
+                user1, [dai.address], [80], { from: defiops });
+
+            await vaultProtocol.operatorAction(strategy.address, { from: defiops });
+
+            const res = await vaultProtocol.clearWithdrawRequests({ from: defiops });
+            expectEvent(res, 'RequestsCleared', {_vault: vaultProtocol.address});
+        });
     });
 
 });

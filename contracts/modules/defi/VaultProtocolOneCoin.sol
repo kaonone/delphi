@@ -121,28 +121,12 @@ contract VaultProtocolOneCoin is Module, IVaultProtocol, DefiOperatorRole {
 
         address _user;
         uint256 totalWithdraw = 0;
-        uint256 tokenBalance;
+        uint256 amountToWithdraw;
         for (uint256 i = lastProcessedRequest; i < usersRequested.length; i++) {
             _user = usersRequested[i];
-            uint256 amount = balancesRequested[_user];
-            if (amount > 0) {
-                addClaim(_user, registeredVaultToken, amount);
-                    
-                //move tokens to claim if there is a liquidity
-                tokenBalance = IERC20(registeredVaultToken).balanceOf(address(this)).sub(claimableTokens);
-                if (tokenBalance >= amount) {
-                    claimableTokens = claimableTokens.add(amount);
-                }
-                else {
-                    if (tokenBalance > 0) {
-                        claimableTokens = claimableTokens.add(tokenBalance);
-                        totalWithdraw = totalWithdraw.add(amount.sub(tokenBalance));
-                    }
-                    else {
-                        totalWithdraw = totalWithdraw.add(amount);
-                    }
-                }
-                balancesRequested[_user] = 0;
+            amountToWithdraw = requestToClaim(_user);
+            if (amountToWithdraw > 0) {
+                totalWithdraw = totalWithdraw.add(amountToWithdraw);
             }
         }
         lastProcessedRequest = usersRequested.length;
@@ -194,6 +178,8 @@ contract VaultProtocolOneCoin is Module, IVaultProtocol, DefiOperatorRole {
 
         IERC20(registeredVaultToken).transfer(_user, balancesToClaim[_user]);
         claimableTokens = claimableTokens.sub(balancesToClaim[_user]);
+
+        emit Claimed(address(this), _user, registeredVaultToken, balancesToClaim[_user]);
 
         balancesToClaim[_user] = 0;
     }
@@ -318,5 +304,31 @@ contract VaultProtocolOneCoin is Module, IVaultProtocol, DefiOperatorRole {
     function addClaim(address _user, address _token, uint256 _amount) internal {
         require(isTokenRegistered(_token), "Token is not registered");
         balancesToClaim[_user] = balancesToClaim[_user].add(_amount);
+    }
+
+    function requestToClaim(address _user) internal returns(uint256) {
+        uint256 amount = balancesRequested[_user];
+        uint256 amountToWithdraw;
+        uint256 tokenBalance;
+        if (amount > 0) {
+            addClaim(_user, registeredVaultToken, amount);
+                    
+            //move tokens to claim if there is a liquidity
+            tokenBalance = IERC20(registeredVaultToken).balanceOf(address(this)).sub(claimableTokens);
+            if (tokenBalance >= amount) {
+                claimableTokens = claimableTokens.add(amount);
+            }
+            else {
+                if (tokenBalance > 0) {
+                    claimableTokens = claimableTokens.add(tokenBalance);
+                    amountToWithdraw = amount.sub(tokenBalance);
+                }
+                else {
+                    amountToWithdraw = amount;
+                }
+            }
+            balancesRequested[_user] = 0;
+        }
+        return amountToWithdraw;
     }
 }

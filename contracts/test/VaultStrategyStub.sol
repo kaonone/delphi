@@ -51,7 +51,10 @@ contract VaultStrategyStub is IDefiStrategy, DefiOperatorRole {
         }
     }
 
-    function performStrategy() public {
+    function performStrategyStep1() public {
+    }
+
+    function performStrategyStep2(bytes memory _data, address _token) public {
     }
 
     function normalizedBalance() public returns(uint256) {

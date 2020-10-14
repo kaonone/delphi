@@ -12,7 +12,7 @@ import {
     CurveFiTokenStubYContract, CurveFiTokenStubYInstance,
     CurveFiMinterStubContract, CurveFiMinterStubInstance,
     CurveFiLiquidityGaugeStubContract, CurveFiLiquidityGaugeStubInstance,
-    UniswapStubContract, UniswapStubInstance
+    DexagStubContract,DexagStubInstance
 } from "../../../types/truffle-contracts/index";
 
 const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
@@ -42,7 +42,7 @@ const CurveSwap = artifacts.require("CurveFiSwapStub_Y");
 const CurveToken = artifacts.require("CurveFiTokenStub_Y");
 const CurveMinter = artifacts.require("CurveFiMinterStub");
 const CurveGauge = artifacts.require("CurveFiLiquidityGaugeStub");
-const Uniswap = artifacts.require("UniswapStub");
+const Dexag = artifacts.require("DexagStub");
 
 contract("CurveFiStablecoinStrategy", async ([_, owner, user1, user2, user3, defiops, protocolStub, ...otherAccounts]) => {
     let globalSnap: Snapshot;
@@ -69,7 +69,7 @@ contract("CurveFiStablecoinStrategy", async ([_, owner, user1, user2, user3, def
     let curveMinter: CurveFiMinterStubInstance;
     let curveGauge: CurveFiLiquidityGaugeStubInstance;
     let curveToken: CurveFiTokenStubYInstance;
-    let uniswap: UniswapStubInstance;
+    let dexag: DexagStubInstance;
 
 
     before(async () => {
@@ -119,7 +119,8 @@ contract("CurveFiStablecoinStrategy", async ([_, owner, user1, user2, user3, def
         weth = await ERC20.new({from:owner});
         await (<any> weth).methods['initialize(string,string,uint8)']("WETH", "WETH", 18, {from:owner});
 
-        uniswap = await Uniswap.new({from:owner});
+        dexag = await Dexag.new({from:owner});
+        await dexag.setProtocol(weth.address, { from: owner });
     //Setup pool
         pool = await Pool.new({from:owner});
         await (<any> pool).methods['initialize()']({from: owner});
@@ -149,7 +150,7 @@ contract("CurveFiStablecoinStrategy", async ([_, owner, user1, user2, user3, def
         await (<any> vaultCurveStrategy).methods['initialize(address,string)'](pool.address, "CRV-UNI-DAI", {from: owner});
 
         await vaultCurveStrategy.setProtocol(
-            curveDeposit.address, curveGauge.address, curveMinter.address, uniswap.address, weth.address, 0, 
+            curveDeposit.address, curveGauge.address, curveMinter.address, dexag.address, 
             {from:owner});
 
         await vaultCurveStrategy.addDefiOperator(vaultProtocol.address, {from:owner});

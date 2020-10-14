@@ -167,7 +167,12 @@ contract VaultSavingsModule is Module, IVaultSavings, AccessChecker, RewardDistr
 
             emit WithdrawToken(address(_vault), _tokens[i], amounts[i]);
         }
-        IVaultProtocol(_vault).withdrawFromVault(_msgSender(), _tokens, amounts);
+        if (_tokens.length == 1) {
+            IVaultProtocol(_vault).withdrawFromVault(_msgSender(), _tokens[0], amounts[0]);
+        }
+        else {
+            IVaultProtocol(_vault).withdrawFromVault(_msgSender(), _tokens, amounts);
+        }
 
 
         VaultPoolToken poolToken = VaultPoolToken(vaults[_vault].poolToken);

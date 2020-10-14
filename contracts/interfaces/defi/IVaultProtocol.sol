@@ -9,6 +9,10 @@ contract IVaultProtocol {
     event WithdrawByOperator(uint256 _amount);
     event WithdrawRequestsResolved(uint256 _totalDeposit, uint256 _totalWithdraw);
 
+    event Claimed(address indexed _vault, address indexed _user, address _token, uint256 _amount);
+    event DepositsCleared(address indexed _vault);
+    event RequestsCleared(address indexed _vault);
+
 
     function registerStrategy(address _strategy) external;
 
