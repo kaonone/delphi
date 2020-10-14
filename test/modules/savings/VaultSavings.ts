@@ -80,7 +80,7 @@ contract('VaultSavings', async([ _, owner, user1, user2, user3, defiops, protoco
         accessModule = await AccessModule.new({ from: owner });
         await accessModule.methods['initialize(address)'](pool.address, { from: owner });
 
-        
+
         await pool.set('access', accessModule.address, true, { from: owner });
         //------
         vaultSavings = await VaultSavings.new({ from: owner });
@@ -88,7 +88,7 @@ contract('VaultSavings', async([ _, owner, user1, user2, user3, defiops, protoco
         await (<any> vaultSavings).methods['initialize(address)'](pool.address, { from: owner });
 
         await vaultSavings.addDefiOperator(defiops, { from: owner });
-        
+
 
         await pool.set('vault', vaultSavings.address, true, { from: owner });
         //------
@@ -120,7 +120,7 @@ contract('VaultSavings', async([ _, owner, user1, user2, user3, defiops, protoco
         //------
         await vaultSavings.registerVault(vaultProtocol.address, poolToken.address, { from: owner });
 
-        
+
         await vaultProtocol.setAvailableEnabled(true, { from: owner });
 
         globalSnap = await Snapshot.create(web3.currentProvider);
@@ -249,17 +249,17 @@ contract('VaultSavings', async([ _, owner, user1, user2, user3, defiops, protoco
                 const userPoolBalanceToken2 = await poolToken2.balanceOf(user1, { from: user1 });
                 const userPoolBalanceToken3 = await poolToken3.balanceOf(user1, { from: user1 });
 
-                expect((after.vault1Balance.sub(before.vault1Balance).toNumber()), "Incorrect deposit into Vault 1").to.equal(30);
-                expect((after.vault2Balance.sub(before.vault2Balance).toNumber()), "Incorrect deposit into Vault 2").to.equal(50);
-                expect((after.vault3Balance.sub(before.vault3Balance).toNumber()), "Incorrect deposit into Vault 3").to.equal(20);
+                expect((after.vault1Balance.sub(before.vault1Balance).toNumber()), 'Incorrect deposit into Vault 1').to.equal(30);
+                expect((after.vault2Balance.sub(before.vault2Balance).toNumber()), 'Incorrect deposit into Vault 2').to.equal(50);
+                expect((after.vault3Balance.sub(before.vault3Balance).toNumber()), 'Incorrect deposit into Vault 3').to.equal(20);
 
-                expect(onHoldAmount.vault1.toNumber(), "Tokens are not set on-hold in Vault 1").to.equal(30);
-                expect(onHoldAmount.vault2.toNumber(), "Tokens are not set on-hold in Vault 2").to.equal(50);
-                expect(onHoldAmount.vault3.toNumber(), "Tokens are not set on-hold in Vault 3").to.equal(20);
+                expect(onHoldAmount.vault1.toNumber(), 'Tokens are not set on-hold in Vault 1').to.equal(30);
+                expect(onHoldAmount.vault2.toNumber(), 'Tokens are not set on-hold in Vault 2').to.equal(50);
+                expect(onHoldAmount.vault3.toNumber(), 'Tokens are not set on-hold in Vault 3').to.equal(20);
 
-                expect(userPoolBalanceToken1.toNumber(), "Pool tokens (1) are not minted").to.equal(30);
-                expect(userPoolBalanceToken2.toNumber(), "Pool tokens (2) are not minted").to.equal(50);
-                expect(userPoolBalanceToken3.toNumber(), "Pool tokens (3) are not minted").to.equal(20);
+                expect(userPoolBalanceToken1.toNumber(), 'Pool tokens (1) are not minted').to.equal(30);
+                expect(userPoolBalanceToken2.toNumber(), 'Pool tokens (2) are not minted').to.equal(50);
+                expect(userPoolBalanceToken3.toNumber(), 'Pool tokens (3) are not minted').to.equal(20);
             });
 
             it('User can deposit into all vault tokens', async() => {
@@ -321,23 +321,23 @@ contract('VaultSavings', async([ _, owner, user1, user2, user3, defiops, protoco
                 const userPoolBalanceToken2 = await poolToken2.balanceOf(user1, { from: user1 });
                 const userPoolBalanceToken3 = await poolToken3.balanceOf(user1, { from: user1 });
 
-                expect((after.vault1Balance.dai.sub(before.vault1Balance.dai).toNumber()), "Incorrect deposit (1) into Vault 1").to.equal(80);
-                expect((after.vault1Balance.usdc.sub(before.vault1Balance.dai).toNumber()), "Incorrect deposit (2) into Vault 1").to.equal(50);
-                expect((after.vault1Balance.busd.sub(before.vault1Balance.dai).toNumber()), "Incorrect deposit (3) into Vault 1").to.equal(100);
-                expect((after.vault2Balance.dai.sub(before.vault1Balance.dai).toNumber()), "Incorrect deposit (1) into Vault 2").to.equal(20);
-                expect((after.vault2Balance.usdc.sub(before.vault1Balance.dai).toNumber()), "Incorrect deposit (2) into Vault 2").to.equal(30);
-                expect((after.vault3Balance.busd.sub(before.vault1Balance.dai).toNumber()), "Incorrect deposit into Vault 3").to.equal(90);
+                expect((after.vault1Balance.dai.sub(before.vault1Balance.dai).toNumber()), 'Incorrect deposit (1) into Vault 1').to.equal(80);
+                expect((after.vault1Balance.usdc.sub(before.vault1Balance.dai).toNumber()), 'Incorrect deposit (2) into Vault 1').to.equal(50);
+                expect((after.vault1Balance.busd.sub(before.vault1Balance.dai).toNumber()), 'Incorrect deposit (3) into Vault 1').to.equal(100);
+                expect((after.vault2Balance.dai.sub(before.vault1Balance.dai).toNumber()), 'Incorrect deposit (1) into Vault 2').to.equal(20);
+                expect((after.vault2Balance.usdc.sub(before.vault1Balance.dai).toNumber()), 'Incorrect deposit (2) into Vault 2').to.equal(30);
+                expect((after.vault3Balance.busd.sub(before.vault1Balance.dai).toNumber()), 'Incorrect deposit into Vault 3').to.equal(90);
 
-                expect(onHoldAmount.vault1.dai.toNumber(), "Tokens (1) are not set on-hold in Vault 1").to.equal(80);
-                expect(onHoldAmount.vault1.usdc.toNumber(), "Tokens (2) are not set on-hold in Vault 1").to.equal(50);
-                expect(onHoldAmount.vault1.busd.toNumber(), "Tokens (3) are not set on-hold in Vault 1").to.equal(100);
-                expect(onHoldAmount.vault2.dai.toNumber(), "Tokens (1) are not set on-hold in Vault 2").to.equal(20);
-                expect(onHoldAmount.vault2.usdc.toNumber(), "Tokens (2) are not set on-hold in Vault 2").to.equal(30);
-                expect(onHoldAmount.vault3.busd.toNumber(), "Tokens are not set on-hold in Vault 3").to.equal(90);
+                expect(onHoldAmount.vault1.dai.toNumber(), 'Tokens (1) are not set on-hold in Vault 1').to.equal(80);
+                expect(onHoldAmount.vault1.usdc.toNumber(), 'Tokens (2) are not set on-hold in Vault 1').to.equal(50);
+                expect(onHoldAmount.vault1.busd.toNumber(), 'Tokens (3) are not set on-hold in Vault 1').to.equal(100);
+                expect(onHoldAmount.vault2.dai.toNumber(), 'Tokens (1) are not set on-hold in Vault 2').to.equal(20);
+                expect(onHoldAmount.vault2.usdc.toNumber(), 'Tokens (2) are not set on-hold in Vault 2').to.equal(30);
+                expect(onHoldAmount.vault3.busd.toNumber(), 'Tokens are not set on-hold in Vault 3').to.equal(90);
 
-                expect(userPoolBalanceToken1.toNumber(), "Pool tokens (1) are not minted").to.equal(80 + 50 + 100);
-                expect(userPoolBalanceToken2.toNumber(), "Pool tokens (2) are not minted").to.equal(20 + 30);
-                expect(userPoolBalanceToken3.toNumber(), "Pool tokens (3) are not minted").to.equal(90);
+                expect(userPoolBalanceToken1.toNumber(), 'Pool tokens (1) are not minted').to.equal(80 + 50 + 100);
+                expect(userPoolBalanceToken2.toNumber(), 'Pool tokens (2) are not minted').to.equal(20 + 30);
+                expect(userPoolBalanceToken3.toNumber(), 'Pool tokens (3) are not minted').to.equal(90);
             });
 
         });
@@ -345,6 +345,7 @@ contract('VaultSavings', async([ _, owner, user1, user2, user3, defiops, protoco
     });
 
     describe('Withdraw through VaultSavings', () => {
+
         let vault2: VaultProtocolInstance;
         let vault3: VaultProtocolInstance;
         let poolToken2: VaultPoolTokenInstance;
@@ -361,15 +362,11 @@ contract('VaultSavings', async([ _, owner, user1, user2, user3, defiops, protoco
             await vault2.addDefiOperator(vaultSavings.address, { from: owner });
             await vault2.addDefiOperator(defiops, { from: owner });
 
-            await vault2.setAvailableEnabled(true, { from: owner });
-
             vault3 = await VaultProtocol.new({ from: owner });
             await (<VaultProtocolInstance>vault3).methods['initialize(address,address[])'](
                 pool.address, [busd.address], { from: owner });
             await vault3.addDefiOperator(vaultSavings.address, { from: owner });
             await vault3.addDefiOperator(defiops, { from: owner });
-
-            await vault3.setAvailableEnabled(true, { from: owner });
 
             poolToken2 = await PoolToken.new({ from: owner });
             await (<VaultPoolTokenInstance>poolToken2).methods['initialize(address,string,string)'](
@@ -391,23 +388,25 @@ contract('VaultSavings', async([ _, owner, user1, user2, user3, defiops, protoco
             await poolToken3.addMinter(vault3.address, { from: owner });
 
             strategy2 = await VaultStrategy.new({ from: owner });
-            await (<any> strategy2).methods['initialize(string)']('2', { from: owner });
-            await strategy2.setProtocol(protocolStub, { from: owner });    
+            await (<any>strategy2).methods['initialize(string)']('2', { from: owner });
+            await strategy2.setProtocol(protocolStub, { from: owner });
             await strategy2.addDefiOperator(defiops, { from: owner });
             await strategy2.addDefiOperator(vault2.address, { from: owner });
             await vault2.registerStrategy(strategy2.address, { from: defiops });
 
             strategy3 = await VaultStrategy.new({ from: owner });
-            await (<any> strategy3).methods['initialize(string)']('3', { from: owner });
-            await strategy3.setProtocol(protocolStub, { from: owner });    
+            await (<any>strategy3).methods['initialize(string)']('3', { from: owner });
+            await strategy3.setProtocol(protocolStub, { from: owner });
             await strategy3.addDefiOperator(defiops, { from: owner });
             await strategy3.addDefiOperator(vault3.address, { from: owner });
             await vault3.registerStrategy(strategy3.address, { from: defiops });
 
-
-            await dai.approve(vaultSavings.address, 400, { from: user1 });
-            await usdc.approve(vaultSavings.address, 400, { from: user1 });
-            await busd.approve(vaultSavings.address, 400, { from: user1 });
+            await dai.approve(vaultSavings.address, 200, { from: user1 });
+            await usdc.approve(vaultSavings.address, 200, { from: user1 });
+            await busd.approve(vaultSavings.address, 200, { from: user1 });
+            await dai.approve(strategy.address, 5000, { from: protocolStub });
+            await usdc.approve(strategy.address, 5000, { from: protocolStub });
+            await busd.approve(strategy.address, 5000, { from: protocolStub });
 
             await (<any>vaultSavings).methods['depositAll(address[],address[],uint256[])'](
                 [vaultProtocol.address, vault2.address, vault3.address],
@@ -416,31 +415,118 @@ contract('VaultSavings', async([ _, owner, user1, user2, user3, defiops, protoco
                 { from: user1 }
             );
 
-            await vaultSavings.handleOperatorActions(vaultProtocol.address, strategy.address, ZERO_ADDRESS, { from: defiops });
-            await vaultSavings.handleOperatorActions(vault2.address, strategy2.address, ZERO_ADDRESS, { from: defiops });
-            await vaultSavings.handleOperatorActions(vault3.address, strategy3.address, ZERO_ADDRESS, { from: defiops });
+            await vaultSavings.handleOperatorActions(
+                vaultProtocol.address, strategy.address, ZERO_ADDRESS, { from: defiops });
+            await vaultSavings.handleOperatorActions(
+                vault2.address, strategy2.address, ZERO_ADDRESS, { from: defiops });
+            await vaultSavings.handleOperatorActions(
+                vault3.address, strategy3.address, ZERO_ADDRESS, { from: defiops });
 
         });
 
-        it('User burns LP tokens', async() => {
-            //Check that LP tokens are burnt
+        it('User burns LP tokens for one token', async() => {
+            const amount = 100;
+            const vaultBalanceBefore = await poolToken.balanceOf(user1);
+            await vaultSavings.withdraw(
+                vaultProtocol.address, [dai.address], [amount], { from: user1 });
+            const vaultBalanceAfter = await poolToken.balanceOf(user1);
+
+            expect(vaultBalanceBefore.sub(vaultBalanceAfter).toNumber(), 'LP tokens were not burned for user1')
+                .to.equal(amount);
         });
 
-        it('Withdraw request is created for one token', async() => {
-            //Call withdraw for one token
-            //Check request in the vault
+        it('User burns LP tokens for several tokens in the Vault', async() => {
+            const amounts = { dai: 15, usdc: 40, busd: 20 };
+            const vaultBalanceBefore = await poolToken.balanceOf(user1);
+            await vaultSavings.withdraw(
+                vaultProtocol.address, [dai.address, usdc.address, busd.address],
+                Object.values(amounts), { from: user1 });
+            const vaultBalanceAfter = await poolToken.balanceOf(user1);
+
+            expect(vaultBalanceBefore.sub(vaultBalanceAfter).toNumber(), 'LP tokens were not burned for user1')
+                .to.equal(75);
+        });
+
+        it('Withdrawal request is created for one token', async() => {
+            const amount = 100;
+            await vaultSavings.withdraw(
+                vaultProtocol.address, [dai.address], [amount], { from: user1 });
+            const requestedAmount = await vaultProtocol.amountRequested(user1, dai.address);
+
+            expect(requestedAmount.toNumber(), 'Request should be created').to.equal(amount);
         });
 
         it('Withdraw requests are created for several tokens in the Vault', async() => {
-            //Call withdraw with several coins from a vault
-            //Check request in the vault
+            const amounts = { dai: 15, usdc: 40, busd: 20 };
+            await vaultSavings.withdraw(
+                vaultProtocol.address, [dai.address, usdc.address, busd.address],
+                Object.values(amounts), { from: user1 });
+            const requestedAmounts = {
+                dai: await vaultProtocol.amountRequested(user1, dai.address),
+                usdc: await vaultProtocol.amountRequested(user1, usdc.address),
+                busd: await vaultProtocol.amountRequested(user1, busd.address),
+            };
+
+            expect(requestedAmounts.dai.toNumber(), 'Request on dai should be created').to.equal(amounts.dai);
+            expect(requestedAmounts.usdc.toNumber(), 'Request on usdc should be created').to.equal(amounts.usdc);
+            expect(requestedAmounts.busd.toNumber(), 'Request on busd should be created').to.equal(amounts.busd);
         });
 
-        it('Withdraw request are created for several Vaults (many tokens)', async() => {
+        it('Withdraw requests are created for several Vaults (many tokens)', async() => {
             //Call withdraw with several coins from several vaults (withdrawAll)
+            const amounts = {
+                vault1: [80, 50, 100], // dai, usdc, busd
+                vault2: [20, 30], // dai, usdc
+                vault3: [90] // busd
+            };
 
-            //Check that LP tokens are burnt
-            //Check that each vault gets requests
+            await vaultSavings.withdrawAll(
+                [vaultProtocol.address, vault2.address, vault3.address],
+                [dai.address, usdc.address, busd.address, dai.address, usdc.address, busd.address],
+                [...amounts.vault1, ...amounts.vault2, ...amounts.vault3],
+                { from: user1 }
+            );
+
+            const lpBalances = {
+                token1: await poolToken.balanceOf(user1),
+                token2: await poolToken2.balanceOf(user1),
+                token3: await poolToken3.balanceOf(user1),
+            };
+            const requestedAmounts = {
+                vault1: {
+                    dai: await vaultProtocol.amountRequested(user1, dai.address),
+                    usdc: await vaultProtocol.amountRequested(user1, usdc.address),
+                    busd: await vaultProtocol.amountRequested(user1, busd.address),
+                },
+                vault2: {
+                    dai: await vault2.amountRequested(user1, dai.address),
+                    usdc: await vault2.amountRequested(user1, usdc.address),
+                    busd: await vault2.amountRequested(user1, busd.address),
+                },
+                vault3: {
+                    dai: await vault3.amountRequested(user1, dai.address),
+                    usdc: await vault3.amountRequested(user1, usdc.address),
+                    busd: await vault3.amountRequested(user1, busd.address),
+                },
+            };
+
+            expect(lpBalances.token1.toNumber(), 'LP tokens (1) were not burned for user1').to.equal(0);
+            expect(lpBalances.token2.toNumber(), 'LP tokens (2) were not burned for user1').to.equal(0);
+            expect(lpBalances.token3.toNumber(), 'LP tokens (3) were not burned for user1').to.equal(0);
+
+            expect(requestedAmounts.vault1.dai.toNumber(), 'Vault1: Request on dai should be created')
+                .to.equal(amounts.vault1[0]);
+            expect(requestedAmounts.vault1.usdc.toNumber(), 'Vault1: Request on usdc should be created')
+                .to.equal(amounts.vault1[1]);
+            expect(requestedAmounts.vault1.busd.toNumber(), 'Vault1: Request on busd should be created')
+                .to.equal(amounts.vault1[2]);
+            expect(requestedAmounts.vault2.dai.toNumber(), 'Vault2: Request on dai should be created')
+                .to.equal(amounts.vault2[0]);
+            expect(requestedAmounts.vault2.usdc.toNumber(), 'Vault2: Request on usdc should be created')
+                .to.equal(amounts.vault2[1]);
+            expect(requestedAmounts.vault3.busd.toNumber(), 'Vault3: Request on busd should be created')
+                .to.equal(amounts.vault3[0]);
+
         });
 
     });
@@ -540,35 +626,184 @@ contract('VaultSavings', async([ _, owner, user1, user2, user3, defiops, protoco
     });
 
     describe('Single token action', () => {
+
         beforeEach(async() => {
+            await dai.approve(strategy.address, 10000, { from: protocolStub });
             await dai.approve(vaultSavings.address, 100, { from: user1 });
             await usdc.approve(vaultSavings.address, 100, { from: user1 });
             await busd.approve(vaultSavings.address, 100, { from: user1 });
         });
 
-        afterEach(async() => {
-            await globalSnap.revert();
-        });
+        afterEach(async() => await globalSnap.revert());
+
         it('Operator resolves deposit for the single token', async() => {
-            //Deposit from user1 in 3 different tokens
-            //Operator action for 1 token (dai)
-            //Check that 1 token moved to the strategy and other tokens are untouched
-            //Additional deposit fro user1 in 1 token (dai)
-            //Operator action for 1 token (dai)
-            //Check that 1 token moved to the strategy and other tokens are untouched
+            // Deposit from user1 in 3 different tokens
+            const amounts = { dai: 15, usdc: 40, busd: 20 };
+
+            await (<any>vaultSavings).methods['deposit(address,address[],uint256[])'](
+                vaultProtocol.address, [dai.address, usdc.address, busd.address],
+                Object.values(amounts), { from: user1 });
+
+            let before = {
+                vault: {
+                    dai: await dai.balanceOf(vaultProtocol.address),
+                    usdc: await usdc.balanceOf(vaultProtocol.address),
+                    busd: await busd.balanceOf(vaultProtocol.address),
+                },
+                protocolStub: {
+                    dai: await dai.balanceOf(protocolStub),
+                    usdc: await usdc.balanceOf(protocolStub),
+                    busd: await busd.balanceOf(protocolStub),
+                },
+            };
+
+            // Operator action for 1 token (dai)
+            await vaultSavings.handleOperatorActions(
+                vaultProtocol.address, strategy.address, dai.address, { from: defiops });
+
+            // Check that 1 token moved to the strategy and other tokens are untouched
+            let after = {
+                vault: {
+                    dai: await dai.balanceOf(vaultProtocol.address),
+                    usdc: await usdc.balanceOf(vaultProtocol.address),
+                    busd: await busd.balanceOf(vaultProtocol.address),
+                },
+                protocolStub: {
+                    dai: await dai.balanceOf(protocolStub),
+                    usdc: await usdc.balanceOf(protocolStub),
+                    busd: await busd.balanceOf(protocolStub),
+                },
+            };
+
+            expect(before.vault.dai.sub(after.vault.dai).toNumber(), 'Vault should loose DAI').to.equal(amounts.dai);
+            expect(after.protocolStub.dai.sub(before.protocolStub.dai).toNumber(),
+                'Protocol stub should gain DAI').to.equal(amounts.dai);
+
+            expect(before.vault.usdc.toNumber(), 'Vault: no usdc should be transferred')
+                .to.equal(after.vault.usdc.toNumber());
+            expect(before.vault.busd.toNumber(), 'Vault: no busd should be transferred')
+                .to.equal(after.vault.busd.toNumber());
+            expect(before.protocolStub.usdc.toNumber(), 'Protocol stub: no usdc should be transferred')
+                .to.equal(after.protocolStub.usdc.toNumber());
+            expect(before.protocolStub.busd.toNumber(), 'Protocol stub: no busd should be transferred')
+                .to.equal(after.protocolStub.busd.toNumber());
+
+            // Additional deposit from user1 in 1 token (dai)
+            const more = { dai: 20 };
+
+            await (<any>vaultSavings).methods['deposit(address,address[],uint256[])'](
+                vaultProtocol.address, [dai.address], [more.dai], { from: user1 });
+
+            before = {
+                vault: {
+                    dai: await dai.balanceOf(vaultProtocol.address),
+                    usdc: await usdc.balanceOf(vaultProtocol.address),
+                    busd: await busd.balanceOf(vaultProtocol.address),
+                },
+                protocolStub: {
+                    dai: await dai.balanceOf(protocolStub),
+                    usdc: await usdc.balanceOf(protocolStub),
+                    busd: await busd.balanceOf(protocolStub),
+                },
+            };
+
+            // Operator action for 1 token (dai)
+            await vaultSavings.handleOperatorActions(
+                vaultProtocol.address, strategy.address, dai.address, { from: defiops });
+
+            // Check that 1 token moved to the strategy and other tokens are untouched
+            after = {
+                vault: {
+                    dai: await dai.balanceOf(vaultProtocol.address),
+                    usdc: await usdc.balanceOf(vaultProtocol.address),
+                    busd: await busd.balanceOf(vaultProtocol.address),
+                },
+                protocolStub: {
+                    dai: await dai.balanceOf(protocolStub),
+                    usdc: await usdc.balanceOf(protocolStub),
+                    busd: await busd.balanceOf(protocolStub),
+                },
+            };
+
+            expect(before.vault.dai.sub(after.vault.dai).toNumber(), 'Vault should loose DAI').to.equal(more.dai);
+            expect(after.protocolStub.dai.sub(before.protocolStub.dai).toNumber(),
+                'Protocol stub should gain DAI').to.equal(more.dai);
+
+            expect(before.vault.usdc.toNumber(), 'Vault: no usdc should be transferred')
+                .to.equal(after.vault.usdc.toNumber());
+            expect(before.vault.busd.toNumber(), 'Vault: no busd should be transferred')
+                .to.equal(after.vault.busd.toNumber());
+            expect(before.protocolStub.usdc.toNumber(), 'Protocol stub: no usdc should be transferred')
+                .to.equal(after.protocolStub.usdc.toNumber());
+            expect(before.protocolStub.busd.toNumber(), 'Protocol stub: no busd should be transferred')
+                .to.equal(after.protocolStub.busd.toNumber());
         });
 
         it('Operator resolves withdraw request for the single token', async() => {
-            //Deposit from user1 in 3 different tokens
-            //Operator action for all tokens
-            //Withdraw of half of the sum from user1 in 1 token (dai)
-            //Check that withdraw request was created
-            //Operator action for 1 token (dai)
-            //Check that user1 can claim requested token and other 2 are untouched
-            //Additional withdraw request (for the second half) from user1 in 1 token (dai)
-            //Operator action for 1 token (dai)
-            //Check that user1 can claim requested token (full amount) and other 2 are untouched
+            // Deposit from user1 in 3 different tokens
+            const amounts = { dai: 20, usdc: 40, busd: 15 };
+
+            await (<any>vaultSavings).methods['deposit(address,address[],uint256[])'](
+                vaultProtocol.address, [dai.address, usdc.address, busd.address],
+                Object.values(amounts), { from: user1 });
+
+            // Operator action for all tokens
+            await vaultSavings.handleOperatorActions(
+                vaultProtocol.address, strategy.address, ZERO_ADDRESS, { from: defiops });
+
+            // Withdraw the half of the amount from user1 in 1 token (dai)
+            await vaultSavings.withdraw(vaultProtocol.address, [dai.address], [amounts.dai / 2], { from: user1 });
+
+            // Check that withdraw request was created
+            const requestedAmount = await vaultProtocol.amountRequested(user1, dai.address);
+            expect(requestedAmount.toNumber(), 'Request should be created').to.equal(amounts.dai / 2);
+
+            // Operator action for 1 token (dai)
+            await vaultSavings.handleOperatorActions(
+                vaultProtocol.address, strategy.address, dai.address, { from: defiops });
+
+            // Check that user1 can claim requested token and other 2 are untouched
+            let before = {
+                dai: await dai.balanceOf(user1),
+                usdc: await usdc.balanceOf(user1),
+                busd: await busd.balanceOf(user1),
+            };
+            await vaultSavings.claimAllRequested(vaultProtocol.address, { from: user1 });
+            let after = {
+                dai: await dai.balanceOf(user1),
+                usdc: await usdc.balanceOf(user1),
+                busd: await busd.balanceOf(user1),
+            };
+
+            expect(after.dai.sub(before.dai).toNumber(), 'DAI should be claimed').to.equal(amounts.dai / 2);
+            expect(before.usdc.toNumber(), 'USDC balance should not change').to.equal(after.usdc.toNumber());
+            expect(before.busd.toNumber(), 'BUSD balance should not change').to.equal(after.busd.toNumber());
+
+            // Additional withdraw request (for the second half) from user1 in 1 token (dai)
+            await vaultSavings.withdraw(vaultProtocol.address, [dai.address], [amounts.dai / 2], { from: user1 });
+
+            // Operator action for 1 token (dai)
+            await vaultSavings.handleOperatorActions(
+                vaultProtocol.address, strategy.address, dai.address, { from: defiops });
+
+            // Check that user1 can claim requested token (full amount) and other 2 are untouched
+            before = {
+                dai: await dai.balanceOf(user1),
+                usdc: await usdc.balanceOf(user1),
+                busd: await busd.balanceOf(user1),
+            };
+            await vaultSavings.claimAllRequested(vaultProtocol.address, { from: user1 });
+            after = {
+                dai: await dai.balanceOf(user1),
+                usdc: await usdc.balanceOf(user1),
+                busd: await busd.balanceOf(user1),
+            };
+
+            expect(after.dai.sub(before.dai).toNumber(), 'DAI should be claimed').to.equal(amounts.dai / 2);
+            expect(before.usdc.toNumber(), 'USDC balance should not change').to.equal(after.usdc.toNumber());
+            expect(before.busd.toNumber(), 'BUSD balance should not change').to.equal(after.busd.toNumber());
         });
+
     });
 
     describe('Yield distribution', () => {
@@ -682,7 +917,7 @@ contract('VaultSavings', async([ _, owner, user1, user2, user3, defiops, protoco
 
     describe('Full cycle', () => {
 
-        beforeEach(async() => dai.approve(strategy.address, 10000, { from: protocolStub }));
+        beforeEach(async() => await dai.approve(strategy.address, 10000, { from: protocolStub }));
 
         afterEach(async() => await globalSnap.revert());
 
