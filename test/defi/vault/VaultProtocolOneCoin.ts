@@ -86,11 +86,11 @@ contract('VaultProtocolOneCoin', async([ _, owner, user1, user2, user3, defiops,
         await strategy.addDefiOperator(vaultProtocol.address, { from: owner });
         //------
         await vaultProtocol.registerStrategy(strategy.address, { from: defiops });
+        await vaultProtocol.setQuickWithdrawStrategy(strategy.address, { from: defiops });
+        await vaultProtocol.setAvailableEnabled(true, { from: owner });
 
         //------
         await vaultSavings.registerVault(vaultProtocol.address, poolToken.address, { from: owner });
-
-        await vaultProtocol.setAvailableEnabled(true, { from: owner });
 
         globalSnap = await Snapshot.create(web3.currentProvider);
     });

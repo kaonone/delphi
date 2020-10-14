@@ -33,6 +33,8 @@ contract VaultProtocolOneCoin is Module, IVaultProtocol, DefiOperatorRole {
     mapping(address => uint256) internal balancesToClaim;
     uint256 internal claimableTokens;
 
+    address public quickStrategy;
+
     //Quick disable of direct withdraw
     bool internal availableEnabled;
 
@@ -49,6 +51,15 @@ contract VaultProtocolOneCoin is Module, IVaultProtocol, DefiOperatorRole {
     function registerStrategy(address _strategy) public onlyDefiOperator {
         strategies.push(_strategy);
         IDefiStrategy(_strategy).setVault(address(this));
+    }
+
+    function quickWithdrawStrategy() public view returns(address) {
+        return quickStrategy;
+    }
+
+    function setQuickWithdrawStrategy(address _strategy) public onlyDefiOperator {
+        require(isStrategyRegistered(_strategy), "Strategy is not registered");
+        quickStrategy = _strategy;
     }
 
     function depositToVault(address _user, address _token, uint256 _amount) public onlyDefiOperator {
@@ -167,10 +178,11 @@ contract VaultProtocolOneCoin is Module, IVaultProtocol, DefiOperatorRole {
         lastProcessedRequest = 0;
     }
 
-    function quickWithdraw(address _user, uint256 _amount) public onlyDefiOperator {
-        //stab
-        //available for any how pays for all the gas and is allowed to withdraw
-        //should be overloaded in the protocol adapter itself
+    function quickWithdraw(address _user, uint256[] memory _amounts) public onlyDefiOperator {
+        require(quickStrategy != address(0), "No strategy for quick withdraw");
+        require(_amounts.length == supportedTokensCount(), "Incorrect number of tokens");
+
+        IDefiStrategy(quickStrategy).withdraw(_user, registeredVaultToken, _amounts[0]);
     }
 
     function claimRequested(address _user) public {

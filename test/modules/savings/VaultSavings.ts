@@ -116,12 +116,11 @@ contract('VaultSavings', async([ _, owner, user1, user2, user3, defiops, protoco
 
         //------
         await vaultProtocol.registerStrategy(strategy.address, { from: defiops });
+        await vaultProtocol.setQuickWithdrawStrategy(strategy.address, { from: defiops });
+        await vaultProtocol.setAvailableEnabled(true, { from: owner });
 
         //------
         await vaultSavings.registerVault(vaultProtocol.address, poolToken.address, { from: owner });
-
-
-        await vaultProtocol.setAvailableEnabled(true, { from: owner });
 
         globalSnap = await Snapshot.create(web3.currentProvider);
     });
@@ -428,7 +427,7 @@ contract('VaultSavings', async([ _, owner, user1, user2, user3, defiops, protoco
             const amount = 100;
             const vaultBalanceBefore = await poolToken.balanceOf(user1);
             await vaultSavings.withdraw(
-                vaultProtocol.address, [dai.address], [amount], { from: user1 });
+                vaultProtocol.address, [dai.address], [amount], false, { from: user1 });
             const vaultBalanceAfter = await poolToken.balanceOf(user1);
 
             expect(vaultBalanceBefore.sub(vaultBalanceAfter).toNumber(), 'LP tokens were not burned for user1')
@@ -440,7 +439,7 @@ contract('VaultSavings', async([ _, owner, user1, user2, user3, defiops, protoco
             const vaultBalanceBefore = await poolToken.balanceOf(user1);
             await vaultSavings.withdraw(
                 vaultProtocol.address, [dai.address, usdc.address, busd.address],
-                Object.values(amounts), { from: user1 });
+                Object.values(amounts), false, { from: user1 });
             const vaultBalanceAfter = await poolToken.balanceOf(user1);
 
             expect(vaultBalanceBefore.sub(vaultBalanceAfter).toNumber(), 'LP tokens were not burned for user1')
@@ -450,7 +449,7 @@ contract('VaultSavings', async([ _, owner, user1, user2, user3, defiops, protoco
         it('Withdrawal request is created for one token', async() => {
             const amount = 100;
             await vaultSavings.withdraw(
-                vaultProtocol.address, [dai.address], [amount], { from: user1 });
+                vaultProtocol.address, [dai.address], [amount], false, { from: user1 });
             const requestedAmount = await vaultProtocol.amountRequested(user1, dai.address);
 
             expect(requestedAmount.toNumber(), 'Request should be created').to.equal(amount);
@@ -460,7 +459,7 @@ contract('VaultSavings', async([ _, owner, user1, user2, user3, defiops, protoco
             const amounts = { dai: 15, usdc: 40, busd: 20 };
             await vaultSavings.withdraw(
                 vaultProtocol.address, [dai.address, usdc.address, busd.address],
-                Object.values(amounts), { from: user1 });
+                Object.values(amounts), false, { from: user1 });
             const requestedAmounts = {
                 dai: await vaultProtocol.amountRequested(user1, dai.address),
                 usdc: await vaultProtocol.amountRequested(user1, usdc.address),
@@ -752,7 +751,7 @@ contract('VaultSavings', async([ _, owner, user1, user2, user3, defiops, protoco
                 vaultProtocol.address, strategy.address, ZERO_ADDRESS, { from: defiops });
 
             // Withdraw the half of the amount from user1 in 1 token (dai)
-            await vaultSavings.withdraw(vaultProtocol.address, [dai.address], [amounts.dai / 2], { from: user1 });
+            await vaultSavings.withdraw(vaultProtocol.address, [dai.address], [amounts.dai / 2], false, { from: user1 });
 
             // Check that withdraw request was created
             const requestedAmount = await vaultProtocol.amountRequested(user1, dai.address);
@@ -780,7 +779,7 @@ contract('VaultSavings', async([ _, owner, user1, user2, user3, defiops, protoco
             expect(before.busd.toNumber(), 'BUSD balance should not change').to.equal(after.busd.toNumber());
 
             // Additional withdraw request (for the second half) from user1 in 1 token (dai)
-            await vaultSavings.withdraw(vaultProtocol.address, [dai.address], [amounts.dai / 2], { from: user1 });
+            await vaultSavings.withdraw(vaultProtocol.address, [dai.address], [amounts.dai / 2], false, { from: user1 });
 
             // Operator action for 1 token (dai)
             await vaultSavings.handleOperatorActions(
@@ -1024,7 +1023,7 @@ contract('VaultSavings', async([ _, owner, user1, user2, user3, defiops, protoco
             await vaultSavings.clearProtocolStorage(vaultProtocol.address, { from: defiops });
 
             //Withdraw by user 2
-            await vaultSavings.withdraw(vaultProtocol.address, [dai.address], [60], { from: user2 });
+            await vaultSavings.withdraw(vaultProtocol.address, [dai.address], [60], false, { from: user2 });
 
             //LP tokens from user2 are burned
             user2PoolBalance = await poolToken.balanceOf(user2, { from: user2 });
@@ -1097,7 +1096,7 @@ contract('VaultSavings', async([ _, owner, user1, user2, user3, defiops, protoco
 
             //Third case
             //User1 requests particular withdraw - LP tokens are sent to the protocol and burned
-            await vaultSavings.withdraw(vaultProtocol.address, [dai.address], [45], { from: user1 });
+            await vaultSavings.withdraw(vaultProtocol.address, [dai.address], [45], false, { from: user1 });
 
             user1PoolBalance = await poolToken.balanceOf(user1, { from: user1 });
             expect(user1PoolBalance.toNumber(), 'User1 hasn\'t sent LP tokens to the protocol (third case)')

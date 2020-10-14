@@ -158,6 +158,8 @@ contract("CurveFiStablecoinStrategy", async ([_, owner, user1, user2, user3, def
 
         //Register vault strategy
         await vaultProtocol.registerStrategy(vaultCurveStrategy.address, {from:owner});
+        await vaultProtocol.setQuickWithdrawStrategy(vaultCurveStrategy.address, { from: defiops });
+        await vaultProtocol.setAvailableEnabled(true, { from: owner });
 
     //Setup LP token
         vaultPoolToken = await VaultPoolToken.new({from: owner});

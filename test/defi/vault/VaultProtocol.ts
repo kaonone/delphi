@@ -106,10 +106,10 @@ contract('VaultProtocol', async([ _, owner, user1, user2, user3, defiops, protoc
         await strategy.addDefiOperator(vaultProtocol.address, { from: owner });
         //------
         await vaultProtocol.registerStrategy(strategy.address, { from: defiops });
+        await vaultProtocol.setQuickWithdrawStrategy(strategy.address, { from: defiops });
+        await vaultProtocol.setAvailableEnabled(true, { from: owner });
         //------
         await vaultSavings.registerVault(vaultProtocol.address, poolToken.address, { from: owner });
-
-        await vaultProtocol.setAvailableEnabled(true, { from: owner });
 
         globalSnap = await Snapshot.create(web3.currentProvider);
     });
@@ -1655,36 +1655,160 @@ contract('VaultProtocol', async([ _, owner, user1, user2, user3, defiops, protoc
     });
 
     describe('Quick withdraw', () => {
-        it('Quick withdraw (enough liquidity)', async() => {
-            const res = true;
-            expect(res, 'Some message').to.be.true;
+        let localSnap : Snapshot;
 
-            //Token (requested amount) is transfered to the user
+        before(async() => {
+            await dai.approve(strategy.address, 1000, { from: protocolStub });
+            await usdc.approve(strategy.address, 1000, { from: protocolStub });
+            await busd.approve(strategy.address, 1000, { from: protocolStub });
+            await usdt.approve(strategy.address, 1000, { from: protocolStub });
+
+            await dai.transfer(protocolStub, 1000, { from: owner });
+            await usdc.transfer(protocolStub, 1000, { from: owner });
+            await busd.transfer(protocolStub, 1000, { from: owner });
+            await usdt.transfer(protocolStub, 1000, { from: owner });
+
+            localSnap = await Snapshot.create(web3.currentProvider);
+        });
+
+        after(async() => await globalSnap.revert());
+
+        afterEach(async() => await localSnap.revert());
+
+        it('Quick withdraw (has withdraw request)', async() => {
+            await vaultProtocol.methods['withdrawFromVault(address,address[],uint256[])'](
+                user1, [dai.address], [80], { from: owner });
+
+            const before = {
+                invault : await dai.balanceOf(vaultProtocol.address),
+                requested : await vaultProtocol.amountRequested(user1, dai.address),
+                instrategy : await dai.balanceOf(protocolStub),
+                user : await dai.balanceOf(user1)
+            };
+
+            await vaultProtocol.quickWithdraw(user1, [120, 0, 0, 0], { from: defiops });
+
+            const after = {
+                invault : await dai.balanceOf(vaultProtocol.address),
+                requested : await vaultProtocol.amountRequested(user1, dai.address),
+                instrategy : await dai.balanceOf(protocolStub),
+                user : await dai.balanceOf(user1)
+            };
+
+            //Check that Vault liquidity is unchanged
+            expect(after.invault.sub(before.invault).toNumber(), "Vault liquidity was changed").to.equal(0);
+            //Check that request record is unchanged
+            expect(after.requested.sub(before.requested).toNumber(), "Requested amount was changed").to.equal(0);
+            //Check that funds are withdraw from the strategy
+            expect(after.instrategy.sub(before.instrategy).toNumber(), "Strategy balance was not changed").to.equal(-120);
+            //Check that token is trasfered to the user
+            expect(after.user.sub(before.user).toNumber(), "User balance was not changed").to.equal(120);
+        });
+
+        it('Quick withdraw (enough liquidity)', async() => {
+            const before = {
+                invault : await dai.balanceOf(vaultProtocol.address),
+                instrategy : await dai.balanceOf(protocolStub),
+                user : await dai.balanceOf(user1)
+            };
+
+            await vaultProtocol.quickWithdraw(user1, [120, 0, 0, 0], { from: defiops });
+
+            const after = {
+                invault : await dai.balanceOf(vaultProtocol.address),
+                instrategy : await dai.balanceOf(protocolStub),
+                user : await dai.balanceOf(user1)
+            };
+
+            //Check that Vault liquidity is unchanged
+            expect(after.invault.sub(before.invault).toNumber(), "Vault liquidity was changed").to.equal(0);
+            //Check that funds are withdraw from the strategy
+            expect(after.instrategy.sub(before.instrategy).toNumber(), "Strategy balance was not changed").to.equal(-120);
+            //Check that token is trasfered to the user
+            expect(after.user.sub(before.user).toNumber(), "User balance was not changed").to.equal(120);
         });
 
         it('Quick withdraw (has on-hold token, enough liquidity)', async() => {
-            const res = true;
-            expect(res, 'Some message').to.be.true;
+            await vaultProtocol.methods['depositToVault(address,address[],uint256[])'](user1,
+                [dai.address], [140], { from: defiops });
 
-            //Deposit record is removed from the on-hold storage
-            //Token is transfered to the user
+            const before = {
+                invault : await dai.balanceOf(vaultProtocol.address),
+                onhold : await vaultProtocol.amountOnHold(user1, dai.address),
+                instrategy : await dai.balanceOf(protocolStub),
+                user : await dai.balanceOf(user1)
+            };
+
+            await vaultProtocol.quickWithdraw(user1, [120, 0, 0, 0], { from: defiops });
+
+            const after = {
+                invault : await dai.balanceOf(vaultProtocol.address),
+                onhold : await vaultProtocol.amountOnHold(user1, dai.address),
+                instrategy : await dai.balanceOf(protocolStub),
+                user : await dai.balanceOf(user1)
+            };
+
+            //Check that Vault liquidity is unchanged
+            expect(after.invault.sub(before.invault).toNumber(), "Vault liquidity was changed").to.equal(0);
+            //Check that on-hold record is unchanged
+            expect(after.onhold.sub(before.onhold).toNumber(), "On-hold amount was changed").to.equal(0);
+            //Check that funds are withdraw from the strategy
+            expect(after.instrategy.sub(before.instrategy).toNumber(), "Strategy balance was not changed").to.equal(-120);
+            //Check that token is trasfered to the user
+            expect(after.user.sub(before.user).toNumber(), "User balance was not changed").to.equal(120);
         });
 
         it('Quick withdraw (has on-hold token, not enough liquidity)', async() => {
-            const res = true;
-            expect(res, 'Some message').to.be.true;
+            await vaultProtocol.methods['depositToVault(address,address[],uint256[])'](user1,
+                [dai.address], [80], { from: defiops });
 
-            //Deposit record is removed from the on-hold storage
-            // (requested amount - on-hold tokens) is returned from the protocol
-            //Token is transfered to the user
+            const before = {
+                invault : await dai.balanceOf(vaultProtocol.address),
+                onhold : await vaultProtocol.amountOnHold(user1, dai.address),
+                instrategy : await dai.balanceOf(protocolStub),
+                user : await dai.balanceOf(user1)
+            };
+
+            await vaultProtocol.quickWithdraw(user1, [120, 0, 0, 0], { from: defiops });
+
+            const after = {
+                invault : await dai.balanceOf(vaultProtocol.address),
+                onhold : await vaultProtocol.amountOnHold(user1, dai.address),
+                instrategy : await dai.balanceOf(protocolStub),
+                user : await dai.balanceOf(user1)
+            };
+
+            //Check that Vault liquidity is unchanged
+            expect(after.invault.sub(before.invault).toNumber(), "Vault liquidity was changed").to.equal(0);
+            //Check that on-hold record is unchanged
+            expect(after.onhold.sub(before.onhold).toNumber(), "On-hold amount was changed").to.equal(0);
+            //Check that funds are withdraw from the strategy
+            expect(after.instrategy.sub(before.instrategy).toNumber(), "Strategy balance was not changed").to.equal(-120);
+            //Check that token is trasfered to the user
+            expect(after.user.sub(before.user).toNumber(), "User balance was not changed").to.equal(120);
         });
 
         it('Quick withdraw (not enough liquidity)', async() => {
-            const res = true;
-            expect(res, 'Some message').to.be.true;
+            const before = {
+                invault : await dai.balanceOf(vaultProtocol.address),
+                instrategy : await dai.balanceOf(protocolStub),
+                user : await dai.balanceOf(user1)
+            };
 
-            // requested amount is returned from the protocol
-            //Token is transfered to the user
+            await vaultProtocol.quickWithdraw(user1, [120, 0, 0, 0], { from: defiops });
+
+            const after = {
+                invault : await dai.balanceOf(vaultProtocol.address),
+                instrategy : await dai.balanceOf(protocolStub),
+                user : await dai.balanceOf(user1)
+            };
+
+            //Check that Vault liquidity is unchanged
+            expect(after.invault.sub(before.invault).toNumber(), "Vault liquidity was changed").to.equal(0);
+            //Check that funds are withdraw from the strategy
+            expect(after.instrategy.sub(before.instrategy).toNumber(), "Strategy balance was not changed").to.equal(-120);
+            //Check that token is trasfered to the user
+            expect(after.user.sub(before.user).toNumber(), "User balance was not changed").to.equal(120);
         });
 
     });

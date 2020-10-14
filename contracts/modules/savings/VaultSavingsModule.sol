@@ -2,7 +2,6 @@ pragma solidity ^0.5.12;
 
 import "@openzeppelin/contracts-ethereum-package/contracts/math/SafeMath.sol";
 import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/IERC20.sol";
-import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/ERC20Detailed.sol";
 import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/SafeERC20.sol";
 
 import "../../utils/CalcUtils.sol";
@@ -30,7 +29,7 @@ contract VaultSavingsModule is Module, IVaultSavings, AccessChecker, RewardDistr
         uint256 withdrawAllSlippage;         //Allowed slippage for withdrawAll function in wei
     }
 
-    IVaultProtocol[] registeredVaults;
+    address[] registeredVaults;
     mapping(address => VaultInfo) vaults;
     mapping(address => address) poolTokenToVault;
 
@@ -41,11 +40,9 @@ contract VaultSavingsModule is Module, IVaultSavings, AccessChecker, RewardDistr
     }
 
     function registerVault(IVaultProtocol protocol, VaultPoolToken poolToken) public onlyOwner {
-        uint256 i;
-        for (i = 0; i < registeredVaults.length; i++){
-            if (address(registeredVaults[i]) == address(protocol)) revert("VaultSavingsModule: vault already registered");
-        }
-        registeredVaults.push(protocol);
+        require(!isVaultRegistered(address(protocol)), "Vault is already registered");
+
+        registeredVaults.push(address(protocol));
         
         vaults[address(protocol)] = VaultInfo({
             poolToken: poolToken,
@@ -82,12 +79,12 @@ contract VaultSavingsModule is Module, IVaultSavings, AccessChecker, RewardDistr
         VaultPoolToken poolToken = VaultPoolToken(vaults[_protocol].poolToken);
         poolToken.mint(_msgSender(), nAmount);
 
-        require(!isProtocolCapExceeded(poolToken.totalSupply(), _protocol, _msgSender()), "SavingsModule: deposit exeeds protocols cap");
+        require(!isProtocolCapExceeded(poolToken.totalSupply(), _protocol, _msgSender()), "Deposit exeeds protocols cap");
 
         uint256 cap;
         if (userCapEnabled) {
             cap = userCap(_protocol, _msgSender());
-            require(cap >= nAmount, "SavingsModule: deposit exeeds user cap");
+            require(cap >= nAmount, "Deposit exeeds user cap");
         }
 
         emit Deposit(_protocol, _msgSender(), nAmount, 0);
@@ -99,12 +96,12 @@ contract VaultSavingsModule is Module, IVaultSavings, AccessChecker, RewardDistr
     public operationAllowed(IAccessModule.Operation.Deposit) 
     returns(uint256[] memory) 
     {
-        require(_protocols.length == _tokens.length && _tokens.length == _dnAmounts.length, "VaultSavingsModule: size of arrays does not match");
+        require(_protocols.length == _tokens.length && _tokens.length == _dnAmounts.length, "Size of arrays does not match");
         uint256[] memory ptAmounts = new uint256[](_protocols.length);
+        address[] memory tkns = new address[](1);
+        uint256[] memory amnts = new uint256[](1);
         for (uint256 i=0; i < _protocols.length; i++) {
-            address[] memory tkns = new address[](1);
             tkns[0] = _tokens[i];
-            uint256[] memory amnts = new uint256[](1);
             amnts[0] = _dnAmounts[i];
             ptAmounts[i] = deposit(_protocols[i], tkns, amnts);
         }
@@ -116,13 +113,15 @@ contract VaultSavingsModule is Module, IVaultSavings, AccessChecker, RewardDistr
     public operationAllowed(IAccessModule.Operation.Deposit) 
     returns(uint256[] memory) 
     {
-        require(_tokens.length == _dnAmounts.length, "VaultSavingsModule: size of arrays does not match");
+        require(_tokens.length == _dnAmounts.length, "Size of arrays does not match");
 
         uint256[] memory ptAmounts = new uint256[](_protocols.length);
         uint256 curInd;
+        uint256 nTokens;
+        uint256 lim;
         for (uint256 i=0; i < _protocols.length; i++) {
-            uint256 nTokens = IVaultProtocol(_protocols[i]).supportedTokensCount();
-            uint256 lim = curInd + nTokens;
+            nTokens = IVaultProtocol(_protocols[i]).supportedTokensCount();
+            lim = curInd + nTokens;
             
             require(_tokens.length >= lim, "Incorrect tokens length");
             
@@ -142,8 +141,6 @@ contract VaultSavingsModule is Module, IVaultSavings, AccessChecker, RewardDistr
     }
 
     function depositToProtocol(address _protocol, address[] memory _tokens, uint256[] memory _dnAmounts) internal {
-        require(_tokens.length == _dnAmounts.length, "SavingsModule: count of tokens does not match count of amounts");
-
         for (uint256 i=0; i < _tokens.length; i++) {
             address tkn = _tokens[i];
             IERC20(tkn).safeTransferFrom(_msgSender(), _protocol, _dnAmounts[i]);
@@ -152,32 +149,42 @@ contract VaultSavingsModule is Module, IVaultSavings, AccessChecker, RewardDistr
         }
     }
 
-    //Withdraw several tokens from a Vault
-    function withdraw(address _vault, address[] memory _tokens, uint256[] memory _dnAmounts)
+    //Withdraw several tokens from a Vault in regular way or in quickWay
+    function withdraw(address _vaultProtocol, address[] memory _tokens, uint256[] memory _amounts, bool isQuick)
     public operationAllowed(IAccessModule.Operation.Withdraw)
-    returns(uint256) 
+    returns(uint256)
     {
-        require(_tokens.length == _dnAmounts.length, "VaultSavingsModule: size of arrays does not match");
+        require(isVaultRegistered(_vaultProtocol), "Vault is not registered");
+        require(_tokens.length == _amounts.length, "Size of arrays does not match");
 
         uint256[] memory amounts = new uint256[](_tokens.length);
         uint256 actualAmount;
         for (uint256 i = 0; i < amounts.length; i++) {
-            amounts[i] = CalcUtils.normalizeAmount(_tokens[i], _dnAmounts[i]);
+            amounts[i] = CalcUtils.normalizeAmount(_tokens[i], _amounts[i]);
             actualAmount = actualAmount.add(amounts[i]);
 
-            emit WithdrawToken(address(_vault), _tokens[i], amounts[i]);
+            emit WithdrawToken(address(_vaultProtocol), _tokens[i], amounts[i]);
         }
-        if (_tokens.length == 1) {
-            IVaultProtocol(_vault).withdrawFromVault(_msgSender(), _tokens[0], amounts[0]);
+
+        VaultPoolToken poolToken = VaultPoolToken(vaults[_vaultProtocol].poolToken);
+        poolToken.burnFrom(_msgSender(), actualAmount);
+
+        if (isQuick) {
+            address _strategy = IVaultProtocol(_vaultProtocol).quickWithdrawStrategy();
+            distributeYieldInternal(_vaultProtocol, _strategy);
+            IVaultProtocol(_vaultProtocol).quickWithdraw(_msgSender(), amounts);
+            updateProtocolBalance(_vaultProtocol, _strategy);
         }
         else {
-            IVaultProtocol(_vault).withdrawFromVault(_msgSender(), _tokens, amounts);
+            if (_tokens.length == 1) {
+                IVaultProtocol(_vaultProtocol).withdrawFromVault(_msgSender(), _tokens[0], amounts[0]);
+            }
+            else {
+                IVaultProtocol(_vaultProtocol).withdrawFromVault(_msgSender(), _tokens, amounts);
+            }
         }
 
-
-        VaultPoolToken poolToken = VaultPoolToken(vaults[_vault].poolToken);
-        poolToken.burnFrom(_msgSender(), actualAmount);
-        emit Withdraw(_vault, _msgSender(), actualAmount, 0);
+        emit Withdraw(_vaultProtocol, _msgSender(), actualAmount, 0);
 
         return actualAmount;
     }
@@ -187,7 +194,7 @@ contract VaultSavingsModule is Module, IVaultSavings, AccessChecker, RewardDistr
     public operationAllowed(IAccessModule.Operation.Withdraw)
     returns(uint256[] memory) 
     {
-        require(_tokens.length == _dnAmounts.length, "VaultSavingsModule: size of arrays does not match");
+        require(_tokens.length == _dnAmounts.length, "Size of arrays does not match");
 
         uint256[] memory ptAmounts = new uint256[](_vaults.length);
         uint256 curInd;
@@ -207,28 +214,16 @@ contract VaultSavingsModule is Module, IVaultSavings, AccessChecker, RewardDistr
                 amnts[j-curInd] = _dnAmounts[j];
             }
 
-            ptAmounts[i] = withdraw(_vaults[i], tkns, amnts);
+            ptAmounts[i] = withdraw(_vaults[i], tkns, amnts, false);
 
             curInd += nTokens;
         }
         return ptAmounts;
     }
 
-// inherited from IVaultSavings
-    function quickWithdraw(address _vaultProtocol, address _token, uint256 _amount)
-    public //operationAllowed(IAccessModule.Operation.Withdraw)
-    returns(uint256)
-    {
-        //stab
-
-        //calls VaultProtocol.quickWithdraw(), so the caller pays for the gas
-        
-        return 0;
-    }
-
     function claimAllRequested(address _vaultProtocol) public
     {
-        require(isVaultRegistered(_vaultProtocol), "Protocol is not registered");
+        require(isVaultRegistered(_vaultProtocol), "Vault is not registered");
         IVaultProtocol(_vaultProtocol).claimRequested(_msgSender());
     }
 
@@ -274,18 +269,6 @@ contract VaultSavingsModule is Module, IVaultSavings, AccessChecker, RewardDistr
         }
     }
 
-/*    function distributeYieldInternal(address _vaultProtocol) internal returns(uint256){
-        uint256 currentBalance = IVaultProtocol(_vaultProtocol).normalizedBalance();
-        VaultInfo storage pi = vaults[_vaultProtocol];
-        VaultPoolToken poolToken = VaultPoolToken(pi.poolToken);
-        if(currentBalance > pi.previousBalance) {
-            uint256 yield = currentBalance.sub(pi.previousBalance);
-            pi.previousBalance = currentBalance;
-            createYieldDistribution(poolToken, yield);
-        }
-        return currentBalance;
-    }*/
-
     function distributeYieldInternal(address _vaultProtocol, address _strategy) internal returns(uint256){
         uint256 currentBalance = IVaultProtocol(_vaultProtocol).normalizedBalance(_strategy);
         VaultInfo storage pi = vaults[_vaultProtocol];
@@ -311,25 +294,6 @@ contract VaultSavingsModule is Module, IVaultSavings, AccessChecker, RewardDistr
         return poolTokenToVault[_poolToken];
     }
 
-    function registeredPoolTokens() public view returns(address[] memory poolTokens) {
-        poolTokens = new address[](registeredVaults.length);
-        for(uint256 i=0; i<poolTokens.length; i++){
-            poolTokens[i] = address(vaults[address(registeredVaults[i])].poolToken);
-        }
-    }
-
-    function isPoolToken(address token) internal view returns(bool) {
-        for (uint256 i = 0; i < registeredVaults.length; i++){
-            IVaultProtocol protocol = registeredVaults[i];
-            if (address(vaults[address(protocol)].poolToken) == token) return true;
-        }
-        return false;
-    }
-
-    function supportedRewardTokens() public view returns(address[] memory rewardTokens) {
-        return rewardTokens;
-    }
-
     function userCap(address _protocol, address user) public view returns(uint256) {
         uint256 balance = vaults[_protocol].poolToken.balanceOf(user);
         return getUserCapLeft(_protocol, balance);
@@ -337,7 +301,7 @@ contract VaultSavingsModule is Module, IVaultSavings, AccessChecker, RewardDistr
 
     function isVaultRegistered(address _protocol) internal view returns(bool) {
         for (uint256 i = 0; i < registeredVaults.length; i++){
-            if (address(registeredVaults[i]) == _protocol) return true;
+            if (registeredVaults[i] == _protocol) return true;
         }
         return false;
     }
@@ -346,5 +310,22 @@ contract VaultSavingsModule is Module, IVaultSavings, AccessChecker, RewardDistr
         uint256 currentBalance = IVaultProtocol(_protocol).normalizedBalance(_strategy);
         vaults[_protocol].previousBalance = currentBalance;
         return currentBalance;
+    }
+
+    //Unnecessary stubs inherited from RewardsDistribution
+    function supportedRewardTokens() public view returns(address[] memory rewardTokens) {
+        return rewardTokens;
+    }
+
+    
+    function isPoolToken(address token) internal view returns(bool) {
+        return address(protocolByPoolToken(token)) != address(0);
+    }
+
+    function registeredPoolTokens() public view returns(address[] memory poolTokens) {
+        poolTokens = new address[](registeredVaults.length);
+        for(uint256 i=0; i<poolTokens.length; i++){
+            poolTokens[i] = address(vaults[registeredVaults[i]].poolToken);
+        }
     }
 }
