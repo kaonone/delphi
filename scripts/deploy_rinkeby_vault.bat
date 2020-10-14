@@ -11,8 +11,8 @@ SET EXT_TOKEN_AKRO=0xad7541B1E795656851caD5c70aA8d495063D9a95
 SET EXT_TOKEN_ADEL=0x4d7af020D42D3E1a3C0CaE7A8e56127a05EF5e5f
 SET EXT_TOKEN_WETH=0xc778417e063141139fce010982780140aa0cd5ab
 
-rem ===== Uniswap ====
-SET EXT_UNISWAP_ROUTER=0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D
+rem ===== Dexag ====
+SET EXT_DEXAG_PROXY=
 
 rem ===== Curve.Fi ====
 SET EXT_CURVEFY_Y_DEPOSIT=0xd91fB51f8a0f44CB094548e9aaB80136731939fE
@@ -46,9 +46,10 @@ goto :done
 :setup
 call npx oz send-tx --to %MODULE_POOL% --network rinkeby --method set --args "vault, %MODULE_VAULT_SAVINGS%, false"
 call npx oz send-tx --to %VAULT_CURVE% --network rinkeby --method addDefiOperator --args %MODULE_VAULT_SAVINGS%
-call npx oz send-tx --to %STRATEGY_CURVE% --network rinkeby --method setProtocol --args "%EXT_CURVEFY_Y_DEPOSIT%,%EXT_CURVEFY_Y_GAUGE%,%EXT_CURVEFY_Y_MINTER%,%EXT_UNISWAP_ROUTER%,%EXT_TOKEN_WETH%,0"
+call npx oz send-tx --to %STRATEGY_CURVE% --network rinkeby --method setProtocol --args "%EXT_CURVEFY_Y_DEPOSIT%,%EXT_CURVEFY_Y_GAUGE%,%EXT_CURVEFY_Y_MINTER%,%EXT_DEXAG_PROXY%"
 call npx oz send-tx --to %STRATEGY_CURVE% --network rinkeby --method addDefiOperator --args %VAULT_CURVE%
 call npx oz send-tx --to %VAULT_CURVE% --network rinkeby --method registerStrategy --args %STRATEGY_CURVE%
+call npx oz send-tx --to %VAULT_CURVE% --network rinkeby --method setQuickWithdrawStrategy --args %STRATEGY_CURVE%
 call npx oz send-tx --to %POOL_TOKEN_VAULT_CURVE% --network rinkeby --method addMinter --args %MODULE_VAULT_SAVINGS%
 call npx oz send-tx --to %POOL_TOKEN_VAULT_CURVE% --network rinkeby --method addMinter --args %VAULT_CURVE%
 call npx oz send-tx --to %MODULE_VAULT_SAVINGS% --network rinkeby --method registerVault --args "%VAULT_CURVE%,%POOL_TOKEN_VAULT_CURVE%"
