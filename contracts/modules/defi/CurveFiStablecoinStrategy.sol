@@ -14,8 +14,7 @@ import "../../interfaces/defi/ICurveFiDeposit_Y.sol";
 import "../../interfaces/defi/ICurveFiLiquidityGauge.sol";
 import "../../interfaces/defi/ICurveFiMinter.sol";
 import "../../interfaces/defi/ICurveFiSwap.sol";
-
-import "../../interfaces/defi/IUniswap.sol";
+import "../../interfaces/defi/IDexag.sol";
 
 import "../../utils/CalcUtils.sol";
 
@@ -33,10 +32,10 @@ contract CurveFiStablecoinStrategy is Module, IDefiStrategy, DefiOperatorRole {
     ICurveFiMinter public curveFiMinter;
     uint256 public slippageMultiplier;
     address public crvToken;
-    address public wethToken; // used for crv <> weth <> dai route
     
-    address public uniswapRouter;
-    uint256 daiInd;
+    address public dexagProxy;
+    address public dexagApproveHandler;
+
     string internal strategyId;
 
     //Register stablecoins contracts addresses
@@ -47,7 +46,7 @@ contract CurveFiStablecoinStrategy is Module, IDefiStrategy, DefiOperatorRole {
         strategyId = _strategyId;
     }
 
-    function setProtocol(address _depositContract, address _liquidityGauge, address _curveFiMinter, address _uniswapRouter, address _wethToken, uint256 _daiInd) public onlyDefiOperator {
+    function setProtocol(address _depositContract, address _liquidityGauge, address _curveFiMinter, address _dexagProxy) public onlyDefiOperator {
         require(_depositContract != address(0), "Incorrect deposit contract address");
 
         curveFiDeposit = ICurveFiDeposit(_depositContract);
@@ -62,10 +61,8 @@ contract CurveFiStablecoinStrategy is Module, IDefiStrategy, DefiOperatorRole {
 
         crvToken = curveFiLPGauge.crv_token();
 
-        uniswapRouter = _uniswapRouter;
-        wethToken = _wethToken;
-
-        daiInd = _daiInd;
+        dexagProxy = _dexagProxy;
+        dexagApproveHandler = IDexag(_dexagProxy).approvalHandler();
     }
 
     function setVault(address _vault) public onlyDefiOperator {
@@ -158,25 +155,23 @@ contract CurveFiStablecoinStrategy is Module, IDefiStrategy, DefiOperatorRole {
         }
     }
 
-    function performStrategy() public onlyDefiOperator {
-        address[] memory registeredVaultTokens = IVaultProtocol(vault).supportedTokens();
-        address dai = registeredVaultTokens[daiInd];
-
+    /**
+     * @notice Operator should call this to receive CRV from curve
+     */
+    function performStrategyStep1() external onlyDefiOperator {
         claimRewardsFromProtocol();
-
-        uint256 _crv = IERC20(crvToken).balanceOf(address(this));
-        if (_crv > 0) {
-            IERC20(crvToken).safeApprove(uniswapRouter, 0);
-            IERC20(crvToken).safeApprove(uniswapRouter, _crv);
-
-            address[] memory path = new address[](3);
-            path[0] = crvToken;
-            path[1] = wethToken;
-            path[2] = dai;
-
-            IUniswap(uniswapRouter).swapExactTokensForTokens(_crv, uint256(0), path, vault, now.add(1800));
+    }
+    /**
+     * @notice Operator should call this to exchange CRV to DAI
+     */
+    function performStrategyStep2(bytes calldata dexagSwapData) external onlyDefiOperator {
+        uint256 crvAmount = IERC20(crvToken).balanceOf(address(this));
+        IERC20(crvToken).approve(dexagApproveHandler, crvAmount);
+        (bool success, bytes memory result) = dexagProxy.call(dexagSwapData);
+        if(!success) assembly {
+            revert(add(result,32), result)  //Reverts with same revert reason
         }
-        //new dai tokens will be transferred to this procol, they will be deposited by the operator on the next round
+        //new dai tokens will be transferred to this protocol, they will be deposited by the operator on the next round
         //new LP tokens will be distributed automatically after the operator action
     }
 
@@ -263,4 +258,5 @@ contract CurveFiStablecoinStrategy is Module, IDefiStrategy, DefiOperatorRole {
         }
         revert("CurveFiYProtocol: token not registered");
     }
+
 }
