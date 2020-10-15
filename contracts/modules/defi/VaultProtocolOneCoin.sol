@@ -169,13 +169,17 @@ contract VaultProtocolOneCoin is Module, IVaultProtocol, DefiOperatorRole {
     }
 
     function clearOnHoldDeposits() public onlyDefiOperator {
+        require(lastProcessedDeposit == usersDeposited.length, "There are unprocessed deposits");
         delete usersDeposited;
         lastProcessedDeposit = 0;
+        emit DepositsCleared(address(this));
     }
 
     function clearWithdrawRequests() public onlyDefiOperator {
+        require(lastProcessedRequest == usersRequested.length, "There are unprocessed requests");
         delete usersRequested;
         lastProcessedRequest = 0;
+        emit RequestsCleared(address(this));
     }
 
     function quickWithdraw(address _user, uint256[] memory _amounts) public onlyDefiOperator {
