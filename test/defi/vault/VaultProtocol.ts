@@ -482,6 +482,35 @@ contract('VaultProtocol', async([ _, owner, user1, user2, user3, defiops, protoc
             expect(before.vaultBalance3.sub(after.vaultBalance3).toNumber(), 'Tokens are not transferred from vault')
                 .to.equal(100);
         });
+
+        it('Withdraw just after deposit', async() => {
+            //Imitate LP tokens minting
+            await poolToken.mint(user3, 50, { from: defiops });
+            await dai.transfer(vaultProtocol.address, 50, { from: user3 });
+            await (<any> vaultProtocol).methods['depositToVault(address,address,uint256)'](
+                user3, dai.address, 50, { from: defiops });
+
+            const before = {
+                vaultBalance: await dai.balanceOf(vaultProtocol.address),
+                onhold: await vaultProtocol.amountOnHold(user3, dai.address),
+                user: await dai.balanceOf(user3)
+            };
+
+            //Withdraw it back
+            await (<any> vaultProtocol).methods['withdrawFromVault(address,address[],uint256[])'](
+                    user3, [dai.address], [50], { from: defiops });
+
+            const after = {
+                vaultBalance: await dai.balanceOf(vaultProtocol.address),
+                onhold: await vaultProtocol.amountOnHold(user3, dai.address),
+                user: await dai.balanceOf(user3)
+            };
+
+            //Token is transfered to the user
+            expect(before.vaultBalance.sub(after.vaultBalance).toNumber(), 'Tokens are not transferred from vault').to.equal(50);
+            expect(after.onhold.toNumber(), 'Onhold record is not deleted').to.equal(0);
+            expect(after.user.sub(before.user).toNumber(), 'Tokens are not transferred to user').to.equal(50);
+        });
     });
 
     describe('Create withdraw request', () => {
@@ -1686,7 +1715,7 @@ contract('VaultProtocol', async([ _, owner, user1, user2, user3, defiops, protoc
                 user : await dai.balanceOf(user1)
             };
 
-            await vaultProtocol.quickWithdraw(user1, [120, 0, 0, 0], { from: defiops });
+            await vaultProtocol.quickWithdraw(user1, [dai.address], [120], { from: defiops });
 
             const after = {
                 invault : await dai.balanceOf(vaultProtocol.address),
@@ -1712,7 +1741,7 @@ contract('VaultProtocol', async([ _, owner, user1, user2, user3, defiops, protoc
                 user : await dai.balanceOf(user1)
             };
 
-            await vaultProtocol.quickWithdraw(user1, [120, 0, 0, 0], { from: defiops });
+            await vaultProtocol.quickWithdraw(user1, [dai.address], [120], { from: defiops });
 
             const after = {
                 invault : await dai.balanceOf(vaultProtocol.address),
@@ -1739,7 +1768,7 @@ contract('VaultProtocol', async([ _, owner, user1, user2, user3, defiops, protoc
                 user : await dai.balanceOf(user1)
             };
 
-            await vaultProtocol.quickWithdraw(user1, [120, 0, 0, 0], { from: defiops });
+            await vaultProtocol.quickWithdraw(user1, [dai.address], [120], { from: defiops });
 
             const after = {
                 invault : await dai.balanceOf(vaultProtocol.address),
@@ -1769,7 +1798,7 @@ contract('VaultProtocol', async([ _, owner, user1, user2, user3, defiops, protoc
                 user : await dai.balanceOf(user1)
             };
 
-            await vaultProtocol.quickWithdraw(user1, [120, 0, 0, 0], { from: defiops });
+            await vaultProtocol.quickWithdraw(user1, [dai.address], [120], { from: defiops });
 
             const after = {
                 invault : await dai.balanceOf(vaultProtocol.address),
@@ -1795,7 +1824,7 @@ contract('VaultProtocol', async([ _, owner, user1, user2, user3, defiops, protoc
                 user : await dai.balanceOf(user1)
             };
 
-            await vaultProtocol.quickWithdraw(user1, [120, 0, 0, 0], { from: defiops });
+            await vaultProtocol.quickWithdraw(user1, [dai.address], [120], { from: defiops });
 
             const after = {
                 invault : await dai.balanceOf(vaultProtocol.address),

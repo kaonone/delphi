@@ -182,9 +182,10 @@ contract VaultProtocolOneCoin is Module, IVaultProtocol, DefiOperatorRole {
         emit RequestsCleared(address(this));
     }
 
-    function quickWithdraw(address _user, uint256[] memory _amounts) public onlyDefiOperator {
+    function quickWithdraw(address _user, address[] memory _tokens, uint256[] memory _amounts) public onlyDefiOperator {
         require(quickStrategy != address(0), "No strategy for quick withdraw");
         require(_amounts.length == supportedTokensCount(), "Incorrect number of tokens");
+        require(_tokens[0] == registeredVaultToken, "Unsupported token");
 
         IDefiStrategy(quickStrategy).withdraw(_user, registeredVaultToken, _amounts[0]);
     }

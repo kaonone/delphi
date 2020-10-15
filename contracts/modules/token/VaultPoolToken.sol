@@ -40,6 +40,8 @@ contract VaultPoolToken is PoolToken, IOperableToken {
     }
 
     function distributionBalanceOf(address account) public view returns(uint256) {
+        if (balanceOf(account).add(toBeMinted) <= onHoldAmount[account])
+            return 0;
         return balanceOf(account).add(toBeMinted).sub(onHoldAmount[account]);
     }
 

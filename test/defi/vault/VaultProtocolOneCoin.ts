@@ -881,7 +881,7 @@ contract('VaultProtocol: one coin', async([ owner, user1, user2, user3, defiops,
                 user: await dai.balanceOf(user1)
             };
 
-            await vault.quickWithdraw(user1, [120], { from: defiops });
+            await vault.quickWithdraw(user1, [dai.address], [120], { from: defiops });
 
             const after = {
                 invault: await dai.balanceOf(vault.address),
@@ -908,7 +908,7 @@ contract('VaultProtocol: one coin', async([ owner, user1, user2, user3, defiops,
                 user: await dai.balanceOf(user1)
             };
 
-            await vault.quickWithdraw(user1, [120], { from: defiops });
+            await vault.quickWithdraw(user1, [dai.address], [120], { from: defiops });
 
             const after = {
                 invault: await dai.balanceOf(vault.address),
@@ -936,7 +936,7 @@ contract('VaultProtocol: one coin', async([ owner, user1, user2, user3, defiops,
                 user: await dai.balanceOf(user1)
             };
 
-            await vault.quickWithdraw(user1, [120], { from: defiops });
+            await vault.quickWithdraw(user1, [dai.address], [120], { from: defiops });
 
             const after = {
                 invault: await dai.balanceOf(vault.address),
@@ -967,7 +967,7 @@ contract('VaultProtocol: one coin', async([ owner, user1, user2, user3, defiops,
                 user: await dai.balanceOf(user1)
             };
 
-            await vault.quickWithdraw(user1, [120], { from: defiops });
+            await vault.quickWithdraw(user1, [dai.address], [120], { from: defiops });
 
             const after = {
                 invault: await dai.balanceOf(vault.address),
@@ -994,7 +994,7 @@ contract('VaultProtocol: one coin', async([ owner, user1, user2, user3, defiops,
                 user: await dai.balanceOf(user1)
             };
 
-            await vault.quickWithdraw(user1, [120], { from: defiops });
+            await vault.quickWithdraw(user1, [dai.address], [120], { from: defiops });
 
             const after = {
                 invault: await dai.balanceOf(vault.address),

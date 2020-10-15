@@ -27,7 +27,7 @@ contract IVaultProtocol {
     function clearOnHoldDeposits() external;
     function clearWithdrawRequests() external;
 
-    function quickWithdraw(address _user, uint256[] calldata _amounts) external;
+    function quickWithdraw(address _user, address[] calldata _tokens, uint256[] calldata _amounts) external;
     function quickWithdrawStrategy() external view returns(address);
 
     function claimRequested(address _user) external;

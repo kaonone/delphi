@@ -108,38 +108,6 @@ contract VaultSavingsModule is Module, IVaultSavings, AccessChecker, RewardDistr
         return ptAmounts;
     }
 
-    //Deposits into several vaults in several coins
-    function depositAll(address[] memory _protocols, address[] memory _tokens, uint256[] memory _dnAmounts) 
-    public operationAllowed(IAccessModule.Operation.Deposit) 
-    returns(uint256[] memory) 
-    {
-        require(_tokens.length == _dnAmounts.length, "Size of arrays does not match");
-
-        uint256[] memory ptAmounts = new uint256[](_protocols.length);
-        uint256 curInd;
-        uint256 nTokens;
-        uint256 lim;
-        for (uint256 i=0; i < _protocols.length; i++) {
-            nTokens = IVaultProtocol(_protocols[i]).supportedTokensCount();
-            lim = curInd + nTokens;
-            
-            require(_tokens.length >= lim, "Incorrect tokens length");
-            
-            address[] memory tkns = new address[](nTokens);
-            uint256[] memory amnts = new uint256[](nTokens);
-
-            for (uint256 j = curInd; j < lim; j++) {
-                tkns[j-curInd] = _tokens[j];
-                amnts[j-curInd] = _dnAmounts[j];
-            }
-
-            ptAmounts[i] = deposit(_protocols[i], tkns, amnts);
-
-            curInd += nTokens;
-        }
-        return ptAmounts;
-    }
-
     function depositToProtocol(address _protocol, address[] memory _tokens, uint256[] memory _dnAmounts) internal {
         for (uint256 i=0; i < _tokens.length; i++) {
             address tkn = _tokens[i];
@@ -166,13 +134,10 @@ contract VaultSavingsModule is Module, IVaultSavings, AccessChecker, RewardDistr
             emit WithdrawToken(address(_vaultProtocol), _tokens[i], amounts[i]);
         }
 
-        VaultPoolToken poolToken = VaultPoolToken(vaults[_vaultProtocol].poolToken);
-        poolToken.burnFrom(_msgSender(), actualAmount);
-
         if (isQuick) {
             address _strategy = IVaultProtocol(_vaultProtocol).quickWithdrawStrategy();
             distributeYieldInternal(_vaultProtocol, _strategy);
-            IVaultProtocol(_vaultProtocol).quickWithdraw(_msgSender(), amounts);
+            IVaultProtocol(_vaultProtocol).quickWithdraw(_msgSender(), _tokens, amounts);
             updateProtocolBalance(_vaultProtocol, _strategy);
         }
         else {
@@ -184,6 +149,8 @@ contract VaultSavingsModule is Module, IVaultSavings, AccessChecker, RewardDistr
             }
         }
 
+        VaultPoolToken poolToken = VaultPoolToken(vaults[_vaultProtocol].poolToken);
+        poolToken.burnFrom(_msgSender(), actualAmount);
         emit Withdraw(_vaultProtocol, _msgSender(), actualAmount, 0);
 
         return actualAmount;

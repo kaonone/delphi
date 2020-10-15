@@ -285,8 +285,8 @@ contract('VaultSavings', async([ _, owner, user1, user2, user3, defiops, protoco
                     }
                 };
 
-                await (<any>vaultSavings).methods['depositAll(address[],address[],uint256[])'](
-                    [vaultProtocol.address, vault2.address, vault3.address],
+                await (<any>vaultSavings).methods['deposit(address[],address[],uint256[])'](
+                    [vaultProtocol.address, vaultProtocol.address, vaultProtocol.address, vault2.address, vault2.address, vault3.address],
                     [dai.address, usdc.address, busd.address, dai.address, usdc.address, busd.address],
                     [80, 50, 100, 20, 30, 90],
                     { from: user1 }
@@ -417,8 +417,8 @@ contract('VaultSavings', async([ _, owner, user1, user2, user3, defiops, protoco
             await usdc.approve(strategy.address, 5000, { from: protocolStub });
             await busd.approve(strategy.address, 5000, { from: protocolStub });
 
-            await (<any>vaultSavings).methods['depositAll(address[],address[],uint256[])'](
-                [vaultProtocol.address, vault2.address, vault3.address],
+            await (<any>vaultSavings).methods['deposit(address[],address[],uint256[])'](
+                [vaultProtocol.address, vaultProtocol.address, vaultProtocol.address, vault2.address, vault2.address, vault3.address],
                 [dai.address, usdc.address, busd.address, dai.address, usdc.address, busd.address],
                 [80, 50, 100, 20, 30, 90],
                 { from: user1 }
@@ -532,6 +532,35 @@ contract('VaultSavings', async([ _, owner, user1, user2, user3, defiops, protoco
             expect(requestedAmounts.vault3.busd.toNumber(), 'Vault3: Request on busd should be created')
                 .to.equal(amounts.vault3[0]);
 
+        });
+
+        it('Withdraw just after deposit', async() => {
+            await dai.approve(vaultSavings.address, 50, { from: user3 });
+
+            await (<VaultSavingsModuleInstance> vaultSavings).methods['deposit(address,address[],uint256[])'](
+                vaultProtocol.address, [dai.address], [50], { from: user3 }
+            );
+
+            const before = {
+                vaultBalance: await dai.balanceOf(vaultProtocol.address),
+                onhold: await vaultProtocol.amountOnHold(user3, dai.address),
+                user: await dai.balanceOf(user3)
+            };
+
+            //Withdraw it back
+            await vaultSavings.withdraw(
+                vaultProtocol.address, [dai.address], [50], false, { from: user3 });
+
+            const after = {
+                vaultBalance: await dai.balanceOf(vaultProtocol.address),
+                onhold: await vaultProtocol.amountOnHold(user3, dai.address),
+                user: await dai.balanceOf(user3)
+            };
+
+            //Token is transfered to the user
+            expect(before.vaultBalance.sub(after.vaultBalance).toNumber(), 'Tokens are not transferred from vault').to.equal(50);
+            expect(after.onhold.toNumber(), 'Onhold record is not deleted').to.equal(0);
+            expect(after.user.sub(before.user).toNumber(), 'Tokens are not transferred to user').to.equal(50);
         });
 
     });
