@@ -17,7 +17,6 @@ import "../../interfaces/savings/IVaultSavings.sol";
 
 contract VaultSavingsModule is Module, IVaultSavings, AccessChecker, RewardDistributions, SavingsCap, DefiOperatorRole {
     uint256 constant MAX_UINT256 = uint256(-1);
-    uint256 public constant DISTRIBUTION_AGGREGATION_PERIOD = 24*60*60;
 
     using SafeERC20 for IERC20;
     using SafeMath for uint256;
@@ -29,10 +28,13 @@ contract VaultSavingsModule is Module, IVaultSavings, AccessChecker, RewardDistr
         uint256 withdrawAllSlippage;         //Allowed slippage for withdrawAll function in wei
     }
 
-    address[] registeredVaults;
+    address[] internal registeredVaults;
     mapping(address => VaultInfo) vaults;
     mapping(address => address) poolTokenToVault;
 
+// ------
+// Settings methods
+// ------
     function initialize(address _pool) public initializer {
         Module.initialize(_pool);
         SavingsCap.initialize(_msgSender());
@@ -63,6 +65,9 @@ contract VaultSavingsModule is Module, IVaultSavings, AccessChecker, RewardDistr
         emit VaultRegistered(address(protocol), address(poolToken));
     }
 
+// ------
+// User interface
+// ------
     //Deposits several tokens into single Vault
     function deposit(address _protocol, address[] memory _tokens, uint256[] memory _dnAmounts)
     public operationAllowed(IAccessModule.Operation.Deposit)
@@ -194,6 +199,9 @@ contract VaultSavingsModule is Module, IVaultSavings, AccessChecker, RewardDistr
         IVaultProtocol(_vaultProtocol).claimRequested(_msgSender());
     }
 
+// ------
+// Operator interface
+// ------
     function handleOperatorActions(address _vaultProtocol, address _strategy, address _token) public onlyDefiOperator {
         uint256 totalDeposit;
         uint256 totalWithdraw;
@@ -226,9 +234,6 @@ contract VaultSavingsModule is Module, IVaultSavings, AccessChecker, RewardDistr
         IVaultProtocol(_vaultProtocol).clearWithdrawRequests();
     }
 
-        /** 
-     * @notice Distributes yield. May be called by bot, if there was no deposits/withdrawals
-     */
     function distributeYield(address _vaultProtocol) public {
         address[] memory availableStrategies = IVaultProtocol(_vaultProtocol).registeredStrategies();
         for (uint256 i = 0; i < availableStrategies.length; i++) {
@@ -236,6 +241,36 @@ contract VaultSavingsModule is Module, IVaultSavings, AccessChecker, RewardDistr
         }
     }
 
+// ------
+// Getters and checkers
+// ------
+    function poolTokenByProtocol(address _vaultProtocol) public view returns(address) {
+        return address(vaults[_vaultProtocol].poolToken);
+    }
+
+    function protocolByPoolToken(address _poolToken) public view returns(address) {
+        return poolTokenToVault[_poolToken];
+    }
+
+    function userCap(address _protocol, address user) public view returns(uint256) {
+        uint256 balance = vaults[_protocol].poolToken.balanceOf(user);
+        return getUserCapLeft(_protocol, balance);
+    }
+
+    function isVaultRegistered(address _protocol) public view returns(bool) {
+        for (uint256 i = 0; i < registeredVaults.length; i++){
+            if (registeredVaults[i] == _protocol) return true;
+        }
+        return false;
+    }
+
+    function supportedVaults() public view returns(address[] memory) {
+        return registeredVaults;
+    }
+
+// ------
+// Yield distribution internal helpers
+// ------
     function distributeYieldInternal(address _vaultProtocol, address _strategy) internal returns(uint256){
         uint256 currentBalance = IVaultProtocol(_vaultProtocol).normalizedBalance(_strategy);
         VaultInfo storage pi = vaults[_vaultProtocol];
@@ -253,46 +288,9 @@ contract VaultSavingsModule is Module, IVaultSavings, AccessChecker, RewardDistr
         emit YieldDistribution(address(poolToken), yield);
     }
 
-    function poolTokenByProtocol(address _vaultProtocol) public view returns(address) {
-        return address(vaults[_vaultProtocol].poolToken);
-    }
-
-    function protocolByPoolToken(address _poolToken) public view returns(address) {
-        return poolTokenToVault[_poolToken];
-    }
-
-    function userCap(address _protocol, address user) public view returns(uint256) {
-        uint256 balance = vaults[_protocol].poolToken.balanceOf(user);
-        return getUserCapLeft(_protocol, balance);
-    }
-
-    function isVaultRegistered(address _protocol) internal view returns(bool) {
-        for (uint256 i = 0; i < registeredVaults.length; i++){
-            if (registeredVaults[i] == _protocol) return true;
-        }
-        return false;
-    }
-
     function updateProtocolBalance(address _protocol, address _strategy) internal returns(uint256){
         uint256 currentBalance = IVaultProtocol(_protocol).normalizedBalance(_strategy);
         vaults[_protocol].previousBalance = currentBalance;
         return currentBalance;
-    }
-
-    //Unnecessary stubs inherited from RewardsDistribution
-    function supportedRewardTokens() public view returns(address[] memory rewardTokens) {
-        return rewardTokens;
-    }
-
-    
-    function isPoolToken(address token) internal view returns(bool) {
-        return address(protocolByPoolToken(token)) != address(0);
-    }
-
-    function registeredPoolTokens() public view returns(address[] memory poolTokens) {
-        poolTokens = new address[](registeredVaults.length);
-        for(uint256 i=0; i<poolTokens.length; i++){
-            poolTokens[i] = address(vaults[registeredVaults[i]].poolToken);
-        }
     }
 }

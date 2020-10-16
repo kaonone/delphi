@@ -1432,7 +1432,7 @@ contract('VaultSavings', async([ _, owner, user1, user2, user3, defiops, protoco
             //Request handling
 
             //Imitate distribution period
-            await blockTimeTravel(await vaultSavings.DISTRIBUTION_AGGREGATION_PERIOD());
+            await blockTimeTravel(await poolToken.DISTRIBUTION_AGGREGATION_PERIOD());
 
             await vaultSavings
                 .handleOperatorActions(vaultProtocol.address, strategy.address, ZERO_ADDRESS, { from: defiops });
@@ -1506,7 +1506,7 @@ contract('VaultSavings', async([ _, owner, user1, user2, user3, defiops, protoco
             await dai.transfer(protocolStub, 25, { from: owner });
 
             //Distribute yield
-            await blockTimeTravel(await vaultSavings.DISTRIBUTION_AGGREGATION_PERIOD());
+            await blockTimeTravel(await poolToken.DISTRIBUTION_AGGREGATION_PERIOD());
             await (<VaultSavingsModuleInstance> vaultSavings).distributeYield(vaultProtocol.address, { from: defiops });
 
             //Yield from pool is distributed before the request resolving

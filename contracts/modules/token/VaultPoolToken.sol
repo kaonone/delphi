@@ -50,17 +50,6 @@ contract VaultPoolToken is PoolToken, IOperableToken {
     }
 
     function userBalanceChanged(address account) internal {
-        IPoolTokenBalanceChangeRecipient vaultSavings = IPoolTokenBalanceChangeRecipient(getModuleAddress(MODULE_VAULT));
-        vaultSavings.poolTokenBalanceChanged(account);
-    }
-
-    function burnFrom(address from, uint256 value) public {
-        address savingsModule = getModuleAddress(MODULE_VAULT);
-        if (_msgSender() == savingsModule) {
-            //Skip decrease allowance
-            _burn(from, value);
-        }else{
-            super.burnFrom(from, value);
-        }
+        //Disable rewards for the vaults
     }
 }

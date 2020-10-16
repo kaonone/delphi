@@ -129,6 +129,7 @@ contract("CurveFiStablecoinStrategy", async ([_, owner, user1, user2, user3, def
         await accessModule.methods['initialize(address)'](pool.address, {from: owner});
 
         await pool.set("access", accessModule.address, true, {from:owner});
+        
 
         vaultSavings = await VaultSavings.new({from: owner});
         await (<any> vaultSavings).methods['initialize(address)'](pool.address, {from: owner});
@@ -203,21 +204,15 @@ contract("CurveFiStablecoinStrategy", async ([_, owner, user1, user2, user3, def
 
 
     describe('Deposit into the strategy', () => {
-        afterEach(async () => {
-            await globalSnap.revert();
-        });
+
     });
 
     describe('Withdraw from the strategy', () => {
-        afterEach(async () => {
-            await globalSnap.revert();
-        });
+
     });
 
     describe('Perform strategy', () => {
-        afterEach(async () => {
-            await globalSnap.revert();
-        });
+
     });
 
     describe('Full cycle', () => {
