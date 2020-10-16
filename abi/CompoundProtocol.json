@@ -373,21 +373,16 @@
       },
       {
         "internalType": "address",
-        "name": "_token",
+        "name": "user",
         "type": "address"
       },
       {
-        "internalType": "address",
-        "name": "_cToken",
-        "type": "address"
-      },
-      {
-        "internalType": "address",
-        "name": "_comptroller",
-        "type": "address"
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
       }
     ],
-    "name": "initialize",
+    "name": "withdrawReward",
     "outputs": [],
     "payable": false,
     "stateMutability": "nonpayable",
@@ -408,6 +403,36 @@
       {
         "internalType": "address",
         "name": "_pool",
+        "type": "address"
+      }
+    ],
+    "name": "initialize",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_pool",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_token",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_cToken",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_comptroller",
         "type": "address"
       }
     ],
