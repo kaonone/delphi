@@ -72,10 +72,6 @@ contract ComptrollerStub is Base, IComptroller {
             address token = cTokens[i];
             uint256 prevBalance = ai.cBalances[token];
             if(prevBalance == 0) continue;
-            // uint256 compAmount += prevBalance
-            //     .mul(period).div(ANNUAL_SECONDS)
-            //     .mul(targetAPY).div(EXP)
-            //     .mul(EXP).div(baseCTokenToCompRatio);
             compAmount = compAmount.add(prevBalance.mul(period).mul(targetAPY).div(ANNUAL_SECONDS).div(baseCTokenToCompRatio));
         }
         comp.safeTransfer(holder, compAmount);
@@ -86,10 +82,6 @@ contract ComptrollerStub is Base, IComptroller {
         uint256 period = now.sub(ai.lastUpdate);
         uint256 prevBalance = ai.cBalances[cToken];
         if(prevBalance == 0) return;
-        // uint256 compAmount += prevBalance
-        //     .mul(period).div(ANNUAL_SECONDS)
-        //     .mul(targetAPY).div(EXP)
-        //     .mul(EXP).div(baseCTokenToCompRatio);
         uint256 compAmount = prevBalance.mul(period).mul(targetAPY).div(ANNUAL_SECONDS).div(baseCTokenToCompRatio);
         comp.safeTransfer(holder, compAmount);
     }
@@ -112,6 +104,11 @@ contract ComptrollerStub is Base, IComptroller {
 
     function supportedCTokens() public view returns (address[] memory) {
         return cTokens;
+    }
+
+    function getStoredBalance(address holder, address cToken) public view returns(uint256){
+        AddressInfo storage ai = cHolders[holder];
+        return ai.cBalances[cToken];
     }
 }
 

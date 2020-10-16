@@ -4,14 +4,30 @@ import "@openzeppelin/contracts-ethereum-package/contracts/math/SafeMath.sol";
 import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/ERC20Detailed.sol";
 import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/SafeERC20.sol";
-import "../../interfaces/savings/ISavingsModule.sol";
+import "@openzeppelin/contracts-ethereum-package/contracts/access/roles/CapperRole.sol";
+import "../../interfaces/defi/IDefiProtocol.sol";
 import "../../common/Module.sol";
-import "../access/AccessChecker.sol";
-import "./RewardDistributions.sol";
-import "./SavingsCap.sol";
+import "../../modules/access/AccessChecker.sol";
+import "../../modules/token/PoolToken.sol";
+import "./RewardDistributionsOld.sol";
 
-contract SavingsModule is Module, ISavingsModule, AccessChecker, RewardDistributions, SavingsCap {
+contract SavingsModuleOld is Module, AccessChecker, RewardDistributionsOld, CapperRole {
     uint256 constant MAX_UINT256 = uint256(-1);
+    uint256 public constant DISTRIBUTION_AGGREGATION_PERIOD = 24*60*60;
+
+    event ProtocolRegistered(address protocol, address poolToken);
+    event YieldDistribution(address indexed poolToken, uint256 amount);
+    event DepositToken(address indexed protocol, address indexed token, uint256 dnAmount);
+    event Deposit(address indexed protocol, address indexed user, uint256 nAmount, uint256 nFee);
+    event WithdrawToken(address indexed protocol, address indexed token, uint256 dnAmount);
+    event Withdraw(address indexed protocol, address indexed user, uint256 nAmount, uint256 nFee);
+    event UserCapEnabledChange(bool enabled);
+    event UserCapChanged(address indexed protocol, address indexed user, uint256 newCap);
+    event DefaultUserCapChanged(address indexed protocol, uint256 newCap);
+    event ProtocolCapEnabledChange(bool enabled);
+    event ProtocolCapChanged(address indexed protocol, uint256 newCap);
+    event VipUserEnabledChange(bool enabled);
+    event VipUserChanged(address indexed protocol, address indexed user, bool isVip);
 
     using SafeERC20 for IERC20;
     using SafeMath for uint256;
@@ -21,7 +37,9 @@ contract SavingsModule is Module, ISavingsModule, AccessChecker, RewardDistribut
         uint256 previousBalance;
         uint256 lastRewardDistribution;
         address[] supportedRewardTokens;
+        mapping(address => uint256) userCap; //Limit of pool tokens which can be minted for a user during deposit
         uint256 withdrawAllSlippage;         //Allowed slippage for withdrawAll function in wei
+        mapping(address=>bool) isVipUser;       
     }
 
     struct TokenData {
@@ -35,11 +53,59 @@ contract SavingsModule is Module, ISavingsModule, AccessChecker, RewardDistribut
     mapping(address => ProtocolInfo) protocols; //Mapping of protocol to data we need to calculate APY and do distributions
     mapping(address => address) poolTokenToProtocol;    //Mapping of pool tokens to protocols
     mapping(address => bool) private rewardTokenRegistered;     //marks registered reward tokens
+    bool public userCapEnabled;
+    bool public protocolCapEnabled;
+    mapping(address=>uint256) public defaultUserCap;
+    mapping(address=>uint256) public protocolCap;
+    bool public vipUserEnabled;                         // Enable VIP user (overrides protocol cap)
 
 
     function initialize(address _pool) public initializer {
         Module.initialize(_pool);
-        SavingsCap.initialize(_msgSender());
+        CapperRole.initialize(_msgSender());
+    }
+
+    function setUserCapEnabled(bool _userCapEnabled) public onlyCapper {
+        userCapEnabled = _userCapEnabled;
+        emit UserCapEnabledChange(userCapEnabled);
+    }
+
+    // function setUserCap(address _protocol, address user, uint256 cap) public onlyCapper {
+    //     protocols[_protocol].userCap[user] = cap;
+    //     emit UserCapChanged(_protocol, user, cap);
+    // }
+
+    // function setUserCap(address _protocol, address[] calldata users, uint256[] calldata caps) external onlyCapper {
+    //     require(users.length == caps.length, "SavingsModule: arrays length not match");
+    //     for(uint256 i=0;  i < users.length; i++) {
+    //         protocols[_protocol].userCap[users[i]] = caps[i];
+    //         emit UserCapChanged(_protocol, users[i], caps[i]);
+    //     }
+    // }
+
+    function setVipUserEnabled(bool _vipUserEnabled) public onlyCapper {
+        vipUserEnabled = _vipUserEnabled;
+        emit VipUserEnabledChange(_vipUserEnabled);
+    }
+
+    function setVipUser(address _protocol, address user, bool isVip) public onlyCapper {
+        protocols[_protocol].isVipUser[user] = isVip;
+        emit VipUserChanged(_protocol, user, isVip);
+    }
+    
+    function setDefaultUserCap(address _protocol, uint256 cap) public onlyCapper {
+        defaultUserCap[_protocol] = cap;
+        emit DefaultUserCapChanged(_protocol, cap);
+    }
+
+    function setProtocolCapEnabled(bool _protocolCapEnabled) public onlyCapper {
+        protocolCapEnabled = _protocolCapEnabled;
+        emit ProtocolCapEnabledChange(protocolCapEnabled);
+    }
+
+    function setProtocolCap(address _protocol, uint256 cap) public onlyCapper {
+        protocolCap[_protocol] = cap;
+        emit ProtocolCapChanged(_protocol, cap);
     }
 
     function setWithdrawAllSlippage(address _protocol, uint256 slippageWei) public onlyOwner {
@@ -173,6 +239,11 @@ contract SavingsModule is Module, ISavingsModule, AccessChecker, RewardDistribut
         PoolToken poolToken = PoolToken(protocols[_protocol].poolToken);
         uint256 nDeposit = nBalanceAfter.sub(nBalanceBefore);
 
+        uint256 cap;
+        if(userCapEnabled) {
+            cap = userCap(_protocol, _msgSender());
+        }
+
         uint256 fee;
         if(nAmount > nDeposit) {
             fee = nAmount - nDeposit;
@@ -187,11 +258,14 @@ contract SavingsModule is Module, ISavingsModule, AccessChecker, RewardDistribut
             }
         }
 
-        require(!isProtocolCapExceeded(poolToken.totalSupply(), _protocol, _msgSender()), "SavingsModule: deposit exeeds protocols cap");
+        if(protocolCapEnabled) {
+            if( !(vipUserEnabled && protocols[_protocol].isVipUser[_msgSender()]) ) {
+                uint256 ptTS = poolToken.totalSupply();
+                require(ptTS <= protocolCap[_protocol], "SavingsModule: deposit exeeds protocols cap");
+            }
+        }
 
-        uint256 cap;
-        if (userCapEnabled) {
-            cap = userCap(_protocol, _msgSender());
+        if(userCapEnabled) {
             //uint256 actualAmount = nAmount.sub(fee); //Had to remove this because of stack too deep err
             require(cap >= nAmount.sub(fee), "SavingsModule: deposit exeeds user cap");
             // cap = cap - nAmount.sub(fee);
@@ -321,6 +395,43 @@ contract SavingsModule is Module, ISavingsModule, AccessChecker, RewardDistribut
         }
     }
 
+    /** 
+     * @notice Distributes reward tokens. May be called by bot, if there was no deposits/withdrawals
+     */
+    function distributeRewards() public {
+        for(uint256 i=0; i<registeredProtocols.length; i++) {
+            distributeRewardIfRequired(address(registeredProtocols[i]));
+        }
+    }
+
+    // function distributeRewards(address _protocol) public {
+    //     distributeRewardIfRequired(_protocol);
+    // }
+
+    function distributeRewardsForced(address _protocol) public onlyOwner {
+        ProtocolInfo storage pi = protocols[_protocol];
+        pi.lastRewardDistribution = now;
+        distributeReward(_protocol);
+    }
+
+    function userCap(address _protocol, address user) public view returns(uint256) {
+        // uint256 cap = protocols[_protocol].userCap[user];
+        // if(cap == 0){
+        //     uint256 balance = protocols[_protocol].poolToken.balanceOf(user);
+        //     if(balance == 0) cap = defaultUserCap[_protocol];
+        // }
+        uint256 balance = protocols[_protocol].poolToken.balanceOf(user);
+        uint256 cap;
+        if(balance < defaultUserCap[_protocol]) {
+            cap = defaultUserCap[_protocol] - balance;
+        }
+        return cap;
+    }
+
+    function isVipUser(address _protocol, address user) view public returns(bool){
+        return protocols[_protocol].isVipUser[user];
+    }
+
     function poolTokenByProtocol(address _protocol) public view returns(address) {
         return address(protocols[_protocol].poolToken);
     }
@@ -346,16 +457,6 @@ contract SavingsModule is Module, ISavingsModule, AccessChecker, RewardDistribut
 
     function supportedRewardTokens() public view returns(address[] memory) {
         return registeredRewardTokens;
-    }
-
-    function userCap(address _protocol, address user) public view returns(uint256) {
-        // uint256 cap = protocols[_protocol].userCap[user];
-        // if(cap == 0){
-        //     uint256 balance = protocols[_protocol].poolToken.balanceOf(user);
-        //     if(balance == 0) cap = defaultUserCap[_protocol];
-        // }
-        uint256 balance = protocols[_protocol].poolToken.balanceOf(user);
-        return getUserCapLeft(_protocol, balance);
     }
 
     function withdrawFromProtocolProportionally(address beneficiary, IDefiProtocol protocol, uint256 nAmount, uint256 currentProtocolBalance) internal {
@@ -396,6 +497,13 @@ contract SavingsModule is Module, ISavingsModule, AccessChecker, RewardDistribut
         emit YieldDistribution(address(poolToken), yield);
     }
 
+    function distributeRewardIfRequired(address _protocol) internal {
+        if(!isRewardDistributionRequired(_protocol)) return;
+        ProtocolInfo storage pi = protocols[_protocol];
+        pi.lastRewardDistribution = now;
+        distributeReward(_protocol);
+    }
+
     /**
      * @notice Updates balance with result of deposit/withdraw
      * @dev MUST call this AFTER deposit/withdraw from protocol
@@ -408,14 +516,7 @@ contract SavingsModule is Module, ISavingsModule, AccessChecker, RewardDistribut
         return currentBalance;
     }
 
-    function isProtocolRegistered(address _protocol) internal view returns(bool) {
-        for (uint256 i = 0; i < registeredProtocols.length; i++){
-            if (address(registeredProtocols[i]) == _protocol) return true;
-        }
-        return false;
-    }
-
-    function isTokenRegistered(address token) internal view returns(bool) {
+    function isTokenRegistered(address token) private view returns(bool) {
         for (uint256 i = 0; i < registeredTokens.length; i++){
             if (registeredTokens[i] == token) return true;
         }
@@ -430,7 +531,11 @@ contract SavingsModule is Module, ISavingsModule, AccessChecker, RewardDistribut
         return false;
     }
 
-    function normalizeTokenAmount(address token, uint256 amount) internal view returns(uint256) {
+    function isRewardDistributionRequired(address _protocol) internal view returns(bool) {
+        return now.sub(protocols[_protocol].lastRewardDistribution) > DISTRIBUTION_AGGREGATION_PERIOD;
+    }
+
+    function normalizeTokenAmount(address token, uint256 amount) private view returns(uint256) {
         uint256 decimals = tokens[token].decimals;
         if (decimals == 18) {
             return amount;
@@ -441,7 +546,7 @@ contract SavingsModule is Module, ISavingsModule, AccessChecker, RewardDistribut
         }
     }
 
-    function denormalizeTokenAmount(address token, uint256 amount) internal view returns(uint256) {
+    function denormalizeTokenAmount(address token, uint256 amount) private view returns(uint256) {
         uint256 decimals = tokens[token].decimals;
         if (decimals == 18) {
             return amount;

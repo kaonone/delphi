@@ -165,13 +165,11 @@ contract CurveFiProtocol is ProtocolBase {
     }
 
     function supportedRewardTokens() public view returns(address[] memory) {
-        address[] memory rtokens = new address[](1);
-        rtokens[0] = crvToken;
+        uint256 defaultRTCount = defaultRewardTokensCount();
+        address[] memory rtokens = new address[](defaultRTCount+1);
+        rtokens = defaultRewardTokensFillArray(rtokens);
+        rtokens[defaultRTCount] = address(crvToken);
         return rtokens;
-    }
-
-    function isSupportedRewardToken(address token) public view returns(bool) {
-        return(token == crvToken);
     }
 
     function cliamRewardsFromProtocol() internal {

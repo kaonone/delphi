@@ -109,15 +109,6 @@ contract RAYProtocol is ProtocolBase {
         return 1;
     }
 
-    function supportedRewardTokens() public view returns(address[] memory) {
-        address[] memory rtokens = new address[](0);
-        return rtokens;
-    }
-
-    function isSupportedRewardToken(address) public view returns(bool) {
-        return false;
-    }
-
     function cliamRewardsFromProtocol() internal {
         this; //do nothing
     }
