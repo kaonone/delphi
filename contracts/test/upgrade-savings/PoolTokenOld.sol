@@ -6,9 +6,9 @@ import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/ERC20Mint
 import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/ERC20Burnable.sol";
 import "../../interfaces/token/IPoolTokenBalanceChangeRecipient.sol";
 import "../../common/Module.sol";
-import "./DistributionToken.sol";
+import "../../modules/token/DistributionToken.sol";
 
-contract PoolToken is Module, ERC20, ERC20Detailed, ERC20Mintable, ERC20Burnable, DistributionToken {
+contract PoolTokenOld is Module, ERC20, ERC20Detailed, ERC20Mintable, ERC20Burnable, DistributionToken {
 
     bool allowTransfers;
 
@@ -44,8 +44,8 @@ contract PoolToken is Module, ERC20, ERC20Detailed, ERC20Mintable, ERC20Burnable
     } 
 
     function userBalanceChanged(address account) internal {
-        IPoolTokenBalanceChangeRecipient rewardDistrModule = IPoolTokenBalanceChangeRecipient(getModuleAddress(MODULE_REWARD_DISTR));
-        rewardDistrModule.poolTokenBalanceChanged(account);
+        IPoolTokenBalanceChangeRecipient savings = IPoolTokenBalanceChangeRecipient(getModuleAddress(MODULE_SAVINGS));
+        savings.poolTokenBalanceChanged(account);
     }
 
     function distributionBalanceOf(address account) public view returns(uint256) {

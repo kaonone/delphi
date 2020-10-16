@@ -21,20 +21,10 @@ contract("AccessModule", async ([_, owner, ...otherAccounts]) => {
     let access: AccessModuleInstance;
 
     enum Operation {
-        // LiquidityModule
         Deposit,
         Withdraw,
-        // LoanModule
-        CreateDebtProposal,
-        AddPledge,
-        WithdrawPledge,
-        CancelDebtProposal,
-        ExecuteDebtProposal,
-        Repay,
-        ExecuteDebtDefault,
-        WithdrawUnlockedPledge
     }
-    const alwaysAllowedOps = [Operation.Repay, Operation.WithdrawUnlockedPledge];
+    //const alwaysAllowedOps = [];
 
     before(async () => {
         //Setup system contracts
@@ -79,11 +69,11 @@ contract("AccessModule", async ([_, owner, ...otherAccounts]) => {
         for(let opName of ops){
             let op:number = (<any>Operation)[opName];
             let allowed = await access.isOperationAllowed(op, otherAccounts[0]);
-            if(alwaysAllowedOps.includes(op)){
-                expect(allowed, `Operation ${opName} (${op}) should be allways allowed`).to.be.true;
-            }else{
+            // if(alwaysAllowedOps.includes(op)){
+            //     expect(allowed, `Operation ${opName} (${op}) should be allways allowed`).to.be.true;
+            // }else{
                 expect(allowed, `Operation ${opName} (${op}) should not be allowed`).to.be.false;
-            }
+            // }
         }
     });
     it('should allow all to whitelisted user', async () => {

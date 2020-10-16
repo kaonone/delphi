@@ -8,6 +8,7 @@ import "../../interfaces/defi/IDefiProtocol.sol";
 import "../../interfaces/defi/ICErc20.sol";
 import "../../interfaces/defi/IComptroller.sol";
 import "../../common/Module.sol";
+import "../reward/RewardVestingModule.sol";
 import "./DefiOperatorRole.sol";
 
 contract ProtocolBase is Module, DefiOperatorRole, IDefiProtocol {
@@ -25,14 +26,23 @@ contract ProtocolBase is Module, DefiOperatorRole, IDefiProtocol {
         DefiOperatorRole.initialize(_msgSender());
     }
 
-    function supportedRewardTokens() public view returns(address[] memory);
+    function supportedRewardTokens() public view returns(address[] memory) {
+        return defaultRewardTokens();
+    }
 
-    function isSupportedRewardToken(address token) public view returns(bool);
+    function isSupportedRewardToken(address token) public view returns(bool) {
+        address[] memory srt = supportedRewardTokens();
+        for(uint256 i=0; i < srt.length; i++) {
+            if(srt[i] == token) return true;
+        }
+        return false;
+    }
 
     function cliamRewardsFromProtocol() internal;
 
     function claimRewards() public onlyDefiOperator returns(address[] memory tokens, uint256[] memory amounts){
         cliamRewardsFromProtocol();
+        claimDefaultRewards();
 
         // Check what we received
         address[] memory rewardTokens = supportedRewardTokens();
@@ -67,5 +77,24 @@ contract ProtocolBase is Module, DefiOperatorRole, IDefiProtocol {
         require(isSupportedRewardToken(token), "ProtocolBase: not reward token");
         rewardBalances[token] = rewardBalances[token].sub(amount);
         IERC20(token).safeTransfer(user, amount);
+    }
+
+    function claimDefaultRewards() internal {
+        RewardVestingModule rv = RewardVestingModule(getModuleAddress(MODULE_REWARD));
+        rv.claimRewards();
+    }
+
+    function defaultRewardTokens() internal view returns(address[] memory) {
+        address[] memory rt = new address[](2);
+        return defaultRewardTokensFillArray(rt);
+    }
+    function defaultRewardTokensFillArray(address[] memory rt) internal view returns(address[] memory) {
+        require(rt.length >= 2, "ProtocolBase: not enough space in array");
+        rt[0] = getModuleAddress(TOKEN_AKRO);
+        rt[1] = getModuleAddress(TOKEN_ADEL);
+        return rt;
+    }
+    function defaultRewardTokensCount() internal pure returns(uint256) {
+        return 2;
     }
 }

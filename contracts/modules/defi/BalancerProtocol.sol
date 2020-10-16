@@ -175,13 +175,11 @@ contract BalancerProtocol is ProtocolBase {
     }
 
     function supportedRewardTokens() public view returns(address[] memory) {
-        address[] memory rtkns = new address[](1);
-        rtkns[0] = address(bal);
-        return rtkns;
-    }
-
-    function isSupportedRewardToken(address token) public view returns(bool) {
-        return(token == address(bal));
+        uint256 defaultRTCount = defaultRewardTokensCount();
+        address[] memory rtokens = new address[](defaultRTCount+1);
+        rtokens = defaultRewardTokensFillArray(rtokens);
+        rtokens[defaultRTCount] = address(bal);
+        return rtokens;
     }
 
     function cliamRewardsFromProtocol() internal {
