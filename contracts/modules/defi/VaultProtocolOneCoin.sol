@@ -51,6 +51,8 @@ contract VaultProtocolOneCoin is Module, IVaultProtocol, DefiOperatorRole {
     function registerStrategy(address _strategy) public onlyDefiOperator {
         strategies.push(_strategy);
         IDefiStrategy(_strategy).setVault(address(this));
+
+        emit StrategyRegistered(address(this), _strategy, IDefiStrategy(_strategy).getStrategyId());
     }
 
     function quickWithdrawStrategy() public view returns(address) {

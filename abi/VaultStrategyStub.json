@@ -217,29 +217,36 @@
   },
   {
     "constant": false,
-    "inputs": [],
-    "name": "performStrategyStep1",
-    "outputs": [],
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "token",
+        "type": "address"
+      }
+    ],
+    "name": "balanceOf",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
     "payable": false,
     "stateMutability": "nonpayable",
     "type": "function"
   },
   {
     "constant": false,
-    "inputs": [
+    "inputs": [],
+    "name": "balanceOfAll",
+    "outputs": [
       {
-        "internalType": "bytes",
-        "name": "_data",
-        "type": "bytes"
-      },
-      {
-        "internalType": "address",
-        "name": "_token",
-        "type": "address"
+        "internalType": "uint256[]",
+        "name": "balances",
+        "type": "uint256[]"
       }
     ],
-    "name": "performStrategyStep2",
-    "outputs": [],
     "payable": false,
     "stateMutability": "nonpayable",
     "type": "function"

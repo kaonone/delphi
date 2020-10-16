@@ -8,6 +8,7 @@ contract IVaultProtocol {
     event DepositByOperator(uint256 _amount);
     event WithdrawByOperator(uint256 _amount);
     event WithdrawRequestsResolved(uint256 _totalDeposit, uint256 _totalWithdraw);
+    event StrategyRegistered(address indexed _vault, address indexed _strategy, string _id);
 
     event Claimed(address indexed _vault, address indexed _user, address _token, uint256 _amount);
     event DepositsCleared(address indexed _vault);
@@ -34,6 +35,7 @@ contract IVaultProtocol {
 
     function normalizedBalance() external returns(uint256);
     function normalizedBalance(address _strategy) external returns(uint256);
+    function normalizedVaultBalance() external view returns(uint256);
 
     function supportedTokens() external view returns(address[] memory);
     function supportedTokensCount() external view returns(uint256);

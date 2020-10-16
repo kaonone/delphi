@@ -17,10 +17,9 @@ contract IDefiStrategy {
 
     function setVault(address _vault) external;
 
-    function performStrategyStep1() external;
-    function performStrategyStep2(bytes calldata _data, address _token) external;
-
     function normalizedBalance() external returns(uint256);
+    function balanceOf(address token) external returns(uint256);
+    function balanceOfAll() external returns(uint256[] memory balances);
 
     function getStrategyId() external view returns(string memory);
 }
