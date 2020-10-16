@@ -39,8 +39,8 @@ goto :done
 :create
 call npx oz create VaultSavingsModule --network rinkeby --init "initialize(address _pool)" --args %MODULE_POOL%
 call npx oz create VaultProtocol --network rinkeby --init "initialize(address _pool, address[] memory tokens)" --args "%MODULE_POOL%,[%EXT_TOKEN_DAI%,%EXT_TOKEN_USDC%,%EXT_TOKEN_USDT%,%EXT_TOKEN_TUSD%]"
-call npx oz create CurveFiStablecoinStrategy --network rinkeby --init "initialize(address _pool, string memory _strategyId)" --args "%MODULE_POOL%,""CRV-UNI-DAI"""
-call npx oz create VaultPoolToken --network rinkeby --init "initialize(address _pool, string memory poolName, string memory poolSymbol)" --args "%MODULE_POOL%,""Akropolis CurveFi Strategy"",""adsCRV"""
+call npx oz create CurveFiStablecoinStrategy --network rinkeby --init "initialize(address _pool, string memory _strategyId)" --args "%MODULE_POOL%,CRV-UNI-DAI"
+call npx oz create PoolToken_Vault_CurveFi --network rinkeby --init "initialize(address _pool)" --args %MODULE_POOL%
 goto :done
 
 :setup
