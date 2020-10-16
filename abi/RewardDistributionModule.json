@@ -453,32 +453,6 @@
     "constant": false,
     "inputs": [
       {
-        "internalType": "address",
-        "name": "poolToken",
-        "type": "address"
-      },
-      {
-        "internalType": "address",
-        "name": "rewardToken",
-        "type": "address"
-      }
-    ],
-    "name": "withdrawReward",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "constant": false,
-    "inputs": [
-      {
         "internalType": "address[]",
         "name": "rewardTokens",
         "type": "address[]"
@@ -515,57 +489,26 @@
     "constant": false,
     "inputs": [
       {
-        "internalType": "address[]",
-        "name": "poolTokens",
-        "type": "address[]"
-      },
-      {
-        "internalType": "address[]",
-        "name": "rewardTokens",
-        "type": "address[]"
-      }
-    ],
-    "name": "withdrawReward",
-    "outputs": [
-      {
-        "internalType": "uint256[]",
-        "name": "",
-        "type": "uint256[]"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "constant": true,
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "user",
-        "type": "address"
-      },
-      {
         "internalType": "address",
         "name": "poolToken",
         "type": "address"
       },
       {
-        "internalType": "address[]",
-        "name": "rewardTokens",
-        "type": "address[]"
+        "internalType": "address",
+        "name": "rewardToken",
+        "type": "address"
       }
     ],
-    "name": "rewardBalanceOf",
+    "name": "withdrawReward",
     "outputs": [
       {
-        "internalType": "uint256[]",
+        "internalType": "uint256",
         "name": "",
-        "type": "uint256[]"
+        "type": "uint256"
       }
     ],
     "payable": false,
-    "stateMutability": "view",
+    "stateMutability": "nonpayable",
     "type": "function"
   },
   {
@@ -593,6 +536,37 @@
         "internalType": "uint256",
         "name": "amounts",
         "type": "uint256"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "user",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "poolToken",
+        "type": "address"
+      },
+      {
+        "internalType": "address[]",
+        "name": "rewardTokens",
+        "type": "address[]"
+      }
+    ],
+    "name": "rewardBalanceOf",
+    "outputs": [
+      {
+        "internalType": "uint256[]",
+        "name": "",
+        "type": "uint256[]"
       }
     ],
     "payable": false,
