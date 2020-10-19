@@ -162,7 +162,8 @@ contract VaultProtocolOneCoin is Module, IVaultProtocol, DefiOperatorRole {
             claimableTokens = claimableTokens.add(totalWithdraw);
         }
         emit WithdrawRequestsResolved(totalDeposit, totalWithdraw);
-        return (totalDeposit, totalWithdraw);
+        return (CalcUtils.normalizeAmount(registeredVaultToken, totalDeposit),
+                CalcUtils.normalizeAmount(registeredVaultToken, totalWithdraw));
     }
 
     function operatorActionOneCoin(address _strategy, address _token) public onlyDefiOperator returns(uint256, uint256) {

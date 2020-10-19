@@ -178,9 +178,9 @@ contract VaultProtocol is Module, IVaultProtocol, DefiOperatorRole {
             depositAmounts[i] = IERC20(registeredVaultTokens[i]).balanceOf(address(this)).sub(claimableTokens[i]);
             IERC20(registeredVaultTokens[i]).approve(address(_strategy), depositAmounts[i]);
 
-            totalDeposit = totalDeposit.add(depositAmounts[i]);
+            totalDeposit = totalDeposit.add(CalcUtils.normalizeAmount(registeredVaultTokens[i], depositAmounts[i]));
 
-            totalWithdraw = totalWithdraw.add(withdrawAmounts[i]);
+            totalWithdraw = totalWithdraw.add(CalcUtils.normalizeAmount(registeredVaultTokens[i], withdrawAmounts[i]));
         }
         //one of two things should happen for the same token: deposit or withdraw
         //simultaneous deposit and withdraw are applied to different tokens
@@ -245,7 +245,8 @@ contract VaultProtocol is Module, IVaultProtocol, DefiOperatorRole {
             claimableTokens[ind] = claimableTokens[ind].add(totalWithdraw);
         }
         emit WithdrawRequestsResolved(totalDeposit, totalWithdraw);
-        return (totalDeposit, totalWithdraw);
+        return (CalcUtils.normalizeAmount(registeredVaultTokens[ind], totalDeposit),
+                CalcUtils.normalizeAmount(registeredVaultTokens[ind], totalWithdraw));
     }
 
     function clearOnHoldDeposits() public onlyDefiOperator {
