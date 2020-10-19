@@ -142,15 +142,15 @@ contract VaultSavingsModule is Module, IVaultSavings, AccessChecker, RewardDistr
         if (isQuick) {
             address _strategy = IVaultProtocol(_vaultProtocol).quickWithdrawStrategy();
             distributeYieldInternal(_vaultProtocol, _strategy);
-            IVaultProtocol(_vaultProtocol).quickWithdraw(_msgSender(), _tokens, amounts);
+            IVaultProtocol(_vaultProtocol).quickWithdraw(_msgSender(), _tokens, _amounts);
             updateProtocolBalance(_vaultProtocol, _strategy);
         }
         else {
             if (_tokens.length == 1) {
-                IVaultProtocol(_vaultProtocol).withdrawFromVault(_msgSender(), _tokens[0], amounts[0]);
+                IVaultProtocol(_vaultProtocol).withdrawFromVault(_msgSender(), _tokens[0], _amounts[0]);
             }
             else {
-                IVaultProtocol(_vaultProtocol).withdrawFromVault(_msgSender(), _tokens, amounts);
+                IVaultProtocol(_vaultProtocol).withdrawFromVault(_msgSender(), _tokens, _amounts);
             }
         }
 
