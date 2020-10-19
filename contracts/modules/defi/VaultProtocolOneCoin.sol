@@ -95,8 +95,9 @@ contract VaultProtocolOneCoin is Module, IVaultProtocol, DefiOperatorRole {
     function withdrawFromVault(address _user, address _token, uint256 _amount) public onlyDefiOperator {
         require(_user != address(0), "Incorrect user address");
         require(_token != address(0), "Incorrect token address");
-        require(_amount > 0, "No tokens to be withdrawn");
-
+        
+        if (_amount == 0) return;
+        
         require(_token == registeredVaultToken, "Token is not registered in the vault");
 
 
