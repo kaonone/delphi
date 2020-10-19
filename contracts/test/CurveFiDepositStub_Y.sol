@@ -61,9 +61,10 @@ contract CurveFiDepositStub_Y is Base, ICurveFiDeposit_Y {
         if (shares > max_burn_amount) shares = max_burn_amount;
 
         token.transferFrom(_msgSender(), address(this), shares);
+        token.approve(address(curveFiSwap), shares);        
         curveFiSwap.remove_liquidity_imbalance(amounts, shares);
 
-        shares = token.balanceOf(_msgSender());
+        shares = token.balanceOf(address(this));
         token.transfer(_msgSender(), shares); // Return unused
         send_all(_msgSender(), [uint256(0), uint256(0), uint256(0), uint256(0)]);
     }
