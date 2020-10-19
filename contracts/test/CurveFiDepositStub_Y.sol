@@ -76,6 +76,7 @@ contract CurveFiDepositStub_Y is Base, ICurveFiDeposit_Y {
         uint256[N_COINS] memory amounts = [uint256(0), uint256(0), uint256(0), uint256(0)];
         uint256 i = uint256(_i);
         amounts[i] = min_uamount.mul(EXP_SCALE).div(IYErc20(_coins[i]).getPricePerFullShare());
+        token.transferFrom(_msgSender(), address(this), _token_amount);
         curveFiSwap.remove_liquidity_imbalance(amounts, _token_amount);
 
         uint256[N_COINS] memory uamounts = [uint256(0), uint256(0), uint256(0), uint256(0)];
