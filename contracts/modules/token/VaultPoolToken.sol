@@ -34,9 +34,8 @@ contract VaultPoolToken is PoolToken, IOperableToken {
 
     function fullBalanceOf(address account) public view returns(uint256){
         if (account == address(this)) return 0;  //Token itself only holds tokens for others
-        uint256 distributionBalance = distributionBalanceOf(account);
         uint256 unclaimed = calculateClaimAmount(account);
-        return distributionBalance.add(unclaimed).add(onHoldBalanceOf(account));
+        return balanceOf(account).add(unclaimed);
     }
 
     function distributionBalanceOf(address account) public view returns(uint256) {
