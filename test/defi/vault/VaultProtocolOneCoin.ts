@@ -53,7 +53,7 @@ contract('VaultProtocol: one coin', async([ owner, user1, user2, user3, defiops,
         //------
         vaultSavings = await VaultSavings.new({ from: owner });
         await (<VaultSavingsModuleInstance> vaultSavings).methods['initialize(address)'](pool.address, { from: owner });
-        await vaultSavings.addDefiOperator(defiops, { from: owner });
+        await vaultSavings.addVaultOperator(defiops, { from: owner });
 
         await pool.set('vault', vaultSavings.address, true, { from: owner });
         //------

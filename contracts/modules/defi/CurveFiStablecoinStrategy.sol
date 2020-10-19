@@ -206,20 +206,6 @@ contract CurveFiStablecoinStrategy is Module, IDefiStrategy, IStrategyCurveFiSwa
         }
     }
 
-    function optimalProportions() public returns(uint256[] memory) {
-        address[] memory registeredVaultTokens = IVaultProtocol(vault).supportedTokens();
-        uint256[] memory amounts = balanceOfAll();
-        uint256 summ;
-        for (uint256 i=0; i < registeredVaultTokens.length; i++){
-            amounts[i] = CalcUtils.normalizeAmount(registeredVaultTokens[i], amounts[i]);
-            summ = summ.add(amounts[i]);
-        }
-        for (uint256 i=0; i < registeredVaultTokens.length; i++){
-            amounts[i] = amounts[i].div(summ);
-        }
-        return amounts;
-    }
-
     function normalizedBalance() public returns(uint256) {
         address[] memory registeredVaultTokens = IVaultProtocol(vault).supportedTokens();
         uint256[] memory balances = balanceOfAll();

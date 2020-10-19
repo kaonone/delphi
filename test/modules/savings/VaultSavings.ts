@@ -88,7 +88,7 @@ contract('VaultSavings', async([ _, owner, user1, user2, user3, defiops, protoco
 
         await (<any> vaultSavings).methods['initialize(address)'](pool.address, { from: owner });
 
-        await vaultSavings.addDefiOperator(defiops, { from: owner });
+        await vaultSavings.addVaultOperator(defiops, { from: owner });
 
 
         await pool.set('vault', vaultSavings.address, true, { from: owner });

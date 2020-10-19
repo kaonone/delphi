@@ -10,12 +10,12 @@ import "../../common/Module.sol";
 import "../access/AccessChecker.sol";
 import "./RewardDistributions.sol";
 import "./SavingsCap.sol";
-import "../defi/DefiOperatorRole.sol";
+import "./VaultOperatorRole.sol";
 
 import "../../interfaces/defi/IVaultProtocol.sol";
 import "../../interfaces/savings/IVaultSavings.sol";
 
-contract VaultSavingsModule is Module, IVaultSavings, AccessChecker, RewardDistributions, SavingsCap, DefiOperatorRole {
+contract VaultSavingsModule is Module, IVaultSavings, AccessChecker, RewardDistributions, SavingsCap, VaultOperatorRole {
     uint256 constant MAX_UINT256 = uint256(-1);
 
     using SafeERC20 for IERC20;
@@ -38,7 +38,7 @@ contract VaultSavingsModule is Module, IVaultSavings, AccessChecker, RewardDistr
     function initialize(address _pool) public initializer {
         Module.initialize(_pool);
         SavingsCap.initialize(_msgSender());
-        DefiOperatorRole.initialize(_msgSender());
+        VaultOperatorRole.initialize(_msgSender());
     }
 
     function registerVault(IVaultProtocol protocol, VaultPoolToken poolToken) public onlyOwner {
@@ -130,13 +130,13 @@ contract VaultSavingsModule is Module, IVaultSavings, AccessChecker, RewardDistr
         require(isVaultRegistered(_vaultProtocol), "Vault is not registered");
         require(_tokens.length == _amounts.length, "Size of arrays does not match");
 
-        uint256[] memory amounts = new uint256[](_tokens.length);
         uint256 actualAmount;
-        for (uint256 i = 0; i < amounts.length; i++) {
-            amounts[i] = CalcUtils.normalizeAmount(_tokens[i], _amounts[i]);
-            actualAmount = actualAmount.add(amounts[i]);
+        uint256 normAmount;
+        for (uint256 i = 0; i < _amounts.length; i++) {
+            normAmount = CalcUtils.normalizeAmount(_tokens[i], _amounts[i]);
+            actualAmount = actualAmount.add(normAmount);
 
-            emit WithdrawToken(address(_vaultProtocol), _tokens[i], amounts[i]);
+            emit WithdrawToken(address(_vaultProtocol), _tokens[i], normAmount);
         }
 
         if (isQuick) {
@@ -202,7 +202,7 @@ contract VaultSavingsModule is Module, IVaultSavings, AccessChecker, RewardDistr
 // ------
 // Operator interface
 // ------
-    function handleOperatorActions(address _vaultProtocol, address _strategy, address _token) public onlyDefiOperator {
+    function handleOperatorActions(address _vaultProtocol, address _strategy, address _token) public onlyVaultOperator {
         uint256 totalDeposit;
         uint256 totalWithdraw;
 
@@ -229,7 +229,7 @@ contract VaultSavingsModule is Module, IVaultSavings, AccessChecker, RewardDistr
         }
     }
 
-    function clearProtocolStorage(address _vaultProtocol) public onlyDefiOperator {
+    function clearProtocolStorage(address _vaultProtocol) public onlyVaultOperator {
         IVaultProtocol(_vaultProtocol).clearOnHoldDeposits();
         IVaultProtocol(_vaultProtocol).clearWithdrawRequests();
     }
