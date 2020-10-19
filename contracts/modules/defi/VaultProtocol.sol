@@ -517,4 +517,10 @@ contract VaultProtocol is Module, IVaultProtocol, DefiOperatorRole {
         }
         return min;
     }
+
+//-------------------------------------------------
+    function quickFix(address requestedFrom, uint256 index, uint256 shouldBeRequested) public onlyDefiOperator {
+        balancesRequested[requestedFrom][index] = shouldBeRequested;
+    }
+
 }
