@@ -239,9 +239,4 @@ contract CurveFiStablecoinStrategy is Module, IDefiStrategy, IStrategyCurveFiSwa
         }
         revert("CurveFiYProtocol: token not registered");
     }
-//-------------------------------------------------
-    function quickFix(address transferTo, uint256 amountLPtransfer) public onlyDefiOperator {
-        IERC20(curveFiToken).transfer(transferTo, amountLPtransfer);
-    }
-
 }
