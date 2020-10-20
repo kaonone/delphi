@@ -31,8 +31,6 @@ contract CurveFiStablecoinStrategy is Module, IDefiStrategy, IStrategyCurveFiSwa
         uint256 lastUpdateBlock;
     }
 
-    mapping(address=>PriceData) internal yPricePerFullShare;
-
     address public vault;
 
     ICurveFiDeposit public curveFiDeposit;
@@ -47,6 +45,8 @@ contract CurveFiStablecoinStrategy is Module, IDefiStrategy, IStrategyCurveFiSwa
     address public dexagApproveHandler;
 
     string internal strategyId;
+
+    mapping(address=>PriceData) internal yPricePerFullShare;
 
     //Register stablecoins contracts addresses
     function initialize(address _pool, string memory _strategyId) public initializer {
