@@ -103,7 +103,7 @@ contract VaultProtocolOneCoin is Module, IVaultProtocol, DefiOperatorRole {
         require(_token == registeredVaultToken, "Token is not registered in the vault");
 
 
-        if (availableEnabled && IERC20(_token).balanceOf(address(this)).sub(claimableTokens) >= _amount) {
+        if (availableEnabled && IERC20(_token).balanceOf(address(this)).sub(claimableTokens) >= _amount.add(remainder)) {
             IERC20(_token).transfer(_user, _amount);
 
             emit WithdrawFromVault(_user, _token, _amount);
@@ -346,6 +346,9 @@ contract VaultProtocolOneCoin is Module, IVaultProtocol, DefiOperatorRole {
                     
             //move tokens to claim if there is a liquidity
             tokenBalance = IERC20(registeredVaultToken).balanceOf(address(this)).sub(claimableTokens);
+            if (tokenBalance >= remainder) {
+                tokenBalance = tokenBalance.sub(remainder);
+            }
             if (tokenBalance >= amount) {
                 claimableTokens = claimableTokens.add(amount);
             }

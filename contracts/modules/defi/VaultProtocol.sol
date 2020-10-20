@@ -122,7 +122,7 @@ contract VaultProtocol is Module, IVaultProtocol, DefiOperatorRole {
         require(hasToken, "Token is not registered in the vault");
 
 
-        if (availableEnabled && (IERC20(_token).balanceOf(address(this)).sub(claimableTokens[indReg]) >= _amount)) {
+        if (availableEnabled && (IERC20(_token).balanceOf(address(this)).sub(claimableTokens[indReg]) >= _amount.add(remainders[indReg]))) {
             IERC20(_token).transfer(_user, _amount);
 
             emit WithdrawFromVault(_user, _token, _amount);
@@ -499,6 +499,9 @@ contract VaultProtocol is Module, IVaultProtocol, DefiOperatorRole {
                     
             //move tokens to claim if there is a liquidity
             tokenBalance = IERC20(token).balanceOf(address(this)).sub(claimableTokens[_ind]);
+            if (tokenBalance >= remainders[_ind]) {
+                tokenBalance = tokenBalance.sub(remainders[_ind]);
+            }
             if (tokenBalance >= amount) {
                 claimableTokens[_ind] = claimableTokens[_ind].add(amount);
             }
