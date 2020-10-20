@@ -44,7 +44,7 @@ const CurveMinter = artifacts.require('CurveFiMinterStub');
 const CurveGauge = artifacts.require('CurveFiLiquidityGaugeStub');
 const Dexag = artifacts.require('DexagStub');
 
-contract.only('CurveFi strategy: real case', async([ owner, user1, user2, user3, defiops, protocolStub ]) => {
+contract('CurveFi strategy: real case', async([ owner, user1, user2, user3, defiops, protocolStub ]) => {
 
     let globalSnap: Snapshot;
     let vaultCurveStrategy: CurveFiStablecoinStrategyInstance;
