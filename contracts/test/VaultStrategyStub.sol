@@ -56,6 +56,7 @@ contract VaultStrategyStub is IDefiStrategy, DefiOperatorRole {
     }
     function balanceOfAll() external returns(uint256[] memory balances) {
         address[] memory registeredVaultTokens = IVaultProtocol(vault).supportedTokens();
+        balances = new uint256[](registeredVaultTokens.length);
         for (uint256 i=0; i < registeredVaultTokens.length; i++){
             balances[i] = IERC20(registeredVaultTokens[i]).balanceOf(protocolStub);
         }
