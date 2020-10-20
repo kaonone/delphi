@@ -38,6 +38,8 @@ contract VaultProtocolOneCoin is Module, IVaultProtocol, DefiOperatorRole {
     //Quick disable of direct withdraw
     bool internal availableEnabled;
 
+    uint256 remainder;
+
     function initialize(address _pool, address[] memory _tokens) public initializer {
         require(_tokens.length == 1, "Incorrect number of tokens");
         Module.initialize(_pool);
@@ -78,7 +80,7 @@ contract VaultProtocolOneCoin is Module, IVaultProtocol, DefiOperatorRole {
 
         IVaultSavings vaultSavings = IVaultSavings(getModuleAddress(MODULE_VAULT));
         address vaultPoolToken = vaultSavings.poolTokenByProtocol(address(this));
-        IOperableToken(vaultPoolToken).increaseOnHoldValue(_user, _amount);
+        IOperableToken(vaultPoolToken).increaseOnHoldValue(_user, CalcUtils.normalizeAmount(registeredVaultToken, _amount));
 
         emit DepositToVault(_user, _token, _amount);
     }
@@ -146,7 +148,10 @@ contract VaultProtocolOneCoin is Module, IVaultProtocol, DefiOperatorRole {
         lastProcessedRequest = usersRequested.length;
         //Withdraw requests records can be cleared now
 
-        uint256 totalDeposit = IERC20(registeredVaultToken).balanceOf(address(this)).sub(claimableTokens);
+        uint256 totalDeposit = IERC20(registeredVaultToken).balanceOf(address(this)).sub(claimableTokens).sub(remainder);
+        if (totalDeposit >= remainder) {
+            totalDeposit = totalDeposit.sub(remainder);
+        }
         IERC20(registeredVaultToken).approve(address(_strategy), totalDeposit);
 
         //one of two things should happen for the same token: deposit or withdraw
@@ -184,6 +189,11 @@ contract VaultProtocolOneCoin is Module, IVaultProtocol, DefiOperatorRole {
         delete usersRequested;
         lastProcessedRequest = 0;
         emit RequestsCleared(address(this));
+    }
+
+    function setRemainder(uint256 _amount, uint256 _index) public onlyDefiOperator {
+        require(_index < supportedTokensCount());
+        remainder = _amount;
     }
 
     function quickWithdraw(address _user, address[] memory _tokens, uint256[] memory _amounts) public onlyDefiOperator {
@@ -291,7 +301,7 @@ contract VaultProtocolOneCoin is Module, IVaultProtocol, DefiOperatorRole {
             //We can delete the on-hold records now - the real balances will be deposited to protocol
             _user = usersDeposited[i];
             
-            vaultPoolToken.decreaseOnHoldValue(_user, balancesOnHold[_user]);
+            vaultPoolToken.decreaseOnHoldValue(_user, CalcUtils.normalizeAmount(registeredVaultToken, balancesOnHold[_user]));
             balancesOnHold[_user] = 0;
         }
         lastProcessedDeposit = usersDeposited.length;
@@ -306,7 +316,7 @@ contract VaultProtocolOneCoin is Module, IVaultProtocol, DefiOperatorRole {
         for (uint256 i = lastProcessedDeposit; i < usersDeposited.length; i++) {
             //We can delete the on-hold records now - the real balances will be deposited to protocol
             _user = usersDeposited[i];
-            vaultPoolToken.decreaseOnHoldValue(_user, balancesOnHold[_user]);
+            vaultPoolToken.decreaseOnHoldValue(_user, CalcUtils.normalizeAmount(registeredVaultToken, balancesOnHold[_user]));
             balancesOnHold[_user] = 0;
 
         }

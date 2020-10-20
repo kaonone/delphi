@@ -38,6 +38,8 @@ contract VaultProtocol is Module, IVaultProtocol, DefiOperatorRole {
     //Quick disable of direct withdraw
     bool internal availableEnabled;
 
+    uint256[] remainders;
+
     function initialize(address _pool, address[] memory tokens) public initializer {
         Module.initialize(_pool);
         DefiOperatorRole.initialize(_msgSender());
@@ -46,6 +48,8 @@ contract VaultProtocol is Module, IVaultProtocol, DefiOperatorRole {
         claimableTokens = new uint256[](tokens.length);
         lastProcessedRequests = new uint256[](tokens.length);
         lastProcessedDeposits = new uint256[](tokens.length);
+
+        remainders = new uint256[](tokens.length);
 
         for (uint256 i = 0; i < tokens.length; i++) {
             registeredVaultTokens[i] = tokens[i];
@@ -91,7 +95,7 @@ contract VaultProtocol is Module, IVaultProtocol, DefiOperatorRole {
 
         IVaultSavings vaultSavings = IVaultSavings(getModuleAddress(MODULE_VAULT));
         address vaultPoolToken = vaultSavings.poolTokenByProtocol(address(this));
-        IOperableToken(vaultPoolToken).increaseOnHoldValue(_user, _amount);
+        IOperableToken(vaultPoolToken).increaseOnHoldValue(_user, CalcUtils.normalizeAmount(_token, _amount));
 
         emit DepositToVault(_user, _token, _amount);
     }
@@ -177,6 +181,9 @@ contract VaultProtocol is Module, IVaultProtocol, DefiOperatorRole {
         uint256 totalWithdraw = 0;
         for (uint256 i = 0; i < registeredVaultTokens.length; i++) {
             depositAmounts[i] = IERC20(registeredVaultTokens[i]).balanceOf(address(this)).sub(claimableTokens[i]);
+            if (depositAmounts[i] >= remainders[i]) {
+                depositAmounts[i] = depositAmounts[i].sub(remainders[i]);
+            }
             IERC20(registeredVaultTokens[i]).approve(address(_strategy), depositAmounts[i]);
 
             totalDeposit = totalDeposit.add(CalcUtils.normalizeAmount(registeredVaultTokens[i], depositAmounts[i]));
@@ -230,6 +237,9 @@ contract VaultProtocol is Module, IVaultProtocol, DefiOperatorRole {
         //Withdraw requests records can be cleared now
 
         uint256 totalDeposit = IERC20(_token).balanceOf(address(this)).sub(claimableTokens[ind]);
+        if (totalDeposit >= remainders[ind]) {
+            totalDeposit = totalDeposit.sub(remainders[ind]);
+        }
         IERC20(_token).approve(address(_strategy), totalDeposit);
 
         //one of two things should happen for the same token: deposit or withdraw
@@ -275,6 +285,11 @@ contract VaultProtocol is Module, IVaultProtocol, DefiOperatorRole {
         delete usersRequested;
         setProcessed(lastProcessedRequests, 0);
         emit RequestsCleared(address(this));
+    }
+
+    function setRemainder(uint256 _amount, uint256 _index) public onlyDefiOperator {
+        require(_index < supportedTokensCount());
+        remainders[_index] = _amount;
     }
 
     function quickWithdraw(address _user, address[] memory _tokens, uint256[] memory _amounts) public onlyDefiOperator {
@@ -424,7 +439,7 @@ contract VaultProtocol is Module, IVaultProtocol, DefiOperatorRole {
             _user = usersDeposited[i];
             for (uint256 j = 0; j < balancesOnHold[_user].length; j++) {
                 if (balancesOnHold[_user][j] > 0) {
-                    vaultPoolToken.decreaseOnHoldValue(_user, balancesOnHold[_user][j]);
+                    vaultPoolToken.decreaseOnHoldValue(_user, CalcUtils.normalizeAmount(registeredVaultTokens[j], balancesOnHold[_user][j]));
                     balancesOnHold[_user][j] = 0;
                 }
             }
@@ -444,7 +459,7 @@ contract VaultProtocol is Module, IVaultProtocol, DefiOperatorRole {
             //We can delete the on-hold records now - the real balances will be deposited to protocol
             _user = usersDeposited[i];
             if (balancesOnHold[_user][coinNum] > 0) {
-                vaultPoolToken.decreaseOnHoldValue(_user, balancesOnHold[_user][coinNum]);
+                vaultPoolToken.decreaseOnHoldValue(_user, CalcUtils.normalizeAmount(registeredVaultTokens[coinNum], balancesOnHold[_user][coinNum]));
                 balancesOnHold[_user][coinNum] = 0;
             }
         }

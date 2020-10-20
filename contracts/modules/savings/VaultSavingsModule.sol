@@ -241,6 +241,10 @@ contract VaultSavingsModule is Module, IVaultSavings, AccessChecker, RewardDistr
         }
     }
 
+    function setVaultRemainder(address _vaultProtocol, uint256 _amount, uint256 _index) public onlyVaultOperator {
+        IVaultProtocol(_vaultProtocol).setRemainder(_amount, _index);
+    }
+
 // ------
 // Getters and checkers
 // ------

@@ -27,6 +27,7 @@ contract IVaultProtocol {
     function operatorActionOneCoin(address _strategy, address _token) external returns(uint256, uint256);
     function clearOnHoldDeposits() external;
     function clearWithdrawRequests() external;
+    function setRemainder(uint256 _amount, uint256 _index) external;
 
     function quickWithdraw(address _user, address[] calldata _tokens, uint256[] calldata _amounts) external;
     function quickWithdrawStrategy() external view returns(address);
