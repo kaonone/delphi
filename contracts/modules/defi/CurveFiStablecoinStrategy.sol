@@ -16,6 +16,7 @@ import "../../interfaces/defi/ICurveFiLiquidityGauge.sol";
 import "../../interfaces/defi/ICurveFiMinter.sol";
 import "../../interfaces/defi/ICurveFiSwap.sol";
 import "../../interfaces/defi/IDexag.sol";
+import "../../interfaces/defi/IYErc20.sol";
 
 import "../../utils/CalcUtils.sol";
 
@@ -23,6 +24,14 @@ import "../../utils/CalcUtils.sol";
 contract CurveFiStablecoinStrategy is Module, IDefiStrategy, IStrategyCurveFiSwapCrv, DefiOperatorRole {
     using SafeMath for uint256;
     using SafeERC20 for IERC20;
+
+
+    struct PriceData {
+        uint256 price;
+        uint256 lastUpdateBlock;
+    }
+
+    mapping(address=>PriceData) internal yPricePerFullShare;
 
     address public vault;
 
@@ -134,6 +143,7 @@ contract CurveFiStablecoinStrategy is Module, IDefiStrategy, IStrategyCurveFiSwa
 
         uint256 nBalance = normalizedBalance();
         uint256 poolShares = curveFiTokenBalance();
+        
         uint256 withdrawShares = poolShares.mul(nWithdraw).mul(slippageMultiplier).div(nBalance).div(1e18); //Increase required amount to some percent, so that we definitely have enough to withdraw
 
         IERC20(curveFiToken).safeApprove(address(curveFiDeposit), withdrawShares);
@@ -181,15 +191,17 @@ contract CurveFiStablecoinStrategy is Module, IDefiStrategy, IStrategyCurveFiSwa
     function claimRewardsFromProtocol() internal {
         curveFiMinter.mint(address(curveFiLPGauge));
     }
-
     function balanceOf(address token) public returns(uint256) {
         uint256 tokenIdx = getTokenIndex(token);
 
         uint256 cfBalance = curveFiTokenBalance();
         uint256 cfTotalSupply = curveFiToken.totalSupply();
-        uint256 tokenCurveFiBalance = curveFiSwap.balances(int128(tokenIdx));
+        uint256 yTokenCurveFiBalance = curveFiSwap.balances(int128(tokenIdx));
         
-        return tokenCurveFiBalance.mul(cfBalance).div(cfTotalSupply);
+        uint256 yTokenShares = yTokenCurveFiBalance.mul(cfBalance).div(cfTotalSupply);
+        uint256 tokenBalance = getPricePerFullShare(curveFiSwap.coins(int128(tokenIdx))).mul(yTokenShares).div(1e18); //getPricePerFullShare() returns balance of underlying token multiplied by 1e18
+
+        return tokenBalance;
     }
 
     function balanceOfAll() public returns(uint256[] memory balances) {
@@ -201,12 +213,14 @@ contract CurveFiStablecoinStrategy is Module, IDefiStrategy, IStrategyCurveFiSwa
 
         balances = new uint256[](nTokens);
 
-        uint256 tcfBalance;
+        uint256 ycfBalance;
         for (uint256 i=0; i < nTokens; i++){
-            tcfBalance = curveFiSwap.balances(int128(i));
-            balances[i] = tcfBalance.mul(cfBalance).div(cfTotalSupply);
+            ycfBalance =  curveFiSwap.balances(int128(i));
+            uint256 yShares = ycfBalance.mul(cfBalance).div(cfTotalSupply);
+            balances[i] = getPricePerFullShare(curveFiSwap.coins(int128(i))).mul(yShares).div(1e18);
         }
     }
+
 
     function normalizedBalance() public returns(uint256) {
         address[] memory registeredVaultTokens = IVaultProtocol(vault).supportedTokens();
@@ -240,5 +254,14 @@ contract CurveFiStablecoinStrategy is Module, IDefiStrategy, IStrategyCurveFiSwa
             }
         }
         revert("CurveFiYProtocol: token not registered");
+    }
+
+    function getPricePerFullShare(address yToken) internal returns(uint256) {
+        PriceData storage pd = yPricePerFullShare[yToken];
+        if(pd.lastUpdateBlock < block.number) {
+            pd.price = IYErc20(yToken).getPricePerFullShare();
+            pd.lastUpdateBlock = block.number;
+        }
+        return pd.price;
     }
 }
