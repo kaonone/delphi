@@ -23,10 +23,10 @@ rem ==== Akropolis ====
 SET MODULE_POOL=0x6CEEd89849f5890392D7c2Ecb429888e2123E99b
 SET MODULE_ACCESS=0xbFC891b6c83b36aFC9493957065D304661c4189A
 
-SET MODULE_VAULT_SAVINGS=0xa2B9597e7D861F29d24F9B5a1Df61E74f656EFfd
-SET VAULT_CURVE=0x9668aF87487805C2D7270DABf41B899862130C98
-SET STRATEGY_CURVE=0xf3F0D5ad7f6940369e3E23E616e803208bF4D13C
-SET POOL_TOKEN_VAULT_CURVE=0x0190F8668a714A669248CD1E926211DBB9723F6d
+SET MODULE_VAULT_SAVINGS=0x29295D880bD5b1b7819136164642b3375e2DCA0e
+SET VAULT_PROTOCOL_CURVE=0x6150E264b669bC63835263F4C4D4904fA0B44523
+SET STRATEGY_CURVE=0xC1D60CE7BfBAc91329A7F5328F11Ea5f20Da7955
+SET POOL_TOKEN_VAULT_CURVE=0xbD77C72925DF412F8Bcb75a575c4A3C3dbD467b5
 
 rem ==== Roles ====
 SET VAULT_OPERATOR=0x5D507818B52A891fe296463adC01EeD9C51e218b
@@ -38,10 +38,10 @@ goto :done
 
 rem === ACTIONS ===
 :show
-call npx oz send-tx --to %MODULE_VAULT_SAVINGS% --network rinkeby --method setVaultRemainder --args "%VAULT_CURVE%,1000000,0"
-call npx oz send-tx --to %MODULE_VAULT_SAVINGS% --network rinkeby --method setVaultRemainder --args "%VAULT_CURVE%,1000000,1"
-call npx oz send-tx --to %MODULE_VAULT_SAVINGS% --network rinkeby --method setVaultRemainder --args "%VAULT_CURVE%,1000000,2"
-call npx oz send-tx --to %MODULE_VAULT_SAVINGS% --network rinkeby --method setVaultRemainder --args "%VAULT_CURVE%,1000000,3"
+call npx oz send-tx --to %MODULE_VAULT_SAVINGS% --network rinkeby --method setVaultRemainder --args "%VAULT_PROTOCOL_CURVE%,1000000,0"
+call npx oz send-tx --to %MODULE_VAULT_SAVINGS% --network rinkeby --method setVaultRemainder --args "%VAULT_PROTOCOL_CURVE%,1000000,1"
+call npx oz send-tx --to %MODULE_VAULT_SAVINGS% --network rinkeby --method setVaultRemainder --args "%VAULT_PROTOCOL_CURVE%,1000000,2"
+call npx oz send-tx --to %MODULE_VAULT_SAVINGS% --network rinkeby --method setVaultRemainder --args "%VAULT_PROTOCOL_CURVE%,1000000,3"
 goto :done
 
 :create
@@ -53,18 +53,18 @@ goto :done
 
 :setup
 call npx oz send-tx --to %MODULE_POOL% --network rinkeby --method set --args "vault, %MODULE_VAULT_SAVINGS%, false"
-call npx oz send-tx --to %VAULT_CURVE% --network rinkeby --method addDefiOperator --args %MODULE_VAULT_SAVINGS%
 call npx oz send-tx --to %STRATEGY_CURVE% --network rinkeby --method setProtocol --args "%EXT_CURVEFY_Y_DEPOSIT%,%EXT_CURVEFY_Y_GAUGE%,%EXT_CURVEFY_Y_MINTER%,%EXT_DEXAG_PROXY%"
-call npx oz send-tx --to %STRATEGY_CURVE% --network rinkeby --method addDefiOperator --args %VAULT_CURVE%
-call npx oz send-tx --to %VAULT_CURVE% --network rinkeby --method registerStrategy --args %STRATEGY_CURVE%
-call npx oz send-tx --to %VAULT_CURVE% --network rinkeby --method setQuickWithdrawStrategy --args %STRATEGY_CURVE%
+call npx oz send-tx --to %STRATEGY_CURVE% --network rinkeby --method addDefiOperator --args %VAULT_PROTOCOL_CURVE%
+call npx oz send-tx --to %VAULT_PROTOCOL_CURVE% --network rinkeby --method addDefiOperator --args %MODULE_VAULT_SAVINGS%
+call npx oz send-tx --to %VAULT_PROTOCOL_CURVE% --network rinkeby --method registerStrategy --args %STRATEGY_CURVE%
+call npx oz send-tx --to %VAULT_PROTOCOL_CURVE% --network rinkeby --method setQuickWithdrawStrategy --args %STRATEGY_CURVE%
 call npx oz send-tx --to %POOL_TOKEN_VAULT_CURVE% --network rinkeby --method addMinter --args %MODULE_VAULT_SAVINGS%
-call npx oz send-tx --to %POOL_TOKEN_VAULT_CURVE% --network rinkeby --method addMinter --args %VAULT_CURVE%
-call npx oz send-tx --to %MODULE_VAULT_SAVINGS% --network rinkeby --method registerVault --args "%VAULT_CURVE%,%POOL_TOKEN_VAULT_CURVE%"
-call npx oz send-tx --to %MODULE_VAULT_SAVINGS% --network rinkeby --method setVaultRemainder --args "%VAULT_CURVE%,1000000,0"
-call npx oz send-tx --to %MODULE_VAULT_SAVINGS% --network rinkeby --method setVaultRemainder --args "%VAULT_CURVE%,1000000,1"
-call npx oz send-tx --to %MODULE_VAULT_SAVINGS% --network rinkeby --method setVaultRemainder --args "%VAULT_CURVE%,1000000,2"
-call npx oz send-tx --to %MODULE_VAULT_SAVINGS% --network rinkeby --method setVaultRemainder --args "%VAULT_CURVE%,1000000,3"
+call npx oz send-tx --to %POOL_TOKEN_VAULT_CURVE% --network rinkeby --method addMinter --args %VAULT_PROTOCOL_CURVE%
+call npx oz send-tx --to %MODULE_VAULT_SAVINGS% --network rinkeby --method registerVault --args "%VAULT_PROTOCOL_CURVE%,%POOL_TOKEN_VAULT_CURVE%"
+call npx oz send-tx --to %MODULE_VAULT_SAVINGS% --network rinkeby --method setVaultRemainder --args "%VAULT_PROTOCOL_CURVE%,1000000,0"
+call npx oz send-tx --to %MODULE_VAULT_SAVINGS% --network rinkeby --method setVaultRemainder --args "%VAULT_PROTOCOL_CURVE%,1000000,1"
+call npx oz send-tx --to %MODULE_VAULT_SAVINGS% --network rinkeby --method setVaultRemainder --args "%VAULT_PROTOCOL_CURVE%,1000000,2"
+call npx oz send-tx --to %MODULE_VAULT_SAVINGS% --network rinkeby --method setVaultRemainder --args "%VAULT_PROTOCOL_CURVE%,1000000,3"
 goto :done
 
 :setupOperator
