@@ -181,9 +181,8 @@ contract VaultProtocolOneCoin is Module, IVaultProtocol, DefiOperatorRole {
         //Withdraw requests records can be cleared now
 
         uint256 totalDeposit = IERC20(registeredVaultToken).balanceOf(address(this)).sub(claimableTokens).sub(remainder);
-        if (totalDeposit >= remainder) {
-            totalDeposit = totalDeposit.sub(remainder);
-        }
+        totalDeposit = handleRemainders(totalDeposit);
+
         IERC20(registeredVaultToken).approve(address(_strategy), totalDeposit);
 
         //one of two things should happen for the same token: deposit or withdraw
@@ -368,6 +367,7 @@ contract VaultProtocolOneCoin is Module, IVaultProtocol, DefiOperatorRole {
                     
             //move tokens to claim if there is a liquidity
             tokenBalance = IERC20(registeredVaultToken).balanceOf(address(this)).sub(claimableTokens);
+            tokenBalance = handleRemainders(tokenBalance);
             if (tokenBalance >= remainder) {
                 tokenBalance = tokenBalance.sub(remainder);
             }
@@ -389,5 +389,14 @@ contract VaultProtocolOneCoin is Module, IVaultProtocol, DefiOperatorRole {
             balancesRequested[_user] = 0;
         }
         return amountToWithdraw;
+    }
+
+    function handleRemainders(uint256 _amount) internal view returns(uint256) {
+        if (_amount >= remainder) {
+            return _amount.sub(remainder);
+        }
+        else {
+            return 0;
+        }
     }
 }

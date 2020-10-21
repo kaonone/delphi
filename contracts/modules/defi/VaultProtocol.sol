@@ -222,9 +222,8 @@ contract VaultProtocol is Module, IVaultProtocol, DefiOperatorRole {
         uint256 totalWithdraw = 0;
         for (uint256 i = 0; i < registeredVaultTokens.length; i++) {
             depositAmounts[i] = IERC20(registeredVaultTokens[i]).balanceOf(address(this)).sub(claimableTokens[i]);
-            if (depositAmounts[i] >= remainders[i]) {
-                depositAmounts[i] = depositAmounts[i].sub(remainders[i]);
-            }
+            depositAmounts[i] = handleRemainders(depositAmounts[i], i);
+
             IERC20(registeredVaultTokens[i]).approve(address(_strategy), depositAmounts[i]);
 
             totalDeposit = totalDeposit.add(CalcUtils.normalizeAmount(registeredVaultTokens[i], depositAmounts[i]));
@@ -278,9 +277,8 @@ contract VaultProtocol is Module, IVaultProtocol, DefiOperatorRole {
         //Withdraw requests records can be cleared now
 
         uint256 totalDeposit = IERC20(_token).balanceOf(address(this)).sub(claimableTokens[ind]);
-        if (totalDeposit >= remainders[ind]) {
-            totalDeposit = totalDeposit.sub(remainders[ind]);
-        }
+        totalDeposit = handleRemainders(totalDeposit, ind);
+
         IERC20(_token).approve(address(_strategy), totalDeposit);
 
         //one of two things should happen for the same token: deposit or withdraw
@@ -522,12 +520,7 @@ contract VaultProtocol is Module, IVaultProtocol, DefiOperatorRole {
                     
             //move tokens to claim if there is a liquidity
             tokenBalance = IERC20(token).balanceOf(address(this)).sub(claimableTokens[_ind]);
-            if (tokenBalance >= remainders[_ind]) {
-                tokenBalance = tokenBalance.sub(remainders[_ind]);
-            }
-            else {
-                tokenBalance = 0;
-            }
+            tokenBalance = handleRemainders(tokenBalance, _ind);
 
             if (tokenBalance >= amount) {
                 claimableTokens[_ind] = claimableTokens[_ind].add(amount);
@@ -561,5 +554,14 @@ contract VaultProtocol is Module, IVaultProtocol, DefiOperatorRole {
             }
         }
         return min;
+    }
+
+    function handleRemainders(uint256 _amount, uint256 _ind) internal view returns(uint256) {
+        if (_amount >= remainders[_ind]) {
+            return _amount.sub(remainders[_ind]);
+        }
+        else {
+            return 0;
+        }
     }
 }
