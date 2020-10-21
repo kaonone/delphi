@@ -28,6 +28,10 @@ SET VAULT_CURVE=0x9668aF87487805C2D7270DABf41B899862130C98
 SET STRATEGY_CURVE=0xf3F0D5ad7f6940369e3E23E616e803208bF4D13C
 SET POOL_TOKEN_VAULT_CURVE=0x0190F8668a714A669248CD1E926211DBB9723F6d
 
+rem ==== Roles ====
+SET VAULT_OPERATOR=0x5D507818B52A891fe296463adC01EeD9C51e218b
+
+
 rem === GOTO REQUESTED OP===
 if "%1" neq "" goto :%1
 goto :done
@@ -42,7 +46,7 @@ goto :done
 
 :create
 call npx oz create VaultSavingsModule --network rinkeby --init "initialize(address _pool)" --args %MODULE_POOL%
-call npx oz create VaultProtocol --network rinkeby --init "initialize(address _pool, address[] memory tokens)" --args "%MODULE_POOL%,[%EXT_TOKEN_DAI%,%EXT_TOKEN_USDC%,%EXT_TOKEN_USDT%,%EXT_TOKEN_TUSD%]"
+call npx oz create VaultProtocolCurveFi --network rinkeby --init "initialize(address _pool, address[] memory tokens)" --args "%MODULE_POOL%,[%EXT_TOKEN_DAI%,%EXT_TOKEN_USDC%,%EXT_TOKEN_USDT%,%EXT_TOKEN_TUSD%]"
 call npx oz create CurveFiStablecoinStrategy --network rinkeby --init "initialize(address _pool, string memory _strategyId)" --args "%MODULE_POOL%,""CRV-DEXAG-DAI"""
 call npx oz create PoolToken_Vault_CurveFi --network rinkeby --init "initialize(address _pool)" --args %MODULE_POOL%
 goto :done
@@ -63,6 +67,10 @@ call npx oz send-tx --to %MODULE_VAULT_SAVINGS% --network rinkeby --method setVa
 call npx oz send-tx --to %MODULE_VAULT_SAVINGS% --network rinkeby --method setVaultRemainder --args "%VAULT_CURVE%,1000000,3"
 goto :done
 
+:setupOperator
+call npx oz send-tx --to %MODULE_VAULT_SAVINGS% --network rinkeby --method addVaultOperator --args %VAULT_OPERATOR%
+call npx oz send-tx --to %STRATEGY_CURVE% --network rinkeby --method addDefiOperator --args %VAULT_OPERATOR%
+goto :done
 
 :done
 echo DONE
