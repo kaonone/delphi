@@ -24,8 +24,6 @@ contract VaultSavingsModule is Module, IVaultSavings, AccessChecker, RewardDistr
     struct VaultInfo {
         VaultPoolToken poolToken;
         uint256 previousBalance;
-        uint256 lastRewardDistribution;
-        uint256 withdrawAllSlippage;         //Allowed slippage for withdrawAll function in wei
     }
 
     address[] internal registeredVaults;
@@ -48,9 +46,7 @@ contract VaultSavingsModule is Module, IVaultSavings, AccessChecker, RewardDistr
         
         vaults[address(protocol)] = VaultInfo({
             poolToken: poolToken,
-            previousBalance: protocol.normalizedBalance(),
-            lastRewardDistribution: 0,
-            withdrawAllSlippage:0
+            previousBalance: protocol.normalizedBalance()
         });
 
         poolTokenToVault[address(poolToken)] = address(protocol);

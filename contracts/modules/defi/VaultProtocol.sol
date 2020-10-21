@@ -37,9 +37,11 @@ contract VaultProtocol is Module, IVaultProtocol, DefiOperatorRole {
 
     //Quick disable of direct withdraw
     bool internal availableEnabled;
+    uint256[] internal remainders;
 
-    uint256[] remainders;
-
+// ------
+// Settings methods
+// ------
     function initialize(address _pool, address[] memory tokens) public initializer {
         Module.initialize(_pool);
         DefiOperatorRole.initialize(_msgSender());
@@ -65,15 +67,23 @@ contract VaultProtocol is Module, IVaultProtocol, DefiOperatorRole {
         emit StrategyRegistered(address(this), _strategy, IDefiStrategy(_strategy).getStrategyId());
     }
 
-    function quickWithdrawStrategy() public view returns(address) {
-        return quickStrategy;
-    }
-
     function setQuickWithdrawStrategy(address _strategy) public onlyDefiOperator {
         require(isStrategyRegistered(_strategy), "Strategy is not registered");
         quickStrategy = _strategy;
     }
 
+    function setRemainder(uint256 _amount, uint256 _index) public onlyDefiOperator {
+        require(_index < supportedTokensCount());
+        remainders[_index] = _amount;
+    }
+
+    function setAvailableEnabled(bool value) public onlyDefiOperator {
+        availableEnabled = value;
+    }
+
+// ------
+// Funds flow interface (for defiOperator)
+// ------
     function depositToVault(address _user, address _token, uint256 _amount) public onlyDefiOperator {
         require(_user != address(0), "Incorrect user address");
         require(_token != address(0), "Incorrect token address");
@@ -149,6 +159,37 @@ contract VaultProtocol is Module, IVaultProtocol, DefiOperatorRole {
         }
     }
 
+        function quickWithdraw(address _user, address[] memory _tokens, uint256[] memory _amounts) public onlyDefiOperator {
+        require(quickStrategy != address(0), "No strategy for quick withdraw");
+        require(_tokens.length == 1 || _amounts.length == supportedTokensCount(), "Incorrect number of tokens");
+
+        if (_tokens.length == 1) {
+            IDefiStrategy(quickStrategy).withdraw(_user, _tokens[0], _amounts[0]);
+        }
+        else {
+            //require correct order
+            IDefiStrategy(quickStrategy).withdraw(_user, _amounts);
+        }
+    }
+
+    function claimRequested(address _user) public {
+        if (balancesToClaim[_user].length == 0) return;
+        for (uint256 i = 0; i < balancesToClaim[_user].length; i++) {
+            address token = registeredVaultTokens[i];
+            uint256 amount = balancesToClaim[_user][i];
+
+            if (amount > 0) {
+                IERC20(token).transfer(_user, amount);
+                claimableTokens[i] = claimableTokens[i].sub(amount);
+                emit Claimed(address(this), _user, token, amount);
+            }
+        }
+        delete balancesToClaim[_user];
+    }
+
+// ------
+// Operator interface
+// ------
     function operatorAction(address _strategy) public onlyDefiOperator returns(uint256, uint256) {
         require(isStrategyRegistered(_strategy), "Strategy is not registered");
         //Yield distribution step based on actual deposits (excluding on-hold ones)
@@ -287,39 +328,10 @@ contract VaultProtocol is Module, IVaultProtocol, DefiOperatorRole {
         emit RequestsCleared(address(this));
     }
 
-    function setRemainder(uint256 _amount, uint256 _index) public onlyDefiOperator {
-        require(_index < supportedTokensCount());
-        remainders[_index] = _amount;
-    }
 
-    function quickWithdraw(address _user, address[] memory _tokens, uint256[] memory _amounts) public onlyDefiOperator {
-        require(quickStrategy != address(0), "No strategy for quick withdraw");
-        require(_tokens.length == 1 || _amounts.length == supportedTokensCount(), "Incorrect number of tokens");
-
-        if (_tokens.length == 1) {
-            IDefiStrategy(quickStrategy).withdraw(_user, _tokens[0], _amounts[0]);
-        }
-        else {
-            //require correct order
-            IDefiStrategy(quickStrategy).withdraw(_user, _amounts);
-        }
-    }
-
-    function claimRequested(address _user) public {
-        if (balancesToClaim[_user].length == 0) return;
-        for (uint256 i = 0; i < balancesToClaim[_user].length; i++) {
-            address token = registeredVaultTokens[i];
-            uint256 amount = balancesToClaim[_user][i];
-
-            if (amount > 0) {
-                IERC20(token).transfer(_user, amount);
-                claimableTokens[i] = claimableTokens[i].sub(amount);
-                emit Claimed(address(this), _user, token, amount);
-            }
-        }
-        delete balancesToClaim[_user];
-    }
-
+// ------
+// Balances
+// ------
     function normalizedBalance(address _strategy) public returns(uint256) {
         require(isStrategyRegistered(_strategy), "Strategy is not registered");
         return IDefiStrategy(_strategy).normalizedBalance();
@@ -333,10 +345,6 @@ contract VaultProtocol is Module, IVaultProtocol, DefiOperatorRole {
         return total;
     }
 
-    function setAvailableEnabled(bool value) public onlyDefiOperator {
-        availableEnabled = value;
-    }
-
     function normalizedVaultBalance() public view returns(uint256) {
         uint256 summ;
         for (uint256 i=0; i < registeredVaultTokens.length; i++) {
@@ -344,6 +352,36 @@ contract VaultProtocol is Module, IVaultProtocol, DefiOperatorRole {
             summ = summ.add(CalcUtils.normalizeAmount(registeredVaultTokens[i], balance));
         }
         return summ;
+    }
+
+    function totalClaimableAmount(address _token) public view returns (uint256) {
+        uint256 indReg = tokenRegisteredInd(_token);
+
+        return claimableTokens[indReg];
+    }
+
+    function claimableAmount(address _user, address _token) public view returns (uint256) {
+        return tokenAmount(balancesToClaim, _user, _token);
+    }
+
+    function amountOnHold(address _user, address _token) public view returns (uint256) {
+        return tokenAmount(balancesOnHold, _user, _token);
+    }
+
+    function amountRequested(address _user, address _token) public view returns (uint256) {
+        return tokenAmount(balancesRequested, _user, _token);
+    }
+
+// ------
+// Getters and checkers
+// ------
+    function quickWithdrawStrategy() public view returns(address) {
+        return quickStrategy;
+    }
+
+    function getRemainder(uint256 _index) public  view returns(uint256) {
+        require(_index < supportedTokensCount());
+        return remainders[_index];
     }
 
     function supportedTokens() public view returns(address[] memory) {
@@ -389,24 +427,9 @@ contract VaultProtocol is Module, IVaultProtocol, DefiOperatorRole {
         return ind;
     }
 
-    function totalClaimableAmount(address _token) public view returns (uint256) {
-        uint256 indReg = tokenRegisteredInd(_token);
-
-        return claimableTokens[indReg];
-    }
-
-    function claimableAmount(address _user, address _token) public view returns (uint256) {
-        return tokenAmount(balancesToClaim, _user, _token);
-    }
-
-    function amountOnHold(address _user, address _token) public view returns (uint256) {
-        return tokenAmount(balancesOnHold, _user, _token);
-    }
-
-    function amountRequested(address _user, address _token) public view returns (uint256) {
-        return tokenAmount(balancesRequested, _user, _token);
-    }
-
+// ------
+// Internal helpers
+// ------
     function tokenAmount(mapping(address => uint256[]) storage _amounts, address _user, address _token) internal view returns(uint256) {
         uint256 ind = tokenRegisteredInd(_token);
         if (_amounts[_user].length == 0)
@@ -502,6 +525,10 @@ contract VaultProtocol is Module, IVaultProtocol, DefiOperatorRole {
             if (tokenBalance >= remainders[_ind]) {
                 tokenBalance = tokenBalance.sub(remainders[_ind]);
             }
+            else {
+                tokenBalance = 0;
+            }
+
             if (tokenBalance >= amount) {
                 claimableTokens[_ind] = claimableTokens[_ind].add(amount);
             }
