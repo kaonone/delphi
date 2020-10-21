@@ -4645,11 +4645,11 @@
       }
     },
     "VaultProtocolCurveFi": {
-      "address": "0x9eBD4DEBC2fd3FDBEd7e46f8326f6F023609B27e",
-      "constructorCode": "6080604052615435806100136000396000f3fe",
-      "bodyBytecodeHash": "c23a29a1f49e9fdc7a46aaab85b2cdd6e49b427e74cf67d17dfc3280ade8b50a",
-      "localBytecodeHash": "4673c9b740b7ae7ad9444fd25db65351ea169c8b4fbef3fe4614db17ca42f260",
-      "deployedBytecodeHash": "4673c9b740b7ae7ad9444fd25db65351ea169c8b4fbef3fe4614db17ca42f260",
+      "address": "0x08643acF34D41D7aDB980f39b4bD459C8Ab3dfB1",
+      "constructorCode": "60806040526153d0806100136000396000f3fe",
+      "bodyBytecodeHash": "a14b5565c1821066e91b79b0a396a4d6c4767495ba45f228dbe4f8a68551e94f",
+      "localBytecodeHash": "9a2cc79e6a0c7f8b3207b7024913280af3f66ddb84e748bbc2222e9599fcf418",
+      "deployedBytecodeHash": "9a2cc79e6a0c7f8b3207b7024913280af3f66ddb84e748bbc2222e9599fcf418",
       "types": {
         "t_bool": {
           "id": "t_bool",
@@ -4680,7 +4680,7 @@
           "members": [
             {
               "label": "bearer",
-              "astId": 33908,
+              "astId": 33922,
               "type": "t_mapping<t_bool>",
               "src": "150:32:124"
             }
@@ -4718,7 +4718,7 @@
           "contract": "Initializable",
           "path": "@openzeppelin\\upgrades\\contracts\\Initializable.sol",
           "label": "initialized",
-          "astId": 35978,
+          "astId": 35992,
           "type": "t_bool",
           "src": "757:24:141"
         },
@@ -4726,7 +4726,7 @@
           "contract": "Initializable",
           "path": "@openzeppelin\\upgrades\\contracts\\Initializable.sol",
           "label": "initializing",
-          "astId": 35980,
+          "astId": 35994,
           "type": "t_bool",
           "src": "876:25:141"
         },
@@ -4734,7 +4734,7 @@
           "contract": "Initializable",
           "path": "@openzeppelin\\upgrades\\contracts\\Initializable.sol",
           "label": "______gap",
-          "astId": 36042,
+          "astId": 36056,
           "type": "t_array:50<t_uint256>",
           "src": "1982:29:141"
         },
@@ -4742,7 +4742,7 @@
           "contract": "Ownable",
           "path": "@openzeppelin\\contracts-ethereum-package\\contracts\\ownership\\Ownable.sol",
           "label": "_owner",
-          "astId": 34911,
+          "astId": 34925,
           "type": "t_address",
           "src": "526:22:132"
         },
@@ -4750,7 +4750,7 @@
           "contract": "Ownable",
           "path": "@openzeppelin\\contracts-ethereum-package\\contracts\\ownership\\Ownable.sol",
           "label": "______gap",
-          "astId": 35024,
+          "astId": 35038,
           "type": "t_array:50<t_uint256>",
           "src": "2471:29:132"
         },
@@ -4880,7 +4880,18 @@
         "hasSelfDestruct": false,
         "hasDelegateCall": false,
         "hasInitialValuesInDeclarations": false,
-        "uninitializedBaseContracts": []
+        "uninitializedBaseContracts": [],
+        "storageUncheckedVars": [
+          {
+            "contract": "DefiOperatorRole",
+            "path": "..\\..\\..\\D\\projects\\akropolis\\savings-pool\\contracts\\modules\\defi\\DefiOperatorRole.sol",
+            "label": "_operators",
+            "astId": 9365,
+            "type": "t_struct<Roles.Role>",
+            "src": "445:29:79"
+          }
+        ],
+        "storageDiff": []
       }
     }
   },
@@ -5014,7 +5025,7 @@
     ],
     "akropolis-savings-pool/VaultSavingsModule": [
       {
-        "address": "0x29295D880bD5b1b7819136164642b3375e2DCA0e",
+        "address": "0xFe82759ae7c1E64A4fDC345bf98529B4267C2994",
         "version": "1.0.0",
         "implementation": "0x38fbAB2793872182ae9Ccf40521DfafE1BE4Cf37",
         "admin": "0x7B27e0dAED14F0DFA17aa8a23f39c5dbF6FaAF12",
@@ -5023,16 +5034,16 @@
     ],
     "akropolis-savings-pool/VaultProtocolCurveFi": [
       {
-        "address": "0x6150E264b669bC63835263F4C4D4904fA0B44523",
+        "address": "0x7A4619fD8DD9D1d5d4d55bf5385E31496998939C",
         "version": "1.0.0",
-        "implementation": "0x9eBD4DEBC2fd3FDBEd7e46f8326f6F023609B27e",
+        "implementation": "0x08643acF34D41D7aDB980f39b4bD459C8Ab3dfB1",
         "admin": "0x7B27e0dAED14F0DFA17aa8a23f39c5dbF6FaAF12",
         "kind": "Upgradeable"
       }
     ],
     "akropolis-savings-pool/CurveFiStablecoinStrategy": [
       {
-        "address": "0xC1D60CE7BfBAc91329A7F5328F11Ea5f20Da7955",
+        "address": "0x393b31207905166F15B4F1D28091cF22C8290A6b",
         "version": "1.0.0",
         "implementation": "0x07d36a1662E133ad6791a503ed61C661B2020e4E",
         "admin": "0x7B27e0dAED14F0DFA17aa8a23f39c5dbF6FaAF12",
@@ -5041,7 +5052,7 @@
     ],
     "akropolis-savings-pool/PoolToken_Vault_CurveFi": [
       {
-        "address": "0xbD77C72925DF412F8Bcb75a575c4A3C3dbD467b5",
+        "address": "0x9eaCf1fA9283344561F7b6E0a3914f56435d90bf",
         "version": "1.0.0",
         "implementation": "0x811ef08973E8cBEcff90353a796BF5DabF8cA026",
         "admin": "0x7B27e0dAED14F0DFA17aa8a23f39c5dbF6FaAF12",
