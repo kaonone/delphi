@@ -4,6 +4,7 @@ import {
 } from "../types/truffle-contracts/index";
 
 const { BN, constants, expectEvent, shouldFail, time } = require("@openzeppelin/test-helpers");
+const { promisify } = require('util');
 import Snapshot from "./utils/snapshot";
 const should = require("chai").should();
 const expect = require("chai").expect;
@@ -15,7 +16,7 @@ const FreeERC20 = artifacts.require("FreeERC20");
 const VestedAkro = artifacts.require("VestedAkro");
 
 contract("VestedAkro", async ([owner, sender, user, ...otherAccounts]) => {
-    const vestingPeriod = 6*30*24*60*60;
+    const vestingPeriod = 365*24*60*60;
     let snap: Snapshot;
     let akro: FreeErc20Instance;
     let vAkro: VestedAkroInstance;
@@ -100,32 +101,42 @@ contract("VestedAkro", async ([owner, sender, user, ...otherAccounts]) => {
     });
 
     it('should allow user to redeem partially unlocked AKRO', async () => {
-        const periodPartPassed = 1/2;    //Half period passed
+        const periodPartPassed = 2;    //Half period passed:  1/n-th
 
-        const beforeTS = {
-            userAkro: await akro.balanceOf(user),
-            userVAkroBI: await vAkroBalanceInfo(user),
-        }
-        console.log('beforeTS.userAkro', beforeTS.userAkro.toString());
-        console.log('beforeTS.userVAkroBI.locked', beforeTS.userVAkroBI.locked.toString());
-        console.log('beforeTS.userVAkroBI.unlocked', beforeTS.userVAkroBI.unlocked.toString());
-        console.log('beforeTS.userVAkroBI.unlockable', beforeTS.userVAkroBI.unlockable.toString());
+        // console.log('vp', (await vAkro.vestingPeriod()).toString());
+        // console.log('now1', (await time.latest()).toString());
+
+        // let batchInfo = await vAkro.batchInfo(user, 0);
+        // console.log('batchInfo', batchInfo[1].toString(), batchInfo[2].toString());
 
 
-        await time.increase(vestingPeriod*periodPartPassed);
+        // const beforeTS = {
+        //     userAkro: await akro.balanceOf(user),
+        //     userVAkroBI: await vAkroBalanceInfo(user),
+        // }
+        // console.log('beforeTS.userAkro', beforeTS.userAkro.toString());
+        // console.log('beforeTS.userVAkroBI.locked', beforeTS.userVAkroBI.locked.toString());
+        // console.log('beforeTS.userVAkroBI.unlocked', beforeTS.userVAkroBI.unlocked.toString());
+        // console.log('beforeTS.userVAkroBI.unlockable', beforeTS.userVAkroBI.unlockable.toString());
+
+        // console.log('now1a', (await time.latest()).toString());
+
+        await increaseTime(vestingPeriod/periodPartPassed);
+
+        // console.log('now2', (await time.latest()).toString());
 
         const before = {
             userAkro: await akro.balanceOf(user),
             userVAkroBI: await vAkroBalanceInfo(user),
         }
-        console.log('before.userAkro', before.userAkro.toString());
-        console.log('before.userVAkroBI.locked', before.userVAkroBI.locked.toString());
-        console.log('before.userVAkroBI.unlocked', before.userVAkroBI.unlocked.toString());
-        console.log('before.userVAkroBI.unlockable', before.userVAkroBI.unlockable.toString());
+        // console.log('before.userAkro', before.userAkro.toString());
+        // console.log('before.userVAkroBI.locked', before.userVAkroBI.locked.toString());
+        // console.log('before.userVAkroBI.unlocked', before.userVAkroBI.unlocked.toString());
+        // console.log('before.userVAkroBI.unlockable', before.userVAkroBI.unlockable.toString());
         expect(before.userAkro).to.be.bignumber.eq(new BN('0')); // user should not have his own AKRO for this test
 
         // Check correct unlockable amount
-        expectEqualBN(before.userVAkroBI.unlockable, before.userVAkroBI.locked.muln(periodPartPassed), 18, -10);
+        expectEqualBN(before.userVAkroBI.unlockable, before.userVAkroBI.locked.divn(periodPartPassed), 18, -17);
 
         await vAkro.unlockAndRedeemAll({from:user});
 
@@ -134,9 +145,9 @@ contract("VestedAkro", async ([owner, sender, user, ...otherAccounts]) => {
             userVAkroBI: await vAkroBalanceInfo(user),
         }
 
-        console.log('after', after.userVAkroBI);
-        console.log('after.userAkro', after.userAkro);
-        expectEqualBN(after.userAkro, before.userVAkroBI.unlockable);
+        // console.log('after', after.userVAkroBI);
+        // console.log('after.userAkro', after.userAkro);
+        expectEqualBN(after.userAkro, before.userVAkroBI.unlockable, 18, -4); //diff is so high because time passes between transactions
     });
 
     it('should allow user to fully redeem AKRO after vesting period end', async () => {
@@ -174,4 +185,17 @@ contract("VestedAkro", async ([owner, sender, user, ...otherAccounts]) => {
             unlockable: bi[2]
         };
     }
+
+    async function increaseTime(duration: number) {
+        //const now = Number((await time.latest()).toString());
+        const now = await time.latest();
+        //console.log('now', now.toString());
+        return promisify(web3.currentProvider.send.bind(web3.currentProvider))({
+            jsonrpc: '2.0',
+            method: 'evm_mine',
+            params: [now.addn(duration).toString()],
+            id: new Date().getTime(),
+        });
+    }
+
 });
