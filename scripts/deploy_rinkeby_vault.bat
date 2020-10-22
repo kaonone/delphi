@@ -66,6 +66,8 @@ goto :done
 
 :setupOperator
 call npx oz send-tx --to %MODULE_VAULT_SAVINGS% --network rinkeby --method addVaultOperator --args %VAULT_OPERATOR%
+call npx oz send-tx --to %STRATEGY_CURVE% --network rinkeby --method addDefiOperator --args %MODULE_VAULT_SAVINGS%
+call npx oz send-tx --to %STRATEGY_CURVE% --network rinkeby --method addDefiOperator --args %VAULT_PROTOCOL_CURVE%
 call npx oz send-tx --to %STRATEGY_CURVE% --network rinkeby --method addDefiOperator --args %VAULT_OPERATOR%
 goto :done
 

@@ -24,6 +24,8 @@ const { BN, constants, expectEvent, shouldFail, time } = require('@openzeppelin/
 import Snapshot from '../../utils/snapshot';
 const { expect, should } = require('chai');
 
+const truffleAssert = require('truffle-assertions');
+
 const expectRevert = require('../../utils/expectRevert');
 const expectEqualBN = require('../../utils/expectEqualBN');
 const w3random = require('../../utils/w3random');
@@ -72,7 +74,6 @@ contract('CurveFi stablecoin strategy: deposit yield', async([ owner, user1, use
     let curveMinter: CurveFiMinterStubInstance;
     let curveGauge: CurveFiLiquidityGaugeStubInstance;
     let dexag: DexagStubInstance;
-
 
     const initial_liquidity = {
         dai: 100,
@@ -172,6 +173,7 @@ contract('CurveFi stablecoin strategy: deposit yield', async([ owner, user1, use
             curveDeposit.address, curveGauge.address, curveMinter.address, dexag.address,
             { from: owner });
 
+        await vaultCurveStrategy.addDefiOperator(vaultSavings.address, { from: owner });
         await vaultCurveStrategy.addDefiOperator(vault.address, { from: owner });
         await vaultCurveStrategy.addDefiOperator(defiops, { from: owner });
 
@@ -265,35 +267,56 @@ contract('CurveFi stablecoin strategy: deposit yield', async([ owner, user1, use
             await vaultSavings.handleOperatorActions(
                 vault.address, vaultCurveStrategy.address, ZERO_ADDRESS, { from: defiops });
 
+            
+    //Step 1 strategy
             const crvStrategyBeforeStep1 = await crvToken.balanceOf(vaultCurveStrategy.address);
-            await vaultCurveStrategy.performStrategyStep1({from: defiops});
+
+            const dataStep1 = vaultCurveStrategy.contract.methods.performStrategyStep1().encodeABI();
+            await vaultSavings.callStrategyStep(vault.address, vaultCurveStrategy.address, false, dataStep1, {from:defiops});
+            //await vaultCurveStrategy.performStrategyStep1({from: defiops});
+            
             const crvStrategyAfterStep1 = await crvToken.balanceOf(vaultCurveStrategy.address);
 
             expect(crvStrategyAfterStep1.sub(crvStrategyBeforeStep1).toString(), "Bonus CRV was not minted").to.equal(bonusCrvAmount.toString());
 
+    //Step 2 strategy
             const crvStrategyBeforeStep2 = await crvToken.balanceOf(vaultCurveStrategy.address);
             const vaultBalanceBeforeStep2 = await dai.balanceOf(vault.address);
-            await vaultCurveStrategy.performStrategyStep2NoDexag(dai.address, {from: defiops});
-            const crvStrategyAfterStep2 = await crvToken.balanceOf(vaultCurveStrategy.address);
-            const vaultBalanceAfterStep2 = await dai.balanceOf(vault.address);
-
-            const yieldAmount = bonusCrvAmount.div(new BN(2));
-            expect(crvStrategyBeforeStep2.sub(crvStrategyAfterStep2).toString(), "Bonus CRV was not swaped").to.equal(bonusCrvAmount.toString());
-            expect(vaultBalanceAfterStep2.sub(vaultBalanceBeforeStep2).toString(), "Yield was not delivered to Vault").to.equal(yieldAmount.toString());
-
             const poolBefore = {
                 pool: await poolToken.balanceOf(poolToken.address),
                 forUser: await poolToken.calculateUnclaimedDistributions(user1)
             }
-            await vaultSavings.handleOperatorActions(
-                vault.address, vaultCurveStrategy.address, ZERO_ADDRESS, { from: defiops });
+
+            const dataStep2 = vaultCurveStrategy.contract.methods.performStrategyStep2NoDexag(dai.address).encodeABI();
+            await vaultSavings.callStrategyStep(vault.address, vaultCurveStrategy.address, true, dataStep2, {from:defiops});
+            //await vaultCurveStrategy.performStrategyStep2NoDexag(dai.address, {from: defiops});
+
+            const crvStrategyAfterStep2 = await crvToken.balanceOf(vaultCurveStrategy.address);
+            const vaultBalanceAfterStep2 = await dai.balanceOf(vault.address);
             const poolAfter = {
                 pool: await poolToken.balanceOf(poolToken.address),
                 forUser: await poolToken.calculateUnclaimedDistributions(user1)
             }
 
-            expect(poolAfter.pool.sub(poolBefore.pool).toString()).to.equal(yieldAmount.toString());
-            expect(poolAfter.forUser.sub(poolBefore.forUser).toString()).to.equal(yieldAmount.toString());
+            const yieldAmount = bonusCrvAmount.div(new BN(2));
+            expect(crvStrategyBeforeStep2.sub(crvStrategyAfterStep2).toString(), "Bonus CRV was not swaped").to.equal(bonusCrvAmount.toString());
+            expect(vaultBalanceAfterStep2.sub(vaultBalanceBeforeStep2).toString(), "Yield was not delivered to Vault").to.equal(yieldAmount.toString());
+
+            expect(poolAfter.pool.sub(poolBefore.pool).toString(), "New pool tokens are not minted").to.equal(yieldAmount.toString());
+            expect(poolAfter.forUser.sub(poolBefore.forUser).toString(), "LP tokens are not claimable").to.equal(yieldAmount.toString());
+
+
+    //Put yield into strategy
+            const vaultBalanceBefore = await dai.balanceOf(vault.address);
+            const stratBalanceBefore = await vault.methods["normalizedBalance(address)"].call(vaultCurveStrategy.address);
+            await vaultSavings.handleOperatorActions(vault.address, vaultCurveStrategy.address, ZERO_ADDRESS, { from: defiops });
+            const vaultBalanceAfter = await dai.balanceOf(vault.address);
+            const stratBalanceAfter = await vault.methods["normalizedBalance(address)"].call(vaultCurveStrategy.address);
+
+            expect(vaultBalanceBefore.sub(vaultBalanceAfter).toString(), "DAI was not deposited into strategy").to.equal(yieldAmount.toString());
+            expect(stratBalanceAfter.gt(stratBalanceBefore), "Strategy hasn't received yield").to.be.true;
+
+
         });
 
     });

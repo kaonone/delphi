@@ -15,6 +15,8 @@ import "./VaultOperatorRole.sol";
 import "../../interfaces/defi/IVaultProtocol.sol";
 import "../../interfaces/savings/IVaultSavings.sol";
 
+import "../../interfaces/defi/IStrategyCurveFiSwapCrv.sol";
+
 contract VaultSavingsModule is Module, IVaultSavings, AccessChecker, RewardDistributions, SavingsCap, VaultOperatorRole {
     uint256 constant MAX_UINT256 = uint256(-1);
 
@@ -235,6 +237,27 @@ contract VaultSavingsModule is Module, IVaultSavings, AccessChecker, RewardDistr
 
     function setVaultRemainder(address _vaultProtocol, uint256 _amount, uint256 _index) public onlyVaultOperator {
         IVaultProtocol(_vaultProtocol).setRemainder(_amount, _index);
+    }
+
+    function callStrategyStep(address _vaultProtocol, address _strategy, bool _distrYield, bytes memory _strategyData) public onlyVaultOperator {
+        require(IVaultProtocol(_vaultProtocol).isStrategyRegistered(_strategy), "Strategy is not registered");
+        uint256 oldVaultBalance = IVaultProtocol(_vaultProtocol).normalizedVaultBalance();
+
+        (bool success, bytes memory result) = _strategy.call(_strategyData);
+
+        if(!success) assembly {
+            revert(add(result,32), result)  //Reverts with same revert reason
+        }
+
+        if (_distrYield) {
+            uint256 newVaultBalance;
+            newVaultBalance = IVaultProtocol(_vaultProtocol).normalizedVaultBalance();
+            if (newVaultBalance > oldVaultBalance) {
+                uint256 yield = newVaultBalance.sub(oldVaultBalance);
+                vaults[_vaultProtocol].previousBalance = vaults[_vaultProtocol].previousBalance.add(yield);
+                createYieldDistribution(vaults[_vaultProtocol].poolToken, yield);
+            }
+        }
     }
 
 // ------
