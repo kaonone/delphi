@@ -13,6 +13,32 @@
         "type": "address"
       }
     ],
+    "name": "allowed_to_mint_for",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
     "name": "minted_for",
     "outputs": [
       {
@@ -74,6 +100,41 @@
     "constant": false,
     "inputs": [
       {
+        "internalType": "address[8]",
+        "name": "gauge_addrs",
+        "type": "address[8]"
+      }
+    ],
+    "name": "mint_many",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "gauge_addr",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_for",
+        "type": "address"
+      }
+    ],
+    "name": "mint_for",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
         "internalType": "address",
         "name": "_for",
         "type": "address"
@@ -92,6 +153,21 @@
         "type": "uint256"
       }
     ],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "minting_user",
+        "type": "address"
+      }
+    ],
+    "name": "toggle_approve_mint",
+    "outputs": [],
     "payable": false,
     "stateMutability": "nonpayable",
     "type": "function"
