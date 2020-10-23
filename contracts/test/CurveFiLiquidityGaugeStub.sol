@@ -94,7 +94,10 @@ contract CurveFiLiquidityGaugeStub is ICurveFiLiquidityGauge {
      * @param L Total amount of liquidity (LP tokens)
      */
     function _update_liquidity_limit(address addr, uint256 l, uint256 L) public {
-        this;
+        totalSupply = totalSupply; //prevent state mutability warning;
+        addr;
+        l;
+        L;
     }
 
 }
