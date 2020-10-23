@@ -8,6 +8,8 @@
     "scripts": {
         "ganache": "npx ganache-cli --gasLimit 0xfffffffffff -e 10000000 --port 8545",
         "generate-types": "truffle compile --all && typechain --target=truffle-v5 \"build/contracts/*.json\"",
+		"generate-abi": "truffle compile --all && truffle-abi -o ./abi",
+		"generate-artifacts": "truffle compile --all && truffle-abi -o ./abi && typechain --target=truffle-v5 \"build/contracts/*.json\"",
         "postinstall": "npm run generate-types"
     },
     "dependencies": {
@@ -18,7 +20,8 @@
         "@types/chai": "^4.2.11",
         "@types/mocha": "^8.0.0",
         "@types/web3": "^1.2.2",
-        "dotenv": "^8.2.0"
+        "dotenv": "^8.2.0",
+        "truffle-assertions": "^0.9.2"
     },
     "devDependencies": {
         "@openzeppelin/test-helpers": "^0.5.6",

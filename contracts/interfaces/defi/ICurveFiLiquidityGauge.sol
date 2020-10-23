@@ -13,4 +13,7 @@ interface ICurveFiLiquidityGauge {
     //Work with CRV
     function claimable_tokens(address addr) external returns (uint256);
     function minter() external view returns(address); //use minter().mint(gauge_addr) to claim CRV
+
+    function integrate_fraction(address _for) external returns(uint256);
+    function user_checkpoint(address _for) external returns(bool);
 }

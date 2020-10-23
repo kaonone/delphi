@@ -23,6 +23,8 @@ contract YTokenStub is IYErc20, Base, ERC20, ERC20Detailed {
         if (address(_underlying) == address(0)){
             underlying = new ERC20Mintable();
             underlying.initialize(_msgSender());
+        } else {
+            underlying = _underlying;
         }
         ERC20Detailed.initialize(
             string(abi.encodePacked("iearn ", uName)),

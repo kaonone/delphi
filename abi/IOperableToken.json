@@ -3,37 +3,17 @@
     "constant": false,
     "inputs": [
       {
-        "internalType": "uint256[3]",
-        "name": "uamounts",
-        "type": "uint256[3]"
+        "internalType": "address",
+        "name": "_user",
+        "type": "address"
       },
-      {
-        "internalType": "uint256",
-        "name": "min_mint_amount",
-        "type": "uint256"
-      }
-    ],
-    "name": "add_liquidity",
-    "outputs": [],
-    "payable": false,
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "constant": false,
-    "inputs": [
       {
         "internalType": "uint256",
         "name": "_amount",
         "type": "uint256"
-      },
-      {
-        "internalType": "uint256[3]",
-        "name": "min_uamounts",
-        "type": "uint256[3]"
       }
     ],
-    "name": "remove_liquidity",
+    "name": "increaseOnHoldValue",
     "outputs": [],
     "payable": false,
     "stateMutability": "nonpayable",
@@ -43,20 +23,41 @@
     "constant": false,
     "inputs": [
       {
-        "internalType": "uint256[3]",
-        "name": "uamounts",
-        "type": "uint256[3]"
+        "internalType": "address",
+        "name": "_user",
+        "type": "address"
       },
       {
         "internalType": "uint256",
-        "name": "max_burn_amount",
+        "name": "_amount",
         "type": "uint256"
       }
     ],
-    "name": "remove_liquidity_imbalance",
+    "name": "decreaseOnHoldValue",
     "outputs": [],
     "payable": false,
     "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_user",
+        "type": "address"
+      }
+    ],
+    "name": "onHoldBalanceOf",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
     "type": "function"
   }
 ]

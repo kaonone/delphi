@@ -27,6 +27,7 @@ contract CurveFiSwapStub_Y is Base, ICurveFiSwap, ICurveFiSwap_Y {
 
     function add_liquidity (uint256[N_COINS] memory amounts, uint256 min_mint_amount) public {
         uint256 fullAmount;
+
         for (uint256 i=0; i < N_COINS; i++){
             IERC20(_coins[i]).transferFrom(_msgSender(), address(this), amounts[i]);
             fullAmount = fullAmount.add(normalizeAmount(_coins[i], amounts[i]));
@@ -68,7 +69,7 @@ contract CurveFiSwapStub_Y is Base, ICurveFiSwap, ICurveFiSwap_Y {
         for (uint256 i=0; i < _coins.length; i++){
             uint256 balance = balances(int128(i));
             require(balance >= amounts[i], "CurveFiSwapStub: Not enough supply");
-            fullAmount = fullAmount.add(amounts[i]);
+            fullAmount = fullAmount.add(normalizeAmount(_coins[i], amounts[i]));
         }
         if (bonus) {
             fullAmount = fullAmount.sub(fee);
