@@ -24,8 +24,6 @@ contract DistributionToken is ERC20, ERC20Mintable {
     uint256 public nextDistributionTimestamp;      //Timestamp when next distribuition should be fired regardles of accumulated tokens
     uint256 public distributionAccumulator;        //Tokens accumulated for next distribution
 
-    uint256 internal toBeMinted;
-
     function distribute(uint256 amount) external onlyMinter {
         distributionAccumulator = distributionAccumulator.add(amount);        
         emit DistributionAccumulatorIncreased(amount);
@@ -142,9 +140,7 @@ contract DistributionToken is ERC20, ERC20Mintable {
 
     function _mint(address account, uint256 amount) internal {
         _createDistributionIfReady();
-        toBeMinted = amount;
         _updateUserBalance(account);
-        toBeMinted = 0;
         super._mint(account, amount);
         userBalanceChanged(account);
     }

@@ -5,8 +5,19 @@ import "../../interfaces/token/IOperableToken.sol";
 
 contract VaultPoolToken is PoolToken, IOperableToken {
 
+    uint256 internal toBeMinted;
+
     mapping(address => uint256) internal onHoldAmount;
     uint256 totalOnHold;
+
+    function _mint(address account, uint256 amount) internal {
+        _createDistributionIfReady();
+        toBeMinted = amount;
+        _updateUserBalance(account);
+        toBeMinted = 0;
+        super._mint(account, amount);
+        userBalanceChanged(account);
+    }
 
     function increaseOnHoldValue(address _user, uint256 _amount) public onlyMinter {
         onHoldAmount[_user] = onHoldAmount[_user].add(_amount);
