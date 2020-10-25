@@ -15,7 +15,7 @@ contract VaultPoolToken is PoolToken, IOperableToken {
         toBeMinted = amount;
         _updateUserBalance(account);
         toBeMinted = 0;
-        super._mint(account, amount);
+        ERC20._mint(account, amount);
         userBalanceChanged(account);
     }
 
