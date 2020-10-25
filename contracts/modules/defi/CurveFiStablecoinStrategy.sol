@@ -79,6 +79,11 @@ contract CurveFiStablecoinStrategy is Module, IDefiStrategy, IStrategyCurveFiSwa
         vault = _vault;
     }
 
+    function setDexagProxy(address _dexagProxy) public onlyDefiOperator {
+        dexagProxy = _dexagProxy;
+        dexagApproveHandler = IDexag(_dexagProxy).approvalHandler();
+    }
+
     function handleDeposit(address token, uint256 amount) public onlyDefiOperator {
         uint256 nTokens = IVaultProtocol(vault).supportedTokensCount();
         uint256[] memory amounts = new uint256[](nTokens);
