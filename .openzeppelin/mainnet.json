@@ -7463,6 +7463,302 @@
         "hasInitialValuesInDeclarations": false,
         "uninitializedBaseContracts": []
       }
+    },
+    "RewardDistributionModule": {
+      "address": "0x70304a21377E99Dc82a7De0eA05035Bd02954D5a",
+      "constructorCode": "6080604052613f33806100136000396000f3fe",
+      "bodyBytecodeHash": "4691e15594b57ad46887e8f82e095df0581293ea2533f7df8d25405e6896a148",
+      "localBytecodeHash": "0ba84876648ae1e685235e1e187bb59d12e608e760969d9f47cf5c1ebef7ec58",
+      "deployedBytecodeHash": "0ba84876648ae1e685235e1e187bb59d12e608e760969d9f47cf5c1ebef7ec58",
+      "types": {
+        "t_bool": {
+          "id": "t_bool",
+          "kind": "elementary",
+          "label": "bool"
+        },
+        "t_uint256": {
+          "id": "t_uint256",
+          "kind": "elementary",
+          "label": "uint256"
+        },
+        "t_array:50<t_uint256>": {
+          "id": "t_array:50<t_uint256>",
+          "valueType": "t_uint256",
+          "length": "50",
+          "kind": "array",
+          "label": "uint256[50]"
+        },
+        "t_address": {
+          "id": "t_address",
+          "kind": "elementary",
+          "label": "address"
+        },
+        "t_struct<RewardDistributionModule.RewardTokenDistribution>": {
+          "id": "t_struct<RewardDistributionModule.RewardTokenDistribution>",
+          "kind": "struct",
+          "label": "RewardDistributionModule.RewardTokenDistribution",
+          "members": [
+            {
+              "label": "poolToken",
+              "astId": 14423,
+              "type": "t_address",
+              "src": "1138:17:84"
+            },
+            {
+              "label": "totalShares",
+              "astId": 14425,
+              "type": "t_uint256",
+              "src": "1229:19:84"
+            },
+            {
+              "label": "rewardTokens",
+              "astId": 14428,
+              "type": "t_array:dyn<t_address>",
+              "src": "1337:22:84"
+            },
+            {
+              "label": "amounts",
+              "astId": 14432,
+              "type": "t_mapping<t_uint256>",
+              "src": "1425:33:84"
+            }
+          ]
+        },
+        "t_array:dyn<t_address>": {
+          "id": "t_array:dyn<t_address>",
+          "valueType": "t_address",
+          "length": "dyn",
+          "kind": "array",
+          "label": "address[]"
+        },
+        "t_mapping<t_uint256>": {
+          "id": "t_mapping<t_uint256>",
+          "valueType": "t_uint256",
+          "label": "mapping(key => uint256)",
+          "kind": "mapping"
+        },
+        "t_array:dyn<t_struct<RewardDistributionModule.RewardTokenDistribution>>": {
+          "id": "t_array:dyn<t_struct<RewardDistributionModule.RewardTokenDistribution>>",
+          "valueType": "t_struct<RewardDistributionModule.RewardTokenDistribution>",
+          "length": "dyn",
+          "kind": "array",
+          "label": "RewardDistributionModule.RewardTokenDistribution[]"
+        },
+        "t_struct<RewardDistributionModule.RewardBalance>": {
+          "id": "t_struct<RewardDistributionModule.RewardBalance>",
+          "kind": "struct",
+          "label": "RewardDistributionModule.RewardBalance",
+          "members": [
+            {
+              "label": "nextDistribution",
+              "astId": 14442,
+              "type": "t_uint256",
+              "src": "1671:24:84"
+            },
+            {
+              "label": "rewardsByPT",
+              "astId": 14446,
+              "type": "t_mapping<t_struct<RewardDistributionModule.UserProtocolRewards>>",
+              "src": "1705:51:84"
+            }
+          ]
+        },
+        "t_struct<RewardDistributionModule.UserProtocolRewards>": {
+          "id": "t_struct<RewardDistributionModule.UserProtocolRewards>",
+          "kind": "struct",
+          "label": "RewardDistributionModule.UserProtocolRewards",
+          "members": [
+            {
+              "label": "shares",
+              "astId": 14435,
+              "type": "t_uint256",
+              "src": "1509:14:84"
+            },
+            {
+              "label": "amounts",
+              "astId": 14439,
+              "type": "t_mapping<t_uint256>",
+              "src": "1533:33:84"
+            }
+          ]
+        },
+        "t_mapping<t_struct<RewardDistributionModule.UserProtocolRewards>>": {
+          "id": "t_mapping<t_struct<RewardDistributionModule.UserProtocolRewards>>",
+          "valueType": "t_struct<RewardDistributionModule.UserProtocolRewards>",
+          "label": "mapping(key => RewardDistributionModule.UserProtocolRewards)",
+          "kind": "mapping"
+        },
+        "t_mapping<t_struct<RewardDistributionModule.RewardBalance>>": {
+          "id": "t_mapping<t_struct<RewardDistributionModule.RewardBalance>>",
+          "valueType": "t_struct<RewardDistributionModule.RewardBalance>",
+          "label": "mapping(key => RewardDistributionModule.RewardBalance)",
+          "kind": "mapping"
+        },
+        "t_mapping<t_bool>": {
+          "id": "t_mapping<t_bool>",
+          "valueType": "t_bool",
+          "label": "mapping(key => bool)",
+          "kind": "mapping"
+        },
+        "t_mapping<t_address>": {
+          "id": "t_mapping<t_address>",
+          "valueType": "t_address",
+          "label": "mapping(key => address)",
+          "kind": "mapping"
+        },
+        "t_struct<RewardDistributionModule.ProtocolInfo>": {
+          "id": "t_struct<RewardDistributionModule.ProtocolInfo>",
+          "kind": "struct",
+          "label": "RewardDistributionModule.ProtocolInfo",
+          "members": [
+            {
+              "label": "poolToken",
+              "astId": 14449,
+              "type": "t_address",
+              "src": "1884:17:84"
+            },
+            {
+              "label": "lastRewardDistributionTimestamp",
+              "astId": 14451,
+              "type": "t_uint256",
+              "src": "1911:39:84"
+            },
+            {
+              "label": "rewardTokens",
+              "astId": 14454,
+              "type": "t_array:dyn<t_address>",
+              "src": "1960:22:84"
+            }
+          ]
+        },
+        "t_mapping<t_struct<RewardDistributionModule.ProtocolInfo>>": {
+          "id": "t_mapping<t_struct<RewardDistributionModule.ProtocolInfo>>",
+          "valueType": "t_struct<RewardDistributionModule.ProtocolInfo>",
+          "label": "mapping(key => RewardDistributionModule.ProtocolInfo)",
+          "kind": "mapping"
+        }
+      },
+      "storage": [
+        {
+          "contract": "Initializable",
+          "path": "@openzeppelin\\upgrades\\contracts\\Initializable.sol",
+          "label": "initialized",
+          "astId": 37717,
+          "type": "t_bool",
+          "src": "757:24:147"
+        },
+        {
+          "contract": "Initializable",
+          "path": "@openzeppelin\\upgrades\\contracts\\Initializable.sol",
+          "label": "initializing",
+          "astId": 37719,
+          "type": "t_bool",
+          "src": "876:25:147"
+        },
+        {
+          "contract": "Initializable",
+          "path": "@openzeppelin\\upgrades\\contracts\\Initializable.sol",
+          "label": "______gap",
+          "astId": 37781,
+          "type": "t_array:50<t_uint256>",
+          "src": "1982:29:147"
+        },
+        {
+          "contract": "Ownable",
+          "path": "@openzeppelin\\contracts-ethereum-package\\contracts\\ownership\\Ownable.sol",
+          "label": "_owner",
+          "astId": 36650,
+          "type": "t_address",
+          "src": "526:22:138"
+        },
+        {
+          "contract": "Ownable",
+          "path": "@openzeppelin\\contracts-ethereum-package\\contracts\\ownership\\Ownable.sol",
+          "label": "______gap",
+          "astId": 36763,
+          "type": "t_array:50<t_uint256>",
+          "src": "2471:29:138"
+        },
+        {
+          "contract": "Module",
+          "path": "..\\..\\..\\D\\projects\\akropolis\\savings-pool\\contracts\\common\\Module.sol",
+          "label": "pool",
+          "astId": 43,
+          "type": "t_address",
+          "src": "214:19:1"
+        },
+        {
+          "contract": "RewardDistributionModule",
+          "path": "..\\..\\..\\D\\projects\\akropolis\\savings-pool\\contracts\\modules\\reward\\RewardDistributionModule.sol",
+          "label": "rewardDistributions",
+          "astId": 14458,
+          "type": "t_array:dyn<t_struct<RewardDistributionModule.RewardTokenDistribution>>",
+          "src": "1995:45:84"
+        },
+        {
+          "contract": "RewardDistributionModule",
+          "path": "..\\..\\..\\D\\projects\\akropolis\\savings-pool\\contracts\\modules\\reward\\RewardDistributionModule.sol",
+          "label": "rewardBalances",
+          "astId": 14462,
+          "type": "t_mapping<t_struct<RewardDistributionModule.RewardBalance>>",
+          "src": "2046:46:84"
+        },
+        {
+          "contract": "RewardDistributionModule",
+          "path": "..\\..\\..\\D\\projects\\akropolis\\savings-pool\\contracts\\modules\\reward\\RewardDistributionModule.sol",
+          "label": "registeredRewardTokens",
+          "astId": 14465,
+          "type": "t_array:dyn<t_address>",
+          "src": "2138:41:84"
+        },
+        {
+          "contract": "RewardDistributionModule",
+          "path": "..\\..\\..\\D\\projects\\akropolis\\savings-pool\\contracts\\modules\\reward\\RewardDistributionModule.sol",
+          "label": "registeredPoolTokens",
+          "astId": 14468,
+          "type": "t_array:dyn<t_address>",
+          "src": "2185:39:84"
+        },
+        {
+          "contract": "RewardDistributionModule",
+          "path": "..\\..\\..\\D\\projects\\akropolis\\savings-pool\\contracts\\modules\\reward\\RewardDistributionModule.sol",
+          "label": "isRewardToken",
+          "astId": 14472,
+          "type": "t_mapping<t_bool>",
+          "src": "2230:43:84"
+        },
+        {
+          "contract": "RewardDistributionModule",
+          "path": "..\\..\\..\\D\\projects\\akropolis\\savings-pool\\contracts\\modules\\reward\\RewardDistributionModule.sol",
+          "label": "poolTokenToProtocol",
+          "astId": 14476,
+          "type": "t_mapping<t_address>",
+          "src": "2279:54:84"
+        },
+        {
+          "contract": "RewardDistributionModule",
+          "path": "..\\..\\..\\D\\projects\\akropolis\\savings-pool\\contracts\\modules\\reward\\RewardDistributionModule.sol",
+          "label": "protocolInfo",
+          "astId": 14480,
+          "type": "t_mapping<t_struct<RewardDistributionModule.ProtocolInfo>>",
+          "src": "2339:50:84"
+        },
+        {
+          "contract": "RewardDistributionModule",
+          "path": "..\\..\\..\\D\\projects\\akropolis\\savings-pool\\contracts\\modules\\reward\\RewardDistributionModule.sol",
+          "label": "userRewardsMigrated",
+          "astId": 14484,
+          "type": "t_mapping<t_bool>",
+          "src": "2395:49:84"
+        }
+      ],
+      "warnings": {
+        "hasConstructor": false,
+        "hasSelfDestruct": false,
+        "hasDelegateCall": false,
+        "hasInitialValuesInDeclarations": false,
+        "uninitializedBaseContracts": []
+      }
     }
   },
   "solidityLibs": {},
@@ -7697,6 +7993,15 @@
         "address": "0x321eb571778e46004Ec52FD399E097C17Fea9C9c",
         "version": "1.0.0",
         "implementation": "0xa0472aE3158c9ece329cE2324D0AA73db1D8639A",
+        "admin": "0x8f608BCB8971cD7D3073C417A28DbD156d772402",
+        "kind": "Upgradeable"
+      }
+    ],
+    "akropolis-savings-pool/RewardDistributionModule": [
+      {
+        "address": "0x84056675382c851cf42FAAFCeC3FCa90E21AE645",
+        "version": "1.0.0",
+        "implementation": "0x70304a21377E99Dc82a7De0eA05035Bd02954D5a",
         "admin": "0x8f608BCB8971cD7D3073C417A28DbD156d772402",
         "kind": "Upgradeable"
       }

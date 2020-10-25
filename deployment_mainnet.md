@@ -46,6 +46,7 @@
 * StakingPool `0x3501Ec11d205fa249f2C42f5470e137b529b35D0`
 * StakingPoolAdel `0x1A547c3dd03c39Fb2b5aEaFC524033879bD28F13`
 * RewardVestingModule `0x2A9dcb9d79Aba0CC64565A87c9d20D11D1f33a07`
+* RewardDistributionModule `0x84056675382c851cf42FAAFCeC3FCa90E21AE645`
 
 #### Protocols
 ##### Curve.Fi Y [(y)DAI, (y)USDC, (y)USDT, (y)TUSD] - CRV
