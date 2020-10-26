@@ -480,6 +480,11 @@
     "inputs": [
       {
         "internalType": "address[]",
+        "name": "poolTokens",
+        "type": "address[]"
+      },
+      {
+        "internalType": "address[]",
         "name": "rewardTokens",
         "type": "address[]"
       }
@@ -516,11 +521,6 @@
     "inputs": [
       {
         "internalType": "address[]",
-        "name": "poolTokens",
-        "type": "address[]"
-      },
-      {
-        "internalType": "address[]",
         "name": "rewardTokens",
         "type": "address[]"
       }
@@ -551,17 +551,17 @@
         "type": "address"
       },
       {
-        "internalType": "address[]",
-        "name": "rewardTokens",
-        "type": "address[]"
+        "internalType": "address",
+        "name": "rewardToken",
+        "type": "address"
       }
     ],
     "name": "rewardBalanceOf",
     "outputs": [
       {
-        "internalType": "uint256[]",
-        "name": "",
-        "type": "uint256[]"
+        "internalType": "uint256",
+        "name": "amounts",
+        "type": "uint256"
       }
     ],
     "payable": false,
@@ -582,17 +582,17 @@
         "type": "address"
       },
       {
-        "internalType": "address",
-        "name": "rewardToken",
-        "type": "address"
+        "internalType": "address[]",
+        "name": "rewardTokens",
+        "type": "address[]"
       }
     ],
     "name": "rewardBalanceOf",
     "outputs": [
       {
-        "internalType": "uint256",
-        "name": "amounts",
-        "type": "uint256"
+        "internalType": "uint256[]",
+        "name": "",
+        "type": "uint256[]"
       }
     ],
     "payable": false,

@@ -145,6 +145,31 @@
       {
         "indexed": true,
         "internalType": "address",
+        "name": "_user",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "_token",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "_amount",
+        "type": "uint256"
+      }
+    ],
+    "name": "QuickWithdrawFromVault",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
         "name": "_vault",
         "type": "address"
       }
@@ -426,6 +451,15 @@
   },
   {
     "constant": false,
+    "inputs": [],
+    "name": "initialize",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
     "inputs": [
       {
         "internalType": "address",
@@ -438,15 +472,6 @@
         "type": "address[]"
       }
     ],
-    "name": "initialize",
-    "outputs": [],
-    "payable": false,
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "constant": false,
-    "inputs": [],
     "name": "initialize",
     "outputs": [],
     "payable": false,
@@ -592,14 +617,14 @@
         "type": "address"
       },
       {
-        "internalType": "address",
-        "name": "_token",
-        "type": "address"
+        "internalType": "address[]",
+        "name": "_tokens",
+        "type": "address[]"
       },
       {
-        "internalType": "uint256",
-        "name": "_amount",
-        "type": "uint256"
+        "internalType": "uint256[]",
+        "name": "_amounts",
+        "type": "uint256[]"
       }
     ],
     "name": "withdrawFromVault",
@@ -617,14 +642,14 @@
         "type": "address"
       },
       {
-        "internalType": "address[]",
-        "name": "_tokens",
-        "type": "address[]"
+        "internalType": "address",
+        "name": "_token",
+        "type": "address"
       },
       {
-        "internalType": "uint256[]",
-        "name": "_amounts",
-        "type": "uint256[]"
+        "internalType": "uint256",
+        "name": "_amount",
+        "type": "uint256"
       }
     ],
     "name": "withdrawFromVault",

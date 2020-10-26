@@ -396,14 +396,19 @@
     "constant": false,
     "inputs": [
       {
-        "internalType": "address",
-        "name": "_akro",
-        "type": "address"
+        "internalType": "string",
+        "name": "name",
+        "type": "string"
       },
       {
-        "internalType": "uint256",
-        "name": "_vestingPeriod",
-        "type": "uint256"
+        "internalType": "string",
+        "name": "symbol",
+        "type": "string"
+      },
+      {
+        "internalType": "uint8",
+        "name": "decimals",
+        "type": "uint8"
       }
     ],
     "name": "initialize",
@@ -431,19 +436,14 @@
     "constant": false,
     "inputs": [
       {
-        "internalType": "string",
-        "name": "name",
-        "type": "string"
+        "internalType": "address",
+        "name": "_akro",
+        "type": "address"
       },
       {
-        "internalType": "string",
-        "name": "symbol",
-        "type": "string"
-      },
-      {
-        "internalType": "uint8",
-        "name": "decimals",
-        "type": "uint8"
+        "internalType": "uint256",
+        "name": "_vestingPeriod",
+        "type": "uint256"
       }
     ],
     "name": "initialize",
