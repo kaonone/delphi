@@ -243,7 +243,7 @@ contract('CurveFi strategy: real case', async([ owner, user1, user2, user3, defi
                 [new BN('50000000000000000000'), 50000000], { from: user1 });
 
         //Withdraw
-            await vaultSavings.withdraw(vault.address, [dai.address, busd.address], [new BN('15000000000000000000'), 10000000], false, { from: user1 });
+            await vaultSavings.withdraw(vault.address, [dai.address, busd.address], [new BN('15000000000000000000'), 10000000], { from: user1 });
             
         //Operation
             const beforeOp = {

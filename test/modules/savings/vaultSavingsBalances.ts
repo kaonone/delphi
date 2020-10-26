@@ -303,11 +303,8 @@ contract('VaultSavings Balances', async([ owner, user1, defiops, protocolStub ])
                 /*******************
                  * 3. Withdraw DAI *
                  ******************/
-                await (<VaultSavingsModuleInstance>vaultSavings)
-                    .withdraw(vault.address, [dai.address],
-                        [amounts.dai], false, { from: user1 });
-                await vaultSavings
-                    .handleOperatorActions(vault.address, strategy.address, ZERO_ADDRESS, { from: defiops });
+                await vaultSavings.withdraw(vault.address, [dai.address], [amounts.dai], { from: user1 });
+                await vaultSavings.handleOperatorActions(vault.address, strategy.address, ZERO_ADDRESS, { from: defiops });
                 await vaultSavings.clearProtocolStorage(vault.address, { from: defiops });
 
                 const afterWithdraw = {
@@ -367,11 +364,9 @@ contract('VaultSavings Balances', async([ owner, user1, defiops, protocolStub ])
                 /**************************
                  * 4. Withdraw everything *
                  *************************/
-                await (<VaultSavingsModuleInstance>vaultSavings)
-                    .withdraw(vault.address, [usdc.address, busd.address, usdt.address],
-                        [amounts.usdc, amounts.busd, amounts.usdt], false, { from: user1 });
-                await vaultSavings
-                    .handleOperatorActions(vault.address, strategy.address, ZERO_ADDRESS, { from: defiops });
+                await vaultSavings.withdraw(vault.address, [usdc.address, busd.address, usdt.address],
+                        [amounts.usdc, amounts.busd, amounts.usdt], { from: user1 });
+                await vaultSavings.handleOperatorActions(vault.address, strategy.address, ZERO_ADDRESS, { from: defiops });
                 await vaultSavings.clearProtocolStorage(vault.address, { from: defiops });
 
                 const afterWithdrawEvr = {

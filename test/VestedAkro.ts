@@ -11,6 +11,7 @@ const expect = require("chai").expect;
 const expectRevert= require("./utils/expectRevert");
 const expectEqualBN = require("./utils/expectEqualBN");
 const w3random = require("./utils/w3random");
+const advanceBlockAtTime = require('./utils/advanceBlockAtTime');
 
 const FreeERC20 = artifacts.require("FreeERC20");
 const VestedAkro = artifacts.require("VestedAkro");
@@ -190,12 +191,7 @@ contract("VestedAkro", async ([owner, sender, user, ...otherAccounts]) => {
         //const now = Number((await time.latest()).toString());
         const now = await time.latest();
         //console.log('now', now.toString());
-        return promisify(web3.currentProvider.send.bind(web3.currentProvider))({
-            jsonrpc: '2.0',
-            method: 'evm_mine',
-            params: [now.addn(duration).toString()],
-            id: new Date().getTime(),
-        });
+        return await advanceBlockAtTime(now.addn(duration).toString());
     }
 
 });

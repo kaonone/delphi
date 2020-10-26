@@ -14,7 +14,7 @@ contract IVaultSavings {
 
     function deposit(address[] calldata _protocols, address[] calldata _tokens, uint256[] calldata _dnAmounts) external returns(uint256[] memory);
     function deposit(address _protocol, address[] calldata _tokens, uint256[] calldata _dnAmounts) external returns(uint256);
-    function withdraw(address _vaultProtocol, address[] calldata _tokens, uint256[] calldata _amounts, bool isQuick) external returns(uint256);
+    function withdraw(address _vaultProtocol, address[] calldata _tokens, uint256[] calldata _amounts) external returns(uint256);
 
     function poolTokenByProtocol(address _protocol) external view returns(address);
     function supportedVaults() public view returns(address[] memory);

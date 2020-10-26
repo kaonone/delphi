@@ -1704,6 +1704,14 @@ contract('VaultProtocol', async([ _, owner, user1, user2, user3, defiops, protoc
 
         afterEach(async() => await localSnap.revert());
 
+
+        it('Quick withdraw (event created)', async() => {
+            let withdrawResult = await vaultProtocol.quickWithdraw(user1, [dai.address], [120], { from: defiops });
+
+
+            expectEvent(withdrawResult, 'QuickWithdrawFromVault', { _user: user1, _token: dai.address, _amount: '120' });
+        });
+
         it('Quick withdraw (has withdraw request)', async() => {
             await vaultProtocol.methods['withdrawFromVault(address,address[],uint256[])'](
                 user1, [dai.address], [80], { from: owner });

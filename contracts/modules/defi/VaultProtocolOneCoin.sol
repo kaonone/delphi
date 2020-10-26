@@ -142,7 +142,10 @@ contract VaultProtocolOneCoin is Module, IVaultProtocol, DefiOperatorRole {
         require(_amounts.length == supportedTokensCount(), "Incorrect number of tokens");
         require(_tokens[0] == registeredVaultToken, "Unsupported token");
 
-        IDefiStrategy(quickStrategy).withdraw(_user, registeredVaultToken, _amounts[0]);
+        if (_amounts[0] > 0) {
+            IDefiStrategy(quickStrategy).withdraw(_user, registeredVaultToken, _amounts[0]);
+            emit QuickWithdrawFromVault(_user, _tokens[0], _amounts[0]);
+        }
     }
 
     function claimRequested(address _user) public {

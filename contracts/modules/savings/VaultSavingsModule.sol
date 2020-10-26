@@ -120,11 +120,45 @@ contract VaultSavingsModule is Module, IVaultSavings, AccessChecker, RewardDistr
         }
     }
 
-    //Withdraw several tokens from a Vault in regular way or in quickWay
-    function withdraw(address _vaultProtocol, address[] memory _tokens, uint256[] memory _amounts, bool isQuick)
+    //Withdraw several tokens from a Vault in regular way with request created
+    function withdraw(address _vaultProtocol, address[] memory _tokens, uint256[] memory _amounts)
     public operationAllowed(IAccessModule.Operation.Withdraw)
     returns(uint256)
     {
+        uint256 actualAmount = preWithdrawActions(_vaultProtocol, _tokens, _amounts);
+
+        if (_tokens.length == 1) {
+           IVaultProtocol(_vaultProtocol).withdrawFromVault(_msgSender(), _tokens[0], _amounts[0]);
+        }
+        else {
+            IVaultProtocol(_vaultProtocol).withdrawFromVault(_msgSender(), _tokens, _amounts);
+        }
+
+        postWithdrawActions(_vaultProtocol, actualAmount);
+
+        return actualAmount;
+    }
+
+    //Withdraw several tokens from a Vault from available liquidity
+    //call vault.availableLiquidity() which includes claimable and non-withdrawable
+
+    //Quick withdraw directly from the strategy
+    function withdrawQuick(address _vaultProtocol, address[] memory _tokens, uint256[] memory _amounts)
+    public operationAllowed(IAccessModule.Operation.Withdraw)
+    returns(uint256)
+    {
+        uint256 actualAmount = preWithdrawActions(_vaultProtocol, _tokens, _amounts);
+
+        distributeYieldInternal(_vaultProtocol);
+        IVaultProtocol(_vaultProtocol).quickWithdraw(_msgSender(), _tokens, _amounts);
+        updateProtocolBalance(_vaultProtocol);
+
+        postWithdrawActions(_vaultProtocol, actualAmount);
+
+        return actualAmount;
+    }
+
+    function preWithdrawActions(address _vaultProtocol, address[] memory _tokens, uint256[] memory _amounts) internal returns(uint256) {
         require(isVaultRegistered(_vaultProtocol), "Vault is not registered");
         require(_tokens.length == _amounts.length, "Size of arrays does not match");
 
@@ -137,26 +171,15 @@ contract VaultSavingsModule is Module, IVaultSavings, AccessChecker, RewardDistr
             emit WithdrawToken(address(_vaultProtocol), _tokens[i], normAmount);
         }
 
-        if (isQuick) {
-            distributeYieldInternal(_vaultProtocol);
-            IVaultProtocol(_vaultProtocol).quickWithdraw(_msgSender(), _tokens, _amounts);
-            updateProtocolBalance(_vaultProtocol);
-        }
-        else {
-            if (_tokens.length == 1) {
-                IVaultProtocol(_vaultProtocol).withdrawFromVault(_msgSender(), _tokens[0], _amounts[0]);
-            }
-            else {
-                IVaultProtocol(_vaultProtocol).withdrawFromVault(_msgSender(), _tokens, _amounts);
-            }
-        }
+        return actualAmount;
+    }
 
+    function postWithdrawActions(address _vaultProtocol, uint256 actualAmount) internal {
         VaultPoolToken poolToken = VaultPoolToken(vaults[_vaultProtocol].poolToken);
         poolToken.burnFrom(_msgSender(), actualAmount);
         emit Withdraw(_vaultProtocol, _msgSender(), actualAmount, 0);
-
-        return actualAmount;
     }
+
 
     //Withdraw several tokens from several Vaults
     function withdrawAll(address[] memory _vaults, address[] memory _tokens, uint256[] memory _dnAmounts)
@@ -183,7 +206,7 @@ contract VaultSavingsModule is Module, IVaultSavings, AccessChecker, RewardDistr
                 amnts[j-curInd] = _dnAmounts[j];
             }
 
-            ptAmounts[i] = withdraw(_vaults[i], tkns, amnts, false);
+            ptAmounts[i] = withdraw(_vaults[i], tkns, amnts);
 
             curInd += nTokens;
         }

@@ -353,7 +353,7 @@ contract('CurveFi stablecoin strategy', async([ owner, user1, user2, user3, defi
                 }
             };
 
-            await vaultSavings.withdraw(vault.address, tokens, Object.values(amounts), false, { from: user1 });
+            await vaultSavings.withdraw(vault.address, tokens, Object.values(amounts), { from: user1 });
             await vaultSavings.handleOperatorActions(vault.address, vaultCurveStrategy.address, ZERO_ADDRESS,
                 { from: defiops });
 

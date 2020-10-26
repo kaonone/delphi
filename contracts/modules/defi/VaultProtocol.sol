@@ -159,7 +159,7 @@ contract VaultProtocol is Module, IVaultProtocol, DefiOperatorRole {
         }
     }
 
-        function quickWithdraw(address _user, address[] memory _tokens, uint256[] memory _amounts) public onlyDefiOperator {
+    function quickWithdraw(address _user, address[] memory _tokens, uint256[] memory _amounts) public onlyDefiOperator {
         require(quickStrategy != address(0), "No strategy for quick withdraw");
         require(_tokens.length == 1 || _amounts.length == supportedTokensCount(), "Incorrect number of tokens");
 
@@ -169,6 +169,11 @@ contract VaultProtocol is Module, IVaultProtocol, DefiOperatorRole {
         else {
             //require correct order
             IDefiStrategy(quickStrategy).withdraw(_user, _amounts);
+        }
+        for (uint256 i = 0; i < _tokens.length; i++) {
+            if (_amounts[i] > 0) {
+                emit QuickWithdrawFromVault(_user, _tokens[i], _amounts[i]);
+            }
         }
     }
 

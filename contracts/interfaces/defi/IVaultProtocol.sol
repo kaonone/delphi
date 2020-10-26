@@ -4,6 +4,7 @@ pragma solidity ^0.5.12;
 contract IVaultProtocol {
     event DepositToVault(address indexed _user, address indexed _token, uint256 _amount);
     event WithdrawFromVault(address indexed _user, address indexed _token, uint256 _amount);
+    event QuickWithdrawFromVault(address indexed _user, address indexed _token, uint256 _amount);
     event WithdrawRequestCreated(address indexed _user, address indexed _token, uint256 _amount);
     event DepositByOperator(uint256 _amount);
     event WithdrawByOperator(uint256 _amount);
