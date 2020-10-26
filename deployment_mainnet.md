@@ -33,6 +33,8 @@
 * Swap `0x93054188d876f558f4a66B2EF1d97d16eDf0895B`
 * LiquidityGauge `0xB1F2cdeC61db658F091671F5f199635aEF202CAC`
 
+##### Dexag
+Proxy (DexTradingWithCollection) `0x2ef1298B41D6Ec5e071ebA9Fc8f0eCC53fd675fD`
 
 ### Akropolis contracts
 * AKRO `0x8ab7404063ec4dbcfd4598215992dc3f8ec853d7`
@@ -41,46 +43,56 @@
 #### Pool and Modules
 * Pool `0x4C39b37f5F20a0695BFDC59cf10bd85a6c4B7c30`
 * AccessModule `0x5fFcf7da7BdC49CA8A2E7a542BD59dC38228Dd45`
+
+##### Vaults
+* VaultSavingsModule `0x5aDEbf51b01C08C875C9931aa9474CD60A2DB741`
+* VaultProtocol CurveFi `0x4215B8Ba7B12A8293fe7c9CEF897C5669A368fF8`
+* CurveFiStablecoinStrategy `0x72e8F9aa2fa78Ce2eF7cbEc97cB5c8E696Ebe593`
+* PoolToken for Vault CurveFi `0xD28a298fDe6Bb995A2a01293866916989e48507D`
+
+##### Rewards
+* RewardVestingModule `0x2A9dcb9d79Aba0CC64565A87c9d20D11D1f33a07`
+* RewardDistributionModule `0x84056675382c851cf42FAAFCeC3FCa90E21AE645`
+
+##### Savings & Investing
 * SavingsModule `0x73fC3038B4cD8FfD07482b92a52Ea806505e5748`
 * InvestingModule `0xF311b1258d0F245b85090e4Fb01f2277cB2328aD`
 * StakingPool `0x3501Ec11d205fa249f2C42f5470e137b529b35D0`
 * StakingPoolAdel `0x1A547c3dd03c39Fb2b5aEaFC524033879bD28F13`
-* RewardVestingModule `0x2A9dcb9d79Aba0CC64565A87c9d20D11D1f33a07`
-* RewardDistributionModule `0x84056675382c851cf42FAAFCeC3FCa90E21AE645`
 
-#### Protocols
-##### Curve.Fi Y [(y)DAI, (y)USDC, (y)USDT, (y)TUSD] - CRV
+###### Protocols
+####### Curve.Fi Y [(y)DAI, (y)USDC, (y)USDT, (y)TUSD] - CRV
 * Protocol CurveFi Y `0x7967adA2A32A633d5C055e2e075A83023B632B4e`
 * PoolToken for CurveFi Y `0x2AFA3c8Bf33E65d5036cD0f1c3599716894B3077`
 
-##### Curve.Fi sBTC [renBTC, wBTC, sBTC] - CRV
+####### Curve.Fi sBTC [renBTC, wBTC, sBTC] - CRV
 * Protocol CurveFi SBTC `0xEEEf30D50a7c6676B260a26A5fBe13e45fD7b5A9`
 * PoolToken for CurveFi SBTC `0x933082B3D21a6ED90ed7EcA470Fd424Df5D21BEf`
 
-##### Curve.Fi renBTC [renBTC, wBTC] - CRV
+####### Curve.Fi renBTC [renBTC, wBTC] - CRV
 * Protocol CurveFi renBTC  `0x020439688aA784Baa55DfEDB4732E8229aC8Fb1b`
 * PoolToken for CurveFi renBTC `0x321eb571778e46004Ec52FD399E097C17Fea9C9c`
 
-##### Curve.Fi sUSD [DAI, USDC, USDT, sUSD] - SNX, CRV
+####### Curve.Fi sUSD [DAI, USDC, USDT, sUSD] - SNX, CRV
 * Protocol CurveFi SUSD `0x91d7b9a8d2314110D4018C88dBFDCF5E2ba4772E`
 * PoolToken for CurveFi SUSD `0x520d25b08080296db66fd9f268ae279b66a8effb`
 
-##### Curve.Fi BUSD [(y)DAI, (y)USDC, (y)USDT, (y)BUSD] - CRV
+####### Curve.Fi BUSD [(y)DAI, (y)USDC, (y)USDT, (y)BUSD] - CRV
 * Protocol CurveFi BUSD `0xEaE1A8206F68a7ef629e85fc69E82CFD36E83BA4`
 * PoolToken for CurveFi BUSD `0x8367Af78444C5B57Bc1cF38dED331d03558e67Bb`
 
-##### Compound DAI - COMP
+####### Compound DAI - COMP
 * Protocol Compound DAI `0x08DDB58D31C08242Cd444BB5B43F7d2C6bcA0396`
 * PoolToken for Compound DAI `0x9Fca734Bb62C20D2cF654705b8fbf4F49FF5cC31`
 
-##### Compound USDC - COMP
+####### Compound USDC - COMP
 * Protocol Compound USDC `0x9984D588EF2112894a0513663ba815310D383E3c`
 * PoolToken for Compound USDC `0x5Ad76E93a3a852C9af760dA3FdB7983C265d8997`
 
-##### Aave sUSD
+####### Aave sUSD
 * Protocol Aaave SUSD `0xBED50F08B8e68293bd7Db742c4207F2F6E520cD2`
 * PoolToken for Aaave SUSD `0x8E2317458878B9223904BdD95173EE96D46feC77`
 
-##### Aave BUSD
+####### Aave BUSD
 * Protocol Aaave BUSD `0x051E3A47724740d47042Edc71C0AE81A35fDEDE9`
 * PoolToken for Aaave BUSD `0xb62B6B192524F6b220a08f0D5D0EB748A8cbAA1b`
