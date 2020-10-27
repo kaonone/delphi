@@ -8202,11 +8202,11 @@
       }
     },
     "VaultProtocolCurveFi": {
-      "address": "0x7585d57F9DF2a9DD72eac9A58dACd8A1Cb362118",
-      "constructorCode": "60806040526153d0806100136000396000f3fe",
-      "bodyBytecodeHash": "a14b5565c1821066e91b79b0a396a4d6c4767495ba45f228dbe4f8a68551e94f",
-      "localBytecodeHash": "9a2cc79e6a0c7f8b3207b7024913280af3f66ddb84e748bbc2222e9599fcf418",
-      "deployedBytecodeHash": "9a2cc79e6a0c7f8b3207b7024913280af3f66ddb84e748bbc2222e9599fcf418",
+      "address": "0x2039F75baf0FbF1F7710C01AB98eBc6a3Af8529c",
+      "constructorCode": "6080604052615643806100136000396000f3fe",
+      "bodyBytecodeHash": "a92196dbd9d6ce18422ec070260997fe4ec942fa2a3981159612434a1513073b",
+      "localBytecodeHash": "7d5b0ef4d4aaaae62442e97940994070c156cb2d2a2048ae258ca057b8a14b78",
+      "deployedBytecodeHash": "7d5b0ef4d4aaaae62442e97940994070c156cb2d2a2048ae258ca057b8a14b78",
       "types": {
         "t_bool": {
           "id": "t_bool",
@@ -8437,15 +8437,26 @@
         "hasSelfDestruct": false,
         "hasDelegateCall": false,
         "hasInitialValuesInDeclarations": false,
-        "uninitializedBaseContracts": []
+        "uninitializedBaseContracts": [],
+        "storageUncheckedVars": [
+          {
+            "contract": "DefiOperatorRole",
+            "path": "..\\..\\..\\D\\projects\\akropolis\\savings-pool\\contracts\\modules\\defi\\DefiOperatorRole.sol",
+            "label": "_operators",
+            "astId": 9409,
+            "type": "t_struct<Roles.Role>",
+            "src": "445:29:79"
+          }
+        ],
+        "storageDiff": []
       }
     },
     "CurveFiStablecoinStrategy": {
-      "address": "0x404ee091E005b48999f3E0110eC5E317D878D17B",
-      "constructorCode": "60806040526144b0806100136000396000f3fe",
-      "bodyBytecodeHash": "360b2512d59bbdf8a2c39071c3b5856e6c247ae47292933bed70e32613750c6b",
-      "localBytecodeHash": "d64bb2a7065f2a5a28641949634dff5d56d37d627d33ced34a80c59f561e037b",
-      "deployedBytecodeHash": "d64bb2a7065f2a5a28641949634dff5d56d37d627d33ced34a80c59f561e037b",
+      "address": "0xb9D30c00f1a6A7d77eA5d6CEa39327226CE478f8",
+      "constructorCode": "60806040526145a8806100136000396000f3fe",
+      "bodyBytecodeHash": "c8cf37047b6f0a1214bbfb693e9da49709711dd5fc237501a36fddd3e526bb0d",
+      "localBytecodeHash": "6ff831f78caadaff24271356267bb313697c9efa465946fa8fd9239b6fd39d49",
+      "deployedBytecodeHash": "6ff831f78caadaff24271356267bb313697c9efa465946fa8fd9239b6fd39d49",
       "types": {
         "t_bool": {
           "id": "t_bool",
@@ -8476,7 +8487,7 @@
           "members": [
             {
               "label": "bearer",
-              "astId": 35693,
+              "astId": 35748,
               "type": "t_mapping<t_bool>",
               "src": "150:32:130"
             }
@@ -8524,7 +8535,7 @@
           "contract": "Initializable",
           "path": "@openzeppelin\\upgrades\\contracts\\Initializable.sol",
           "label": "initialized",
-          "astId": 37763,
+          "astId": 37818,
           "type": "t_bool",
           "src": "757:24:147"
         },
@@ -8532,7 +8543,7 @@
           "contract": "Initializable",
           "path": "@openzeppelin\\upgrades\\contracts\\Initializable.sol",
           "label": "initializing",
-          "astId": 37765,
+          "astId": 37820,
           "type": "t_bool",
           "src": "876:25:147"
         },
@@ -8540,7 +8551,7 @@
           "contract": "Initializable",
           "path": "@openzeppelin\\upgrades\\contracts\\Initializable.sol",
           "label": "______gap",
-          "astId": 37827,
+          "astId": 37882,
           "type": "t_array:50<t_uint256>",
           "src": "1982:29:147"
         },
@@ -8548,7 +8559,7 @@
           "contract": "Ownable",
           "path": "@openzeppelin\\contracts-ethereum-package\\contracts\\ownership\\Ownable.sol",
           "label": "_owner",
-          "astId": 36696,
+          "astId": 36751,
           "type": "t_address",
           "src": "526:22:138"
         },
@@ -8556,7 +8567,7 @@
           "contract": "Ownable",
           "path": "@openzeppelin\\contracts-ethereum-package\\contracts\\ownership\\Ownable.sol",
           "label": "______gap",
-          "astId": 36809,
+          "astId": 36864,
           "type": "t_array:50<t_uint256>",
           "src": "2471:29:138"
         },
@@ -8572,7 +8583,7 @@
           "contract": "DefiOperatorRole",
           "path": "..\\..\\..\\D\\projects\\akropolis\\savings-pool\\contracts\\modules\\defi\\DefiOperatorRole.sol",
           "label": "_operators",
-          "astId": 9409,
+          "astId": 9464,
           "type": "t_struct<Roles.Role>",
           "src": "445:29:79"
         },
@@ -8678,7 +8689,26 @@
         "hasSelfDestruct": false,
         "hasDelegateCall": false,
         "hasInitialValuesInDeclarations": false,
-        "uninitializedBaseContracts": []
+        "uninitializedBaseContracts": [],
+        "storageUncheckedVars": [
+          {
+            "contract": "DefiOperatorRole",
+            "path": "..\\..\\..\\D\\projects\\akropolis\\savings-pool\\contracts\\modules\\defi\\DefiOperatorRole.sol",
+            "label": "_operators",
+            "astId": 9464,
+            "type": "t_struct<Roles.Role>",
+            "src": "445:29:79"
+          },
+          {
+            "contract": "CurveFiStablecoinStrategy",
+            "path": "..\\..\\..\\D\\projects\\akropolis\\savings-pool\\contracts\\modules\\defi\\CurveFiStablecoinStrategy.sol",
+            "label": "yPricePerFullShare",
+            "astId": 8293,
+            "type": "t_mapping<t_struct<CurveFiStablecoinStrategy.PriceData>>",
+            "src": "1566:55:78"
+          }
+        ],
+        "storageDiff": []
       }
     },
     "PoolToken_Vault_CurveFi": {
@@ -9249,7 +9279,7 @@
       {
         "address": "0x4215B8Ba7B12A8293fe7c9CEF897C5669A368fF8",
         "version": "1.0.0",
-        "implementation": "0x7585d57F9DF2a9DD72eac9A58dACd8A1Cb362118",
+        "implementation": "0x2039F75baf0FbF1F7710C01AB98eBc6a3Af8529c",
         "admin": "0x8f608BCB8971cD7D3073C417A28DbD156d772402",
         "kind": "Upgradeable"
       }
@@ -9258,7 +9288,7 @@
       {
         "address": "0x72e8F9aa2fa78Ce2eF7cbEc97cB5c8E696Ebe593",
         "version": "1.0.0",
-        "implementation": "0x404ee091E005b48999f3E0110eC5E317D878D17B",
+        "implementation": "0xd7B5B238a7e84C8bA68f01919D67696c1DFA144c",
         "admin": "0x8f608BCB8971cD7D3073C417A28DbD156d772402",
         "kind": "Upgradeable"
       }
