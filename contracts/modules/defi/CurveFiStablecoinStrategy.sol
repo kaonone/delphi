@@ -97,6 +97,11 @@ contract CurveFiStablecoinStrategy is Module, IDefiStrategy, IStrategyCurveFiSwa
         amounts[ind] = amount;
 
         ICurveFiDeposit_Y(address(curveFiDeposit)).add_liquidity(convertArray(amounts), 0);
+
+        //Stake Curve LP-token
+        uint256 cftBalance = curveFiToken.balanceOf(address(this));
+        curveFiToken.safeApprove(address(curveFiLPGauge), cftBalance);
+        curveFiLPGauge.deposit(cftBalance);
     }
 
     function handleDeposit(address[] memory tokens, uint256[] memory amounts) public onlyDefiOperator {
@@ -113,6 +118,11 @@ contract CurveFiStablecoinStrategy is Module, IDefiStrategy, IStrategyCurveFiSwa
 
         //Deposit stablecoins into the protocol
         ICurveFiDeposit_Y(address(curveFiDeposit)).add_liquidity(convertArray(amounts), 0);
+
+        //Stake Curve LP-token
+        uint256 cftBalance = curveFiToken.balanceOf(address(this));
+        curveFiToken.safeApprove(address(curveFiLPGauge), cftBalance);
+        curveFiLPGauge.deposit(cftBalance);
     }
 
     function withdraw(address beneficiary, address token, uint256 amount) public onlyDefiOperator {
@@ -127,11 +137,14 @@ contract CurveFiStablecoinStrategy is Module, IDefiStrategy, IStrategyCurveFiSwa
         uint256 poolShares = curveFiTokenBalance();
         uint256 withdrawShares = poolShares.mul(nAmount).mul(slippageMultiplier).div(nBalance).div(1e18); //Increase required amount to some percent, so that we definitely have enough to withdraw
         
+
+        //Unstake Curve LP-token
+        curveFiLPGauge.withdraw(withdrawShares);
+
         IERC20(curveFiToken).safeApprove(address(curveFiDeposit), withdrawShares);
         curveFiDeposit.remove_liquidity_one_coin(withdrawShares, int128(tokenIdx), amount, false); //DONATE_DUST - false
 
-        IERC20 ltoken = IERC20(token);
-        ltoken.safeTransfer(beneficiary, amount);
+        IERC20(token).safeTransfer(beneficiary, amount);
     }
 
     function withdraw(address beneficiary, uint256[] memory amounts) public onlyDefiOperator {
@@ -150,6 +163,9 @@ contract CurveFiStablecoinStrategy is Module, IDefiStrategy, IStrategyCurveFiSwa
         uint256 poolShares = curveFiTokenBalance();
         
         uint256 withdrawShares = poolShares.mul(nWithdraw).mul(slippageMultiplier).div(nBalance).div(1e18); //Increase required amount to some percent, so that we definitely have enough to withdraw
+
+        //Unstake Curve LP-token
+        curveFiLPGauge.withdraw(withdrawShares);
 
         IERC20(curveFiToken).safeApprove(address(curveFiDeposit), withdrawShares);
         ICurveFiDeposit_Y(address(curveFiDeposit)).remove_liquidity_imbalance(convertArray(amounts), withdrawShares);
