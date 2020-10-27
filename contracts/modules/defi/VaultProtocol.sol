@@ -133,11 +133,11 @@ contract VaultProtocol is Module, IVaultProtocol, DefiOperatorRole {
 
 
         if (availableEnabled && (IERC20(_token).balanceOf(address(this)).sub(claimableTokens[indReg]) >= _amount.add(remainders[indReg]))) {
+            decreaseOnHoldDeposit(_user, _token, _amount);
+
             IERC20(_token).safeTransfer(_user, _amount);
 
             emit WithdrawFromVault(_user, _token, _amount);
-
-            decreaseOnHoldDeposit(_user, _token, _amount);
         }
         else {
             if (balancesRequested[_user].length == 0) {
@@ -145,6 +145,8 @@ contract VaultProtocol is Module, IVaultProtocol, DefiOperatorRole {
             }
             usersRequested.push(_user);
             balancesRequested[_user][indReg] = balancesRequested[_user][indReg].add(_amount);
+
+            decreaseOnHoldDeposit(_user, _token, _amount);
 
             emit WithdrawRequestCreated(_user, _token, _amount);
         }
@@ -490,14 +492,18 @@ contract VaultProtocol is Module, IVaultProtocol, DefiOperatorRole {
 
     function decreaseOnHoldDeposit(address _user, address _token, uint256 _amount) internal {
         uint256 ind = tokenRegisteredInd(_token);
+        if (balancesOnHold[_user].length == 0 || balancesOnHold[_user][ind] == 0) return;
 
-        if (balancesOnHold[_user].length != 0) {
-            if (balancesOnHold[_user][ind] > _amount) {
-                balancesOnHold[_user][ind] = balancesOnHold[_user][ind].sub(_amount);
-            }
-            else {
-                balancesOnHold[_user][ind] = 0;
-            }
+        IVaultSavings vaultSavings = IVaultSavings(getModuleAddress(MODULE_VAULT));
+        IOperableToken vaultPoolToken = IOperableToken(vaultSavings.poolTokenByProtocol(address(this)));
+
+        if (balancesOnHold[_user][ind] > _amount) {
+            vaultPoolToken.decreaseOnHoldValue(_user, CalcUtils.normalizeAmount(registeredVaultTokens[ind], _amount));
+            balancesOnHold[_user][ind] = balancesOnHold[_user][ind].sub(_amount);
+        }
+        else {
+            vaultPoolToken.decreaseOnHoldValue(_user, CalcUtils.normalizeAmount(registeredVaultTokens[ind], balancesOnHold[_user][ind]));
+            balancesOnHold[_user][ind] = 0;
         }
     }
 

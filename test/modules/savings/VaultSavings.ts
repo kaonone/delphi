@@ -1163,10 +1163,11 @@ contract('VaultSavings', async([ _, owner, user1, user2, user3, defiops, protoco
             expect(before.usdc.toNumber(), 'USDC balance should not change').to.equal(after.usdc.toNumber());
             expect(before.busd.toNumber(), 'BUSD balance should not change').to.equal(after.busd.toNumber());
 
+
             // Additional withdraw request (for the second half) from user1 in 1 token (dai)
             await vaultSavings.withdraw(
                 vaultProtocol.address, [dai.address], [amounts.dai / 2], false, { from: user1 });
-
+                
             // Operator action for 1 token (dai)
             await vaultSavings.handleOperatorActions(
                 vaultProtocol.address, strategy.address, dai.address, { from: defiops });
@@ -1187,6 +1188,52 @@ contract('VaultSavings', async([ _, owner, user1, user2, user3, defiops, protoco
             expect(after.dai.sub(before.dai).toNumber(), 'DAI should be claimed').to.equal(amounts.dai / 2);
             expect(before.usdc.toNumber(), 'USDC balance should not change').to.equal(after.usdc.toNumber());
             expect(before.busd.toNumber(), 'BUSD balance should not change').to.equal(after.busd.toNumber());
+        });
+
+
+        it('Operator resolves deposit AND withdraw request for the single token', async() => {
+            // Deposit from user1 in 3 different tokens
+            const amountsDeposit = { dai: 5, usdc: 5, busd: 5 };
+            const amountsWithdraw = { dai: 2, usdc: 2 };
+            await vaultProtocol.setAvailableEnabled(false, {from:defiops});
+
+            await (<any>vaultSavings).methods['deposit(address,address[],uint256[])'](
+                vaultProtocol.address, [dai.address, usdc.address, busd.address],
+                Object.values(amountsDeposit), { from: user1 });
+
+            let before = {
+                vault: await dai.balanceOf(vaultProtocol.address),
+                claim_dai: await vaultProtocol.claimableAmount(user1, dai.address),
+                poolOnHold: await poolToken.onHoldBalanceOf(user1)
+            };
+
+            const onHoldBefore = {
+                dai: await vaultProtocol.amountOnHold(user1, dai.address),
+                usdc: await vaultProtocol.amountOnHold(user1, usdc.address)
+            }
+            await vaultSavings.withdraw(
+                vaultProtocol.address, [dai.address, usdc.address], [amountsWithdraw.dai, amountsWithdraw.usdc], false, { from: user1 });
+
+            const onHoldAfter = {
+                dai: await vaultProtocol.amountOnHold(user1, dai.address),
+                usdc: await vaultProtocol.amountOnHold(user1, usdc.address)
+            }
+            expect(onHoldBefore.dai.sub(onHoldAfter.dai).toNumber(), "Tokens cannot be claimed").to.equal(amountsWithdraw.dai);
+            expect(onHoldBefore.usdc.sub(onHoldAfter.usdc).toNumber(), "Tokens cannot be claimed").to.equal(amountsWithdraw.usdc);
+
+            //Add yield to the protocol
+            await dai.transfer(protocolStub, 13, { from: owner });
+
+            const poolOnHoldAfter = await poolToken.onHoldBalanceOf(user1)
+            await vaultSavings.handleOperatorActions(vaultProtocol.address, strategy.address, dai.address, { from: defiops });
+            let after = {
+                vault: await dai.balanceOf(vaultProtocol.address),
+                claim_dai: await vaultProtocol.claimableAmount(user1, dai.address)
+            };
+
+            expect(before.vault.sub(after.vault).toNumber(), "Tokens not sent from Vault").to.equal(amountsDeposit.dai - amountsWithdraw.dai);
+            expect(after.claim_dai.sub(before.claim_dai).toNumber(), "Tokens cannot be claimed").to.equal(amountsWithdraw.dai);
+            expect(before.poolOnHold.sub(poolOnHoldAfter).toNumber(), "Incorrect on-hold LP Tokens amount").to.equal(amountsWithdraw.dai + amountsWithdraw.usdc);
         });
 
     });
