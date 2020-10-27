@@ -210,7 +210,7 @@ contract CurveFiStablecoinStrategy is Module, IDefiStrategy, IStrategyCurveFiSwa
     }
 
     function claimRewardsFromProtocol() internal {
-        curveFiMinter.mint_for(address(curveFiLPGauge), address(this));
+        curveFiMinter.mint(address(curveFiLPGauge));
     }
 
     function balanceOf(address token) public returns(uint256) {
