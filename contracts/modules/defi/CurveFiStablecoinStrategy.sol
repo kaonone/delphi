@@ -92,8 +92,8 @@ contract CurveFiStablecoinStrategy is Module, IDefiStrategy, IStrategyCurveFiSwa
         for (uint256 i=0; i < nTokens; i++) {
             amounts[i] = uint256(0);
         }
-        IERC20(token).transferFrom(vault, address(this), amount);
-        IERC20(token).approve(address(curveFiDeposit), amount);
+        IERC20(token).safeTransferFrom(vault, address(this), amount);
+        IERC20(token).safeApprove(address(curveFiDeposit), amount);
         amounts[ind] = amount;
 
         ICurveFiDeposit_Y(address(curveFiDeposit)).add_liquidity(convertArray(amounts), 0);
@@ -104,8 +104,8 @@ contract CurveFiStablecoinStrategy is Module, IDefiStrategy, IStrategyCurveFiSwa
         require(amounts.length == IVaultProtocol(vault).supportedTokensCount(), "Amounts count does not match registered tokens");
 
         for (uint256 i=0; i < tokens.length; i++) {
-            IERC20(tokens[i]).transferFrom(vault, address(this), amounts[i]);
-            IERC20(tokens[i]).approve(address(curveFiDeposit), amounts[i]);
+            IERC20(tokens[i]).safeTransferFrom(vault, address(this), amounts[i]);
+            IERC20(tokens[i]).safeApprove(address(curveFiDeposit), amounts[i]);
         }
 
         //Check for sufficient amounts on the Vault balances is checked in the WithdrawOperator()
@@ -176,7 +176,7 @@ contract CurveFiStablecoinStrategy is Module, IDefiStrategy, IStrategyCurveFiSwa
      */
     function performStrategyStep2(bytes calldata dexagSwapData, address swapStablecoin) external onlyDefiOperator {
         uint256 crvAmount = IERC20(crvToken).balanceOf(address(this));
-        IERC20(crvToken).approve(dexagApproveHandler, crvAmount);
+        IERC20(crvToken).safeApprove(dexagApproveHandler, crvAmount);
         (bool success, bytes memory result) = dexagProxy.call(dexagSwapData);
         if(!success) assembly {
             revert(add(result,32), result)  //Reverts with same revert reason
@@ -184,7 +184,7 @@ contract CurveFiStablecoinStrategy is Module, IDefiStrategy, IStrategyCurveFiSwa
         //new dai tokens will be transferred to the Vault, they will be deposited by the operator on the next round
         //new LP tokens will be distributed automatically after the operator action
         uint256 amount = IERC20(swapStablecoin).balanceOf(address(this));
-        IERC20(swapStablecoin).transfer(vault, amount);
+        IERC20(swapStablecoin).safeTransfer(vault, amount);
     }
 
     function curveFiTokenBalance() public view returns(uint256) {

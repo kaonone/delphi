@@ -133,7 +133,7 @@ contract VaultProtocol is Module, IVaultProtocol, DefiOperatorRole {
 
 
         if (availableEnabled && (IERC20(_token).balanceOf(address(this)).sub(claimableTokens[indReg]) >= _amount.add(remainders[indReg]))) {
-            IERC20(_token).transfer(_user, _amount);
+            IERC20(_token).safeTransfer(_user, _amount);
 
             emit WithdrawFromVault(_user, _token, _amount);
 
@@ -179,7 +179,7 @@ contract VaultProtocol is Module, IVaultProtocol, DefiOperatorRole {
             uint256 amount = balancesToClaim[_user][i];
 
             if (amount > 0) {
-                IERC20(token).transfer(_user, amount);
+                IERC20(token).safeTransfer(_user, amount);
                 claimableTokens[i] = claimableTokens[i].sub(amount);
                 emit Claimed(address(this), _user, token, amount);
             }
@@ -224,7 +224,7 @@ contract VaultProtocol is Module, IVaultProtocol, DefiOperatorRole {
             depositAmounts[i] = IERC20(registeredVaultTokens[i]).balanceOf(address(this)).sub(claimableTokens[i]);
             depositAmounts[i] = handleRemainders(depositAmounts[i], i);
 
-            IERC20(registeredVaultTokens[i]).approve(address(_strategy), depositAmounts[i]);
+            IERC20(registeredVaultTokens[i]).safeApprove(address(_strategy), depositAmounts[i]);
 
             totalDeposit = totalDeposit.add(CalcUtils.normalizeAmount(registeredVaultTokens[i], depositAmounts[i]));
 
@@ -279,7 +279,7 @@ contract VaultProtocol is Module, IVaultProtocol, DefiOperatorRole {
         uint256 totalDeposit = IERC20(_token).balanceOf(address(this)).sub(claimableTokens[ind]);
         totalDeposit = handleRemainders(totalDeposit, ind);
 
-        IERC20(_token).approve(address(_strategy), totalDeposit);
+        IERC20(_token).safeApprove(address(_strategy), totalDeposit);
 
         //one of two things should happen for the same token: deposit or withdraw
         //simultaneous deposit and withdraw are applied to different tokens
