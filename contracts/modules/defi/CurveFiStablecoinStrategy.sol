@@ -137,9 +137,12 @@ contract CurveFiStablecoinStrategy is Module, IDefiStrategy, IStrategyCurveFiSwa
         uint256 poolShares = curveFiTokenBalance();
         uint256 withdrawShares = poolShares.mul(nAmount).mul(slippageMultiplier).div(nBalance).div(1e18); //Increase required amount to some percent, so that we definitely have enough to withdraw
         
-
+        //Currently on this contract
+        uint256 notStaked = curveFiToken.balanceOf(address(this));
         //Unstake Curve LP-token
-        curveFiLPGauge.withdraw(withdrawShares);
+        if (notStaked < withdrawShares) { //Use available LP-tokens from previous yield
+            curveFiLPGauge.withdraw(withdrawShares.sub(notStaked));
+        }
 
         IERC20(curveFiToken).safeApprove(address(curveFiDeposit), withdrawShares);
         curveFiDeposit.remove_liquidity_one_coin(withdrawShares, int128(tokenIdx), amount, false); //DONATE_DUST - false

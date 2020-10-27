@@ -128,6 +128,8 @@ contract VaultSavingsModule is Module, IVaultSavings, AccessChecker, RewardDistr
         require(isVaultRegistered(_vaultProtocol), "Vault is not registered");
         require(_tokens.length == _amounts.length, "Size of arrays does not match");
 
+        VaultPoolToken poolToken = VaultPoolToken(vaults[_vaultProtocol].poolToken);
+
         uint256 actualAmount;
         uint256 normAmount;
         for (uint256 i = 0; i < _amounts.length; i++) {
@@ -138,9 +140,10 @@ contract VaultSavingsModule is Module, IVaultSavings, AccessChecker, RewardDistr
         }
 
         if (isQuick) {
-            distributeYieldInternal(_vaultProtocol);
-            IVaultProtocol(_vaultProtocol).quickWithdraw(_msgSender(), _tokens, _amounts);
-            updateProtocolBalance(_vaultProtocol);
+            uint256 yield = quickWithdraw(_vaultProtocol, _tokens, _amounts, normAmount);
+            if (yield > 0) {
+                createYieldDistribution(poolToken, yield);
+            }
         }
         else {
             if (_tokens.length == 1) {
@@ -151,11 +154,27 @@ contract VaultSavingsModule is Module, IVaultSavings, AccessChecker, RewardDistr
             }
         }
 
-        VaultPoolToken poolToken = VaultPoolToken(vaults[_vaultProtocol].poolToken);
         poolToken.burnFrom(_msgSender(), actualAmount);
         emit Withdraw(_vaultProtocol, _msgSender(), actualAmount, 0);
 
         return actualAmount;
+    }
+
+    function quickWithdraw(address _vaultProtocol, address[] memory _tokens, uint256[] memory _amounts, uint256 normAmount) internal
+    returns(uint256) {
+        uint256 nBalanceBefore = distributeYieldInternal(_vaultProtocol);
+
+        IVaultProtocol(_vaultProtocol).quickWithdraw(_msgSender(), _tokens, _amounts);
+        
+        uint256 nBalanceAfter = updateProtocolBalance(_vaultProtocol);
+
+
+        uint256 yield;
+        uint256 calcBalanceAfter = nBalanceBefore.sub(normAmount);
+        if (nBalanceAfter > calcBalanceAfter) {
+            yield = nBalanceAfter.sub(calcBalanceAfter);
+        }
+        return yield;
     }
 
     //Withdraw several tokens from several Vaults
