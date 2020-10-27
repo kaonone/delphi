@@ -114,7 +114,7 @@ contract VaultProtocolOneCoin is Module, IVaultProtocol, DefiOperatorRole {
 
 
         if (availableEnabled && IERC20(_token).balanceOf(address(this)).sub(claimableTokens) >= _amount.add(remainder)) {
-            IERC20(_token).transfer(_user, _amount);
+            IERC20(_token).safeTransfer(_user, _amount);
 
             emit WithdrawFromVault(_user, _token, _amount);
 
@@ -148,7 +148,7 @@ contract VaultProtocolOneCoin is Module, IVaultProtocol, DefiOperatorRole {
     function claimRequested(address _user) public {
         if (balancesToClaim[_user] == 0) return;
 
-        IERC20(registeredVaultToken).transfer(_user, balancesToClaim[_user]);
+        IERC20(registeredVaultToken).safeTransfer(_user, balancesToClaim[_user]);
         claimableTokens = claimableTokens.sub(balancesToClaim[_user]);
 
         emit Claimed(address(this), _user, registeredVaultToken, balancesToClaim[_user]);
@@ -183,7 +183,7 @@ contract VaultProtocolOneCoin is Module, IVaultProtocol, DefiOperatorRole {
         uint256 totalDeposit = IERC20(registeredVaultToken).balanceOf(address(this)).sub(claimableTokens).sub(remainder);
         totalDeposit = handleRemainders(totalDeposit);
 
-        IERC20(registeredVaultToken).approve(address(_strategy), totalDeposit);
+        IERC20(registeredVaultToken).safeApprove(address(_strategy), totalDeposit);
 
         //one of two things should happen for the same token: deposit or withdraw
         //simultaneous deposit and withdraw are applied to different tokens
