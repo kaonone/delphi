@@ -581,17 +581,17 @@ contract('VaultProtocol', async([ _, owner, user1, user2, user3, defiops, protoc
 
             //User1 (with on-hold tokens) tries to withdraw more tokens than are currently on the protocol
             const withdrawResult = await (<any> vaultProtocol)
-                .methods['withdrawFromVault(address,address,uint256)'](user1, dai.address, 100, { from: defiops });
+                .methods['withdrawFromVault(address,address,uint256)'](user1, dai.address, 80, { from: defiops });
 
             expectEvent(
-                withdrawResult, 'WithdrawRequestCreated', { _user: user1, _token: dai.address, _amount: '100' }
+                withdrawResult, 'WithdrawRequestCreated', { _user: user1, _token: dai.address, _amount: '80' }
             );
             expectEvent.notEmitted(withdrawResult, 'WithdrawFromVault');
 
             const onholdAfter = await vaultProtocol.amountOnHold(user1, dai.address);
 
-            expect(onholdAfter.toString(), 'On-hold deposit should be left untouched')
-                .to.equal(onholdBefore.toString());
+            //100 from initial deposit - 80 from request
+            expect(onholdAfter.toNumber(), 'On-hold deposit should be decreased').to.equal(onholdBefore.sub(new BN(80)).toNumber());
 
             const after = {
                 userBalance: await dai.balanceOf(user1),
@@ -606,7 +606,7 @@ contract('VaultProtocol', async([ _, owner, user1, user2, user3, defiops, protoc
 
             //Withdraw request created
             const requestedAmount = await vaultProtocol.amountRequested(user1, dai.address);
-            expect(requestedAmount.toNumber(), 'Request should be created').to.equal(100);
+            expect(requestedAmount.toNumber(), 'Request should be created').to.equal(80);
 
         });
 
