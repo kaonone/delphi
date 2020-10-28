@@ -161,7 +161,7 @@ contract VaultProtocol is Module, IVaultProtocol, DefiOperatorRole {
         }
     }
 
-        function quickWithdraw(address _user, address[] memory _tokens, uint256[] memory _amounts) public onlyDefiOperator {
+    function quickWithdraw(address _user, address[] memory _tokens, uint256[] memory _amounts) public onlyDefiOperator {
         require(quickStrategy != address(0), "No strategy for quick withdraw");
         require(_tokens.length == 1 || _amounts.length == supportedTokensCount(), "Incorrect number of tokens");
 
