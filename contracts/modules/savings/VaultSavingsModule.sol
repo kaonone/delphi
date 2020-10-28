@@ -158,7 +158,7 @@ contract VaultSavingsModule is Module, IVaultSavings, AccessChecker, RewardDistr
     }
 
     function quickWithdraw(address _vaultProtocol, address[] memory _tokens, uint256[] memory _amounts, uint256 normAmount) internal {
-        distributeYieldInternal(_vaultProtocol);
+        distributeYieldInternal(_vaultProtocol, 0, 0);
 
         IVaultProtocol(_vaultProtocol).quickWithdraw(_msgSender(), _tokens, _amounts);
         
@@ -210,7 +210,7 @@ contract VaultSavingsModule is Module, IVaultSavings, AccessChecker, RewardDistr
         uint256 totalDeposit;
         uint256 totalWithdraw;
 
-        distributeYieldInternal(_vaultProtocol);
+        distributeYieldInternal(_vaultProtocol, 0, 0);
 
         if (_token == address(0)) {
             (totalDeposit, totalWithdraw) = IVaultProtocol(_vaultProtocol).operatorAction(_strategy);
@@ -228,7 +228,7 @@ contract VaultSavingsModule is Module, IVaultSavings, AccessChecker, RewardDistr
     }
 
     function distributeYield(address _vaultProtocol) public {
-        distributeYieldInternal(_vaultProtocol);
+        distributeYieldInternal(_vaultProtocol, 0, 0);
     }
 
     function setVaultRemainder(address _vaultProtocol, uint256 _amount, uint256 _index) public onlyVaultOperator {
@@ -286,40 +286,24 @@ contract VaultSavingsModule is Module, IVaultSavings, AccessChecker, RewardDistr
 // ------
 // Yield distribution internal helpers
 // ------
-    function distributeYieldInternal(address _vaultProtocol) internal returns(uint256){
-        uint256 currentBalance = IVaultProtocol(_vaultProtocol).normalizedBalance();
-        VaultInfo storage pi = vaults[_vaultProtocol];
-        VaultPoolToken poolToken = VaultPoolToken(pi.poolToken);
-        if(currentBalance > pi.previousBalance) {
-            uint256 yield = currentBalance.sub(pi.previousBalance);
-            createYieldDistribution(poolToken, yield);
-        }
-        //Update protocol balance
-        pi.previousBalance = currentBalance;
-        return currentBalance;
-    }
-
-    function distributeYieldInternal(address _vaultProtocol, uint256 totalWithdraw, uint256 totalDeposit) internal returns(uint256) {
+    function distributeYieldInternal(address _vaultProtocol, uint256 totalWithdraw, uint256 totalDeposit) internal {
         uint256 currentBalance = IVaultProtocol(_vaultProtocol).normalizedBalance();
 
         VaultInfo storage pi = vaults[_vaultProtocol];
         uint256 correctedBalance = pi.previousBalance.add(totalDeposit).sub(totalWithdraw);
 
-        if (currentBalance >= correctedBalance) {
+        if (currentBalance > correctedBalance) {
             VaultPoolToken poolToken = VaultPoolToken(pi.poolToken);
             uint256 yield = currentBalance.sub(correctedBalance);
             //Update protocol balance
             pi.previousBalance = currentBalance;
 
-            if (yield > 0) {
-                createYieldDistribution(poolToken, yield);
-            }
+            createYieldDistribution(poolToken, yield);
         }
         else {
             //Update protocol balance with correction for fee
-            pi.previousBalance = pi.previousBalance.add(correctedBalance.sub(currentBalance));
+            pi.previousBalance = correctedBalance;
         }
-        return currentBalance;
     }
 
 
