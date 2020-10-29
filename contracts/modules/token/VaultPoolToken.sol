@@ -20,6 +20,7 @@ contract VaultPoolToken is PoolToken, IOperableToken {
     }
 
     function increaseOnHoldValue(address _user, uint256 _amount) public onlyMinter {
+        _updateUserBalance(_user);
         onHoldAmount[_user] = onHoldAmount[_user].add(_amount);
         totalOnHold = totalOnHold.add(_amount);
     }
@@ -36,6 +37,9 @@ contract VaultPoolToken is PoolToken, IOperableToken {
 
             userBalanceChanged(_user);
         }
+        else {
+            revert("Incorrect on hold amount");
+        }
     }
 
     function onHoldBalanceOf(address _user) public view returns (uint256) {
@@ -50,6 +54,8 @@ contract VaultPoolToken is PoolToken, IOperableToken {
     }
 
     function distributionBalanceOf(address account) public view returns(uint256) {
+        if (account == address(this)) return 0;
+
         if (balanceOf(account).add(toBeMinted) <= onHoldAmount[account])
             return 0;
         return balanceOf(account).add(toBeMinted).sub(onHoldAmount[account]);
