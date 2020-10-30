@@ -193,7 +193,7 @@ contract("Upgrades: PoolToken Distribution Total Supply fix", async ([owner, use
     });
 
     it('should have totalSupply less than fullBalance of all users', async () => {
-        let summFullBalance = await countFullBalanceOfUsers(otherAccounts.slice(0,otherAccounts.length));
+        let summFullBalance = await countFullBalanceOfUsers(otherAccounts);
         let totalSupply = await dCDAI.totalSupply();
         expect(totalSupply).to.be.bignumber.lt(summFullBalance);
 
@@ -203,7 +203,7 @@ contract("Upgrades: PoolToken Distribution Total Supply fix", async ([owner, use
     });
 
     it('should fix totalSupply and balances', async () => {
-        let summFullBalance = await countFullBalanceOfUsers(otherAccounts.slice(0,otherAccounts.length));
+        let summFullBalance = await countFullBalanceOfUsers(otherAccounts);
         let totalSupply = await dCDAI.totalSupply();
         let accumulator = await dCDAI.distributionAccumulator();
         console.log('accumulator', accumulator.toString());
@@ -211,8 +211,10 @@ contract("Upgrades: PoolToken Distribution Total Supply fix", async ([owner, use
         expect(diff).to.be.bignumber.gt("0");
         console.log('diff',diff.toString());
 
-        await dai.allocateTo(owner, diff);
-        await dai.approve(savings.address, diff);
+        let fixAmount = diff.muln(105).divn(100); //Add additional anount for possible fees
+
+        await dai.allocateTo(owner, fixAmount);
+        await dai.approve(savings.address, fixAmount);
 
         dCDAI = await upgradeProxy(dCDAI.address, PoolToken, UPGRADABLE_OPTS);
 
@@ -220,10 +222,10 @@ contract("Upgrades: PoolToken Distribution Total Supply fix", async ([owner, use
         let pnBalance = await compoundProtocolDai.normalizedBalance.call();
         console.log("1 pnBalance, totalSupply", pnBalance.toString(), totalSupply.toString());
 
-        await savings.methods['deposit(address,address[],uint256[])'](compoundProtocolDai.address,[dai.address], [diff]);
+        await savings.methods['deposit(address,address[],uint256[])'](compoundProtocolDai.address,[dai.address], [fixAmount]);
 
-        let nd = dCDAI.nextDistributions(owner);
-        console.log(nd);
+        // let nd = await dCDAI.nextDistributions(owner);
+        // console.log(nd);
 
         accumulator = await dCDAI.distributionAccumulator();
         console.log('accumulator 2', accumulator.toString());
