@@ -1531,6 +1531,89 @@ contract('VaultSavings', async([ _, owner, user1, user2, user3, defiops, protoco
             expect(unclaimedTokens.toNumber(), 'No yield for user (2)').to.equal(10);
         });
 
+        it('Correct distribution for the new user (after several distributions)', async() => {
+            //Deposited 80 by user1 and 50 by user2
+
+            //Operator action
+            await vaultSavings.handleOperatorActions(vaultProtocol.address, strategy.address, ZERO_ADDRESS, { from: defiops })
+
+        //First distribution (adfter additional deposit)
+            //Yield
+            await dai.transfer(protocolStub, 26, { from: owner });
+            
+            //Deposit again
+            await dai.approve(vaultSavings.address, 50, { from: user1 });
+            await (<any> vaultSavings).methods['deposit(address,address[],uint256[])'](vaultProtocol.address, [dai.address], [50], { from: user1 });
+            await dai.approve(vaultSavings.address, 50, { from: user2 });
+            await (<any> vaultSavings).methods['deposit(address,address[],uint256[])'](vaultProtocol.address, [dai.address], [50], { from: user2 });
+
+            // Operator action
+            await vaultSavings.handleOperatorActions(vaultProtocol.address, strategy.address, ZERO_ADDRESS, { from: defiops });
+
+            //Distribution was created
+            //User1: 80 (deposited) + 50 (new) + 80/130 * 26 = 16 of new yield
+            //User2: 50 (deposited) + 50 (new) + 50/130 * 26 = 10 of new yield
+
+        //Create second distribution
+            //Yield
+            await dai.transfer(protocolStub, 128, { from: owner });
+
+            //Distribute yield
+            await blockTimeTravel(await poolToken.DISTRIBUTION_AGGREGATION_PERIOD());
+            await vaultSavings.distributeYield(vaultProtocol.address, {from:defiops});
+
+            //Second distribution
+            //User1: 130 (deposited) + 16 of previous yield + 146/256 * 128 = 73
+            //User2: 100 (deposited) + 10 of previous yield + 110/256 * 128 = 55
+
+        //Deposit from new user
+
+            //New user deposit
+            await dai.approve(vaultSavings.address, 60, { from: user3 });
+            await (<any> vaultSavings).methods['deposit(address,address[],uint256[])'](vaultProtocol.address, [dai.address], [60], { from: user3 });
+
+            let distrNum = await poolToken.nextDistributions(user3);
+            expect(distrNum.toNumber(), "Incorrect distribution number").to.equal(2); //The next after 2 distributions (starting with 0)
+
+            let unclaimed = await poolToken.calculateUnclaimedDistributions(user3);
+            expect(unclaimed.toNumber(), "Should not have unclaimed tokens").to.equal(0);
+
+            let distrTokens = await poolToken.distributionBalanceOf(user3);
+            expect(distrTokens.toNumber(), "Should not have distribution balance yet").to.equal(0); //Tokens are on-hold
+
+            //operatorAction
+            await vaultSavings.handleOperatorActions(vaultProtocol.address, strategy.address, ZERO_ADDRESS, { from: defiops });
+ 
+            distrNum = await poolToken.nextDistributions(user3);
+            expect(distrNum.toNumber(), "Incorrect distribution number (2)").to.equal(2); //The next after 2 distributions (starting with 0)
+
+            unclaimed = await poolToken.calculateUnclaimedDistributions(user3);
+            expect(unclaimed.toNumber(), "Should not have unclaimed tokens (2)").to.equal(0);
+
+            distrTokens = await poolToken.distributionBalanceOf(user3);
+            expect(distrTokens.toNumber(), "Incorrect distribution balance").to.equal(60); //Deposit is on strategy now
+
+        //Create the third distribution
+            //Yield
+            await dai.transfer(protocolStub, 148, { from: owner });
+
+            //Distribute yield
+            await blockTimeTravel(await poolToken.DISTRIBUTION_AGGREGATION_PERIOD());
+            await vaultSavings.distributeYield(vaultProtocol.address, {from:defiops});
+
+            //Third distribution
+            //Supply for distribution: 219 + 165 + 60 = 444
+            //User1: 130 (deposited) + (73 + 16) of previous yield + 219/444 * 148 = 73
+            //User2: 100 (deposited) + (55 + 10) of previous yield + 165/444 * 148 = 55
+            //User3: 60 (deposited) +                              + 60/444 * 148 = 20
+
+            distrNum = await poolToken.nextDistributions(user3);
+            expect(distrNum.toNumber(), "Incorrect distribution number (3)").to.equal(2);
+
+            unclaimed = await poolToken.calculateUnclaimedDistributions(user3);
+            expect(unclaimed.toNumber(), "Incorrect unclaimed amount").to.equal(20); //Calculated yield for user3
+        });
+
     });
 
     describe('Full cycle', () => {
