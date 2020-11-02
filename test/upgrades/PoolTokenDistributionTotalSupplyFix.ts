@@ -115,8 +115,8 @@ contract("Upgrades: PoolToken Distribution Total Supply fix", async ([owner, use
         //await snap.revert();
     });
 
-    it('should make deposits', async () => {
-        for(let i = 0; i < otherAccounts.length; i++) {
+    it('should make deposits from first few users', async () => {
+        for(let i = 0; i < Math.floor(otherAccounts.length/2); i++) {
             let amount = w3random.interval(100, 10000, 'ether');
             await dai.allocateTo(otherAccounts[i], amount);
             await dai.approve(savings.address, amount, {from:otherAccounts[i]});
@@ -157,7 +157,7 @@ contract("Upgrades: PoolToken Distribution Total Supply fix", async ([owner, use
 
     it('should do claim yield for some users', async () => {
         let someoneClaimed;
-        for(let i = 0; i < otherAccounts.length-1; i++) {
+        for(let i = 0; i < Math.floor(otherAccounts.length/2)-1; i++) {
             let doClaim = (Math.random() > 0.5);
             if(doClaim){
                 someoneClaimed = true;
@@ -165,9 +165,25 @@ contract("Upgrades: PoolToken Distribution Total Supply fix", async ([owner, use
             }
         }
         if(!someoneClaimed){
-            await dCDAI.methods['claimDistributions(address)'](otherAccounts[otherAccounts.length-1]);
-        } // else leave account 9 not claimed
+            await dCDAI.methods['claimDistributions(address)'](otherAccounts[0]);
+        }
 
+        let totalSupply = await dCDAI.totalSupply();
+        let pnBalance = await compoundProtocolDai.normalizedBalance.call();
+        console.log("pnBalance, totalSupply", pnBalance.toString(), totalSupply.toString());
+        expect(pnBalance).to.be.bignumber.gte(totalSupply);
+    });
+
+    it('should make deposits from next few users', async () => {
+        for(let i = Math.floor(otherAccounts.length/2); i < otherAccounts.length; i++) {
+            let amount = w3random.interval(100, 10000, 'ether');
+            await dai.allocateTo(otherAccounts[i], amount);
+            await dai.approve(savings.address, amount, {from:otherAccounts[i]});
+
+            await savings.methods['deposit(address,address[],uint256[])'](compoundProtocolDai.address, [dai.address], [amount], {from:otherAccounts[i]});
+            let ptBalance = await dCDAI.balanceOf(otherAccounts[i]);
+            expectEqualBN(ptBalance, amount, 18, -1); //may take some fee
+        }
         let totalSupply = await dCDAI.totalSupply();
         let pnBalance = await compoundProtocolDai.normalizedBalance.call();
         console.log("pnBalance, totalSupply", pnBalance.toString(), totalSupply.toString());
@@ -200,6 +216,21 @@ contract("Upgrades: PoolToken Distribution Total Supply fix", async ([owner, use
         let pnBalance = await compoundProtocolDai.normalizedBalance.call();
         console.log("pnBalance, totalSupply", pnBalance.toString(), totalSupply.toString());
         expect(pnBalance).to.be.bignumber.gte(totalSupply);
+    });
+
+    it('should fix nextDistribution', async () => {
+        let users = new Array();
+        let nextDistributions = new Array();
+        let realNextDistr = (await dCDAI.nextDistribution()).subn(1);
+        for(let i = Math.floor(otherAccounts.length/2); i < otherAccounts.length; i++) {
+            let wrongNextDistr = await dCDAI.nextDistributions(otherAccounts[i]);
+            expect(wrongNextDistr).to.be.bignumber.eq("0");
+
+            users.push(otherAccounts[i]);
+            nextDistributions.push(realNextDistr);
+        }
+        await (<PoolTokenInstance>dCDAI).upgradeNextDistribution(users, nextDistributions);
+
     });
 
     it('should fix totalSupply and balances', async () => {

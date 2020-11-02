@@ -6,9 +6,9 @@ import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/ERC20Mint
 import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/ERC20Burnable.sol";
 import "../../interfaces/token/IPoolTokenBalanceChangeRecipient.sol";
 import "../../common/Module.sol";
-import "../../modules/token/DistributionToken.sol";
+import "./DistributionTokenOld2.sol";
 
-contract PoolTokenOld2 is Module, ERC20, ERC20Detailed, ERC20Mintable, ERC20Burnable, DistributionToken {
+contract PoolTokenOld2 is Module, ERC20, ERC20Detailed, ERC20Mintable, ERC20Burnable, DistributionTokenOld2 {
 
     bool allowTransfers;
 
