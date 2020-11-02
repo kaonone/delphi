@@ -28,7 +28,7 @@ contract PoolToken is Module, ERC20, ERC20Detailed, ERC20Mintable, ERC20Burnable
     function upgradeBalance(address[] calldata users, uint256[] calldata returnAmounts) external onlyOwner {
         require(users.length == returnAmounts.length, "Wrong arrays length");
         for(uint256 i=0; i < users.length; i++) {
-            super._transfer(users[i], address(this), returnAmounts[returnAmounts[i]]);
+            ERC20._transfer(users[i], address(this), returnAmounts[returnAmounts[i]]);
         }
     }
 
