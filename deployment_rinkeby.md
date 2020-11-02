@@ -71,10 +71,10 @@
 * RewardVestingModule `0x214eAB7667848ec753A50Bf98416a8E12D3516f2`
 * RewardDistributionModule `0x586C698698f316D9f10332A4300859DD8A82B130`
 
-* VaultSavingsModule `0x41985FCe086624dFE531ABd1EeEB39055cAc7AE3`
-* VaultProtocol Curve `0x5E5319473fF768984244097F409B93a92c379f79`
-* CurveFiStablecoinStrategy `0xD1E3fc7AFDe789E36Dd1daDd17D76B70d4feA8B6`
-* PoolToken for CurveFiStablecoinStrategy `0x4E6ad2e48bFA50565a9Bbf37a7c70e13578ecB94`
+* VaultSavingsModule `0xA0ce47C8072C0eAA5d0E343b7aE533e0E377c0F7`
+* VaultProtocol Curve `0x181A9a2bC318F1748437089c1Fc7543e449B99B4`
+* CurveFiStablecoinStrategy `0x6cd11F017015475Ff08f3e547a45f99AE15081c9`
+* PoolToken for CurveFiStablecoinStrategy `0xA0ce47C8072C0eAA5d0E343b7aE533e0E377c0F7`
 
 #### Protocols
 ##### Curve.Fi Y [(y)DAI, (y)USDC, (y)USDT, (y)TUSD] - YFI

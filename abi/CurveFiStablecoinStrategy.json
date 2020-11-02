@@ -387,8 +387,13 @@
     "inputs": [
       {
         "internalType": "address",
-        "name": "sender",
+        "name": "_pool",
         "type": "address"
+      },
+      {
+        "internalType": "string",
+        "name": "_strategyId",
+        "type": "string"
       }
     ],
     "name": "initialize",
@@ -411,13 +416,8 @@
     "inputs": [
       {
         "internalType": "address",
-        "name": "_pool",
+        "name": "sender",
         "type": "address"
-      },
-      {
-        "internalType": "string",
-        "name": "_strategyId",
-        "type": "string"
       }
     ],
     "name": "initialize",
@@ -476,6 +476,21 @@
     "inputs": [
       {
         "internalType": "address",
+        "name": "_dexagProxy",
+        "type": "address"
+      }
+    ],
+    "name": "setDexagProxy",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "internalType": "address",
         "name": "token",
         "type": "address"
       },
@@ -520,14 +535,9 @@
         "type": "address"
       },
       {
-        "internalType": "address",
-        "name": "token",
-        "type": "address"
-      },
-      {
-        "internalType": "uint256",
-        "name": "amount",
-        "type": "uint256"
+        "internalType": "uint256[]",
+        "name": "amounts",
+        "type": "uint256[]"
       }
     ],
     "name": "withdraw",
@@ -545,9 +555,14 @@
         "type": "address"
       },
       {
-        "internalType": "uint256[]",
-        "name": "amounts",
-        "type": "uint256[]"
+        "internalType": "address",
+        "name": "token",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
       }
     ],
     "name": "withdraw",
