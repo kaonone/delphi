@@ -6,9 +6,9 @@ import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/ERC20Mint
 import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/ERC20Burnable.sol";
 import "../../interfaces/token/IPoolTokenBalanceChangeRecipient.sol";
 import "../../common/Module.sol";
-import "./DistributionToken.sol";
+import "./DistributionTokenOld2.sol";
 
-contract PoolToken is Module, ERC20, ERC20Detailed, ERC20Mintable, ERC20Burnable, DistributionToken {
+contract PoolTokenOld2 is Module, ERC20, ERC20Detailed, ERC20Mintable, ERC20Burnable, DistributionTokenOld2 {
 
     bool allowTransfers;
 
@@ -16,20 +16,6 @@ contract PoolToken is Module, ERC20, ERC20Detailed, ERC20Mintable, ERC20Burnable
         Module.initialize(_pool);
         ERC20Detailed.initialize(poolName, poolSymbol, 18);
         ERC20Mintable.initialize(_msgSender());
-    }
-
-    function upgradeNextDistribution(address[] calldata users, uint256[] calldata newND) external onlyOwner {
-        require(users.length == newND.length, "Wrong arrays length");
-        for(uint256 i=0; i < users.length; i++) {
-            nextDistributions[users[i]] = newND[i];
-        }
-    }
-
-    function upgradeBalance(address[] calldata users, uint256[] calldata returnAmounts) external onlyOwner {
-        require(users.length == returnAmounts.length, "Wrong arrays length");
-        for(uint256 i=0; i < users.length; i++) {
-            ERC20._transfer(users[i], address(this), returnAmounts[returnAmounts[i]]);
-        }
     }
 
     function setAllowTransfers(bool _allowTransfers) public onlyOwner {
@@ -65,4 +51,9 @@ contract PoolToken is Module, ERC20, ERC20Detailed, ERC20Mintable, ERC20Burnable
     function distributionBalanceOf(address account) public view returns(uint256) {
         return (account == address(this))?0:super.distributionBalanceOf(account);
     }
+
+    function distributionTotalSupply() public view returns(uint256) {
+        return super.distributionTotalSupply().sub(balanceOf(address(this))); 
+    }
+
 }

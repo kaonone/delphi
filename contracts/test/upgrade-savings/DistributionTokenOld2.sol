@@ -5,7 +5,7 @@ import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/ERC20Mint
 import "@openzeppelin/contracts-ethereum-package/contracts/math/SafeMath.sol";
 
 //solhint-disable func-order
-contract DistributionToken is ERC20, ERC20Mintable {
+contract DistributionTokenOld2 is ERC20, ERC20Mintable {
     using SafeMath for uint256;
     uint256 public constant DISTRIBUTION_AGGREGATION_PERIOD = 24*60*60;
 
@@ -160,8 +160,8 @@ contract DistributionToken is ERC20, ERC20Mintable {
         uint256 fromDistribution = nextDistributions[account];
         if (fromDistribution >= toDistribution) return 0;
         uint256 distributionAmount = calculateClaimAmount(account, toDistribution);
-        nextDistributions[account] = toDistribution;
         if (distributionAmount == 0) return 0;
+        nextDistributions[account] = toDistribution;
         super._transfer(address(this), account, distributionAmount);
         emit DistributionsClaimed(account, distributionAmount, fromDistribution, toDistribution);
         return distributionAmount;

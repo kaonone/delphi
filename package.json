@@ -10,7 +10,7 @@
         "generate-types": "truffle compile --all && typechain --target=truffle-v5 \"build/contracts/*.json\"",
 		"generate-abi": "truffle compile --all && truffle-abi -o ./abi",
 		"generate-artifacts": "truffle compile --all && truffle-abi -o ./abi && typechain --target=truffle-v5 \"build/contracts/*.json\"",
-        "postinstall": "npm run generate-types"
+        "postinstall": "npm run generate-artifacts"
     },
     "dependencies": {
         "@openzeppelin/cli": "^2.8.2",
