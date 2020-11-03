@@ -74,7 +74,7 @@
 * VaultSavingsModule `0xA0ce47C8072C0eAA5d0E343b7aE533e0E377c0F7`
 * VaultProtocol Curve `0x181A9a2bC318F1748437089c1Fc7543e449B99B4`
 * CurveFiStablecoinStrategy `0x6cd11F017015475Ff08f3e547a45f99AE15081c9`
-* PoolToken for CurveFiStablecoinStrategy `0xA0ce47C8072C0eAA5d0E343b7aE533e0E377c0F7`
+* PoolToken for CurveFiStablecoinStrategy `0x6D205cf0d2A71F687AE727c17768703a9c7A7ADD`
 
 #### Protocols
 ##### Curve.Fi Y [(y)DAI, (y)USDC, (y)USDT, (y)TUSD] - YFI
