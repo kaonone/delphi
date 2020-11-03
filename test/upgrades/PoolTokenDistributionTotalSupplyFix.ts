@@ -127,7 +127,7 @@ contract("Upgrades: PoolToken Distribution Total Supply fix", async ([owner, use
         }
         let totalSupply = await dCDAI.totalSupply();
         let pnBalance = await compoundProtocolDai.normalizedBalance.call();
-        console.log("pnBalance, totalSupply", pnBalance.toString(), totalSupply.toString());
+        //console.log("pnBalance, totalSupply", pnBalance.toString(), totalSupply.toString());
         expect(pnBalance).to.be.bignumber.gte(totalSupply);
     });
 
@@ -151,7 +151,7 @@ contract("Upgrades: PoolToken Distribution Total Supply fix", async ([owner, use
 
         totalSupply = await dCDAI.totalSupply();
         pnBalance = await compoundProtocolDai.normalizedBalance.call();
-        console.log("pnBalance, totalSupply", pnBalance.toString(), totalSupply.toString());
+        //console.log("pnBalance, totalSupply", pnBalance.toString(), totalSupply.toString());
         expect(pnBalance).to.be.bignumber.gte(totalSupply);
     });
 
@@ -170,7 +170,7 @@ contract("Upgrades: PoolToken Distribution Total Supply fix", async ([owner, use
 
         let totalSupply = await dCDAI.totalSupply();
         let pnBalance = await compoundProtocolDai.normalizedBalance.call();
-        console.log("pnBalance, totalSupply", pnBalance.toString(), totalSupply.toString());
+        //console.log("pnBalance, totalSupply", pnBalance.toString(), totalSupply.toString());
         expect(pnBalance).to.be.bignumber.gte(totalSupply);
     });
 
@@ -186,7 +186,7 @@ contract("Upgrades: PoolToken Distribution Total Supply fix", async ([owner, use
         }
         let totalSupply = await dCDAI.totalSupply();
         let pnBalance = await compoundProtocolDai.normalizedBalance.call();
-        console.log("pnBalance, totalSupply", pnBalance.toString(), totalSupply.toString());
+        //console.log("pnBalance, totalSupply", pnBalance.toString(), totalSupply.toString());
         expect(pnBalance).to.be.bignumber.gte(totalSupply);
     });
 
@@ -204,7 +204,7 @@ contract("Upgrades: PoolToken Distribution Total Supply fix", async ([owner, use
 
         let totalSupply = await dCDAI.totalSupply();
         let pnBalance = await compoundProtocolDai.normalizedBalance.call();
-        console.log("pnBalance, totalSupply", pnBalance.toString(), totalSupply.toString());
+        //console.log("pnBalance, totalSupply", pnBalance.toString(), totalSupply.toString());
         expect(pnBalance).to.be.bignumber.gte(totalSupply);
     });
 
@@ -214,8 +214,12 @@ contract("Upgrades: PoolToken Distribution Total Supply fix", async ([owner, use
         expect(totalSupply).to.be.bignumber.lt(summFullBalance);
 
         let pnBalance = await compoundProtocolDai.normalizedBalance.call();
-        console.log("pnBalance, totalSupply", pnBalance.toString(), totalSupply.toString());
+        //console.log("pnBalance, totalSupply", pnBalance.toString(), totalSupply.toString());
         expect(pnBalance).to.be.bignumber.gte(totalSupply);
+    });
+
+    it('should upgrade PooolToken', async () => {
+        dCDAI = await upgradeProxy(dCDAI.address, PoolToken, UPGRADABLE_OPTS);
     });
 
     it('should fix nextDistribution', async () => {
@@ -230,63 +234,62 @@ contract("Upgrades: PoolToken Distribution Total Supply fix", async ([owner, use
             nextDistributions.push(realNextDistr);
         }
         await (<PoolTokenInstance>dCDAI).upgradeNextDistribution(users, nextDistributions);
-
     });
 
     it('should fix totalSupply and balances', async () => {
         let summFullBalance = await countFullBalanceOfUsers(otherAccounts);
         let totalSupply = await dCDAI.totalSupply();
         let accumulator = await dCDAI.distributionAccumulator();
-        console.log('accumulator', accumulator.toString());
+        //console.log('accumulator', accumulator.toString());
         let diff = summFullBalance.sub(totalSupply).sub(accumulator);
         expect(diff).to.be.bignumber.gt("0");
-        console.log('diff',diff.toString());
+        //console.log('diff',diff.toString());
 
-        let fixAmount = diff.muln(105).divn(100); //Add additional anount for possible fees
+        let fixAmount = diff.muln(101).divn(100); //Add additional anount for possible fees
+        //fixAmount = diff;
 
         await dai.allocateTo(owner, fixAmount);
         await dai.approve(savings.address, fixAmount);
 
-        dCDAI = await upgradeProxy(dCDAI.address, PoolToken, UPGRADABLE_OPTS);
 
         totalSupply = await dCDAI.totalSupply();
         let pnBalance = await compoundProtocolDai.normalizedBalance.call();
-        console.log("1 pnBalance, totalSupply", pnBalance.toString(), totalSupply.toString());
+        //console.log("1 pnBalance, totalSupply", pnBalance.toString(), totalSupply.toString());
 
-        await savings.methods['deposit(address,address[],uint256[])'](compoundProtocolDai.address,[dai.address], [fixAmount]);
-
+        let tx = await savings.methods['deposit(address,address[],uint256[])'](compoundProtocolDai.address,[dai.address], [fixAmount]);
+        //console.log('tx', tx.logs);
+        
         // let nd = await dCDAI.nextDistributions(owner);
         // console.log(nd);
 
         accumulator = await dCDAI.distributionAccumulator();
-        console.log('accumulator 2', accumulator.toString());
+        //console.log('accumulator 2', accumulator.toString());
 
-        totalSupply = await dCDAI.totalSupply();
-        pnBalance = await compoundProtocolDai.normalizedBalance.call();
-        console.log("2 pnBalance, totalSupply", pnBalance.toString(), totalSupply.toString());
+        let ownerBalance = {
+            fullBalance: await dCDAI.fullBalanceOf(owner),
+            balance: await dCDAI.balanceOf(owner)
+        };
+        // console.log('ownerBalance', ownerBalance.balance.toString(), ownerBalance.fullBalance.toString());
 
-        let fbo = await dCDAI.fullBalanceOf(owner);
-        console.log('fbo', fbo.toString());
-        await dCDAI.burnFrom(owner, diff);
+        // totalSupply = await dCDAI.totalSupply();
+        // pnBalance = await compoundProtocolDai.normalizedBalance.call();
+        //console.log("2 pnBalance, totalSupply", pnBalance.toString(), totalSupply.toString());
 
-        totalSupply = await dCDAI.totalSupply();
-        pnBalance = await compoundProtocolDai.normalizedBalance.call();
-        console.log("4 pnBalance, totalSupply", pnBalance.toString(), totalSupply.toString());
 
-        await dCDAI.mint(dCDAI.address, diff);
+        await (<PoolTokenInstance>dCDAI).upgradeBalance([owner], [diff]);
 
-        totalSupply = await dCDAI.totalSupply();
-        pnBalance = await compoundProtocolDai.normalizedBalance.call();
-        console.log("5 pnBalance, totalSupply", pnBalance.toString(), totalSupply.toString());
+        // totalSupply = await dCDAI.totalSupply();
+        // pnBalance = await compoundProtocolDai.normalizedBalance.call();
+        //console.log("3 pnBalance, totalSupply", pnBalance.toString(), totalSupply.toString());
+
 
         await time.increase(7*24*60*60);
         await savings.distributeYield();
         //await dCDAI.createDistribution();
 
-
         totalSupply = await dCDAI.totalSupply();
         pnBalance = await compoundProtocolDai.normalizedBalance.call();
-        console.log("pnBalance, totalSupply", pnBalance.toString(), totalSupply.toString());
+        //console.log("pnBalance, totalSupply", pnBalance.toString(), totalSupply.toString());
         expect(pnBalance).to.be.bignumber.gte(totalSupply);
     });
 
@@ -302,16 +305,24 @@ contract("Upgrades: PoolToken Distribution Total Supply fix", async ([owner, use
     it('should allow full withdraw for all', async () => {
         let withdrawAccounts = otherAccounts.concat(owner);
         for(let i = 0; i < withdrawAccounts.length ; i++) {
+            if(i == withdrawAccounts.length - 1) {
+                await dCDAI.createDistribution();
+            }
+
             let fullBalance = await dCDAI.fullBalanceOf(withdrawAccounts[i]);
             let totalSupply = await dCDAI.totalSupply();
             let pnBalance = await compoundProtocolDai.normalizedBalance.call();
 
-            console.log('i', i, fullBalance.toString(), totalSupply.toString(), pnBalance.toString());
+            //console.log('i', i, fullBalance.toString(), totalSupply.toString(), pnBalance.toString());
             //await dCDAI.methods['claimDistributions(address)'](withdrawAccounts[i]);
             await savings.withdraw(compoundProtocolDai.address, dai.address, fullBalance, "0", {from:withdrawAccounts[i]});
             let daiBalance = await dai.balanceOf(withdrawAccounts[i]);
             //expect(daiBalance).to.be.bignumber.gte(fullBalance);
         }
+
+        let totalSupply = await dCDAI.totalSupply();
+        let pnBalance = await compoundProtocolDai.normalizedBalance.call();
+        //console.log('after', totalSupply.toString(), pnBalance.toString());
     });
 
 
