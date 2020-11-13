@@ -58,11 +58,32 @@ contract SavingsModule is Module, AccessChecker, RewardDistributions, CapperRole
     mapping(address=>uint256) public protocolCap;
     bool public vipUserEnabled;                         // Enable VIP user (overrides protocol cap)
 
+    uint256 private _guardCounter; // See OpenZeppelin ReentrancyGuard. Copied here to allow upgrade of already deployed contracts    
+
 
     function initialize(address _pool) public initializer {
         Module.initialize(_pool);
         CapperRole.initialize(_msgSender());
+
+        _guardCounter = 1; // See OpenZeppelin ReentrancyGuard.
     }
+
+    function upgradeGuardCounter() public onlyOwner {
+        require(_guardCounter == 0, "Already upgraded");
+        _guardCounter = 1;
+    }
+
+    /**
+     * @dev Prevents a contract from calling itself, directly or indirectly.
+     * See OpenZeppelin ReentrancyGuard
+     */
+    modifier nonReentrant() {
+        _guardCounter += 1;
+        uint256 localCounter = _guardCounter;
+        _;
+        require(localCounter == _guardCounter, "ReentrancyGuard: reentrant call");
+    }
+
 
     function setUserCapEnabled(bool _userCapEnabled) public onlyCapper {
         userCapEnabled = _userCapEnabled;
@@ -198,18 +219,20 @@ contract SavingsModule is Module, AccessChecker, RewardDistributions, CapperRole
      * @param _tokens Array of tokens to deposit
      * @param _dnAmounts Array of amounts (denormalized to token decimals)
      */
-    function deposit(address[] memory _protocols, address[] memory _tokens, uint256[] memory _dnAmounts) 
-    public operationAllowed(IAccessModule.Operation.Deposit) 
+    function deposit(address[] calldata _protocols, address[] calldata _tokens, uint256[] calldata _dnAmounts) 
+    external nonReentrant operationAllowed(IAccessModule.Operation.Deposit) 
     returns(uint256[] memory) 
     {
         require(_protocols.length == _tokens.length && _tokens.length == _dnAmounts.length, "SavingsModule: size of arrays does not match");
+        require(isAllTokensRegistered(_tokens), "SavingsModule: unsupported token");
+
         uint256[] memory ptAmounts = new uint256[](_protocols.length);
         for (uint256 i=0; i < _protocols.length; i++) {
             address[] memory tkns = new address[](1);
             tkns[0] = _tokens[i];
             uint256[] memory amnts = new uint256[](1);
             amnts[0] = _dnAmounts[i];
-            ptAmounts[i] = deposit(_protocols[i], tkns, amnts);
+            ptAmounts[i] = _deposit(_protocols[i], tkns, amnts);
         }
         return ptAmounts;
     }
@@ -220,8 +243,15 @@ contract SavingsModule is Module, AccessChecker, RewardDistributions, CapperRole
      * @param _tokens Array of tokens to deposit
      * @param _dnAmounts Array of amounts (denormalized to token decimals)
      */
-    function deposit(address _protocol, address[] memory _tokens, uint256[] memory _dnAmounts)
-    public operationAllowed(IAccessModule.Operation.Deposit)
+    function deposit(address _protocol, address[] calldata _tokens, uint256[] calldata _dnAmounts)
+    external nonReentrant operationAllowed(IAccessModule.Operation.Deposit)
+    returns(uint256) {
+        require(isAllTokensRegistered(_tokens), "SavingsModule: unsupported token");
+        _deposit(_protocol, _tokens, _dnAmounts);
+    }
+
+    function _deposit(address _protocol, address[] memory _tokens, uint256[] memory _dnAmounts)
+    internal
     returns(uint256) 
     {
         //distributeRewardIfRequired(_protocol);
@@ -293,7 +323,7 @@ contract SavingsModule is Module, AccessChecker, RewardDistributions, CapperRole
      * @return Amount of PoolToken burned from user
      */
     function withdrawAll(address _protocol, uint256 nAmount)
-    public operationAllowed(IAccessModule.Operation.Withdraw)
+    external nonReentrant operationAllowed(IAccessModule.Operation.Withdraw)
     returns(uint256) 
     {
         //distributeRewardIfRequired(_protocol);
@@ -341,8 +371,9 @@ contract SavingsModule is Module, AccessChecker, RewardDistributions, CapperRole
      * @return Amount of PoolToken burned from user
      */
     function withdraw(address _protocol, address token, uint256 dnAmount, uint256 maxNAmount)
-    public operationAllowed(IAccessModule.Operation.Withdraw)
+    external nonReentrant operationAllowed(IAccessModule.Operation.Withdraw)
     returns(uint256){
+        require(isTokenRegistered(token), "SavingsModule: unsupported token");
         //distributeRewardIfRequired(_protocol);
 
         uint256 nAmount = normalizeTokenAmount(token, dnAmount);
@@ -388,7 +419,7 @@ contract SavingsModule is Module, AccessChecker, RewardDistributions, CapperRole
     /** 
      * @notice Distributes yield. May be called by bot, if there was no deposits/withdrawals
      */
-    function distributeYield() public {
+    function distributeYield() external {
         for(uint256 i=0; i<registeredProtocols.length; i++) {
             distributeYieldInternal(address(registeredProtocols[i]));
         }
@@ -494,6 +525,13 @@ contract SavingsModule is Module, AccessChecker, RewardDistributions, CapperRole
             if (registeredTokens[i] == token) return true;
         }
         return false;
+    }
+
+    function isAllTokensRegistered(address[] memory _tokens) private view returns(bool) {
+        for (uint256 i = 0; i < _tokens.length; i++){
+            if(!isTokenRegistered(_tokens[i])) return false;
+        }
+        return true;
     }
 
     function isPoolToken(address token) internal view returns(bool) {
