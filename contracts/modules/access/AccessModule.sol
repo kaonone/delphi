@@ -6,35 +6,40 @@ import "../../common/Module.sol";
 import "../../interfaces/access/IAccessModule.sol";
 
 contract AccessModule is Module, IAccessModule, Pausable, WhitelistedRole {
-    event WhitelistEnabled();
-    event WhitelistDisabled();
+    event WhitelistForAllStatusChange(bool enabled);
+    event WhitelistForIntermediateSendersStatusChange(bool enabled);
 
-    bool public whitelistEnabled;
+    bool public whitelistEnabledForAll;
+    bool public whitelistEnabledForIntermediateSenders;
 
     function initialize(address _pool) public initializer {
         Module.initialize(_pool);
         Pausable.initialize(_msgSender());
         WhitelistedRole.initialize(_msgSender());
-        // enableWhitelist(); //whitelist is disabled by default for testnet, will be enabled by default for mainnet
     }
 
-    function enableWhitelist() public onlyWhitelistAdmin {
-        whitelistEnabled = true;
-        emit WhitelistEnabled();
+    function setWhitelistForAll(bool enabled) public onlyWhitelistAdmin {
+        whitelistEnabledForAll = enabled;
+        emit WhitelistForAllStatusChange(enabled);
     }
     
-    function disableWhitelist() public onlyWhitelistAdmin {
-        whitelistEnabled = false;
-        emit WhitelistDisabled();
+    function setWhitelistForIntermediateSenders(bool enabled) public onlyWhitelistAdmin {
+        whitelistEnabledForIntermediateSenders = enabled;
+        emit WhitelistForIntermediateSendersStatusChange(enabled);
     }
 
     function isOperationAllowed(Operation operation, address sender) public view returns(bool) {
         (operation);    //noop to prevent compiler warning
         if (paused()) return false;
-        if (!whitelistEnabled) {
-            return true;
-        } else {
+        if (whitelistEnabledForAll) {
             return isWhitelisted(sender);
+        } else if(
+            whitelistEnabledForIntermediateSenders && 
+            tx.origin != sender
+        ){
+            return isWhitelisted(sender);
+        } else {
+            return true;
         }
     }
 }
