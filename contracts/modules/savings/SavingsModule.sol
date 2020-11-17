@@ -384,13 +384,13 @@ contract SavingsModule is Module, AccessChecker, RewardDistributions, CapperRole
 
         uint256 yield;
         uint256 actualAmount;
-        uint256 fee;
+        //uint256 fee;
         if(nBalanceAfter.add(nAmount) > nBalanceBefore) {
             yield = nBalanceAfter.add(nAmount).sub(nBalanceBefore);
             actualAmount = nAmount;
         }else{
             actualAmount = nBalanceBefore.sub(nBalanceAfter);
-            if (actualAmount > nAmount) fee = actualAmount-nAmount;
+            //if (actualAmount > nAmount) fee = actualAmount-nAmount;
         }
 
         require(maxNAmount == 0 || actualAmount <= maxNAmount, "SavingsModule: provided maxNAmount is too low");
@@ -405,7 +405,7 @@ contract SavingsModule is Module, AccessChecker, RewardDistributions, CapperRole
         PoolToken poolToken = PoolToken(protocols[_protocol].poolToken);
         poolToken.burnFrom(_msgSender(), actualAmount);
         emit WithdrawToken(_protocol, token, dnAmount);
-        emit Withdraw(_protocol, _msgSender(), actualAmount, fee);
+        emit Withdraw(_protocol, _msgSender(), actualAmount, /*fee*/ (actualAmount>nAmount)?actualAmount.sub(nAmount):0 );
 
 
         if (yield > 0) {
