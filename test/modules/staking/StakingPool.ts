@@ -72,7 +72,7 @@ contract("StakingPool", async ([owner, user, ...otherAccounts]) => {
         }
 
         await akro.approve(stakingPool.address, stakeAmount, {from:user});
-        await stakingPool.stake(stakeAmount, "", {from:user});
+        await stakingPool.stake(stakeAmount, "0x", {from:user});
 
         const after = {
             userBalance: await akro.balanceOf(user),
