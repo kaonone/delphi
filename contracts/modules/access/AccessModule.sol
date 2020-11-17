@@ -11,7 +11,7 @@ contract AccessModule is Module, IAccessModule, Pausable, WhitelistedRole {
 
     bool public whitelistEnabledForAll;
     bool public whitelistEnabledForIntermediateSenders;
-    mapping(Operation=>uint256) public maxGasLeft; //Zero value means no limit
+    mapping(uint8=>uint256) public maxGasLeft; //Zero value means no limit
 
     function initialize(address _pool) public initializer {
         Module.initialize(_pool);
@@ -30,7 +30,11 @@ contract AccessModule is Module, IAccessModule, Pausable, WhitelistedRole {
     }
 
     function setMaxGasLeft(Operation operation, uint256 value) public onlyWhitelistAdmin {
-        maxGasLeft[operation] = value;
+        maxGasLeft[uint8(operation)] = value;
+    }
+
+    function getMaxGasLeft(Operation operation) public view returns(uint256) {
+        return maxGasLeft[uint8(operation)];
     }
 
     function isOperationAllowed(Operation operation, address sender) public view returns(bool) {

@@ -9,7 +9,7 @@ contract AccessChecker is Module {
         IAccessModule am = IAccessModule(getModuleAddress(MODULE_ACCESS));
         require(am.isOperationAllowed(operation, _msgSender()), "AccessChecker: operation not allowed");
         _;
-        uint256 maxGasLeft = am.maxGasLeft(operation);
+        uint256 maxGasLeft = am.getMaxGasLeft(operation);
         if(maxGasLeft > 0) {
             require(gasleft() <= maxGasLeft, "Too many gas left");
         }
