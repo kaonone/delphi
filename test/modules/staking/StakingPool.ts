@@ -29,14 +29,16 @@ contract("StakingPool", async ([owner, user, ...otherAccounts]) => {
 
     before(async () => {
         akro = await FreeERC20.new();
-        await (<any> akro).methods['initialize(string,string)']("Akropolis","AKRO",{from: owner});
+        await (<any> akro).methods['initialize(string,string)']("Akropolis","AKRO");
 
         adel = await FreeERC20.new();
-        await (<any> akro).methods['initialize(string,string)']("Akropolis Delphi","ADEL",{from: owner});
+        await (<any> adel).methods['initialize(string,string)']("Akropolis Delphi","ADEL");
 
         pool = await Pool.new();
+        await pool.methods['initialize()']();
 
         stakingPool = await StakingPool.new();
+
         await stakingPool.methods['initialize(address,address,uint256)'](pool.address, akro.address, 0);
 
         rewardVestingModule = await RewardVestingModule.new();
@@ -44,7 +46,6 @@ contract("StakingPool", async ([owner, user, ...otherAccounts]) => {
 
         //Setup
         await pool.set("akro", akro.address, false);
-        await pool.set("adel", adel.address, false);
         await pool.set("adel", adel.address, false);
         await pool.set("staking", stakingPool.address, false);
 
