@@ -26,7 +26,7 @@ jobs:
       - name: Run analysis
         shell: bash
         run: |
-          slither . --config-file ./security/slither/slither-config.json >>output/slither_report.txt 2>&1 || true
+          slither . --filter-paths "openzeppelin|test" --exclude naming-convention >>output/slither_report.txt 2>&1 || true
       - name: Store the report
         uses: actions/upload-artifact@v2
         with:
