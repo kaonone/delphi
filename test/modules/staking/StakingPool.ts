@@ -68,6 +68,7 @@ contract("StakingPool", async ([owner, user, ...otherAccounts]) => {
         const before = {
             userBalance: await akro.balanceOf(user),
             stakingPoolBalance: await akro.balanceOf(stakingPool.address),
+            stakedTotal: await stakingPool.totalStakedFor(user),
 
         }
 
@@ -77,11 +78,41 @@ contract("StakingPool", async ([owner, user, ...otherAccounts]) => {
         const after = {
             userBalance: await akro.balanceOf(user),
             stakingPoolBalance: await akro.balanceOf(stakingPool.address),
-
+            stakedTotal: await stakingPool.totalStakedFor(user),
         }
 
         expect(after.userBalance).to.be.bignumber.eq(before.userBalance.sub(stakeAmount));
         expect(after.stakingPoolBalance).to.be.bignumber.eq(before.stakingPoolBalance.add(stakeAmount));
+        expect(after.stakedTotal).to.be.bignumber.eq(before.stakedTotal.add(stakeAmount));
     });
 
+    it('should stake for another user', async () => {
+        let stakeAmount = w3random.interval(100, 500, 'ether');
+        await akro.allocateTo(user, stakeAmount);
+
+        const before = {
+            userBalance: await akro.balanceOf(user),
+            stakingPoolBalance: await akro.balanceOf(stakingPool.address),
+            stakedTotal: await stakingPool.totalStakedFor(otherAccounts[0]),
+        }
+
+        await akro.approve(stakingPool.address, stakeAmount, {from:user});
+        await stakingPool.stakeFor(otherAccounts[0], stakeAmount, "0x", {from:user});
+
+        const after = {
+            userBalance: await akro.balanceOf(user),
+            stakingPoolBalance: await akro.balanceOf(stakingPool.address),
+            stakedTotal: await stakingPool.totalStakedFor(otherAccounts[0]),
+        }
+
+        expect(after.userBalance).to.be.bignumber.eq(before.userBalance.sub(stakeAmount));
+        expect(after.stakingPoolBalance).to.be.bignumber.eq(before.stakingPoolBalance.add(stakeAmount));
+        expect(after.stakedTotal).to.be.bignumber.eq(before.stakedTotal.add(stakeAmount));
+    });
+
+    it('should unstake own stake', async () => {
+    });
+
+    it('should unstake stakedFor stake', async () => {
+    });
 });
