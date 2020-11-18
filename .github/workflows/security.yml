@@ -27,7 +27,7 @@ jobs:
       - name: Run analysis
         shell: bash
         run: |
-          npx truffle compile >>output/slither_report.txt 2>&1 || true
+          slither . --config-file ./security/slither/slither-config.json >>output/slither_report.txt 2>&1 || true
       - name: Store the report
         uses: actions/upload-artifact@v2
         with:
