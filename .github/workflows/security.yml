@@ -1,0 +1,36 @@
+name: Security-checks
+
+on:
+  push:
+    branches: [ release-1.0 ]
+  pull_request:
+    branches: [ release-1.0 ]
+
+jobs:
+  slither:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v1.4.4
+      - uses: actions/setup-python@v2
+      - name: Prepare environment
+        run:  |
+          cd curvefi_adapter
+          npm install truffle
+          pip3 install slither-analyzer
+      - name: Prepare output
+        run: |
+          mkdir output
+      - name: Run analysis
+        shell: bash
+        run: |
+          slither . --config-file ./security/slither/slither-config.json >>output/slither_report.txt 2>&1 || true
+      - name: Store the report
+        uses: actions/upload-artifact@v2
+        with:
+          name: slither-report
+          path: output/slither_report.txt
+      - name: Check status
+        shell: bash
+        run: |
+          sh ./security/slither/run-slither-check.sh

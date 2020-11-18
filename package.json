@@ -8,9 +8,10 @@
     "scripts": {
         "ganache": "npx ganache-cli --gasLimit 0xfffffffffff -e 10000000 --port 8545",
         "generate-types": "truffle compile --all && typechain --target=truffle-v5 \"build/contracts/*.json\"",
-		"generate-abi": "truffle compile --all && truffle-abi -o ./abi",
-		"generate-artifacts": "truffle compile --all && truffle-abi -o ./abi && typechain --target=truffle-v5 \"build/contracts/*.json\"",
-        "postinstall": "npm run generate-artifacts"
+        "generate-abi": "truffle compile --all && truffle-abi -o ./abi",
+        "generate-artifacts": "truffle compile --all && truffle-abi -o ./abi && typechain --target=truffle-v5 \"build/contracts/*.json\"",
+        "postinstall": "npm run generate-artifacts",
+        "sec:slither": "slither . --config-file ./security/slither/slither-config.json"
     },
     "dependencies": {
         "@openzeppelin/cli": "^2.8.2",
@@ -30,7 +31,7 @@
         "@typechain/truffle-v5": "^2.0.2",
         "eth-gas-reporter": "^0.2.17",
         "solidity-coverage": "^0.7.9",
-        "truffle": "^5.1.34",
+        "truffle": "^5.1.53",
         "truffle-contract-size": "^2.0.0",
         "truffle-security": "^1.7.3",
         "ts-node": "^8.10.2",
