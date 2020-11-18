@@ -12,6 +12,8 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-node@v1.4.4
+        with:
+          node-version: '12'
       - uses: actions/setup-python@v2
       - name: Prepare environment
         run:  |
