@@ -82,6 +82,7 @@ contract("StakingPool", async ([owner, user, ...otherAccounts]) => {
 
     it('should stake', async () => {
         let stakeAmount = w3random.interval(100, 500, 'ether');
+        console.log('stakeAmount', stakeAmount.toString());
         await akro.allocateTo(user, stakeAmount);
 
         const before = {
@@ -107,6 +108,7 @@ contract("StakingPool", async ([owner, user, ...otherAccounts]) => {
 
     it('should stake for another user', async () => {
         let stakeAmount = w3random.interval(100, 500, 'ether');
+        console.log('stakeAmount', stakeAmount.toString());
         await akro.allocateTo(user, stakeAmount);
 
         const before = {
@@ -151,13 +153,14 @@ contract("StakingPool", async ([owner, user, ...otherAccounts]) => {
     //     expect(after.stakedTotal).to.be.bignumber.eq(before.stakedTotal.sub(unstakeAmount));
     // });
 
-    it('should fully unstake own stake', async () => {
+    it('should fully unstake all stakes', async () => {
         const before = {
             userBalance: await akro.balanceOf(user),
             stakingPoolBalance: await akro.balanceOf(stakingPool.address),
-            stakedTotal: await stakingPool.totalStakedFor(user),
+            stakedTotal: await stakingPool.getPersonalStakeTotalAmount(user),
+            stakedForTotal: await stakingPool.totalStakedFor(otherAccounts[0])
         }
-        let unstakeAmount = before.stakedTotal;
+        expect(before.stakedForTotal).to.be.bignumber.gt(ZERO_BN);
 
         await stakingPool.unstakeAllUnlocked(ZERO_DATA, {from:user});
 
@@ -165,30 +168,18 @@ contract("StakingPool", async ([owner, user, ...otherAccounts]) => {
             userBalance: await akro.balanceOf(user),
             stakingPoolBalance: await akro.balanceOf(stakingPool.address),
             stakedTotal: await stakingPool.totalStakedFor(user),
+            stakedForTotal: await stakingPool.totalStakedFor(otherAccounts[0])
         }
 
-        expect(after.userBalance).to.be.bignumber.eq(before.userBalance.add(unstakeAmount));
-        expect(after.stakingPoolBalance).to.be.bignumber.eq(before.stakingPoolBalance.sub(unstakeAmount));
-        expect(after.stakedTotal).to.be.bignumber.eq(ZERO_BN);
-    });
-
-    it('should unstake stakedFor stake', async () => {
-        const before = {
-            userBalance: await akro.balanceOf(otherAccounts[0]),
-            stakingPoolBalance: await akro.balanceOf(stakingPool.address),
-            stakedTotal: await stakingPool.totalStakedFor(otherAccounts[0]),
-        }
-
-        await stakingPool.unstakeAllUnlocked(ZERO_DATA, {from:otherAccounts[0]});
-
-        const after = {
-            userBalance: await akro.balanceOf(otherAccounts[0]),
-            stakingPoolBalance: await akro.balanceOf(stakingPool.address),
-            stakedTotal: await stakingPool.totalStakedFor(otherAccounts[0]),
-        }
-
+        console.log('user', user);
+        console.log('otherAccounts[0]', otherAccounts[0]);
+        console.log('1');
         expect(after.userBalance).to.be.bignumber.eq(before.userBalance.add(before.stakedTotal));
+        console.log('2');
+        expect(after.stakedForTotal).to.be.bignumber.eq(ZERO_BN);
+        console.log('3');
         expect(after.stakingPoolBalance).to.be.bignumber.eq(before.stakingPoolBalance.sub(before.stakedTotal));
+        console.log('4');
         expect(after.stakedTotal).to.be.bignumber.eq(ZERO_BN);
     });
 
@@ -229,7 +220,7 @@ contract("StakingPool", async ([owner, user, ...otherAccounts]) => {
             stakedTotal: await stakingPool.totalStakedFor(user),
         }
 
-        expect(afterU.userBalanceAkro).to.be.bignumber.gt(afterWR.userBalanceAkro.add(stakeAmount));
+        expect(afterU.userBalanceAkro).to.be.bignumber.eq(afterWR.userBalanceAkro.add(stakeAmount));
         expect(afterU.userBalanceAdel).to.be.bignumber.eq(afterWR.userBalanceAdel);
         expect(afterU.stakedTotal).to.be.bignumber.eq(ZERO_BN);
     });
@@ -263,17 +254,6 @@ contract("StakingPool", async ([owner, user, ...otherAccounts]) => {
         expect(afterWR.userBalanceAdel).to.be.bignumber.gt(before.userBalanceAdel);
         expect(afterWR.stakedTotal).to.be.bignumber.eq(before.stakedTotal);
 
-        await stakingPool.unstakeAllUnlocked(ZERO_DATA, {from:otherAccounts[0]});
-
-        const afterU = {
-            userBalanceAkro: await akro.balanceOf(otherAccounts[0]),
-            userBalanceAdel: await adel.balanceOf(otherAccounts[0]),
-            stakedTotal: await stakingPool.totalStakedFor(otherAccounts[0]),
-        }
-
-        expect(afterU.userBalanceAkro).to.be.bignumber.gt(afterWR.userBalanceAkro.add(stakeAmount));
-        expect(afterU.userBalanceAdel).to.be.bignumber.eq(afterWR.userBalanceAdel);
-        expect(afterU.stakedTotal).to.be.bignumber.eq(ZERO_BN);
     });
 
 
