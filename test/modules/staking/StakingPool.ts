@@ -20,6 +20,9 @@ const RewardVestingModule = artifacts.require("RewardVestingModule");
 const StakingPool = artifacts.require("StakingPool");
 
 contract("StakingPool", async ([owner, user, ...otherAccounts]) => {
+    const ZERO_BN = new BN("0");
+    const ZERO_DATA = "0x";
+
     let snap: Snapshot;
     let akro: FreeErc20Instance;
     let adel: FreeErc20Instance;
@@ -73,7 +76,7 @@ contract("StakingPool", async ([owner, user, ...otherAccounts]) => {
         }
 
         await akro.approve(stakingPool.address, stakeAmount, {from:user});
-        await stakingPool.stake(stakeAmount, "0x", {from:user});
+        await stakingPool.stake(stakeAmount, ZERO_DATA, {from:user});
 
         const after = {
             userBalance: await akro.balanceOf(user),
@@ -97,7 +100,7 @@ contract("StakingPool", async ([owner, user, ...otherAccounts]) => {
         }
 
         await akro.approve(stakingPool.address, stakeAmount, {from:user});
-        await stakingPool.stakeFor(otherAccounts[0], stakeAmount, "0x", {from:user});
+        await stakingPool.stakeFor(otherAccounts[0], stakeAmount, ZERO_DATA, {from:user});
 
         const after = {
             userBalance: await akro.balanceOf(user),
@@ -111,8 +114,64 @@ contract("StakingPool", async ([owner, user, ...otherAccounts]) => {
     });
 
     it('should unstake own stake', async () => {
+        const before = {
+            userBalance: await akro.balanceOf(user),
+            stakingPoolBalance: await akro.balanceOf(stakingPool.address),
+            stakedTotal: await stakingPool.totalStakedFor(user),
+        }
+        let unstakeAmount = before.stakedTotal.divn(2);
+
+        await stakingPool.unstake(unstakeAmount, ZERO_DATA, {from:user});
+
+        const after = {
+            userBalance: await akro.balanceOf(user),
+            stakingPoolBalance: await akro.balanceOf(stakingPool.address),
+            stakedTotal: await stakingPool.totalStakedFor(user),
+        }
+
+        expect(after.userBalance).to.be.bignumber.eq(before.userBalance.add(unstakeAmount));
+        expect(after.stakingPoolBalance).to.be.bignumber.eq(before.stakingPoolBalance.sub(unstakeAmount));
+        expect(after.stakedTotal).to.be.bignumber.eq(before.stakedTotal.sub(unstakeAmount));
+    });
+
+    it('should fully unstake own stake', async () => {
+        const before = {
+            userBalance: await akro.balanceOf(user),
+            stakingPoolBalance: await akro.balanceOf(stakingPool.address),
+            stakedTotal: await stakingPool.totalStakedFor(user),
+        }
+        let unstakeAmount = before.stakedTotal;
+
+        await stakingPool.unstakeAllUnlocked(ZERO_DATA, {from:user});
+
+        const after = {
+            userBalance: await akro.balanceOf(user),
+            stakingPoolBalance: await akro.balanceOf(stakingPool.address),
+            stakedTotal: await stakingPool.totalStakedFor(user),
+        }
+
+        expect(after.userBalance).to.be.bignumber.eq(before.userBalance.add(unstakeAmount));
+        expect(after.stakingPoolBalance).to.be.bignumber.eq(before.stakingPoolBalance.sub(unstakeAmount));
+        expect(after.stakedTotal).to.be.bignumber.eq(ZERO_BN);
     });
 
     it('should unstake stakedFor stake', async () => {
+        const before = {
+            userBalance: await akro.balanceOf(otherAccounts[0]),
+            stakingPoolBalance: await akro.balanceOf(stakingPool.address),
+            stakedTotal: await stakingPool.totalStakedFor(otherAccounts[0]),
+        }
+
+        await stakingPool.unstakeAllUnlocked(ZERO_DATA, {from:otherAccounts[0]});
+
+        const after = {
+            userBalance: await akro.balanceOf(otherAccounts[0]),
+            stakingPoolBalance: await akro.balanceOf(stakingPool.address),
+            stakedTotal: await stakingPool.totalStakedFor(otherAccounts[0]),
+        }
+
+        expect(after.userBalance).to.be.bignumber.eq(before.userBalance.add(before.stakedTotal));
+        expect(after.stakingPoolBalance).to.be.bignumber.eq(before.stakingPoolBalance.sub(before.stakedTotal));
+        expect(after.stakedTotal).to.be.bignumber.eq(ZERO_BN);
     });
 });
