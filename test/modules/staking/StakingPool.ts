@@ -276,4 +276,89 @@ contract("StakingPool", async ([owner, user, ...otherAccounts]) => {
         expect(afterU.stakedTotal).to.be.bignumber.eq(ZERO_BN);
     });
 
+
+    it('should set stakingCap and allow stake within it', async () => {
+        let stakingCap = w3random.interval(5000, 8000, 'ether');
+
+        await stakingPool.setStakingCap(stakingCap);
+        await stakingPool.setStakingCapEnabled(true);
+        await stakingPool.setVipUserEnabled(true);
+
+        let stakeAmount = stakingCap.divn(2)
+        await akro.allocateTo(user, stakeAmount);
+
+        const before = {
+            stakingPoolBalance: await akro.balanceOf(stakingPool.address),
+        }
+
+        await akro.approve(stakingPool.address, stakeAmount, {from:user});
+        await stakingPool.stake(stakeAmount, ZERO_DATA, {from:user});
+
+        const after = {
+            stakingPoolBalance: await akro.balanceOf(stakingPool.address),
+        }
+    });
+
+    it('should deny stake exeeds staking cap', async () => {
+        let stakingCap = await stakingPool.stakingCap();
+
+        const before = {
+            stakingPoolBalance: await akro.balanceOf(stakingPool.address),
+        }
+
+        // stake almost to limit
+        let stakeAmount = stakingCap.sub(before.stakingPoolBalance).subn(1);
+        await akro.allocateTo(otherAccounts[0], stakeAmount);
+        await akro.approve(stakingPool.address, stakeAmount, {from:otherAccounts[0]});
+        await stakingPool.stake(stakeAmount, ZERO_DATA, {from:otherAccounts[0]});
+
+        const after = {
+            stakingPoolBalance: await akro.balanceOf(stakingPool.address),
+        }
+        expect(after.stakingPoolBalance).to.be.bignumber.eq(stakingCap.subn(1));
+
+        stakeAmount = w3random.interval(100, 200, 'ether');
+        await akro.allocateTo(user, stakeAmount);
+        await akro.approve(stakingPool.address, stakeAmount, {from:user});
+
+        await expectRevert(
+            stakingPool.stake(stakeAmount, ZERO_DATA, {from:user}),
+            "StakingModule: stake exeeds staking cap"
+        );
+    });
+
+    it('should allow stake for VIP user', async () => {
+        let stakeAmount = w3random.interval(100, 200, 'ether');
+        await akro.allocateTo(user, stakeAmount);
+        await akro.approve(stakingPool.address, stakeAmount, {from:user});
+
+        await stakingPool.setVipUser(user, true);
+        await stakingPool.stake(stakeAmount, ZERO_DATA, {from:user});
+    });
+
+    it('should unstake for VIP user', async () => {
+        await stakingPool.unstakeAllUnlocked(ZERO_DATA, {from:user});
+    });
+
+    it('should set default userCap and allow stake within it', async () => {
+        let userCap = w3random.interval(1000, 2000, 'ether');
+        await stakingPool.setDefaultUserCap(userCap);
+        await stakingPool.setUserCapEnabled(true);
+        await stakingPool.setVipUserEnabled(true);
+
+        let stakeAmount = userCap.subn(1)
+        await akro.allocateTo(otherAccounts[2], stakeAmount);
+        await akro.approve(stakingPool.address, stakeAmount, {from:otherAccounts[2]});
+        await stakingPool.stake(stakeAmount, ZERO_DATA, {from:otherAccounts[2]});
+
+        stakeAmount = userCap.addn(1)
+        await akro.allocateTo(otherAccounts[3], stakeAmount);
+        await akro.approve(stakingPool.address, stakeAmount, {from:otherAccounts[3]});
+        await expectRevert(
+            stakingPool.stake(stakeAmount, ZERO_DATA, {from:otherAccounts[3]}),
+            "StakingModule: stake exeeds cap"
+        );
+
+    });
+
 });
