@@ -80,7 +80,7 @@ contract StakingPool is StakingPoolBase {
     function rewardBalanceOf(address user, address token) public view returns(uint256) {
         RewardData storage rd = rewards[token];
         if(rd.unclaimed == 0) return 0; //Either token not registered or everything is already claimed
-        uint256 shares = getPersonalStakeTotalAmount(user);
+        uint256 shares = totalStakedFor(user);
         if(shares == 0) return 0;
         UserRewardInfo storage uri = userRewards[user];
         uint256 reward;
