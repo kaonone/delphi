@@ -42,7 +42,7 @@ contract VestedAkro is Initializable, Context, Ownable, IERC20, ERC20Detailed, M
     mapping (address => Balance) private holders;
 
 
-    function initialize(address _akro, uint256 _vestingPeriod) public initializer {
+    function initialize(address _akro, uint256 _vestingPeriod) external initializer {
         Ownable.initialize(_msgSender());
         MinterRole.initialize(_msgSender());
         VestedAkroSenderRole.initialize(_msgSender());
@@ -74,16 +74,17 @@ contract VestedAkro is Initializable, Context, Ownable, IERC20, ERC20Detailed, M
         return true;
     }
 
-    function setVestingPeriod(uint256 _vestingPeriod) public onlyOwner {
+    function setVestingPeriod(uint256 _vestingPeriod) external onlyOwner {
         require(_vestingPeriod > 0, "VestedAkro: vestingPeriod should be > 0");
         vestingPeriod = _vestingPeriod;
     }
 
-    function mint(address beneficiary, uint256 amount) public onlyMinter {
-        akro.transferFrom(_msgSender(), address(this), amount);
+    function mint(address beneficiary, uint256 amount) external onlyMinter {
         totalSupply = totalSupply.add(amount);
         holders[beneficiary].unlocked = holders[beneficiary].unlocked.add(amount);
+
         emit Transfer(address(0), beneficiary, amount);
+        akro.transferFrom(_msgSender(), address(this), amount);
     }
 
     /**
@@ -92,7 +93,7 @@ contract VestedAkro is Initializable, Context, Ownable, IERC20, ERC20Detailed, M
      * @param tillBatch Last batch to process + 1. Usually equal to batches.length
      * @return total unlocked amount awailable for redeem
      */
-    function unlockAvailable(address holder, uint256 tillBatch) public returns(uint256) {
+    function unlockAvailable(address holder, uint256 tillBatch) external returns(uint256) {
         require(tillBatch <= holders[holder].batches.length, "VestedAkro: tillBatch too high");
         claimAllFromBatches(holder);
         return holders[holder].unlocked;
@@ -102,7 +103,7 @@ contract VestedAkro is Initializable, Context, Ownable, IERC20, ERC20Detailed, M
      * @notice Unlock all available vAKRO and redeem it
      * @return Amount redeemed
      */
-    function unlockAndRedeemAll() public returns(uint256){
+    function unlockAndRedeemAll() external returns(uint256){
         address beneficiary = _msgSender();
         claimAllFromBatches(beneficiary);
         return redeemAllUnlocked();
@@ -120,8 +121,10 @@ contract VestedAkro is Initializable, Context, Ownable, IERC20, ERC20Detailed, M
 
         holders[beneficiary].unlocked = 0;
         totalSupply = totalSupply.sub(amount);
-        akro.transfer(beneficiary, amount);
+
         emit Transfer(beneficiary, address(0), amount);
+        akro.transfer(beneficiary, amount);
+    
         return amount;
     }
 
@@ -130,17 +133,17 @@ contract VestedAkro is Initializable, Context, Ownable, IERC20, ERC20Detailed, M
         return b.locked.add(b.unlocked);
     }
 
-    function balanceInfoOf(address account) public view returns(uint256 locked, uint256 unlocked, uint256 unlockable) {
+    function balanceInfoOf(address account) external view returns(uint256 locked, uint256 unlocked, uint256 unlockable) {
         Balance storage b = holders[account];
         return (b.locked, b.unlocked, calculateClaimableFromBatches(account));
     }
 
-    function batchesInfoOf(address account) public view returns(uint256 firstUnclaimedBatch, uint256 totalBatches) {
+    function batchesInfoOf(address account) external view returns(uint256 firstUnclaimedBatch, uint256 totalBatches) {
         Balance storage b = holders[account];
         return (b.firstUnclaimedBatch, b.batches.length);
     }
 
-    function batchInfo(address account, uint256 batch) public view 
+    function batchInfo(address account, uint256 batch) external view 
     returns(uint256 amount, uint256 start, uint256 end, uint256 claimed, uint256 claimable) {
         VestedBatch storage vb = holders[account].batches[batch];
         (claimable,) = calculateClaimableFromBatch(vb);

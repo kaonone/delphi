@@ -19,12 +19,12 @@ contract VaultPoolToken is PoolToken, IOperableToken {
         userBalanceChanged(account);
     }
 
-    function increaseOnHoldValue(address _user, uint256 _amount) public onlyMinter {
+    function increaseOnHoldValue(address _user, uint256 _amount) external onlyMinter {
         onHoldAmount[_user] = onHoldAmount[_user].add(_amount);
         totalOnHold = totalOnHold.add(_amount);
     }
 
-    function decreaseOnHoldValue(address _user, uint256 _amount) public onlyMinter {
+    function decreaseOnHoldValue(address _user, uint256 _amount) external onlyMinter {
         if (onHoldAmount[_user] >= _amount) {
             _updateUserBalance(_user);
 
@@ -38,12 +38,12 @@ contract VaultPoolToken is PoolToken, IOperableToken {
         }
     }
 
-    function onHoldBalanceOf(address _user) public view returns (uint256) {
+    function onHoldBalanceOf(address _user) external view returns (uint256) {
         return onHoldAmount[_user];
     }
 
 
-    function fullBalanceOf(address account) public view returns(uint256){
+    function fullBalanceOf(address account) external view returns(uint256){
         if (account == address(this)) return 0;  //Token itself only holds tokens for others
         uint256 unclaimed = calculateClaimAmount(account);
         return balanceOf(account).add(unclaimed);

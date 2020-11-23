@@ -38,36 +38,36 @@ contract StakingPool is StakingPoolBase {
         _;
     }
 
-    function setRewardVesting(address _rewardVesting) public onlyOwner {
+    function setRewardVesting(address _rewardVesting) external onlyOwner {
         rewardVesting = RewardVestingModule(_rewardVesting);
     }
 
-    function registerRewardToken(address token) public onlyOwner {
-        require(!isRegisteredRewardToken(token), "StakingPool: already registered");
-        registeredRewardTokens.push(token);
-        emit RewardTokenRegistered(token);
+    function registerRewardToken(address _token) external onlyOwner {
+        require(!isRegisteredRewardToken(_token), "StakingPool: already registered");
+        registeredRewardTokens.push(_token);
+        emit RewardTokenRegistered(_token);
     }
 
-    function claimRewardsFromVesting() public onlyCapper{
+    function claimRewardsFromVesting() external onlyCapper{
         _claimRewardsFromVesting();
     }
 
-    function isRegisteredRewardToken(address token) public view returns(bool) {
+    function isRegisteredRewardToken(address _token) public view returns(bool) {
         for(uint256 i=0; i<registeredRewardTokens.length; i++){
-            if(token == registeredRewardTokens[i]) return true;
+            if(_token == registeredRewardTokens[i]) return true;
         }
         return false;
     }
 
-    function supportedRewardTokens() public view returns(address[] memory) {
+    function supportedRewardTokens() external view returns(address[] memory) {
         return registeredRewardTokens;
     }
 
-    function withdrawRewards() public returns(uint256[] memory){
+    function withdrawRewards() external returns(uint256[] memory){
         return _withdrawRewards(_msgSender());
     }
 
-    function withdrawRewardsFor(address user, address rewardToken) public onlyRewardDistributionModule returns(uint256) {
+    function withdrawRewardsFor(address user, address rewardToken) external onlyRewardDistributionModule returns(uint256) {
         return _withdrawRewards(user, rewardToken);
     }
 
@@ -77,14 +77,14 @@ contract StakingPool is StakingPoolBase {
     //     }
     // }
 
-    function rewardBalanceOf(address user, address token) public view returns(uint256) {
-        RewardData storage rd = rewards[token];
+    function rewardBalanceOf(address user, address _token) public view returns(uint256) {
+        RewardData storage rd = rewards[_token];
         if(rd.unclaimed == 0) return 0; //Either token not registered or everything is already claimed
         uint256 shares = getPersonalStakeTotalAmount(user);
         if(shares == 0) return 0;
         UserRewardInfo storage uri = userRewards[user];
         uint256 reward;
-        for(uint256 i=uri.nextDistribution[token]; i < rd.distributions.length; i++) {
+        for(uint256 i=uri.nextDistribution[_token]; i < rd.distributions.length; i++) {
             RewardDistribution storage rdistr = rd.distributions[i];
             uint256 r = shares.mul(rdistr.amount).div(rdistr.totalShares);
             reward = reward.add(r);
@@ -100,18 +100,18 @@ contract StakingPool is StakingPoolBase {
         return rwrds;
     }
 
-    function _withdrawRewards(address user, address token) internal returns(uint256){
+    function _withdrawRewards(address user, address _token) internal returns(uint256){
         UserRewardInfo storage uri = userRewards[user];
-        RewardData storage rd = rewards[token];
+        RewardData storage rd = rewards[_token];
         if(rd.distributions.length == 0) { //No distributions = nothing to do
             return 0;
         }
-        uint256 rwrds = rewardBalanceOf(user, token);
-        uri.nextDistribution[token] = rd.distributions.length;
+        uint256 rwrds = rewardBalanceOf(user, _token);
+        uri.nextDistribution[_token] = rd.distributions.length;
         if(rwrds > 0){
-            rewards[token].unclaimed = rewards[token].unclaimed.sub(rwrds);
-            IERC20(token).transfer(user, rwrds);
-            emit RewardWithdraw(user, token, rwrds);
+            rewards[_token].unclaimed = rewards[_token].unclaimed.sub(rwrds);
+            IERC20(_token).transfer(user, rwrds);
+            emit RewardWithdraw(user, _token, rwrds);
         }
         return rwrds;
     }
