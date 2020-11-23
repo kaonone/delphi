@@ -254,7 +254,6 @@ contract("StakingPool", async ([owner, user, ...otherAccounts]) => {
 
     });
 
-
     it('should set stakingCap and allow stake within it', async () => {
         let stakingCap = w3random.interval(5000, 8000, 'ether');
 
@@ -319,7 +318,7 @@ contract("StakingPool", async ([owner, user, ...otherAccounts]) => {
     });
 
     it('should set default userCap and allow stake within it', async () => {
-        let userCap = w3random.interval(1000, 2000, 'ether');
+        let userCap = w3random.interval(500, 1000, 'ether');
         await stakingPool.setDefaultUserCap(userCap);
         await stakingPool.setUserCapEnabled(true);
         await stakingPool.setVipUserEnabled(true);
@@ -336,7 +335,7 @@ contract("StakingPool", async ([owner, user, ...otherAccounts]) => {
             stakingPool.stake(stakeAmount, ZERO_DATA, {from:otherAccounts[3]}),
             "StakingModule: stake exeeds cap"
         );
-
+        await stakingPool.setUserCapEnabled(false);
     });
 
 
@@ -380,33 +379,35 @@ contract("StakingPool", async ([owner, user, ...otherAccounts]) => {
         expect(stakes.length).to.be.eq(1);
 
         await stakingPool.unstake(stakes[0], ZERO_DATA, {from:user});
+
+        let stakedFor = await stakingPool.totalStakedFor(user);
+        let stakesTotal = await stakingPool.getPersonalStakeTotalAmount(user);
+        expect(stakedFor).to.be.bignumber.eq(ZERO_BN);
+        expect(stakesTotal).to.be.bignumber.eq(ZERO_BN);
     });
 
 
     it('should correctly unstake unlocked', async () => {
         let allStakesAmount = new BN(web3.utils.toWei('1000'));
+        let stakeAmount = allStakesAmount.divn(10);
         await akro.allocateTo(user, allStakesAmount);
         await akro.approve(stakingPool.address, allStakesAmount, {from:user});
 
         for(let i=0; i<10; i++) {
-            await stakingPool.stake(allStakesAmount.divn(10), ZERO_DATA, {from:user});
-            time.increase(Math.floor(LOCK_DURATION/10));
+            await stakingPool.stake(stakeAmount, ZERO_DATA, {from:user});
+            time.increase(Math.ceil(LOCK_DURATION/10));
         }
 
         let balance = await akro.balanceOf(user);
-        let expectedIncrease = allStakesAmount.divn(10);
         for(let i=0; i<10; i++) {
-            let skip = (Math.random() > 0.5);
-            if(skip) {
-                expectedIncrease += allStakesAmount.divn(10);
-            }else{
+            let skip = (Math.random() > 0.3);
+            if(!skip) {
                 await stakingPool.unstakeAllUnlocked(ZERO_DATA, {from:user});
                 let newBalance = await akro.balanceOf(user);
-                expectEqualBN(newBalance, balance.add(expectedIncrease));
-                balance = newBalance;
+                expectEqualBN(newBalance, balance.add(stakeAmount.muln(i+1)));
             }
 
-            time.increase(Math.floor(LOCK_DURATION/10));
+            time.increase(Math.ceil(LOCK_DURATION/10));
         }
     });
 
