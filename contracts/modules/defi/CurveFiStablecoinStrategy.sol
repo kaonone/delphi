@@ -56,7 +56,7 @@ contract CurveFiStablecoinStrategy is Module, IDefiStrategy, IStrategyCurveFiSwa
         strategyId = _strategyId;
     }
 
-    function setProtocol(address _depositContract, address _liquidityGauge, address _curveFiMinter, address _dexagProxy) public onlyDefiOperator {
+    function setProtocol(address _depositContract, address _liquidityGauge, address _curveFiMinter, address _dexagProxy) external onlyDefiOperator {
         require(_depositContract != address(0), "Incorrect deposit contract address");
 
         curveFiDeposit = ICurveFiDeposit(_depositContract);
@@ -79,7 +79,7 @@ contract CurveFiStablecoinStrategy is Module, IDefiStrategy, IStrategyCurveFiSwa
         vault = _vault;
     }
 
-    function setDexagProxy(address _dexagProxy) public onlyDefiOperator {
+    function setDexagProxy(address _dexagProxy) external onlyDefiOperator {
         dexagProxy = _dexagProxy;
         dexagApproveHandler = IDexag(_dexagProxy).approvalHandler();
     }

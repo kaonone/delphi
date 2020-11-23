@@ -35,13 +35,15 @@ contract CurveFiProtocol_renBTC is CurveFiProtocol {
         curveFiMinter = ICurveFiMinter(curveFiLPGauge.minter());
         crvToken = curveFiLPGauge.crv_token();
 
-        IERC20(curveFiToken).safeApprove(address(curveFiSwap), MAX_UINT256);
-        IERC20(curveFiToken).safeApprove(address(curveFiLPGauge), MAX_UINT256);
         for (uint256 i=0; i < _registeredTokens.length; i++){
             address token = curveFiSwap.coins(int128(i));
             _registerToken_renBTC(token, i);
         }
         emit CurveFiSetup(address(curveFiSwap), address(0), address(curveFiLPGauge));
+
+        IERC20(curveFiToken).safeApprove(address(curveFiSwap), MAX_UINT256);
+        IERC20(curveFiToken).safeApprove(address(curveFiLPGauge), MAX_UINT256);
+
     }
 
     function deposit_remove_liquidity_one_coin(uint256 _token_amount, uint256 i, uint256 min_uamount) internal {
@@ -53,14 +55,16 @@ contract CurveFiProtocol_renBTC is CurveFiProtocol {
 
     function _registerToken_renBTC(address token, uint256 idx) private {
         _registeredTokens[idx] = token;
-        IERC20 ltoken = IERC20(token);
-        ltoken.safeApprove(address(curveFiSwap), MAX_UINT256);
         // uint256 currentBalance = ltoken.balanceOf(address(this));
         // if (currentBalance > 0) {
         //     handleDeposit(token, currentBalance); 
         // }
         decimals[token] = ERC20Detailed(token).decimals();
         emit TokenRegistered(token);
+
+        IERC20 ltoken = IERC20(token);
+        ltoken.safeApprove(address(curveFiSwap), MAX_UINT256);
+ 
     }
 
     function _unregisterToken_renBTC(address token) private {

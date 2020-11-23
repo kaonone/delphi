@@ -44,7 +44,7 @@ contract AaveProtocol is ProtocolBase {
         lendingPool.deposit(token, amount, aaveReferralCode);
     }
 
-    function handleDeposit(address[] memory tokens, uint256[] memory amounts) public onlyDefiOperator {
+    function handleDeposit(address[] calldata tokens, uint256[] calldata amounts) external onlyDefiOperator {
         require(tokens.length == 1 && amounts.length == 1, "AAVEProtocol: wrong count of tokens or amounts");
         handleDeposit(tokens[0], amounts[0]);
     }
@@ -56,7 +56,7 @@ contract AaveProtocol is ProtocolBase {
         baseToken.safeTransfer(beneficiary, amount);
     }
 
-    function withdraw(address beneficiary, uint256[] memory amounts) public onlyDefiOperator {
+    function withdraw(address beneficiary, uint256[] calldata amounts) external onlyDefiOperator {
         require(amounts.length == 1, "AAVEProtocol: wrong amounts array length");
 
         aToken.redeem(amounts[0]);
@@ -79,23 +79,23 @@ contract AaveProtocol is ProtocolBase {
         return normalizeAmount(balance);
     }
 
-    function optimalProportions() public returns(uint256[] memory) {
+    function optimalProportions() external returns(uint256[] memory) {
         uint256[] memory amounts = new uint256[](1);
         amounts[0] = 1e18;
         return amounts;
     }
 
-    function canSwapToToken(address token) public view returns(bool) {
+    function canSwapToToken(address token) external view returns(bool) {
         return (token == address(baseToken));
     }    
 
-    function supportedTokens() public view returns(address[] memory){
+    function supportedTokens() external view returns(address[] memory){
         address[] memory tokens = new address[](1);
         tokens[0] = address(baseToken);
         return tokens;
     }
 
-    function supportedTokensCount() public view returns(uint256) {
+    function supportedTokensCount() external view returns(uint256) {
         return 1;
     }
 

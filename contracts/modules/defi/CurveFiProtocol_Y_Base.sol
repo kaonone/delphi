@@ -14,7 +14,7 @@ contract CurveFiProtocol_Y_Base is CurveFiProtocol {
     address[] public yTokens;
     mapping(address=>PriceData) internal yPricePerFullShare;
 
-    function upgrade() public onlyOwner() {
+    function upgrade() external onlyOwner() {
         require(yTokens.length == 0, "CurveFiProtocol_Y_Base: already upgraded"); 
         for(uint256 i=0; i<_registeredTokens.length; i++) {
             address yToken = curveFiDeposit.coins(int128(i));
@@ -56,7 +56,7 @@ contract CurveFiProtocol_Y_Base is CurveFiProtocol {
         }
     }
 
-    function lastYPricePerFullShare(address yToken) public view returns(uint256 lastUpdateBlock, uint256 price) {
+    function lastYPricePerFullShare(address yToken) external view returns(uint256 lastUpdateBlock, uint256 price) {
         PriceData storage pd = yPricePerFullShare[yToken];
         return (pd.lastUpdateBlock, pd.price);
     }

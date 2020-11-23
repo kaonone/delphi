@@ -40,7 +40,7 @@ contract ProtocolBase is Module, DefiOperatorRole, IDefiProtocol {
 
     function cliamRewardsFromProtocol() internal;
 
-    function claimRewards() public onlyDefiOperator returns(address[] memory tokens, uint256[] memory amounts){
+    function claimRewards() external onlyDefiOperator returns(address[] memory tokens, uint256[] memory amounts){
         cliamRewardsFromProtocol();
         claimDefaultRewards();
 
@@ -73,7 +73,7 @@ contract ProtocolBase is Module, DefiOperatorRole, IDefiProtocol {
         }
     }
 
-    function withdrawReward(address token, address user, uint256 amount) public onlyDefiOperator {
+    function withdrawReward(address token, address user, uint256 amount) external onlyDefiOperator {
         require(isSupportedRewardToken(token), "ProtocolBase: not reward token");
         rewardBalances[token] = rewardBalances[token].sub(amount);
         IERC20(token).safeTransfer(user, amount);

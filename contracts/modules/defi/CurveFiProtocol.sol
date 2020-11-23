@@ -65,16 +65,18 @@ contract CurveFiProtocol is ProtocolBase {
         require(lpToken == address(curveFiToken), "CurveFiProtocol: LP tokens do not match");
         crvToken = curveFiLPGauge.crv_token();
 
-        IERC20(curveFiToken).safeApprove(address(curveFiDeposit), MAX_UINT256);
-        IERC20(curveFiToken).safeApprove(address(curveFiLPGauge), MAX_UINT256);
         for (uint256 i=0; i < _registeredTokens.length; i++){
             address token = curveFiDeposit.underlying_coins(int128(i));
             _registerToken(token, i);
         }
         emit CurveFiSetup(address(curveFiSwap), address(curveFiDeposit), address(curveFiLPGauge));
+
+        IERC20(curveFiToken).safeApprove(address(curveFiDeposit), MAX_UINT256);
+        IERC20(curveFiToken).safeApprove(address(curveFiLPGauge), MAX_UINT256);
+
     }
 
-    function setSlippageMultiplier(uint256 _slippageMultiplier) public onlyDefiOperator {
+    function setSlippageMultiplier(uint256 _slippageMultiplier) external onlyDefiOperator {
         require(_slippageMultiplier >= 1e18, "CurveFiYModule: multiplier should be > 1");
         slippageMultiplier = _slippageMultiplier;
     }
@@ -92,7 +94,7 @@ contract CurveFiProtocol is ProtocolBase {
         stakeCurveFiToken();
     }
 
-    function handleDeposit(address[] memory tokens, uint256[] memory amounts) public onlyDefiOperator {
+    function handleDeposit(address[] calldata tokens, uint256[] calldata amounts) external onlyDefiOperator {
         require(tokens.length == amounts.length, "CurveFiYProtocol: count of tokens does not match count of amounts");
         require(amounts.length == nCoins(), "CurveFiYProtocol: amounts count does not match registered tokens");
         uint256[] memory amnts = new uint256[](nCoins());
@@ -132,7 +134,7 @@ contract CurveFiProtocol is ProtocolBase {
         ltoken.safeTransfer(beneficiary, amount);
     }
 
-    function withdraw(address beneficiary, uint256[] memory amounts) public onlyDefiOperator {
+    function withdraw(address beneficiary, uint256[] calldata amounts) external onlyDefiOperator {
         require(amounts.length == nCoins(), "CurveFiYProtocol: wrong amounts array length");
 
         uint256 nWithdraw;
@@ -206,7 +208,7 @@ contract CurveFiProtocol is ProtocolBase {
         return summ;
     }
 
-    function optimalProportions() public returns(uint256[] memory) {
+    function optimalProportions() external returns(uint256[] memory) {
         uint256[] memory amounts = balanceOfAll();
         uint256 summ;
         for (uint256 i=0; i < _registeredTokens.length; i++){
@@ -220,11 +222,11 @@ contract CurveFiProtocol is ProtocolBase {
     }
     
 
-    function supportedTokens() public view returns(address[] memory){
+    function supportedTokens() external view returns(address[] memory){
         return _registeredTokens;
     }
 
-    function supportedTokensCount() public view returns(uint256) {
+    function supportedTokensCount() external view returns(uint256) {
         return _registeredTokens.length;
     }
 
@@ -237,7 +239,7 @@ contract CurveFiProtocol is ProtocolBase {
         revert("CurveFiYProtocol: token not registered");
     }
 
-    function canSwapToToken(address token) public view returns(bool) {
+    function canSwapToToken(address token) external view returns(bool) {
         for (uint256 i=0; i < _registeredTokens.length; i++){
             if (_registeredTokens[i] == token){
                 return true;
@@ -289,14 +291,15 @@ contract CurveFiProtocol is ProtocolBase {
 
     function _registerToken(address token, uint256 idx) private {
         _registeredTokens[idx] = token;
-        IERC20 ltoken = IERC20(token);
-        ltoken.safeApprove(address(curveFiDeposit), MAX_UINT256);
         // uint256 currentBalance = ltoken.balanceOf(address(this));
         // if (currentBalance > 0) {
         //     handleDeposit(token, currentBalance); 
         // }
         decimals[token] = ERC20Detailed(token).decimals();
         emit TokenRegistered(token);
+
+        IERC20 ltoken = IERC20(token);
+        ltoken.safeApprove(address(curveFiDeposit), MAX_UINT256);
     }
 
     function _unregisterToken(address token) private {
