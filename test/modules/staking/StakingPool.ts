@@ -23,6 +23,7 @@ contract("StakingPool", async ([owner, user, ...otherAccounts]) => {
     const ZERO_BN = new BN("0");
     const ZERO_DATA = "0x";
     const REWARD_EPOCH_DURATION = 24*60*60;
+    const LOCK_DURATION = 2*60*60;
 
     let snap: Snapshot;
     let akro: FreeErc20Instance;
@@ -78,11 +79,14 @@ contract("StakingPool", async ([owner, user, ...otherAccounts]) => {
 
         //Save snapshot
         //snap = await Snapshot.create(web3.currentProvider);
+
+        // console.log('user', user);
+        // console.log('otherAccounts[0]', otherAccounts[0]);
+
     });
 
     it('should stake', async () => {
         let stakeAmount = w3random.interval(100, 500, 'ether');
-        console.log('stakeAmount', stakeAmount.toString());
         await akro.allocateTo(user, stakeAmount);
 
         const before = {
@@ -108,7 +112,7 @@ contract("StakingPool", async ([owner, user, ...otherAccounts]) => {
 
     it('should stake for another user', async () => {
         let stakeAmount = w3random.interval(100, 500, 'ether');
-        console.log('stakeAmount', stakeAmount.toString());
+        //console.log('stakeAmount', stakeAmount.toString());
         await akro.allocateTo(user, stakeAmount);
 
         const before = {
@@ -171,15 +175,9 @@ contract("StakingPool", async ([owner, user, ...otherAccounts]) => {
             stakedForTotal: await stakingPool.totalStakedFor(otherAccounts[0])
         }
 
-        console.log('user', user);
-        console.log('otherAccounts[0]', otherAccounts[0]);
-        console.log('1');
         expect(after.userBalance).to.be.bignumber.eq(before.userBalance.add(before.stakedTotal));
-        console.log('2');
         expect(after.stakedForTotal).to.be.bignumber.eq(ZERO_BN);
-        console.log('3');
         expect(after.stakingPoolBalance).to.be.bignumber.eq(before.stakingPoolBalance.sub(before.stakedTotal));
-        console.log('4');
         expect(after.stakedTotal).to.be.bignumber.eq(ZERO_BN);
     });
 
@@ -339,6 +337,77 @@ contract("StakingPool", async ([owner, user, ...otherAccounts]) => {
             "StakingModule: stake exeeds cap"
         );
 
+    });
+
+
+    it('should set lock duration', async () => {
+        await stakingPool.setDefaultLockInDuration(LOCK_DURATION);
+    });
+    it('should stake', async () => {
+        let stakeAmount = w3random.interval(100, 500, 'ether');
+        await akro.allocateTo(user, stakeAmount);
+        await akro.approve(stakingPool.address, stakeAmount, {from:user});
+        await stakingPool.stake(stakeAmount, ZERO_DATA, {from:user});
+    });
+
+    it('should not unstake befor lock ends', async () => {
+        const before = {
+            userBalance: await akro.balanceOf(user),
+        }
+
+        await stakingPool.unstakeAllUnlocked(ZERO_DATA, {from:user});
+
+        const after = {
+            userBalance: await akro.balanceOf(user),
+        }
+
+        expect(after.userBalance).to.be.bignumber.eq(before.userBalance);
+
+
+        let stakes = await stakingPool.getPersonalStakeActualAmounts(user);
+        expect(stakes.length).to.be.eq(1);
+
+        await expectRevert(
+            stakingPool.unstake(stakes[0], ZERO_DATA, {from:user}),
+            "The current stake hasn't unlocked yet"
+        );
+    });
+
+    it('should unstake after lock ends', async () => {
+        time.increase(LOCK_DURATION);
+
+        let stakes = await stakingPool.getPersonalStakeActualAmounts(user);
+        expect(stakes.length).to.be.eq(1);
+
+        await stakingPool.unstake(stakes[0], ZERO_DATA, {from:user});
+    });
+
+
+    it('should correctly unstake unlocked', async () => {
+        let allStakesAmount = new BN(web3.utils.toWei('1000'));
+        await akro.allocateTo(user, allStakesAmount);
+        await akro.approve(stakingPool.address, allStakesAmount, {from:user});
+
+        for(let i=0; i<10; i++) {
+            await stakingPool.stake(allStakesAmount.divn(10), ZERO_DATA, {from:user});
+            time.increase(Math.floor(LOCK_DURATION/10));
+        }
+
+        let balance = await akro.balanceOf(user);
+        let expectedIncrease = allStakesAmount.divn(10);
+        for(let i=0; i<10; i++) {
+            let skip = (Math.random() > 0.5);
+            if(skip) {
+                expectedIncrease += allStakesAmount.divn(10);
+            }else{
+                await stakingPool.unstakeAllUnlocked(ZERO_DATA, {from:user});
+                let newBalance = await akro.balanceOf(user);
+                expectEqualBN(newBalance, balance.add(expectedIncrease));
+                balance = newBalance;
+            }
+
+            time.increase(Math.floor(LOCK_DURATION/10));
+        }
     });
 
 });
