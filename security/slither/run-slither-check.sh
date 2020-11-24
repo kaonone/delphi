@@ -1,4 +1,4 @@
-FALSE_POSITIVE_WARNIGNS=577
+FALSE_POSITIVE_WARNIGNS=581
 FOUND_WARNINGS=`grep "\d+ result" -Po output/slither_report.txt | sed 's/ result//g'`
 
 echo "False positive warnings: $FALSE_POSITIVE_WARNIGNS"
