@@ -64,7 +64,7 @@ contract SavingsModule is Module, AccessChecker, RewardDistributions, CapperRole
         CapperRole.initialize(_msgSender());
     }
 
-    function setUserCapEnabled(bool _userCapEnabled) public onlyCapper {
+    function setUserCapEnabled(bool _userCapEnabled) external onlyCapper {
         userCapEnabled = _userCapEnabled;
         emit UserCapEnabledChange(userCapEnabled);
     }
@@ -82,36 +82,36 @@ contract SavingsModule is Module, AccessChecker, RewardDistributions, CapperRole
     //     }
     // }
 
-    function setVipUserEnabled(bool _vipUserEnabled) public onlyCapper {
+    function setVipUserEnabled(bool _vipUserEnabled) external onlyCapper {
         vipUserEnabled = _vipUserEnabled;
         emit VipUserEnabledChange(_vipUserEnabled);
     }
 
-    function setVipUser(address _protocol, address user, bool isVip) public onlyCapper {
+    function setVipUser(address _protocol, address user, bool isVip) external onlyCapper {
         protocols[_protocol].isVipUser[user] = isVip;
         emit VipUserChanged(_protocol, user, isVip);
     }
     
-    function setDefaultUserCap(address _protocol, uint256 cap) public onlyCapper {
+    function setDefaultUserCap(address _protocol, uint256 cap) external onlyCapper {
         defaultUserCap[_protocol] = cap;
         emit DefaultUserCapChanged(_protocol, cap);
     }
 
-    function setProtocolCapEnabled(bool _protocolCapEnabled) public onlyCapper {
+    function setProtocolCapEnabled(bool _protocolCapEnabled) external onlyCapper {
         protocolCapEnabled = _protocolCapEnabled;
         emit ProtocolCapEnabledChange(protocolCapEnabled);
     }
 
-    function setProtocolCap(address _protocol, uint256 cap) public onlyCapper {
+    function setProtocolCap(address _protocol, uint256 cap) external onlyCapper {
         protocolCap[_protocol] = cap;
         emit ProtocolCapChanged(_protocol, cap);
     }
 
-    function setWithdrawAllSlippage(address _protocol, uint256 slippageWei) public onlyOwner {
+    function setWithdrawAllSlippage(address _protocol, uint256 slippageWei) external onlyOwner {
         protocols[_protocol].withdrawAllSlippage = slippageWei;
     }
 
-    function registerProtocol(IDefiProtocol protocol, PoolToken poolToken) public onlyOwner {
+    function registerProtocol(IDefiProtocol protocol, PoolToken poolToken) external onlyOwner {
         uint256 i;
         for (i = 0; i < registeredProtocols.length; i++){
             if (address(registeredProtocols[i]) == address(protocol)) revert("SavingsModule: protocol already registered");
@@ -153,7 +153,7 @@ contract SavingsModule is Module, AccessChecker, RewardDistributions, CapperRole
     /**
      * @notice Only adding reward tokens is correctly supported now (!!!)
      */
-    function updateProtocolRewardTokens(IDefiProtocol protocol) public onlyOwner {
+    function updateProtocolRewardTokens(IDefiProtocol protocol) external onlyOwner {
         ProtocolInfo storage pi = protocols[address(protocol)];
         pi.supportedRewardTokens = protocol.supportedRewardTokens();
         for(uint256 i=0; i < pi.supportedRewardTokens.length; i++) {
@@ -198,8 +198,8 @@ contract SavingsModule is Module, AccessChecker, RewardDistributions, CapperRole
      * @param _tokens Array of tokens to deposit
      * @param _dnAmounts Array of amounts (denormalized to token decimals)
      */
-    function deposit(address[] memory _protocols, address[] memory _tokens, uint256[] memory _dnAmounts) 
-    public operationAllowed(IAccessModule.Operation.Deposit) 
+    function deposit(address[] calldata _protocols, address[] calldata _tokens, uint256[] calldata _dnAmounts) 
+    external operationAllowed(IAccessModule.Operation.Deposit) 
     returns(uint256[] memory) 
     {
         require(_protocols.length == _tokens.length && _tokens.length == _dnAmounts.length, "SavingsModule: size of arrays does not match");
@@ -293,7 +293,7 @@ contract SavingsModule is Module, AccessChecker, RewardDistributions, CapperRole
      * @return Amount of PoolToken burned from user
      */
     function withdrawAll(address _protocol, uint256 nAmount)
-    public operationAllowed(IAccessModule.Operation.Withdraw)
+    external operationAllowed(IAccessModule.Operation.Withdraw)
     returns(uint256) 
     {
         //distributeRewardIfRequired(_protocol);
@@ -341,7 +341,7 @@ contract SavingsModule is Module, AccessChecker, RewardDistributions, CapperRole
      * @return Amount of PoolToken burned from user
      */
     function withdraw(address _protocol, address token, uint256 dnAmount, uint256 maxNAmount)
-    public operationAllowed(IAccessModule.Operation.Withdraw)
+    external operationAllowed(IAccessModule.Operation.Withdraw)
     returns(uint256){
         //distributeRewardIfRequired(_protocol);
 
@@ -388,7 +388,7 @@ contract SavingsModule is Module, AccessChecker, RewardDistributions, CapperRole
     /** 
      * @notice Distributes yield. May be called by bot, if there was no deposits/withdrawals
      */
-    function distributeYield() public {
+    function distributeYield() external {
         for(uint256 i=0; i<registeredProtocols.length; i++) {
             distributeYieldInternal(address(registeredProtocols[i]));
         }
@@ -408,7 +408,7 @@ contract SavingsModule is Module, AccessChecker, RewardDistributions, CapperRole
         return cap;
     }
 
-    function isVipUser(address _protocol, address user) view public returns(bool){
+    function isVipUser(address _protocol, address user) view external returns(bool){
         return protocols[_protocol].isVipUser[user];
     }
 
@@ -416,26 +416,26 @@ contract SavingsModule is Module, AccessChecker, RewardDistributions, CapperRole
         return address(protocols[_protocol].poolToken);
     }
 
-    function protocolByPoolToken(address _poolToken) public view returns(address) {
+    function protocolByPoolToken(address _poolToken) external view returns(address) {
         return poolTokenToProtocol[_poolToken];
     }
 
-    function rewardTokensByProtocol(address _protocol) public view returns(address[] memory) {
+    function rewardTokensByProtocol(address _protocol) external view returns(address[] memory) {
         return protocols[_protocol].supportedRewardTokens;
     }
 
-    function registeredPoolTokens() public view returns(address[] memory poolTokens) {
+    function registeredPoolTokens() external view returns(address[] memory poolTokens) {
         poolTokens = new address[](registeredProtocols.length);
         for(uint256 i=0; i<poolTokens.length; i++){
             poolTokens[i] = address(protocols[address(registeredProtocols[i])].poolToken);
         }
     }
 
-    function supportedProtocols() public view returns(IDefiProtocol[] memory) {
+    function supportedProtocols() external view returns(IDefiProtocol[] memory) {
         return registeredProtocols;
     }
 
-    function supportedRewardTokens() public view returns(address[] memory) {
+    function supportedRewardTokens() external view returns(address[] memory) {
         return registeredRewardTokens;
     }
 
@@ -473,8 +473,8 @@ contract SavingsModule is Module, AccessChecker, RewardDistributions, CapperRole
     }
 
     function createYieldDistribution(PoolToken poolToken, uint256 yield) internal {
-        poolToken.distribute(yield);
         emit YieldDistribution(address(poolToken), yield);
+        poolToken.distribute(yield);
     }
 
     /**

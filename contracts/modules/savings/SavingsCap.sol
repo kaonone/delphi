@@ -42,7 +42,7 @@ contract SavingsCap is CapperRole {
         CapperRole.initialize(_capper);
     }
 
-    function setUserCapEnabled(bool _userCapEnabled) public onlyCapper {
+    function setUserCapEnabled(bool _userCapEnabled) external onlyCapper {
         userCapEnabled = _userCapEnabled;
         emit UserCapEnabledChange(userCapEnabled);
     }
@@ -60,27 +60,27 @@ contract SavingsCap is CapperRole {
     //     }
     // }
 
-    function setVipUserEnabled(bool _vipUserEnabled) public onlyCapper {
+    function setVipUserEnabled(bool _vipUserEnabled) external onlyCapper {
         vipUserEnabled = _vipUserEnabled;
         emit VipUserEnabledChange(_vipUserEnabled);
     }
 
-    function setVipUser(address _protocol, address user, bool isVip) public onlyCapper {
+    function setVipUser(address _protocol, address user, bool isVip) external onlyCapper {
         protocolsCapInfo[_protocol].isVipUser[user] = isVip;
         emit VipUserChanged(_protocol, user, isVip);
     }
     
-    function setDefaultUserCap(address _protocol, uint256 cap) public onlyCapper {
+    function setDefaultUserCap(address _protocol, uint256 cap) external onlyCapper {
         defaultUserCap[_protocol] = cap;
         emit DefaultUserCapChanged(_protocol, cap);
     }
 
-    function setProtocolCapEnabled(bool _protocolCapEnabled) public onlyCapper {
+    function setProtocolCapEnabled(bool _protocolCapEnabled) external onlyCapper {
         protocolCapEnabled = _protocolCapEnabled;
         emit ProtocolCapEnabledChange(protocolCapEnabled);
     }
 
-    function setProtocolCap(address _protocol, uint256 cap) public onlyCapper {
+    function setProtocolCap(address _protocol, uint256 cap) external onlyCapper {
         protocolCap[_protocol] = cap;
         emit ProtocolCapChanged(_protocol, cap);
     }

@@ -60,7 +60,7 @@ contract RewardDistributions is Base, AccessChecker {
     //     return balance;
     // }
 
-    function rewardBalanceOf(address user, address poolToken, address[] memory rewardTokens) public view returns(uint256[] memory) {
+    function rewardBalanceOf(address user, address poolToken, address[] calldata rewardTokens) external view returns(uint256[] memory) {
         RewardBalance storage rb = rewardBalances[user];
         UserProtocolRewards storage upr = rb.rewardsByProtocol[poolToken];
         uint256[] memory balances = new uint256[](rewardTokens.length);
