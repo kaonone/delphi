@@ -39,7 +39,7 @@ contract RewardVestingModule is Module, RewardManagerRole {
         defaultEpochLength = 7*24*60*60;
     }
 
-    function getRewardInfo(address protocol, address token) public view returns(uint256 lastClaim, uint256 epochCount) {
+    function getRewardInfo(address protocol, address token) external view returns(uint256 lastClaim, uint256 epochCount) {
         ProtocolRewards storage r = rewards[protocol];
         RewardInfo storage ri = r.rewardInfo[token];
         return (ri.lastClaim, ri.epochs.length);
@@ -59,11 +59,11 @@ contract RewardVestingModule is Module, RewardManagerRole {
         emit RewardTokenRegistered(protocol, token);
     }
 
-    function setDefaultEpochLength(uint256 _defaultEpochLength) public onlyRewardManager {
+    function setDefaultEpochLength(uint256 _defaultEpochLength) external onlyRewardManager {
         defaultEpochLength = _defaultEpochLength;
     }
 
-    function getEpochInfo(address protocol, address token, uint256 epoch) public view returns(uint256 epochStart, uint256 epochEnd, uint256 rewardAmount) {
+    function getEpochInfo(address protocol, address token, uint256 epoch) external view returns(uint256 epochStart, uint256 epochEnd, uint256 rewardAmount) {
         ProtocolRewards storage r = rewards[protocol];
         RewardInfo storage ri = r.rewardInfo[token];
         require(ri.epochs.length > 0, "RewardVesting: protocol or token not registered");
@@ -78,14 +78,14 @@ contract RewardVestingModule is Module, RewardManagerRole {
         return (epochStart, epochEnd, rewardAmount);
     }
 
-    function getLastCreatedEpoch(address protocol, address token) public view returns(uint256) {
+    function getLastCreatedEpoch(address protocol, address token) external view returns(uint256) {
         ProtocolRewards storage r = rewards[protocol];
         RewardInfo storage ri = r.rewardInfo[token];
         require(ri.epochs.length > 0, "RewardVesting: protocol or token not registered");
         return ri.epochs.length-1;       
     }
 
-    function claimRewards() public {
+    function claimRewards() external {
         address protocol = _msgSender();
         ProtocolRewards storage r = rewards[protocol];
         //require(r.tokens.length > 0, "RewardVesting: call only from registered protocols allowed");
@@ -95,7 +95,7 @@ contract RewardVestingModule is Module, RewardManagerRole {
         }
     }
 
-    function claimRewards(address protocol, address token) public {
+    function claimRewards(address protocol, address token) external {
         _claimRewards(protocol, token);
     }
 
@@ -152,11 +152,11 @@ contract RewardVestingModule is Module, RewardManagerRole {
                 break;
             }
         }
-        IERC20(token).safeTransfer(protocol, claimAmount);
         emit RewardClaimed(protocol, token, previousClaim, ri.lastClaim, claimAmount);
+        IERC20(token).safeTransfer(protocol, claimAmount);
     }
 
-    function createEpoch(address protocol, address token, uint256 epochEnd, uint256 amount) public onlyRewardManager {
+    function createEpoch(address protocol, address token, uint256 epochEnd, uint256 amount) external onlyRewardManager {
         ProtocolRewards storage r = rewards[protocol];
         RewardInfo storage ri = r.rewardInfo[token];
         uint256 epochsLength = ri.epochs.length;
@@ -170,7 +170,7 @@ contract RewardVestingModule is Module, RewardManagerRole {
         _addReward(protocol, token, epochsLength, amount);
     }
 
-    function addReward(address protocol, address token, uint256 epoch, uint256 amount) public onlyRewardManager {
+    function addReward(address protocol, address token, uint256 epoch, uint256 amount) external onlyRewardManager {
         _addReward(protocol, token, epoch, amount);
     }
 
