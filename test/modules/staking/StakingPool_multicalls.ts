@@ -88,6 +88,7 @@ contract("StakingPool:multicalls", async ([owner, user, ...otherAccounts]) => {
 
         // console.log('user', user);
         // console.log('otherAccounts[0]', otherAccounts[0]);
+        // console.log('executor', callExecutor.address);
 
     });
 
@@ -122,8 +123,142 @@ contract("StakingPool:multicalls", async ([owner, user, ...otherAccounts]) => {
 
         expect(after.userBalance).to.be.bignumber.eq(before.userBalance);
         expect(after.executorBalance).to.be.bignumber.eq(before.executorBalance);
+    });
 
-        //expect(0).to.be.eq(1);
+    it('should execute scenario: stake, unstakeAll - repeat 10 times', async () => {
+        await callExecutor.clearCalls();
+
+        let mintAmount = new BN(web3.utils.toWei('100000'));
+        await akro.allocateTo(callExecutor.address, mintAmount);
+        await addAllowanceAction(akro.address, stakingPool.address, mintAmount);
+
+        for(let i=0; i<10; i++) {
+            let stakeAmount = w3random.interval(100, 500, 'ether');
+            await addStakeAction(stakeAmount);
+            await addUnstakeAllUnlockedAction();
+        }
+
+        const before = {
+            userBalance: await akro.balanceOf(callExecutor.address),
+            executorBalance: await akro.balanceOf(callExecutor.address),
+        }
+
+        await callExecutor.execute({from:user});
+
+        const after = {
+            userBalance: await akro.balanceOf(callExecutor.address),
+            executorBalance: await akro.balanceOf(callExecutor.address),
+        }
+
+        expect(after.userBalance).to.be.bignumber.eq(before.userBalance);
+        expect(after.executorBalance).to.be.bignumber.eq(before.executorBalance);
+    });
+
+
+    it('should execute scenario: stake, stakeFor, withdrawReqards, unstakeAll - with rewards', async () => {
+        await callExecutor.clearCalls();
+
+        let mintAmount = new BN(web3.utils.toWei('10000'));
+        await akro.allocateTo(callExecutor.address, mintAmount);
+        await addAllowanceAction(akro.address, stakingPool.address, mintAmount);
+
+        let stakeAmount0 = w3random.interval(100, 500, 'ether');
+        await addStakeAction(stakeAmount0);
+        await callExecutor.execute({from:user});
+        await callExecutor.clearCalls();
+
+
+        let stakeAmount1 = w3random.interval(100, 500, 'ether');
+        await addStakeAction(stakeAmount1);
+
+        let stakeAmount2 = w3random.interval(100, 500, 'ether');
+        await addStakeForAction(user, stakeAmount2);
+
+        await addWithdrawRewardsAction();
+
+        await addUnstakeAllUnlockedAction();
+
+
+        await time.increase(REWARD_EPOCH_DURATION);
+        await stakingPool.claimRewardsFromVesting();
+
+        const before = {
+            userBalanceAkro: await akro.balanceOf(user),
+            userBalanceAdel: await adel.balanceOf(user),
+            executorBalanceAkro: await akro.balanceOf(callExecutor.address),
+            executorBalanceAdel: await adel.balanceOf(callExecutor.address),
+            executorRewardBalanceAkro: await stakingPool.rewardBalanceOf(callExecutor.address, akro.address),
+            executorRewardBalanceAdel: await stakingPool.rewardBalanceOf(callExecutor.address, adel.address)
+        }
+
+        await callExecutor.execute({from:user});
+
+        const after = {
+            userBalanceAkro: await akro.balanceOf(user),
+            userBalanceAdel: await adel.balanceOf(user),
+            executorBalanceAkro: await akro.balanceOf(callExecutor.address),
+            executorBalanceAdel: await adel.balanceOf(callExecutor.address),
+            executorRewardBalanceAkro: await stakingPool.rewardBalanceOf(callExecutor.address, akro.address),
+            executorRewardBalanceAdel: await stakingPool.rewardBalanceOf(callExecutor.address, adel.address)
+        }
+
+        expect(after.userBalanceAkro).to.be.bignumber.eq(before.userBalanceAkro);
+        expect(after.userBalanceAdel).to.be.bignumber.eq(before.userBalanceAdel);
+        expect(after.executorBalanceAkro).to.be.bignumber.eq(before.executorBalanceAkro.add(before.executorRewardBalanceAkro).add(stakeAmount0));
+        expect(after.executorBalanceAdel).to.be.bignumber.eq(before.executorBalanceAdel.add(before.executorRewardBalanceAdel));
+        expect(after.executorRewardBalanceAkro).to.be.bignumber.eq(ZERO_BN);
+        expect(after.executorRewardBalanceAdel).to.be.bignumber.eq(ZERO_BN);
+
+    });
+
+    it('should execute scenario: stake, unstakeAll - repeat 10 times  - with rewards', async () => {
+        await callExecutor.clearCalls();
+
+        let mintAmount = new BN(web3.utils.toWei('100000'));
+        await akro.allocateTo(callExecutor.address, mintAmount);
+        await addAllowanceAction(akro.address, stakingPool.address, mintAmount);
+
+        let stakeAmount0 = w3random.interval(100, 500, 'ether');
+        await addStakeAction(stakeAmount0);
+        await callExecutor.execute({from:user});
+        await callExecutor.clearCalls();
+
+
+        for(let i=0; i<10; i++) {
+            let stakeAmount = w3random.interval(100, 500, 'ether');
+            await addStakeAction(stakeAmount);
+            await addUnstakeAllUnlockedAction();
+        }
+
+        await time.increase(REWARD_EPOCH_DURATION);
+        await stakingPool.claimRewardsFromVesting();
+
+        const before = {
+            userBalanceAkro: await akro.balanceOf(user),
+            userBalanceAdel: await adel.balanceOf(user),
+            executorBalanceAkro: await akro.balanceOf(callExecutor.address),
+            executorBalanceAdel: await adel.balanceOf(callExecutor.address),
+            executorRewardBalanceAkro: await stakingPool.rewardBalanceOf(callExecutor.address, akro.address),
+            executorRewardBalanceAdel: await stakingPool.rewardBalanceOf(callExecutor.address, adel.address)
+        }
+
+        await callExecutor.execute({from:user});
+
+        const after = {
+            userBalanceAkro: await akro.balanceOf(user),
+            userBalanceAdel: await adel.balanceOf(user),
+            executorBalanceAkro: await akro.balanceOf(callExecutor.address),
+            executorBalanceAdel: await adel.balanceOf(callExecutor.address),
+            executorRewardBalanceAkro: await stakingPool.rewardBalanceOf(callExecutor.address, akro.address),
+            executorRewardBalanceAdel: await stakingPool.rewardBalanceOf(callExecutor.address, adel.address)
+        }
+
+        expect(after.userBalanceAkro).to.be.bignumber.eq(before.userBalanceAkro);
+        expect(after.userBalanceAdel).to.be.bignumber.eq(before.userBalanceAdel);
+        expect(after.executorBalanceAkro).to.be.bignumber.eq(before.executorBalanceAkro.add(before.executorRewardBalanceAkro).add(stakeAmount0));
+        expect(after.executorBalanceAdel).to.be.bignumber.eq(before.executorBalanceAdel.add(before.executorRewardBalanceAdel));
+        expect(after.executorRewardBalanceAkro).to.be.bignumber.eq(ZERO_BN);
+        expect(after.executorRewardBalanceAdel).to.be.bignumber.eq(ZERO_BN);
     });
 
     async function addAllowanceAction(token:string, target:string, amount:BN) {
