@@ -21,19 +21,27 @@ jobs:
           npm install @openzeppelin/contracts-ethereum-package
           npm install @openzeppelin/upgrades
           pip3 install slither-analyzer
-      - name: Prepare output
-        run: |
-          mkdir output
       - name: Run analysis
         shell: bash
         run: |
-          slither . --config-file ./security/slither/slither-config.json >>output/slither_report.txt 2>&1 || true
+          npx run sec:slither >>slither_report.txt 2>&1 || true
       - name: Store the report
         uses: actions/upload-artifact@v2
         with:
           name: slither-report
-          path: output/slither_report.txt
+          path: ./slither_report.txt
       - name: Check status
         shell: bash
         run: |
           sh ./security/slither/run-slither-check.sh
+  echidna:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create file
+        shell: bash
+        run: touch echidna_report.txt
+      - name: Store the report
+        uses: actions/upload-artifact@v2
+        with:
+          name: echidna-report
+          path: ./echidna_report.txt
