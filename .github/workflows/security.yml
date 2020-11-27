@@ -39,9 +39,11 @@ jobs:
       - uses: actions/setup-node@v1.4.4
         with:
           node-version: '12'
+      - uses: actions/setup-python@v2
       - name: Prepare environment
         run:  |
           npm install
+          pip3 install slither-analyzer
           wget "https://github.com/crytic/echidna/releases/download/v1.6.0/echidna-test-v1.6.0-Ubuntu-18.04.tar.gz"
           tar -xf echidna-test-v1.6.0-Ubuntu-18.04.tar.gz
       - name: Prepare contracts
