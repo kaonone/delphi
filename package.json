@@ -12,6 +12,7 @@
         "generate-artifacts": "truffle compile --all && truffle-abi -o ./abi && typechain --target=truffle-v5 \"build/contracts/*.json\"",
         "postinstall": "npm run generate-artifacts",
         "sec:flattener": "sh ./security/run-flattener.sh",
+        "sec:echidna": "npm run sec:flattener && sh ./security/echidna/run-echidna-analysis.sh",
         "sec:slither": "slither . --config-file ./security/slither/slither-config.json"
     },
     "dependencies": {
