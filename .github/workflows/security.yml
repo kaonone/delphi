@@ -44,10 +44,9 @@ jobs:
         run:  |
           pip3 install slither-analyzer
           npm install
-          npm install -g solc@^0.5.17
           wget "https://github.com/crytic/echidna/releases/download/v1.6.0/echidna-test-v1.6.0-Ubuntu-18.04.tar.gz"
           tar -xf echidna-test-v1.6.0-Ubuntu-18.04.tar.gz
-          which solc
+          export PATH=.:./node_modules/.bin:$PATH
       - name: Prepare contracts
         shell: bash
         run: npm run sec:flattener
