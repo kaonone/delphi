@@ -36,6 +36,7 @@ jobs:
           sh ./security/slither/run-slither-check.sh
   echidna:
     runs-on: ubuntu-latest
+    needs: slither
     steps:
       - name: Create file
         shell: bash
