@@ -52,7 +52,11 @@ jobs:
         run: npm run sec:flattener
       - name: Run echidna
         shell: bash
-        run: sh ./security/echidna/run-echidna-analysis.sh >echidna_report.txt
+        run: |
+          pwd
+          echo $PATH
+          ls
+          sh ./security/echidna/run-echidna-analysis.sh >echidna_report.txt
       - name: Store the report
         uses: actions/upload-artifact@v2
         with:
