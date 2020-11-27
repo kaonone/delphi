@@ -19,7 +19,7 @@ jobs:
         run:  |
           npm install
           pip3 install slither-analyzer
-      - name: Run analysis
+      - name: Run slither
         shell: bash
         run: |
           npm run sec:slither >slither_report.txt 2>&1 || true
@@ -55,9 +55,13 @@ jobs:
         shell: bash
         run: |
           export PATH=.:$PATH
-          sh ./security/echidna/run-echidna-analysis.sh >echidna_report.txt
+          sh ./security/echidna/run-echidna-analysis.sh >echidna_report.txt 2>&1 || true
       - name: Store the report
         uses: actions/upload-artifact@v2
         with:
           name: echidna-report
           path: ./echidna_report.txt
+      - name: Check status
+        shell: bash
+        run: |
+          sh ./security/slither/run-echidna-check.sh
