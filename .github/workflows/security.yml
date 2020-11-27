@@ -46,7 +46,6 @@ jobs:
           npm install
           wget "https://github.com/crytic/echidna/releases/download/v1.6.0/echidna-test-v1.6.0-Ubuntu-18.04.tar.gz"
           tar -xf echidna-test-v1.6.0-Ubuntu-18.04.tar.gz
-          export PATH=.:./node_modules/.bin:$PATH
       - name: Prepare contracts
         shell: bash
         run: npm run sec:flattener
@@ -54,8 +53,8 @@ jobs:
         shell: bash
         run: |
           pwd
+          export PATH=.:./node_modules/.bin:$PATH
           echo $PATH
-          ls
           sh ./security/echidna/run-echidna-analysis.sh >echidna_report.txt
       - name: Store the report
         uses: actions/upload-artifact@v2
