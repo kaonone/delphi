@@ -8,8 +8,8 @@
     "scripts": {
         "ganache": "npx ganache-cli --gasLimit 0xfffffffffff -e 10000000 --port 8545",
         "generate-types": "truffle compile --all && typechain --target=truffle-v5 \"build/contracts/*.json\"",
-        "generate-abi": "truffle compile --all && truffle-abi -o ./abi",
-        "generate-artifacts": "truffle compile --all && truffle-abi -o ./abi && typechain --target=truffle-v5 \"build/contracts/*.json\"",
+        "generate-abi": "truffle compile --all && npx truffle-abi -o ./abi",
+        "generate-artifacts": "truffle compile --all && npx truffle-abi -o ./abi && typechain --target=truffle-v5 \"build/contracts/*.json\"",
         "postinstall": "npm run generate-artifacts",
         "sec:flattener": "sh ./security/run-flattener.sh",
         "sec:echidna": "npm run sec:flattener && sh ./security/echidna/run-echidna-analysis.sh",
