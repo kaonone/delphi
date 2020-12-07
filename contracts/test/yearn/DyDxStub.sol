@@ -61,6 +61,27 @@ contract DyDxStub is Structs {
             value: 0
         });
     }
-    function operate(Info[] memory, ActionArgs[] memory) public {
+    function operate(Info[] memory accounts, ActionArgs[] memory args) public {
+        require(accounts.length == args.length, "Array size mismatch");
+        for(uint256 i=0; i< accounts.length; i++) {
+            _operate(accounts[i], args[i]);
+        }
+    }
+
+    function _operate(Info memory account, ActionArgs memory arg) internal {
+        address beneficiary = account.owner;
+        if(arg.actionType == ActionType.Deposit) {
+            _deposit(beneficiary);
+        } else if(arg.actionType == ActionType.Deposit) {
+            _withdraw(beneficiary);
+        } else {
+            revert("Unsupported action");
+        }
+    }
+
+    function _deposit(address beneficiary) internal {
+    }
+
+    function _withdraw(address beneficiary) internal {
     }
 }
