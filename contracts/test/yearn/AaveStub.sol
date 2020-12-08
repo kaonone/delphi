@@ -15,7 +15,7 @@ contract ATokenStub is Base, ERC20, ERC20Detailed {
     function initialize(address _underlying) public initializer {
         Base.initialize();
         underlying = IERC20(_underlying);
-        string memory name = string(abi.encodePacked("Aave Interest bearing", ERC20Detailed(_underlying).symbol()));
+        string memory name = string(abi.encodePacked("Aave Interest bearing ", ERC20Detailed(_underlying).symbol()));
         string memory symbol = string(abi.encodePacked("a", ERC20Detailed(_underlying).symbol()));
         uint8 decimals = ERC20Detailed(_underlying).decimals();
         ERC20Detailed.initialize(name, symbol, decimals);
