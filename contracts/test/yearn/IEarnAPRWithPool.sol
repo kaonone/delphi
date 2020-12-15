@@ -365,19 +365,19 @@ contract IUniswapAPR {
 
 interface APRWithPoolOracle {
 
-  function getDDEXAPR(address token) external view returns (uint256);
-  function getDDEXAPRAdjusted(address token, uint256 _supply) external view returns (uint256);
-  function getLENDFAPR(address token) external view returns (uint256);
-  function getLENDFAPRAdjusted(address token, uint256 _supply) external view returns (uint256);
-  function getCompoundAPR(address token) external view returns (uint256);
-  function getCompoundAPRAdjusted(address token, uint256 _supply) external view returns (uint256);
-  function getFulcrumAPR(address token) external view returns(uint256);
-  function getFulcrumAPRAdjusted(address token, uint256 _supply) external view returns(uint256);
-  function getDyDxAPR(uint256 marketId) external view returns(uint256);
-  function getDyDxAPRAdjusted(uint256 marketId, uint256 _supply) external view returns(uint256);
-  function getAaveCore() external view returns (address);
-  function getAaveAPR(address token) external view returns (uint256);
-  function getAaveAPRAdjusted(address token, uint256 _supply) external view returns (uint256);
+    function getDDEXAPR(address token) external view returns (uint256);
+    function getDDEXAPRAdjusted(address token, uint256 _supply) external view returns (uint256);
+    function getLENDFAPR(address token) external view returns (uint256);
+    function getLENDFAPRAdjusted(address token, uint256 _supply) external view returns (uint256);
+    function getCompoundAPR(address token) external view returns (uint256);
+    function getCompoundAPRAdjusted(address token, uint256 _supply) external view returns (uint256);
+    function getFulcrumAPR(address token) external view returns(uint256);
+    function getFulcrumAPRAdjusted(address token, uint256 _supply) external view returns(uint256);
+    function getDyDxAPR(uint256 marketId) external view returns(uint256);
+    function getDyDxAPRAdjusted(uint256 marketId, uint256 _supply) external view returns(uint256);
+    function getAaveCore() external view returns (address);
+    function getAaveAPR(address token) external view returns (uint256);
+    function getAaveAPRAdjusted(address token, uint256 _supply) external view returns (uint256);
 
 }
 
@@ -386,8 +386,50 @@ interface IUniswapFactory {
 }
 
 interface IYToken {
-  function calcPoolValueInToken() external view returns (uint256);
-  function decimals() external view returns (uint256);
+    function calcPoolValueInToken() external view returns (uint256);
+    function decimals() external view returns (uint256);
+}
+
+contract APRWithPoolOracleStub() {
+    function getDDEXAPR(address token) external view returns (uint256) {
+        return 0;
+    }
+    function getDDEXAPRAdjusted(address token, uint256 _supply) external view returns (uint256){
+        return 0;
+    }
+    function getLENDFAPR(address token) external view returns (uint256){
+        return 0;
+    }
+    function getLENDFAPRAdjusted(address token, uint256 _supply) external view returns (uint256){
+        return 0;
+    }
+    function getCompoundAPR(address token) external view returns (uint256){
+        return 10;
+    }
+    function getCompoundAPRAdjusted(address token, uint256 _supply) external view returns (uint256){
+        return 10;
+    }
+    function getFulcrumAPR(address token) external view returns(uint256){
+        return 0;
+    }
+    function getFulcrumAPRAdjusted(address token, uint256 _supply) external view returns(uint256){
+        return 0;
+    }
+    function getDyDxAPR(uint256 marketId) external view returns(uint256){
+        return 0;
+    }
+    function getDyDxAPRAdjusted(uint256 marketId, uint256 _supply) external view returns(uint256){
+        return 0;
+    }
+    function getAaveCore() external view returns (address){
+        return 0;
+    }
+    function getAaveAPR(address token) external view returns (uint256){
+        return 0;
+    }
+    function getAaveAPRAdjusted(address token, uint256 _supply) external view returns (uint256){
+        return 0;
+    }
 }
 
 
@@ -497,176 +539,176 @@ contract IEarnAPRWithPool is Ownable {
 
     // Wrapper for legacy v1 token support
     function recommend(address _token) public view returns (
-      string memory choice,
-      uint256 capr,
-      uint256 iapr,
-      uint256 aapr,
-      uint256 dapr
+        string memory choice,
+        uint256 capr,
+        uint256 iapr,
+        uint256 aapr,
+        uint256 dapr
     ) {
-      ( , capr, , iapr, , aapr, , dapr, , ) = getAPROptionsInc(_token);
-      return (choice, capr, iapr, aapr, dapr);
+        ( , capr, , iapr, , aapr, , dapr, , ) = getAPROptionsInc(_token);
+        return (choice, capr, iapr, aapr, dapr);
     }
 
     function getAPROptionsInc(address _token) public view returns (
-      uint256 _uniswap,
-      uint256 _compound,
-      uint256 _unicompound,
-      uint256 _fulcrum,
-      uint256 _unifulcrum,
-      uint256 _aave,
-      uint256 _uniaave,
-      uint256 _dydx,
-      uint256 _ddex,
-      uint256 _lendf
+        uint256 _uniswap,
+        uint256 _compound,
+        uint256 _unicompound,
+        uint256 _fulcrum,
+        uint256 _unifulcrum,
+        uint256 _aave,
+        uint256 _uniaave,
+        uint256 _dydx,
+        uint256 _ddex,
+        uint256 _lendf
     ) {
-      address yToken = yTokens[_token];
-      uint256 _supply = 0;
-      if (yToken != address(0)) {
-        _supply = IYToken(yToken).calcPoolValueInToken();
-      }
-      return getAPROptionsAdjusted(_token, _supply);
+        address yToken = yTokens[_token];
+        uint256 _supply = 0;
+        if (yToken != address(0)) {
+            _supply = IYToken(yToken).calcPoolValueInToken();
+        }
+        return getAPROptionsAdjusted(_token, _supply);
     }
 
     function getAPROptions(address _token) public view returns (
-      uint256 _uniswap,
-      uint256 _compound,
-      uint256 _unicompound,
-      uint256 _fulcrum,
-      uint256 _unifulcrum,
-      uint256 _aave,
-      uint256 _uniaave,
-      uint256 _dydx,
-      uint256 _ddex,
-      uint256 _lendf
+        uint256 _uniswap,
+        uint256 _compound,
+        uint256 _unicompound,
+        uint256 _fulcrum,
+        uint256 _unifulcrum,
+        uint256 _aave,
+        uint256 _uniaave,
+        uint256 _dydx,
+        uint256 _ddex,
+        uint256 _lendf
     ) {
-      return getAPROptionsAdjusted(_token, 0);
+        return getAPROptionsAdjusted(_token, 0);
     }
 
     function getAPROptionsAdjusted(address _token, uint256 _supply) public view returns (
-      uint256 _uniswap,
-      uint256 _compound,
-      uint256 _unicompound,
-      uint256 _fulcrum,
-      uint256 _unifulcrum,
-      uint256 _aave,
-      uint256 _uniaave,
-      uint256 _dydx,
-      uint256 _ddex,
-      uint256 _lendf
+        uint256 _uniswap,
+        uint256 _compound,
+        uint256 _unicompound,
+        uint256 _fulcrum,
+        uint256 _unifulcrum,
+        uint256 _aave,
+        uint256 _uniaave,
+        uint256 _dydx,
+        uint256 _ddex,
+        uint256 _lendf
     ) {
-      uint256 created = pools[_token];
+        uint256 created = pools[_token];
 
-      if (created > 0) {
-        _uniswap = IUniswapAPR(UNIAPR).calcUniswapAPR(_token, created);
-      }
-      address addr = compound[_token];
-      if (addr != address(0)) {
-        _compound = APRWithPoolOracle(APR).getCompoundAPR(addr);
-        created = pools[addr];
         if (created > 0) {
-          _unicompound = IUniswapAPR(UNIAPR).calcUniswapAPR(addr, created);
+            _uniswap = IUniswapAPR(UNIAPR).calcUniswapAPR(_token, created);
         }
-      }
-      addr = fulcrum[_token];
-      if (addr != address(0)) {
-        _fulcrum = APRWithPoolOracle(APR).getFulcrumAPRAdjusted(addr, _supply);
-        created = pools[addr];
-        if (created > 0) {
-          _unifulcrum = IUniswapAPR(UNIAPR).calcUniswapAPR(addr, created);
+        address addr = compound[_token];
+        if (addr != address(0)) {
+            _compound = APRWithPoolOracle(APR).getCompoundAPR(addr);
+            created = pools[addr];
+            if (created > 0) {
+                _unicompound = IUniswapAPR(UNIAPR).calcUniswapAPR(addr, created);
+            }
         }
-      }
-      addr = aave[_token];
-      if (addr != address(0)) {
-        _aave = APRWithPoolOracle(APR).getAaveAPRAdjusted(addr, _supply);
-        addr = aaveUni[_token];
-        created = pools[addr];
-        if (created > 0) {
-          _uniaave = IUniswapAPR(UNIAPR).calcUniswapAPR(addr, created);
+        addr = fulcrum[_token];
+        if (addr != address(0)) {
+            _fulcrum = APRWithPoolOracle(APR).getFulcrumAPRAdjusted(addr, _supply);
+            created = pools[addr];
+            if (created > 0) {
+                _unifulcrum = IUniswapAPR(UNIAPR).calcUniswapAPR(addr, created);
+            }
         }
-      }
+        addr = aave[_token];
+        if (addr != address(0)) {
+            _aave = APRWithPoolOracle(APR).getAaveAPRAdjusted(addr, _supply);
+            addr = aaveUni[_token];
+            created = pools[addr];
+            if (created > 0) {
+                _uniaave = IUniswapAPR(UNIAPR).calcUniswapAPR(addr, created);
+            }
+        }
 
-      _dydx = dydx[_token];
-      if (_dydx > 0 || _token == address(0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE)) {
-        _dydx = APRWithPoolOracle(APR).getDyDxAPRAdjusted(_dydx, _supply);
-      }
+        _dydx = dydx[_token];
+        if (_dydx > 0 || _token == address(0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE)) {
+            _dydx = APRWithPoolOracle(APR).getDyDxAPRAdjusted(_dydx, _supply);
+        }
 
-      _ddex = APRWithPoolOracle(APR).getDDEXAPRAdjusted(_token, _supply);
-      _lendf = APRWithPoolOracle(APR).getLENDFAPRAdjusted(_token, _supply);
+        _ddex = APRWithPoolOracle(APR).getDDEXAPRAdjusted(_token, _supply);
+        _lendf = APRWithPoolOracle(APR).getLENDFAPRAdjusted(_token, _supply);
 
-      return (
-        _uniswap,
-        _compound,
-        _unicompound,
-        _fulcrum,
-        _unifulcrum,
-        _aave,
-        _uniaave,
-        _dydx,
-        _ddex,
-        _lendf
-      );
+        return (
+            _uniswap,
+            _compound,
+            _unicompound,
+            _fulcrum,
+            _unifulcrum,
+            _aave,
+            _uniaave,
+            _dydx,
+            _ddex,
+            _lendf
+        );
     }
 
     function viewPool(address _token) public view returns (
-      address token,
-      address unipool,
-      uint256 created,
-      string memory name,
-      string memory symbol
+        address token,
+        address unipool,
+        uint256 created,
+        string memory name,
+        string memory symbol
     ) {
-      token = _token;
-      unipool = IUniswapFactory(UNI).getExchange(_token);
-      created = pools[_token];
-      name = IERC20(_token).name();
-      symbol = IERC20(_token).symbol();
-      return (token, unipool, created, name, symbol);
+        token = _token;
+        unipool = IUniswapFactory(UNI).getExchange(_token);
+        created = pools[_token];
+        name = IERC20(_token).name();
+        symbol = IERC20(_token).symbol();
+        return (token, unipool, created, name, symbol);
     }
 
     function addPool(
-      address token,
-      uint256 created
+        address token,
+        uint256 created
     ) public onlyOwner {
         pools[token] = created;
     }
 
     function addCToken(
-      address token,
-      address cToken
+        address token,
+        address cToken
     ) public onlyOwner {
         compound[token] = cToken;
     }
 
     function addIToken(
-      address token,
-      address iToken
+        address token,
+        address iToken
     ) public onlyOwner {
         fulcrum[token] = iToken;
     }
 
     function addAToken(
-      address token,
-      address aToken
+        address token,
+        address aToken
     ) public onlyOwner {
         aave[token] = aToken;
     }
 
     function addAUniToken(
-      address token,
-      address aToken
+        address token,
+        address aToken
     ) public onlyOwner {
         aaveUni[token] = aToken;
     }
 
     function addYToken(
-      address token,
-      address yToken
+        address token,
+        address yToken
     ) public onlyOwner {
         yTokens[token] = yToken;
     }
 
     function addDToken(
-      address token,
-      uint256 dToken
+        address token,
+        uint256 dToken
     ) public onlyOwner {
         dydx[token] = dToken;
     }
