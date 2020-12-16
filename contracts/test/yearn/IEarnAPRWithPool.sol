@@ -422,7 +422,7 @@ contract APRWithPoolOracleStub {
         return 0;
     }
     function getAaveCore() external view returns (address){
-        return 0;
+        return address(0);
     }
     function getAaveAPR(address token) external view returns (uint256){
         return 0;
@@ -451,6 +451,7 @@ contract IEarnAPRWithPool is Ownable {
     address public APR;
 
     constructor() public {
+        APR = address(new APRWithPoolOracleStub());
 /*
         UNI = address(0xc0a47dFe034B400B47bDaD5FecDa2621de6c4d95);
         UNIROI = address(0xD04cA0Ae1cd8085438FDd8c22A76246F315c2687);
