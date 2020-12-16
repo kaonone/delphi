@@ -11,16 +11,20 @@ contract CErc20Stub is Base, ICErc20, ERC20, ERC20Detailed {
 
     uint256 public constant EXP_SCALE = 1e18;  //Exponential scale (see Compound Exponential)
     uint256 public constant INTEREST_RATE = 10 * EXP_SCALE / 100;  // Annual interest 10%
-    uint256 public constant INITIAL_RATE = 200000000000000000000000000;    // Same as real cDAI
+    uint256 public constant INITIAL_RATE_BASE = 20000000;    // Same as real cTokens, will be multiblied by 1e<DECIMALS>
     uint256 public constant ANNUAL_SECONDS = 365*24*60*60+(24*60*60/4);  // Seconds in a year + 1/4 day to compensate leap years
     uint256 private constant NO_ERROR = 0;
 
     FreeERC20 underlying;
+    uint256 initialRate;
     uint256 created;
 
     function initialize(address _underlying) public initializer {
         Base.initialize();
-        ERC20Detailed.initialize("Compound Dai", "cDAI", 8);
+        string memory name = string(abi.encodePacked("Compound ", ERC20Detailed(_underlying).symbol()));
+        string memory symbol = string(abi.encodePacked("c", ERC20Detailed(_underlying).symbol()));
+        initialRate = INITIAL_RATE_BASE * (10 ** uint256(ERC20Detailed(_underlying).decimals()));
+        ERC20Detailed.initialize(name, symbol, 8);
         underlying = FreeERC20(_underlying);
         created = now;
     }
@@ -77,6 +81,6 @@ contract CErc20Stub is Base, ICErc20, ERC20, ERC20Detailed {
 
     function _exchangeRate() internal view returns (uint256) {
         uint256 sec = now.sub(created);
-        return INITIAL_RATE.add(INITIAL_RATE.mul(INTEREST_RATE).mul(sec).div(ANNUAL_SECONDS).div(EXP_SCALE));
+        return initialRate.add(initialRate.mul(INTEREST_RATE).mul(sec).div(ANNUAL_SECONDS).div(EXP_SCALE));
     }
 }
