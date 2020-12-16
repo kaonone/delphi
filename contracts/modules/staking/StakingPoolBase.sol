@@ -70,6 +70,7 @@ contract StakingPoolBase is Module, IERC900, CapperRole  {
 
   uint256 public coeffScore;
   
+  uint256 private _guardCounter; // See OpenZeppelin ReentrancyGuard. Copied here to allow upgrade of already deployed contracts    
 
 
   event VipUserEnabledChange(bool enabled);
@@ -89,6 +90,18 @@ contract StakingPoolBase is Module, IERC900, CapperRole  {
   event setLockInDuration(uint256 defaultLockInDuration);
 
   event CoeffScoreUpdated(uint256 coeff);
+
+  /**
+    * @dev Prevents a contract from calling itself, directly or indirectly.
+    * See OpenZeppelin ReentrancyGuard
+    */
+  modifier nonReentrant() {
+    _guardCounter += 1;
+    uint256 localCounter = _guardCounter;
+    _;
+    require(localCounter == _guardCounter, "ReentrancyGuard: reentrant call");
+  }
+
   /**
    * @dev Modifier that checks that this contract can transfer tokens from the
    *  balance in the stakingToken contract for the given address.
@@ -292,7 +305,7 @@ contract StakingPoolBase is Module, IERC900, CapperRole  {
    * @param _amount uint256 the amount of tokens to stake
    * @param _data bytes optional data to include in the Stake event
    */
-  function stake(uint256 _amount, bytes memory _data) public isUserCapEnabledForStakeFor(_amount) {
+  function stake(uint256 _amount, bytes memory _data) public nonReentrant isUserCapEnabledForStakeFor(_amount) {
     createStake(
       _msgSender(),
       _amount,
@@ -307,7 +320,7 @@ contract StakingPoolBase is Module, IERC900, CapperRole  {
    * @param _amount uint256 the amount of tokens to stake
    * @param _data bytes optional data to include in the Stake event
    */
-  function stakeFor(address _user, uint256 _amount, bytes memory _data) public checkUserCapDisabled {
+  function stakeFor(address _user, uint256 _amount, bytes memory _data) public nonReentrant checkUserCapDisabled {
     createStake(
       _user,
       _amount,
@@ -502,5 +515,5 @@ contract StakingPoolBase is Module, IERC900, CapperRole  {
       _data);
   }
 
-  uint256[49] private ______gap;
+  uint256[48] private ______gap;
 }
