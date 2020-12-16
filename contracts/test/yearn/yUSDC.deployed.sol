@@ -24,7 +24,7 @@ interface IIEarnManager {
     );
 }
 
-contract yDAI is ERC20, ERC20Detailed, ReentrancyGuard, Structs {
+contract yUSDC is ERC20, ERC20Detailed, ReentrancyGuard, Structs {
   using SafeERC20 for IERC20;
   using Address for address;
   using SafeMath for uint256;
@@ -50,15 +50,15 @@ contract yDAI is ERC20, ERC20Detailed, ReentrancyGuard, Structs {
   Lender public provider = Lender.NONE;
 
   function initialize() public initializer {
-    ERC20Detailed.initialize("iearn DAI", "yDAI", 18);
-    token = address(0x6B175474E89094C44Da98b954EedeAC495271d0F);
-    apr = address(0xdD6d648C991f7d47454354f4Ef326b04025a48A8);
-    dydx = address(0x1E0447b19BB6EcFdAe1e4AE1694b0C3659614e4e);
-    aave = address(0x24a42fD28C976A61Df5D00D0599C34c4f90748c8);
-    fulcrum = address(0x493C57C4763932315A328269E1ADaD09653B9081);
-    aaveToken = address(0xfC1E690f61EFd961294b3e1Ce3313fBD8aa4f85d);
-    compound = address(0x5d3a536E4D6DbD6114cc1Ead35777bAB948E3643);
-    dToken = 1;
+    ERC20Detailed.initialize("iearn USDC", "yUSDC", 6);
+    token = address(0x4DBCdF9B62e891a7cec5A2568C3F4FAF9E8Abe2b);
+    apr = address(0x9737E863fB48420928093072dF061542322C01e3);
+    dydx = address(0x3D248f7d805826F38D5D2000657176B9a2584455);
+    aave = address(0xEeA2F67b2c2f3a44bAC85a87f9d87265d2Ee7208);
+    fulcrum = address(0x39852BB352c0cF3961785722d5cEE0ecc794C78B);
+    aaveToken = address(0xE225f00F42310354E3882de0e0c2901a281dB8Bd);
+    compound = address(0x5B281A6DdA0B271e91ae35DE655Ad301C976edb1);
+    dToken = 2;
     approveToken();
   }
 
