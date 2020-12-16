@@ -11,7 +11,7 @@ contract CErc20Stub is Base, ICErc20, ERC20, ERC20Detailed {
 
     uint256 public constant EXP_SCALE = 1e18;  //Exponential scale (see Compound Exponential)
     uint256 public constant INTEREST_RATE = 10 * EXP_SCALE / 100;  // Annual interest 10%
-    uint256 public constant INITIAL_RATE_BASE = 20000000;    // Same as real cTokens, will be powered to 1e<DECIMALS>
+    uint256 public constant INITIAL_RATE_BASE = 20000000;    // Same as real cTokens, will be multiblied by 1e<DECIMALS>
     uint256 public constant ANNUAL_SECONDS = 365*24*60*60+(24*60*60/4);  // Seconds in a year + 1/4 day to compensate leap years
     uint256 private constant NO_ERROR = 0;
 
