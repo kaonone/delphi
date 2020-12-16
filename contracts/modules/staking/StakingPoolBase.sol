@@ -480,13 +480,6 @@ contract StakingPoolBase is Module, IERC900, CapperRole  {
       personalStake.actualAmount == _amount,
       "The unstake amount does not match the current stake");
 
-    // Transfer the staked tokens from this contract back to the sender
-    // Notice that we are using transfer instead of transferFrom here, so
-    //  no approval is needed beforehand.
-    require(
-      stakingToken.transfer(_msgSender(), _amount),
-      "Unable to withdraw stake");
-
     stakeHolders[personalStake.stakedFor].totalStakedFor = stakeHolders[personalStake.stakedFor]
       .totalStakedFor.sub(personalStake.actualAmount);
 
@@ -494,6 +487,13 @@ contract StakingPoolBase is Module, IERC900, CapperRole  {
     stakeHolders[_msgSender()].personalStakeIndex++;
 
     totalStakedAmount = totalStakedAmount.sub(_amount);
+
+    // Transfer the staked tokens from this contract back to the sender
+    // Notice that we are using transfer instead of transferFrom here, so
+    //  no approval is needed beforehand.
+    require(
+      stakingToken.transfer(_msgSender(), _amount),
+      "Unable to withdraw stake");
 
     emit Unstaked(
       personalStake.stakedFor,
