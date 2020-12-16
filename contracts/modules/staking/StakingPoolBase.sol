@@ -108,7 +108,7 @@ contract StakingPoolBase is Module, IERC900, CapperRole  {
   modifier isUserCapEnabledForStakeFor(uint256 stake) {
 
     if (stakingCapEnabled && !(vipUserEnabled && isVipUser[_msgSender()])) {
-        require((stakingCap > totalStaked() && (stakingCap-totalStaked() >= stake)), "StakingModule: stake exeeds staking cap");
+        require((stakingCap > totalStaked() && (stakingCap-totalStaked() >= stake)), "StakingPoolBase: stake exeeds staking cap");
     }
 
     if(userCapEnabled) {
@@ -124,7 +124,7 @@ contract StakingPoolBase is Module, IERC900, CapperRole  {
               }
           }
           
-          require(cap >= stake, "StakingModule: stake exeeds cap");
+          require(cap >= stake, "StakingPoolBase: stake exeeds cap");
           cap = cap.sub(stake);
           userCap[_msgSender()] = cap;
           emit UserCapChanged(_msgSender(), cap);  
@@ -200,7 +200,7 @@ contract StakingPoolBase is Module, IERC900, CapperRole  {
   }
 
   function setUserCap(address[] memory users, uint256[] memory caps) public onlyCapper {
-        require(users.length == caps.length, "SavingsModule: arrays length not match");
+        require(users.length == caps.length, "StakingPoolBase: arrays length not match");
         for(uint256 i=0;  i < users.length; i++) {
             userCap[users[i]] = caps[i];
             emit UserCapChanged(users[i], caps[i]);
