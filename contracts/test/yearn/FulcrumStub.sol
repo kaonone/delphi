@@ -24,11 +24,13 @@ contract FulcrumStub is Base, ERC20, ERC20Detailed {
     function mint(address receiver, uint256 amount) external payable returns (uint256 mintAmount) {
         underlying.safeTransferFrom(_msgSender(), address(this), amount);
         _mint(receiver, amount);
+        return mintAmount;
     }
 
     function burn(address receiver, uint256 burnAmount) external returns (uint256 loanAmountPaid) {
         _burnFrom(_msgSender(), burnAmount);
         underlying.safeTransfer(receiver, burnAmount);
+        return burnAmount;
     }
 
     function assetBalanceOf(address _owner) external view returns (uint256 balance) {
