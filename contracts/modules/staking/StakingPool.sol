@@ -136,8 +136,8 @@ contract StakingPool is StakingPoolBase {
                 expectedBalance = expectedBalance.add(totalStaked());
             }
             uint256 actualBalance = IERC20(rt).balanceOf(address(this));
-            uint256 distributionAmount = actualBalance.sub(expectedBalance);
             if(actualBalance > expectedBalance) {
+                uint256 distributionAmount = actualBalance.sub(expectedBalance);
                 uint256 totalShares = totalStaked();
                 rewards[rt].distributions.push(RewardDistribution({
                     totalShares: totalShares,
