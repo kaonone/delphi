@@ -337,7 +337,7 @@ contract StakingPoolBase is Module, IERC900, CapperRole  {
      for(uint256 i=personalStakeIndex; i<stakeHolders[_msgSender()].personalStakes.length; i++) {
        
        if (stakeHolders[_msgSender()].personalStakes[i].unlockedTimestamp <= block.timestamp) {
-           unstakeAllAmount = unstakeAllAmount+stakeHolders[_msgSender()].personalStakes[i].actualAmount;
+           unstakeAllAmount = unstakeAllAmount.add(stakeHolders[_msgSender()].personalStakes[i].actualAmount);
            withdrawStake(stakeHolders[_msgSender()].personalStakes[i].actualAmount, _data);
        }
      }
