@@ -390,7 +390,7 @@ interface IYToken {
     function decimals() external view returns (uint256);
 }
 
-contract APRWithPoolOracleStub() {
+contract APRWithPoolOracleStub {
     function getDDEXAPR(address token) external view returns (uint256) {
         return 0;
     }

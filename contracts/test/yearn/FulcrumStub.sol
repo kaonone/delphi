@@ -6,7 +6,9 @@ import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/ERC20.sol
 import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/ERC20Detailed.sol";
 import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/SafeERC20.sol";
 
-contract FulcrumStub is Base, ERC20, ERC20Detailed {
+import "./Interfaces.sol";
+
+contract FulcrumStub is Base, ERC20, ERC20Detailed, Fulcrum {
     using SafeERC20 for IERC20;
 
     IERC20 public underlying;

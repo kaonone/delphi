@@ -6,8 +6,9 @@ import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/ERC20.sol
 import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/ERC20Detailed.sol";
 import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC20/SafeERC20.sol";
 
+import "./Interfaces.sol";
 
-contract ATokenStub is Base, ERC20, ERC20Detailed {
+contract ATokenStub is Base, ERC20, ERC20Detailed, AToken {
     using SafeERC20 for IERC20;
 
     IERC20 public underlying;
@@ -32,7 +33,7 @@ contract ATokenStub is Base, ERC20, ERC20Detailed {
 
 }
 
-contract AaveStub is Base {
+contract AaveStub is Base, LendingPoolAddressesProvider, Aave {
     using SafeERC20 for IERC20;
 
     mapping(address=>address) public tokens;
@@ -54,4 +55,13 @@ contract AaveStub is Base {
         IERC20(_reserve).safeTransferFrom(_msgSender(), aToken, _amount);
         ATokenStub(aToken).ownerMint(_msgSender(), _amount);
     }
+
+    function getLendingPool() external view returns (address) {
+        return address(this);
+    }
+
+    function getLendingPoolCore() external view returns (address) {
+        return address(this);
+    }
+
 }
