@@ -68,6 +68,8 @@ contract RewardDistributions is Base, AccessChecker {
         for(i=0; i < rewardTokens.length; i++){
             balances[i] = upr.amounts[rewardTokens[i]];
         }
+        if(upr.shares == 0) return balances;
+        
         uint256 next = rb.nextDistribution;
         while (next < rewardDistributions.length) {
             RewardTokenDistribution storage d = rewardDistributions[next];
