@@ -8,8 +8,8 @@
     "scripts": {
         "ganache": "npx ganache-cli --gasLimit 0xfffffffffff -e 10000000 --port 8545",
         "generate-types": "truffle compile --all && typechain --target=truffle-v5 \"build/contracts/*.json\"",
-		"generate-abi": "truffle compile --all && truffle-abi -o ./abi",
-		"generate-artifacts": "truffle compile --all && truffle-abi -o ./abi && typechain --target=truffle-v5 \"build/contracts/*.json\"",
+        "generate-abi": "truffle compile --all && truffle-abi -o ./abi",
+        "generate-artifacts": "truffle compile --all && truffle-abi -o ./abi && typechain --target=truffle-v5 \"build/contracts/*.json\"",
         "postinstall": "npm run generate-artifacts"
     },
     "dependencies": {
@@ -29,6 +29,9 @@
         "@truffle/hdwallet-provider": "^1.0.38",
         "@typechain/truffle-v5": "^2.0.2",
         "eth-gas-reporter": "^0.2.17",
+        "prettier": "^2.2.1",
+        "prettier-plugin-solidity": "^1.0.0-beta.2",
+        "solhint-plugin-prettier": "^0.0.5",
         "solidity-coverage": "^0.7.9",
         "truffle": "^5.1.34",
         "truffle-contract-size": "^2.0.0",
