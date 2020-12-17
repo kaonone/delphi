@@ -1,5 +1,6 @@
 {
     "extends": "solhint:default",
+	"plugins": ["prettier"],
     "rules": {
         "avoid-low-level-calls": "off",
         "avoid-tx-origin": "warn",
@@ -16,6 +17,7 @@
         "quotes": ["error", "double"],
         "separate-by-one-line-in-contract": "error",
         "space-after-comma": "error",
-        "statement-indent": "error"
+        "statement-indent": "error",
+		"prettier/prettier": "error"
     }
 }
