@@ -1,0 +1,137 @@
+import { 
+    PoolContract, PoolInstance, 
+    AccessModuleContract, AccessModuleInstance,
+    SavingsModuleContract, SavingsModuleInstance,
+    RewardDistributionModuleContract,RewardDistributionModuleInstance,
+    RewardVestingModuleContract, RewardVestingModuleInstance,
+    CompoundProtocolContract,CompoundProtocolInstance,
+    PoolTokenContract,PoolTokenInstance,
+    StakingPoolContract,StakingPoolInstance,
+    StakingPoolAdelContract,StakingPoolAdelInstance,
+    FreeErc20Contract,FreeErc20Instance,
+    CErc20StubContract,CErc20StubInstance,
+    ComptrollerStubContract,ComptrollerStubInstance
+} from "../../../types/truffle-contracts/index";
+
+
+const { BN, constants, expectEvent, shouldFail, time } = require("@openzeppelin/test-helpers");
+
+import Snapshot from "./../../utils/snapshot";
+const should = require("chai").should();
+var expect = require("chai").expect;
+const expectRevert= require("./../../utils/expectRevert");
+const expectEqualBN = require("./../../utils/expectEqualBN");
+const w3random = require("./../../utils/w3random");
+
+const FreeERC20 = artifacts.require("FreeERC20");
+const CErc20Stub = artifacts.require("CErc20Stub");
+const ComptrollerStub = artifacts.require("ComptrollerStub");
+
+const Pool = artifacts.require("Pool");
+const AccessModule = artifacts.require("AccessModule");
+const SavingsModule = artifacts.require("SavingsModule");
+const RewardVestingModule = artifacts.require("RewardVestingModule");
+const RewardDistributionModule = artifacts.require("RewardDistributionModule");
+const CompoundProtocol = artifacts.require("CompoundProtocol");
+const PoolToken = artifacts.require("PoolToken");
+
+const StakingPool  =  artifacts.require("StakingPool");
+const StakingPoolADEL  =  artifacts.require("StakingPoolADEL");
+
+contract("RewardDistributionModule - reward migration", async ([owner, user, ...otherAccounts]) => {
+    //let snap:Snapshot;
+
+    let dai:FreeErc20Instance;
+    let cDai:CErc20StubInstance;
+    let comp:FreeErc20Instance;
+    let comptroller:ComptrollerStubInstance;
+
+
+    let pool:PoolInstance;
+    let access:AccessModuleInstance;
+    let savings:SavingsModuleInstance;
+    let rewardDistributions:RewardDistributionModuleInstance;
+    let rewardVesting:RewardVestingModuleInstance;
+    let compoundProtocolDai:CompoundProtocolInstance;
+    let poolTokenCompoundProtocolDai:PoolTokenInstance;    
+    let akro:FreeErc20Instance;
+    let adel:FreeErc20Instance;
+    let stakingPoolAkro:StakingPoolInstance;
+    let stakingPoolAdel:StakingPoolAdelInstance;
+
+
+    before(async () => {
+        //Setup external contracts
+        dai = await FreeERC20.new();
+        await dai.methods['initialize(string,string,uint8)']("Dai Stablecoin", "DAI", 18);
+        cDai = await CErc20Stub.new();
+        await cDai.methods['initialize(address)'](dai.address);
+        comp = await FreeERC20.new();
+        await comp.methods['initialize(string,string,uint8)']("Compound", "COMP", 18);
+        comptroller = await ComptrollerStub.new();
+        await comptroller.methods['initialize(address)'](comp.address);
+
+
+        await comptroller.setSupportedCTokens([cDai.address]);
+        await comp.methods['mint(address,uint256)'](comptroller.address, web3.utils.toWei('1000000000'));
+
+        //Setup system contracts
+        pool = await Pool.new();
+        await pool.methods['initialize()']();
+        access = await AccessModule.new();
+        await access.methods['initialize(address)'](pool.address);
+        await pool.set('access', access.address, false);
+
+        savings = await SavingsModule.new();
+        await savings.methods['initialize(address)'](pool.address);
+        await pool.set('savings', savings.address, false);
+
+        akro = await FreeERC20.new();
+        await akro.methods['initialize(string,string)']("Akropolis", "AKRO");
+        await pool.set('akro', akro.address, false);
+        adel = await FreeERC20.new();
+        await adel.methods['initialize(string,string)']("Akropolis Delphi", "ADEL");
+        await pool.set('adel', adel.address, false);
+
+        stakingPoolAkro = await StakingPool.new();
+        await stakingPoolAkro.methods['initialize(address,address,uint256)'](pool.address, akro.address, '0');
+        await pool.set('staking', stakingPoolAkro.address, false);
+        stakingPoolAdel = await StakingPoolADEL.new();
+        await stakingPoolAdel.methods['initialize(address,address,uint256)'](pool.address, adel.address, '0');
+        await pool.set('stakingAdel', stakingPoolAdel.address, false);
+
+        compoundProtocolDai = await CompoundProtocol.new();
+        await compoundProtocolDai.methods['initialize(address,address,address,address)'](pool.address, dai.address, cDai.address, comptroller.address);
+        poolTokenCompoundProtocolDai = await PoolToken.new();
+        await poolTokenCompoundProtocolDai.methods['initialize(address,string,string)'](pool.address, "Delphi Compound DAI","dCDAI");
+        await savings.registerProtocol(compoundProtocolDai.address, poolTokenCompoundProtocolDai.address);
+        await compoundProtocolDai.addDefiOperator(savings.address);
+        await poolTokenCompoundProtocolDai.addMinter(savings.address);
+
+        rewardVesting = await RewardVestingModule.new();
+        await rewardVesting.methods['initialize(address)'](pool.address);
+        await pool.set('reward', rewardVesting.address, false);
+
+        rewardDistributions = await RewardDistributionModule.new();
+        await rewardDistributions.methods['initialize(address)'](pool.address);
+        await pool.set('rewardDistributions', rewardDistributions.address, false);
+        await rewardDistributions.registerProtocol(compoundProtocolDai.address, poolTokenCompoundProtocolDai.address);
+        await compoundProtocolDai.addDefiOperator(rewardDistributions.address);
+
+        //Save snapshot
+        //snap = await Snapshot.create(web3.currentProvider);
+    });
+
+    beforeEach(async () => {
+        //await snap.revert();
+    });
+
+    it('should use low gas if migrate rewards for user not participated in a pool', async () => {
+        let tx = await rewardDistributions.migrateRewards([user]);
+        console.log(tx);
+        let gasUsed = tx.receipt.gasUsed;
+        expect(gasUsed).to.be.lt(100000);
+    });
+
+
+});
