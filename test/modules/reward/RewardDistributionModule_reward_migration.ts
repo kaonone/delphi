@@ -2,6 +2,7 @@ import {
     PoolContract, PoolInstance, 
     AccessModuleContract, AccessModuleInstance,
     SavingsModuleContract, SavingsModuleInstance,
+    SavingsModuleOldContract,SavingsModuleOldInstance,
     RewardDistributionModuleContract,RewardDistributionModuleInstance,
     RewardVestingModuleContract, RewardVestingModuleInstance,
     CompoundProtocolContract,CompoundProtocolInstance,
@@ -15,6 +16,10 @@ import {
 
 
 const { BN, constants, expectEvent, shouldFail, time } = require("@openzeppelin/test-helpers");
+const { deployProxy, upgradeProxy } = require('@openzeppelin/truffle-upgrades');
+const UPGRADABLE_OPTS = {
+    unsafeAllowCustomTypes: true
+};
 
 import Snapshot from "./../../utils/snapshot";
 const should = require("chai").should();
@@ -30,6 +35,7 @@ const ComptrollerStub = artifacts.require("ComptrollerStub");
 const Pool = artifacts.require("Pool");
 const AccessModule = artifacts.require("AccessModule");
 const SavingsModule = artifacts.require("SavingsModule");
+const SavingsModuleOld = artifacts.require("SavingsModuleOld");
 const RewardVestingModule = artifacts.require("RewardVestingModule");
 const RewardDistributionModule = artifacts.require("RewardDistributionModule");
 const CompoundProtocol = artifacts.require("CompoundProtocol");
@@ -49,7 +55,7 @@ contract("RewardDistributionModule - reward migration", async ([owner, user, ...
 
     let pool:PoolInstance;
     let access:AccessModuleInstance;
-    let savings:SavingsModuleInstance;
+    let savings:SavingsModuleOldInstance|SavingsModuleInstance;
     let rewardDistributions:RewardDistributionModuleInstance;
     let rewardVesting:RewardVestingModuleInstance;
     let compoundProtocolDai:CompoundProtocolInstance;
@@ -82,8 +88,9 @@ contract("RewardDistributionModule - reward migration", async ([owner, user, ...
         await access.methods['initialize(address)'](pool.address);
         await pool.set('access', access.address, false);
 
-        savings = await SavingsModule.new();
-        await savings.methods['initialize(address)'](pool.address);
+        // savings = await SavingsModule.new();
+        // await savings.methods['initialize(address)'](pool.address);
+        savings = await deployProxy(SavingsModuleOld, [pool.address], UPGRADABLE_OPTS);
         await pool.set('savings', savings.address, false);
 
         akro = await FreeERC20.new();
@@ -120,15 +127,32 @@ contract("RewardDistributionModule - reward migration", async ([owner, user, ...
 
         //Save snapshot
         //snap = await Snapshot.create(web3.currentProvider);
+        
+        //Create distributions
+        for(let i=0; i<50; i++){
+            await time.increase(7*24*60*60);
+            await (<any>savings).distributeRewardsForced(compoundProtocolDai.address);
+        }
+
+        // Upgrade Savings
+        savings = await upgradeProxy(savings.address, SavingsModule, UPGRADABLE_OPTS);
     });
 
     beforeEach(async () => {
         //await snap.revert();
     });
 
+
     it('should use low gas if migrate rewards for user not participated in a pool', async () => {
         let tx = await rewardDistributions.migrateRewards([user]);
-        console.log(tx);
+        //console.log(tx);
+        let gasUsed = tx.receipt.gasUsed;
+        expect(gasUsed).to.be.lt(100000);
+    });
+
+    it('should use low gas if withdraw rewards for user not participated in a pool', async () => {
+        let tx = await rewardDistributions.methods['withdrawReward()']({from:user});
+        //console.log(tx);
         let gasUsed = tx.receipt.gasUsed;
         expect(gasUsed).to.be.lt(100000);
     });
