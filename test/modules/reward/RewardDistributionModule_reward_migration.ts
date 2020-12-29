@@ -130,6 +130,9 @@ contract("RewardDistributionModule - reward migration", async ([owner, user, ...
         
         //Create distributions
         for(let i=0; i<50; i++){
+            let randUser = Math.round(5*Math.random());
+            await deposit(otherAccounts[randUser], w3random.interval(10, 20, 'ether'));
+
             await time.increase(7*24*60*60);
             await (<any>savings).distributeRewardsForced(compoundProtocolDai.address);
         }
@@ -157,5 +160,12 @@ contract("RewardDistributionModule - reward migration", async ([owner, user, ...
         expect(gasUsed).to.be.lt(100000);
     });
 
+    async function deposit(acc:string, amount:BN){
+        await dai.methods['mint(address,uint256)'](acc, amount);
+        await dai.approve(savings.address, amount, {from:acc});
+console.log('deposit', acc, amount.toString());
+        await savings.methods['deposit(address,address[],uint256[])'](compoundProtocolDai.address, [dai.address], [amount], {from:acc});
+console.log('deposit-done');        
+    }
 
 });
