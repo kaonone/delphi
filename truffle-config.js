@@ -97,6 +97,13 @@ module.exports = {
       networkId: 1,       // Mainnet's id
       gasPrice: 45000000000, 
     },
+
+    fork: {
+      provider: () => new HDWalletProvider(process.env.DEV_MNEMONIC, "http://127.0.0.1:8511"),
+      networkId: 111,       // Fork id
+      gasPrice: toHex(toWei("100", "gwei")), 
+    },
+
     
     // Another network with more advanced options...
     // advanced: {
