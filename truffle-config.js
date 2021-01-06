@@ -99,8 +99,11 @@ module.exports = {
     },
 
     fork: {
-      provider: () => new HDWalletProvider(process.env.DEV_MNEMONIC, "http://127.0.0.1:8511"),
+      //provider: () => new HDWalletProvider(process.env.DEV_MNEMONIC, "http://127.0.0.1:8511"),
+      host: "127.0.0.1",
+      port: "8511",
       networkId: 1,       // Fork id
+      network_id: 1,       // Fork id
       gasPrice: toHex(toWei("100", "gwei")), 
     },
 
