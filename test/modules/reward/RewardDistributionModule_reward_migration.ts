@@ -163,8 +163,10 @@ contract("RewardDistributionModule - reward migration", async ([owner, user, ...
     async function deposit(acc:string, amount:BN){
         await dai.methods['mint(address,uint256)'](acc, amount);
         await dai.approve(savings.address, amount, {from:acc});
+console.log('balance', (await dai.balanceOf(acc)).toString());
+console.log('allowance', (await dai.allowance(acc,savings.address)).toString());
 console.log('deposit', acc, amount.toString());
-        await savings.methods['deposit(address,address[],uint256[])'](compoundProtocolDai.address, [dai.address], [amount], {from:acc});
+        await savings.methods['deposit(address,address[],uint256[])'](compoundProtocolDai.address, [dai.address], [amount.divn(2)], {from:acc});
 console.log('deposit-done');        
     }
 
