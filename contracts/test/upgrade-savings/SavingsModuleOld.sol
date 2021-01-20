@@ -21,13 +21,13 @@ contract SavingsModuleOld is Module, AccessChecker, RewardDistributionsOld, Capp
     event Deposit(address indexed protocol, address indexed user, uint256 nAmount, uint256 nFee);
     event WithdrawToken(address indexed protocol, address indexed token, uint256 dnAmount);
     event Withdraw(address indexed protocol, address indexed user, uint256 nAmount, uint256 nFee);
-    event UserCapEnabledChange(bool enabled);
-    event UserCapChanged(address indexed protocol, address indexed user, uint256 newCap);
-    event DefaultUserCapChanged(address indexed protocol, uint256 newCap);
-    event ProtocolCapEnabledChange(bool enabled);
-    event ProtocolCapChanged(address indexed protocol, uint256 newCap);
-    event VipUserEnabledChange(bool enabled);
-    event VipUserChanged(address indexed protocol, address indexed user, bool isVip);
+    // event UserCapEnabledChange(bool enabled);
+    // event UserCapChanged(address indexed protocol, address indexed user, uint256 newCap);
+    // event DefaultUserCapChanged(address indexed protocol, uint256 newCap);
+    // event ProtocolCapEnabledChange(bool enabled);
+    // event ProtocolCapChanged(address indexed protocol, uint256 newCap);
+    // event VipUserEnabledChange(bool enabled);
+    // event VipUserChanged(address indexed protocol, address indexed user, bool isVip);
 
     using SafeERC20 for IERC20;
     using SafeMath for uint256;
@@ -65,10 +65,10 @@ contract SavingsModuleOld is Module, AccessChecker, RewardDistributionsOld, Capp
         CapperRole.initialize(_msgSender());
     }
 
-    function setUserCapEnabled(bool _userCapEnabled) public onlyCapper {
-        userCapEnabled = _userCapEnabled;
-        emit UserCapEnabledChange(userCapEnabled);
-    }
+    // function setUserCapEnabled(bool _userCapEnabled) public onlyCapper {
+    //     userCapEnabled = _userCapEnabled;
+    //     emit UserCapEnabledChange(userCapEnabled);
+    // }
 
     // function setUserCap(address _protocol, address user, uint256 cap) public onlyCapper {
     //     protocols[_protocol].userCap[user] = cap;
@@ -83,34 +83,34 @@ contract SavingsModuleOld is Module, AccessChecker, RewardDistributionsOld, Capp
     //     }
     // }
 
-    function setVipUserEnabled(bool _vipUserEnabled) public onlyCapper {
-        vipUserEnabled = _vipUserEnabled;
-        emit VipUserEnabledChange(_vipUserEnabled);
-    }
+    // function setVipUserEnabled(bool _vipUserEnabled) public onlyCapper {
+    //     vipUserEnabled = _vipUserEnabled;
+    //     emit VipUserEnabledChange(_vipUserEnabled);
+    // }
 
-    function setVipUser(address _protocol, address user, bool isVip) public onlyCapper {
-        protocols[_protocol].isVipUser[user] = isVip;
-        emit VipUserChanged(_protocol, user, isVip);
-    }
+    // function setVipUser(address _protocol, address user, bool isVip) public onlyCapper {
+    //     protocols[_protocol].isVipUser[user] = isVip;
+    //     emit VipUserChanged(_protocol, user, isVip);
+    // }
     
-    function setDefaultUserCap(address _protocol, uint256 cap) public onlyCapper {
-        defaultUserCap[_protocol] = cap;
-        emit DefaultUserCapChanged(_protocol, cap);
-    }
+    // function setDefaultUserCap(address _protocol, uint256 cap) public onlyCapper {
+    //     defaultUserCap[_protocol] = cap;
+    //     emit DefaultUserCapChanged(_protocol, cap);
+    // }
 
-    function setProtocolCapEnabled(bool _protocolCapEnabled) public onlyCapper {
-        protocolCapEnabled = _protocolCapEnabled;
-        emit ProtocolCapEnabledChange(protocolCapEnabled);
-    }
+    // function setProtocolCapEnabled(bool _protocolCapEnabled) public onlyCapper {
+    //     protocolCapEnabled = _protocolCapEnabled;
+    //     emit ProtocolCapEnabledChange(protocolCapEnabled);
+    // }
 
-    function setProtocolCap(address _protocol, uint256 cap) public onlyCapper {
-        protocolCap[_protocol] = cap;
-        emit ProtocolCapChanged(_protocol, cap);
-    }
+    // function setProtocolCap(address _protocol, uint256 cap) public onlyCapper {
+    //     protocolCap[_protocol] = cap;
+    //     emit ProtocolCapChanged(_protocol, cap);
+    // }
 
-    function setWithdrawAllSlippage(address _protocol, uint256 slippageWei) public onlyOwner {
-        protocols[_protocol].withdrawAllSlippage = slippageWei;
-    }
+    // function setWithdrawAllSlippage(address _protocol, uint256 slippageWei) public onlyOwner {
+    //     protocols[_protocol].withdrawAllSlippage = slippageWei;
+    // }
 
     function registerProtocol(IDefiProtocol protocol, PoolToken poolToken) public onlyOwner {
         uint256 i;

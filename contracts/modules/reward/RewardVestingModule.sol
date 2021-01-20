@@ -104,6 +104,7 @@ contract RewardVestingModule is Module, RewardManagerRole {
         RewardInfo storage ri = r.rewardInfo[token];
         uint256 epochsLength = ri.epochs.length;
         require(epochsLength > 0, "RewardVesting: protocol or token not registered");
+        if(epochsLength == 1) return; // We can never claim from epoch 0
 
         Epoch storage lastEpoch = ri.epochs[epochsLength-1];
         uint256 previousClaim = ri.lastClaim;
@@ -129,7 +130,7 @@ contract RewardVestingModule is Module, RewardManagerRole {
                 break;
             }
         }
-        if(ep.end > block.timestamp) {
+        if(i > 0  && ep.end > block.timestamp) {
             //Half-claim
             uint256 epStart = ri.epochs[i-1].end;
             uint256 claimStart = (previousClaim > epStart)?previousClaim:epStart;

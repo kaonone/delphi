@@ -9,11 +9,11 @@ import {
     PoolTokenContract,PoolTokenInstance,
     PoolTokenOldContract,PoolTokenOldInstance,
     StakingPoolContract,StakingPoolInstance,
-    StakingPoolAdelContract,StakingPoolAdelInstance,
-    FreeErc20Contract,FreeErc20Instance,
+    StakingPoolADELContract,StakingPoolADELInstance,
+    FreeERC20Contract,FreeERC20Instance,
     CErc20StubContract,CErc20StubInstance,
     ComptrollerStubContract,ComptrollerStubInstance
-} from "../types/truffle-contracts/index";
+} from "../../../types/truffle-contracts/index";
 
 
 const { BN, constants, expectEvent, shouldFail, time } = require("@openzeppelin/test-helpers");
@@ -23,12 +23,12 @@ const UPGRADABLE_OPTS = {
     unsafeAllowCustomTypes: true
 };
 
-import Snapshot from "./utils/snapshot";
+import Snapshot from "./../../utils/snapshot";
 const should = require("chai").should();
 var expect = require("chai").expect;
-const expectRevert= require("./utils/expectRevert");
-const expectEqualBN = require("./utils/expectEqualBN");
-const w3random = require("./utils/w3random");
+const expectRevert= require("./../../utils/expectRevert");
+const expectEqualBN = require("./../../utils/expectEqualBN");
+const w3random = require("./../../utils/w3random");
 
 const FreeERC20 = artifacts.require("FreeERC20");
 const CErc20Stub = artifacts.require("CErc20Stub");
@@ -50,9 +50,9 @@ const StakingPoolADEL  =  artifacts.require("StakingPoolADEL");
 contract("RewardDistributionModule - migration", async ([owner, user, ...otherAccounts]) => {
     //let snap:Snapshot;
 
-    let dai:FreeErc20Instance;
+    let dai:FreeERC20Instance;
     let cDai:CErc20StubInstance;
-    let comp:FreeErc20Instance;
+    let comp:FreeERC20Instance;
     let comptroller:ComptrollerStubInstance;
 
 
@@ -63,10 +63,10 @@ contract("RewardDistributionModule - migration", async ([owner, user, ...otherAc
     let rewardVesting:RewardVestingModuleInstance;
     let compoundProtocolDai:CompoundProtocolInstance;
     let poolTokenCompoundProtocolDai:PoolTokenOldInstance|PoolTokenInstance;    
-    let akro:FreeErc20Instance;
-    let adel:FreeErc20Instance;
+    let akro:FreeERC20Instance;
+    let adel:FreeERC20Instance;
     let stakingPoolAkro:StakingPoolInstance;
-    let stakingPoolAdel:StakingPoolAdelInstance;
+    let stakingPoolAdel:StakingPoolADELInstance;
 
 
     before(async () => {
