@@ -18,17 +18,17 @@ contract AccessModule is Module, IAccessModule, Pausable, WhitelistedRole {
         // enableWhitelist(); //whitelist is disabled by default for testnet, will be enabled by default for mainnet
     }
 
-    function enableWhitelist() public onlyWhitelistAdmin {
+    function enableWhitelist() external onlyWhitelistAdmin {
         whitelistEnabled = true;
         emit WhitelistEnabled();
     }
     
-    function disableWhitelist() public onlyWhitelistAdmin {
+    function disableWhitelist() external onlyWhitelistAdmin {
         whitelistEnabled = false;
         emit WhitelistDisabled();
     }
 
-    function isOperationAllowed(Operation operation, address sender) public view returns(bool) {
+    function isOperationAllowed(Operation operation, address sender) external view returns(bool) {
         (operation);    //noop to prevent compiler warning
         if (paused()) return false;
         if (!whitelistEnabled) {

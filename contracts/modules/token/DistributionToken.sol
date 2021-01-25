@@ -77,7 +77,7 @@ contract DistributionToken is ERC20, ERC20Mintable {
      * - balance of tokens locked in contracts
      * - tokens not yet claimed from distributions
      */
-    function fullBalanceOf(address account) public view returns(uint256){
+    function fullBalanceOf(address account) external view returns(uint256){
         if (account == address(this)) return 0;  //Token itself only holds tokens for others
         uint256 distributionBalance = distributionBalanceOf(account);
         uint256 unclaimed = calculateClaimAmount(account);
@@ -89,7 +89,7 @@ contract DistributionToken is ERC20, ERC20Mintable {
      * @param account Account to check
      * @return Amount of tokens available to claim
      */
-    function calculateUnclaimedDistributions(address account) public view returns(uint256) {
+    function calculateUnclaimedDistributions(address account) external view returns(uint256) {
         return calculateClaimAmount(account);
     }
 
@@ -100,13 +100,13 @@ contract DistributionToken is ERC20, ERC20Mintable {
      * @param initialBalance amount of tokens before startDistribution
      * @return amount of tokens distributed
      */
-    function calculateDistributedAmount(uint256 fromDistribution, uint256 toDistribution, uint256 initialBalance) public view returns(uint256) {
+    function calculateDistributedAmount(uint256 fromDistribution, uint256 toDistribution, uint256 initialBalance) external view returns(uint256) {
         require(fromDistribution < toDistribution, "DistributionToken: startDistribution is too high");
         require(toDistribution <= distributions.length, "DistributionToken: nextDistribution is too high");
         return _calculateDistributedAmount(fromDistribution, toDistribution, initialBalance);
     }
 
-    function nextDistribution() public view returns(uint256){
+    function nextDistribution() external view returns(uint256){
         return distributions.length;
     }
 

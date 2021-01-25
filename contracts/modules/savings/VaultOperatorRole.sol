@@ -23,11 +23,11 @@ contract VaultOperatorRole is Initializable, Context {
         _;
     }
 
-    function addVaultOperator(address account) public onlyVaultOperator {
+    function addVaultOperator(address account) external onlyVaultOperator {
         _addVaultOperator(account);
     }
 
-    function renounceVaultOperator() public {
+    function renounceVaultOperator() external {
         _removeVaultOperator(_msgSender());
     }
 

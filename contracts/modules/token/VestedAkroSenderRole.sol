@@ -1,4 +1,4 @@
-pragma solidity ^0.5.0;
+pragma solidity ^0.5.12;
 
 import "@openzeppelin/upgrades/contracts/Initializable.sol";
 import "@openzeppelin/contracts-ethereum-package/contracts/GSN/Context.sol";
@@ -27,11 +27,11 @@ contract VestedAkroSenderRole is Initializable, Context {
         return _senders.has(account);
     }
 
-    function addSender(address account) public onlySender {
+    function addSender(address account) external onlySender {
         _addSender(account);
     }
 
-    function renounceSender() public {
+    function renounceSender() external {
         _removeSender(_msgSender());
     }
 

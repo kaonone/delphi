@@ -23,11 +23,11 @@ contract DefiOperatorRole is Initializable, Context {
         _;
     }
 
-    function addDefiOperator(address account) public onlyDefiOperator {
+    function addDefiOperator(address account) external onlyDefiOperator {
         _addDefiOperator(account);
     }
 
-    function renounceDefiOperator() public {
+    function renounceDefiOperator() external {
         _removeDefiOperator(_msgSender());
     }
 

@@ -18,8 +18,6 @@ import "../../interfaces/savings/IVaultSavings.sol";
 import "../../interfaces/defi/IStrategyCurveFiSwapCrv.sol";
 
 contract VaultSavingsModule is Module, IVaultSavings, AccessChecker, RewardDistributions, SavingsCap, VaultOperatorRole {
-    uint256 constant MAX_UINT256 = uint256(-1);
-
     using SafeERC20 for IERC20;
     using SafeMath for uint256;
 
@@ -41,7 +39,7 @@ contract VaultSavingsModule is Module, IVaultSavings, AccessChecker, RewardDistr
         VaultOperatorRole.initialize(_msgSender());
     }
 
-    function registerVault(IVaultProtocol protocol, VaultPoolToken poolToken) public onlyOwner {
+    function registerVault(IVaultProtocol protocol, VaultPoolToken poolToken) external onlyOwner {
         require(!isVaultRegistered(address(protocol)), "Vault is already registered");
 
         registeredVaults.push(address(protocol));
@@ -54,9 +52,9 @@ contract VaultSavingsModule is Module, IVaultSavings, AccessChecker, RewardDistr
         poolTokenToVault[address(poolToken)] = address(protocol);
 
         uint256 normalizedBalance = vaults[address(protocol)].previousBalance;
-        if(normalizedBalance > 0) {
+        if (normalizedBalance > 0) {
             uint256 ts = poolToken.totalSupply();
-            if(ts < normalizedBalance) {
+            if (ts < normalizedBalance) {
                 poolToken.mint(_msgSender(), normalizedBalance.sub(ts));
             }
         }
@@ -95,8 +93,8 @@ contract VaultSavingsModule is Module, IVaultSavings, AccessChecker, RewardDistr
     }
 
     //Deposits into several vaults but one coin at time
-    function deposit(address[] memory _protocols, address[] memory _tokens, uint256[] memory _dnAmounts) 
-    public operationAllowed(IAccessModule.Operation.Deposit) 
+    function deposit(address[] calldata _protocols, address[] calldata _tokens, uint256[] calldata _dnAmounts) 
+    external operationAllowed(IAccessModule.Operation.Deposit) 
     returns(uint256[] memory) 
     {
         require(_protocols.length == _tokens.length && _tokens.length == _dnAmounts.length, "Size of arrays does not match");
@@ -114,9 +112,10 @@ contract VaultSavingsModule is Module, IVaultSavings, AccessChecker, RewardDistr
     function depositToProtocol(address _protocol, address[] memory _tokens, uint256[] memory _dnAmounts) internal {
         for (uint256 i=0; i < _tokens.length; i++) {
             address tkn = _tokens[i];
+
+            emit DepositToken(_protocol, tkn, _dnAmounts[i]);
             IERC20(tkn).safeTransferFrom(_msgSender(), _protocol, _dnAmounts[i]);
             IVaultProtocol(_protocol).depositToVault(_msgSender(), tkn, _dnAmounts[i]);
-            emit DepositToken(_protocol, tkn, _dnAmounts[i]);
         }
     }
 
@@ -197,7 +196,7 @@ contract VaultSavingsModule is Module, IVaultSavings, AccessChecker, RewardDistr
         return ptAmounts;
     }
 
-    function claimAllRequested(address _vaultProtocol) public
+    function claimAllRequested(address _vaultProtocol) external
     {
         require(isVaultRegistered(_vaultProtocol), "Vault is not registered");
         IVaultProtocol(_vaultProtocol).claimRequested(_msgSender());
@@ -206,7 +205,7 @@ contract VaultSavingsModule is Module, IVaultSavings, AccessChecker, RewardDistr
 // ------
 // Operator interface
 // ------
-    function handleOperatorActions(address _vaultProtocol, address _strategy, address _token) public onlyVaultOperator {
+    function handleOperatorActions(address _vaultProtocol, address _strategy, address _token) external onlyVaultOperator {
         uint256 totalDeposit;
         uint256 totalWithdraw;
 
@@ -222,20 +221,20 @@ contract VaultSavingsModule is Module, IVaultSavings, AccessChecker, RewardDistr
         distributeYieldInternal(_vaultProtocol, totalWithdraw, totalDeposit);
     }
 
-    function clearProtocolStorage(address _vaultProtocol) public onlyVaultOperator {
+    function clearProtocolStorage(address _vaultProtocol) external onlyVaultOperator {
         IVaultProtocol(_vaultProtocol).clearOnHoldDeposits();
         IVaultProtocol(_vaultProtocol).clearWithdrawRequests();
     }
 
-    function distributeYield(address _vaultProtocol) public {
+    function distributeYield(address _vaultProtocol) external {
         distributeYieldInternal(_vaultProtocol, 0, 0);
     }
 
-    function setVaultRemainder(address _vaultProtocol, uint256 _amount, uint256 _index) public onlyVaultOperator {
+    function setVaultRemainder(address _vaultProtocol, uint256 _amount, uint256 _index) external onlyVaultOperator {
         IVaultProtocol(_vaultProtocol).setRemainder(_amount, _index);
     }
 
-    function callStrategyStep(address _vaultProtocol, address _strategy, bool _distrYield, bytes memory _strategyData) public onlyVaultOperator {
+    function callStrategyStep(address _vaultProtocol, address _strategy, bool _distrYield, bytes calldata _strategyData) external onlyVaultOperator {
         require(IVaultProtocol(_vaultProtocol).isStrategyRegistered(_strategy), "Strategy is not registered");
         uint256 oldVaultBalance = IVaultProtocol(_vaultProtocol).normalizedVaultBalance();
 
@@ -259,11 +258,11 @@ contract VaultSavingsModule is Module, IVaultSavings, AccessChecker, RewardDistr
 // ------
 // Getters and checkers
 // ------
-    function poolTokenByProtocol(address _vaultProtocol) public view returns(address) {
+    function poolTokenByProtocol(address _vaultProtocol) external view returns(address) {
         return address(vaults[_vaultProtocol].poolToken);
     }
 
-    function protocolByPoolToken(address _poolToken) public view returns(address) {
+    function protocolByPoolToken(address _poolToken) external view returns(address) {
         return poolTokenToVault[_poolToken];
     }
 
@@ -279,7 +278,7 @@ contract VaultSavingsModule is Module, IVaultSavings, AccessChecker, RewardDistr
         return false;
     }
 
-    function supportedVaults() public view returns(address[] memory) {
+    function supportedVaults() external view returns(address[] memory) {
         return registeredVaults;
     }
 
@@ -308,7 +307,7 @@ contract VaultSavingsModule is Module, IVaultSavings, AccessChecker, RewardDistr
 
 
     function createYieldDistribution(VaultPoolToken poolToken, uint256 yield) internal {
-        poolToken.distribute(yield);
         emit YieldDistribution(address(poolToken), yield);
+        poolToken.distribute(yield);
     }
 }

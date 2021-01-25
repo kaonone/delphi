@@ -59,7 +59,7 @@ contract BalancerProtocol is ProtocolBase {
         // expect(bptAmount == bptBalance, "BalancerProtocol: returned and received amount not match");
     }
 
-    function handleDeposit(address[] memory tokens, uint256[] memory amounts) public onlyDefiOperator {
+    function handleDeposit(address[] calldata tokens, uint256[] calldata amounts) external onlyDefiOperator {
         (uint256[] memory amnts, uint256 nTotal) = translateAmountArrayToProtocolTokens(tokens, amounts);
         bool correctProportions = checkAmountProportions(amnts, nTotal);
         require(correctProportions, "BalancerProtocol: wrong proportions");
@@ -79,7 +79,7 @@ contract BalancerProtocol is ProtocolBase {
         IERC20(token).transfer(beneficiary, amount);
     }
 
-    function withdraw(address beneficiary, uint256[] memory amounts) public onlyDefiOperator {
+    function withdraw(address beneficiary, uint256[] calldata amounts) external onlyDefiOperator {
         (uint256[] memory amnts, uint256 nTotal) = translateAmountArrayToProtocolTokens(registeredTokens, amounts);
         bool correctProportions = checkAmountProportions(amnts, nTotal);
         require(correctProportions, "BalancerProtocol: wrong proportions");
@@ -121,7 +121,7 @@ contract BalancerProtocol is ProtocolBase {
         return bpt.balanceOf(address(this));
     }
 
-    function optimalProportions() public returns(uint256[] memory) {
+    function optimalProportions() external returns(uint256[] memory) {
         uint256[] memory amounts = new uint256[](registeredTokens.length);
         for(uint256 i=0; i<registeredTokens.length;i++){
             address token = registeredTokens[i];
@@ -138,7 +138,7 @@ contract BalancerProtocol is ProtocolBase {
      * Then it will calculate "our" part of that balance,
      * and then convert this number to 18 decimals.
      */
-    function balanceConvertedTo(address baseToken) public view returns(uint256) {
+    function balanceConvertedTo(address baseToken) external view returns(uint256) {
         uint256 summ; //BPool balance of all tokens, converted to baseToken
         for (uint256 i=0; i < registeredTokens.length; i++){
             address tkn = registeredTokens[i];
@@ -157,15 +157,15 @@ contract BalancerProtocol is ProtocolBase {
         return normalizeAmount(registeredTokensInfo[baseToken].decimals, ourBalance);
     }
 
-    function canSwapToToken(address token) public view returns(bool) {
+    function canSwapToToken(address token) external view returns(bool) {
         return (registeredTokensInfo[token].normalizedWeight > 0); //can swap to all tokens in BPool
     }    
 
-    function supportedTokens() public view returns(address[] memory){
+    function supportedTokens() external view returns(address[] memory){
         return registeredTokens;
     }
 
-    function supportedTokensCount() public view returns(uint256) {
+    function supportedTokensCount() external view returns(uint256) {
         return registeredTokens.length;
     }
 

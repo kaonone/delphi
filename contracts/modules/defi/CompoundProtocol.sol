@@ -31,9 +31,9 @@ contract CompoundProtocol is ProtocolBase {
         baseToken = IERC20(_token);
         cToken = ICErc20(_cToken);
         decimals = ERC20Detailed(_token).decimals();
-        baseToken.safeApprove(_cToken, MAX_UINT256);
         comptroller = IComptroller(_comptroller);
         compToken = IERC20(comptroller.getCompAddress());
+        baseToken.safeApprove(_cToken, MAX_UINT256);
     }
 
     function handleDeposit(address token, uint256 amount) public onlyDefiOperator {
@@ -41,7 +41,7 @@ contract CompoundProtocol is ProtocolBase {
         cToken.mint(amount);
     }
 
-    function handleDeposit(address[] memory tokens, uint256[] memory amounts) public onlyDefiOperator {
+    function handleDeposit(address[] calldata tokens, uint256[] calldata amounts) external onlyDefiOperator {
         require(tokens.length == 1 && amounts.length == 1, "CompoundProtocol: wrong count of tokens or amounts");
         handleDeposit(tokens[0], amounts[0]);
     }
@@ -53,7 +53,7 @@ contract CompoundProtocol is ProtocolBase {
         baseToken.safeTransfer(beneficiary, amount);
     }
 
-    function withdraw(address beneficiary, uint256[] memory amounts) public onlyDefiOperator {
+    function withdraw(address beneficiary, uint256[] calldata amounts) external onlyDefiOperator {
         require(amounts.length == 1, "CompoundProtocol: wrong amounts array length");
 
         cToken.redeemUnderlying(amounts[0]);
@@ -75,23 +75,23 @@ contract CompoundProtocol is ProtocolBase {
         return normalizeAmount(address(baseToken), balanceOf(address(baseToken)));
     }
 
-    function optimalProportions() public returns(uint256[] memory) {
+    function optimalProportions() external returns(uint256[] memory) {
         uint256[] memory amounts = new uint256[](1);
         amounts[0] = 1e18;
         return amounts;
     }
 
-    function canSwapToToken(address token) public view returns(bool) {
+    function canSwapToToken(address token) external view returns(bool) {
         return (token == address(baseToken));
     }    
 
-    function supportedTokens() public view returns(address[] memory){
+    function supportedTokens() external view returns(address[] memory){
         address[] memory tokens = new address[](1);
         tokens[0] = address(baseToken);
         return tokens;
     }
 
-    function supportedTokensCount() public view returns(uint256) {
+    function supportedTokensCount() external view returns(uint256) {
         return 1;
     }
 

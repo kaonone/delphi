@@ -1,0 +1,1 @@
+./echidna-test ./flattered/TestVaultSavingsModule.sol --contract TestVaultSavings --config ./security/echidna/echidna_conf.yaml

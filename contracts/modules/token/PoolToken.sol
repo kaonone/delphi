@@ -32,7 +32,7 @@ contract PoolToken is Module, ERC20, ERC20Detailed, ERC20Mintable, ERC20Burnable
         }
     }
 
-    function setAllowTransfers(bool _allowTransfers) public onlyOwner {
+    function setAllowTransfers(bool _allowTransfers) external onlyOwner {
         allowTransfers = _allowTransfers;
     }
 

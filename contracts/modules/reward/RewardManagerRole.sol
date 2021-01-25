@@ -23,11 +23,11 @@ contract RewardManagerRole is Initializable, Context {
         _;
     }
 
-    function addRewardManager(address account) public onlyRewardManager {
+    function addRewardManager(address account) external onlyRewardManager {
         _addRewardManager(account);
     }
 
-    function renounceRewardManager() public {
+    function renounceRewardManager() external {
         _removeRewardManager(_msgSender());
     }
 

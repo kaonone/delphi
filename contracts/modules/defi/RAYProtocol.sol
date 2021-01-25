@@ -29,7 +29,7 @@ contract RAYProtocol is ProtocolBase {
     bytes32 portfolioId;
     bytes32 rayTokenId;
 
-    function initialize(address _pool, address _token, bytes32 _portfolioId) public initializer {
+    function initialize(address _pool, address _token, bytes32 _portfolioId) external initializer {
         ProtocolBase.initialize(_pool);
         baseToken = IERC20(_token);
         portfolioId = _portfolioId;
@@ -39,7 +39,7 @@ contract RAYProtocol is ProtocolBase {
         IERC20(_token).safeApprove(address(pm), MAX_UINT256);
     }
 
-    function onERC721Received(address, address, uint256, bytes memory) public view returns (bytes4) {
+    function onERC721Received(address, address, uint256, bytes calldata) external view returns (bytes4) {
         address rayTokenContract = rayStorage().getContractAddress(RAY_TOKEN_CONTRACT);
         require(_msgSender() == rayTokenContract, "RAYModule: only accept RAY Token transfers");
         return ERC721_RECEIVER;
@@ -55,7 +55,7 @@ contract RAYProtocol is ProtocolBase {
         }
     }
 
-    function handleDeposit(address[] memory tokens, uint256[] memory amounts) public onlyDefiOperator {
+    function handleDeposit(address[] calldata tokens, uint256[] calldata amounts) external onlyDefiOperator {
         require(tokens.length == 1 && amounts.length == 1, "RAYProtocol: wrong count of tokens or amounts");
         handleDeposit(tokens[0], amounts[0]);
     }
@@ -66,7 +66,7 @@ contract RAYProtocol is ProtocolBase {
         IERC20(token).transfer(beneficiary, amount);
     }
 
-    function withdraw(address beneficiary, uint256[] memory amounts) public onlyDefiOperator {
+    function withdraw(address beneficiary, uint256[] calldata amounts) external onlyDefiOperator {
         require(amounts.length == 1, "RAYProtocol: wrong amounts array length");
         rayPortfolioManager().redeem(rayTokenId, amounts[0], address(0));
         IERC20(baseToken).safeTransfer(beneficiary, amounts[0]);
@@ -89,23 +89,23 @@ contract RAYProtocol is ProtocolBase {
         return normalizeAmount(address(baseToken), balanceOf(address(baseToken)));
     }
 
-    function optimalProportions() public returns(uint256[] memory) {
+    function optimalProportions() external returns(uint256[] memory) {
         uint256[] memory amounts = new uint256[](1);
         amounts[0] = 1e18;
         return amounts;
     }
 
-    function canSwapToToken(address token) public view returns(bool) {
+    function canSwapToToken(address token) external view returns(bool) {
         return (token == address(baseToken));
     }    
 
-    function supportedTokens() public view returns(address[] memory){
+    function supportedTokens() external view returns(address[] memory){
         address[] memory tokens = new address[](1);
         tokens[0] = address(baseToken);
         return tokens;
     }
 
-    function supportedTokensCount() public view returns(uint256) {
+    function supportedTokensCount() external view returns(uint256) {
         return 1;
     }
 
@@ -137,16 +137,16 @@ contract RAYProtocol is ProtocolBase {
         return rayPortfolioManager(rayStorage());
     }
 
-    function rayPortfolioManager(IRAYStorage rayStorage) private view returns(IRAYPortfolioManager){
-        return IRAYPortfolioManager(rayStorage.getContractAddress(PORTFOLIO_MANAGER_CONTRACT));
+    function rayPortfolioManager(IRAYStorage _rayStorage) private view returns(IRAYPortfolioManager){
+        return IRAYPortfolioManager(_rayStorage.getContractAddress(PORTFOLIO_MANAGER_CONTRACT));
     }
 
     function rayNAVCalculator() private view returns(IRAYNAVCalculator){
         return rayNAVCalculator(rayStorage());
     }
 
-    function rayNAVCalculator(IRAYStorage rayStorage) private view returns(IRAYNAVCalculator){
-        return IRAYNAVCalculator(rayStorage.getContractAddress(NAV_CALCULATOR_CONTRACT));
+    function rayNAVCalculator(IRAYStorage _rayStorage) private view returns(IRAYNAVCalculator){
+        return IRAYNAVCalculator(_rayStorage.getContractAddress(NAV_CALCULATOR_CONTRACT));
     }
 
     function rayStorage() private view returns(IRAYStorage){

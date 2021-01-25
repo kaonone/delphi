@@ -42,7 +42,7 @@ contract VaultProtocol is Module, IVaultProtocol, DefiOperatorRole {
 // ------
 // Settings methods
 // ------
-    function initialize(address _pool, address[] memory tokens) public initializer {
+    function initialize(address _pool, address[] calldata tokens) external initializer {
         Module.initialize(_pool);
         DefiOperatorRole.initialize(_msgSender());
 
@@ -60,24 +60,24 @@ contract VaultProtocol is Module, IVaultProtocol, DefiOperatorRole {
         availableEnabled = false;
     }
 
-    function registerStrategy(address _strategy) public onlyDefiOperator {
+    function registerStrategy(address _strategy) external onlyDefiOperator {
         strategies.push(_strategy);
-        IDefiStrategy(_strategy).setVault(address(this));
-
         emit StrategyRegistered(address(this), _strategy, IDefiStrategy(_strategy).getStrategyId());
+
+        IDefiStrategy(_strategy).setVault(address(this));
     }
 
-    function setQuickWithdrawStrategy(address _strategy) public onlyDefiOperator {
+    function setQuickWithdrawStrategy(address _strategy) external onlyDefiOperator {
         require(isStrategyRegistered(_strategy), "Strategy is not registered");
         quickStrategy = _strategy;
     }
 
-    function setRemainder(uint256 _amount, uint256 _index) public onlyDefiOperator {
+    function setRemainder(uint256 _amount, uint256 _index) external onlyDefiOperator {
         require(_index < supportedTokensCount());
         remainders[_index] = _amount;
     }
 
-    function setAvailableEnabled(bool value) public onlyDefiOperator {
+    function setAvailableEnabled(bool value) external onlyDefiOperator {
         availableEnabled = value;
     }
 
@@ -110,7 +110,7 @@ contract VaultProtocol is Module, IVaultProtocol, DefiOperatorRole {
         emit DepositToVault(_user, _token, _amount);
     }
 
-    function depositToVault(address _user, address[] memory  _tokens, uint256[] memory _amounts) public onlyDefiOperator {
+    function depositToVault(address _user, address[] calldata  _tokens, uint256[] calldata _amounts) external onlyDefiOperator {
         require(_tokens.length > 0, "No tokens to be deposited");
         require(_tokens.length == _amounts.length, "Incorrect amounts");
 
@@ -135,9 +135,8 @@ contract VaultProtocol is Module, IVaultProtocol, DefiOperatorRole {
         if (availableEnabled && (IERC20(_token).balanceOf(address(this)).sub(claimableTokens[indReg]) >= _amount.add(remainders[indReg]))) {
             decreaseOnHoldDeposit(_user, _token, _amount);
 
-            IERC20(_token).safeTransfer(_user, _amount);
-
             emit WithdrawFromVault(_user, _token, _amount);
+            IERC20(_token).safeTransfer(_user, _amount);
         }
         else {
             if (balancesRequested[_user].length == 0) {
@@ -152,7 +151,7 @@ contract VaultProtocol is Module, IVaultProtocol, DefiOperatorRole {
         }
     }
 
-    function withdrawFromVault(address _user, address[] memory  _tokens, uint256[] memory _amounts) public onlyDefiOperator {
+    function withdrawFromVault(address _user, address[] calldata  _tokens, uint256[] calldata _amounts) external onlyDefiOperator {
         require(_tokens.length > 0, "No tokens to be withdrawn");
         require(_tokens.length == _amounts.length, "Incorrect amounts");
 
@@ -161,7 +160,7 @@ contract VaultProtocol is Module, IVaultProtocol, DefiOperatorRole {
         }
     }
 
-    function quickWithdraw(address _user, address[] memory _tokens, uint256[] memory _amounts) public onlyDefiOperator {
+    function quickWithdraw(address _user, address[] calldata _tokens, uint256[] calldata _amounts) external onlyDefiOperator {
         require(quickStrategy != address(0), "No strategy for quick withdraw");
         require(_tokens.length == 1 || _amounts.length == supportedTokensCount(), "Incorrect number of tokens");
 
@@ -174,16 +173,16 @@ contract VaultProtocol is Module, IVaultProtocol, DefiOperatorRole {
         }
     }
 
-    function claimRequested(address _user) public {
+    function claimRequested(address _user) external {
         if (balancesToClaim[_user].length == 0) return;
         for (uint256 i = 0; i < balancesToClaim[_user].length; i++) {
             address token = registeredVaultTokens[i];
             uint256 amount = balancesToClaim[_user][i];
 
             if (amount > 0) {
-                IERC20(token).safeTransfer(_user, amount);
                 claimableTokens[i] = claimableTokens[i].sub(amount);
                 emit Claimed(address(this), _user, token, amount);
+                IERC20(token).safeTransfer(_user, amount);
             }
         }
         delete balancesToClaim[_user];
@@ -251,7 +250,7 @@ contract VaultProtocol is Module, IVaultProtocol, DefiOperatorRole {
         return (totalDeposit, totalWithdraw);
     }
 
-    function operatorActionOneCoin(address _strategy, address _token) public onlyDefiOperator returns(uint256, uint256) {
+    function operatorActionOneCoin(address _strategy, address _token) external onlyDefiOperator returns(uint256, uint256) {
         require(isStrategyRegistered(_strategy), "Strategy is not registered");
 
         bool isReg;
@@ -301,7 +300,7 @@ contract VaultProtocol is Module, IVaultProtocol, DefiOperatorRole {
                 CalcUtils.normalizeAmount(registeredVaultTokens[ind], totalWithdraw));
     }
 
-    function clearOnHoldDeposits() public onlyDefiOperator {
+    function clearOnHoldDeposits() external onlyDefiOperator {
         require(minProcessed(lastProcessedDeposits) == usersDeposited.length, "There are unprocessed deposits");
 
         address _user;
@@ -315,7 +314,7 @@ contract VaultProtocol is Module, IVaultProtocol, DefiOperatorRole {
         emit DepositsCleared(address(this));
     }
 
-    function clearWithdrawRequests() public onlyDefiOperator {
+    function clearWithdrawRequests() external onlyDefiOperator {
         require(minProcessed(lastProcessedRequests) == usersRequested.length, "There are unprocessed requests");
 
         address _user;
@@ -332,12 +331,12 @@ contract VaultProtocol is Module, IVaultProtocol, DefiOperatorRole {
 // ------
 // Balances
 // ------
-    function normalizedBalance(address _strategy) public returns(uint256) {
+    function normalizedBalance(address _strategy) external returns(uint256) {
         require(isStrategyRegistered(_strategy), "Strategy is not registered");
         return IDefiStrategy(_strategy).normalizedBalance();
     }
 
-    function normalizedBalance() public returns(uint256) {
+    function normalizedBalance() external returns(uint256) {
         uint256 total;
         for (uint256 i = 0; i < strategies.length; i++) {
             total = total.add(IDefiStrategy(strategies[i]).normalizedBalance());
@@ -345,7 +344,7 @@ contract VaultProtocol is Module, IVaultProtocol, DefiOperatorRole {
         return total;
     }
 
-    function normalizedVaultBalance() public view returns(uint256) {
+    function normalizedVaultBalance() external view returns(uint256) {
         uint256 summ;
         for (uint256 i=0; i < registeredVaultTokens.length; i++) {
             uint256 balance = IERC20(registeredVaultTokens[i]).balanceOf(address(this));
@@ -354,37 +353,37 @@ contract VaultProtocol is Module, IVaultProtocol, DefiOperatorRole {
         return summ;
     }
 
-    function totalClaimableAmount(address _token) public view returns (uint256) {
+    function totalClaimableAmount(address _token) external view returns (uint256) {
         uint256 indReg = tokenRegisteredInd(_token);
 
         return claimableTokens[indReg];
     }
 
-    function claimableAmount(address _user, address _token) public view returns (uint256) {
+    function claimableAmount(address _user, address _token) external view returns (uint256) {
         return tokenAmount(balancesToClaim, _user, _token);
     }
 
-    function amountOnHold(address _user, address _token) public view returns (uint256) {
+    function amountOnHold(address _user, address _token) external view returns (uint256) {
         return tokenAmount(balancesOnHold, _user, _token);
     }
 
-    function amountRequested(address _user, address _token) public view returns (uint256) {
+    function amountRequested(address _user, address _token) external view returns (uint256) {
         return tokenAmount(balancesRequested, _user, _token);
     }
 
 // ------
 // Getters and checkers
 // ------
-    function quickWithdrawStrategy() public view returns(address) {
+    function quickWithdrawStrategy() external view returns(address) {
         return quickStrategy;
     }
 
-    function getRemainder(uint256 _index) public  view returns(uint256) {
+    function getRemainder(uint256 _index) external  view returns(uint256) {
         require(_index < supportedTokensCount());
         return remainders[_index];
     }
 
-    function supportedTokens() public view returns(address[] memory) {
+    function supportedTokens() external view returns(address[] memory) {
         return registeredVaultTokens;
     }
 
@@ -401,7 +400,7 @@ contract VaultProtocol is Module, IVaultProtocol, DefiOperatorRole {
         return false;
     }
 
-    function registeredStrategies() public view returns(address[] memory) {
+    function registeredStrategies() external view returns(address[] memory) {
         return strategies;
     }
 
@@ -456,14 +455,16 @@ contract VaultProtocol is Module, IVaultProtocol, DefiOperatorRole {
         IOperableToken vaultPoolToken = IOperableToken(vaultSavings.poolTokenByProtocol(address(this)));
 
         address _user;
+        uint256 _normAmount;
         uint256 lastProcessedDeposit = minProcessed(lastProcessedDeposits);
         for (uint256 i = lastProcessedDeposit; i < usersDeposited.length; i++) {
             //We can delete the on-hold records now - the real balances will be deposited to protocol
             _user = usersDeposited[i];
             for (uint256 j = 0; j < balancesOnHold[_user].length; j++) {
-                if (balancesOnHold[_user][j] > 0) {
-                    vaultPoolToken.decreaseOnHoldValue(_user, CalcUtils.normalizeAmount(registeredVaultTokens[j], balancesOnHold[_user][j]));
+                _normAmount = CalcUtils.normalizeAmount(registeredVaultTokens[j], balancesOnHold[_user][j]);
+                if (_normAmount > 0) {
                     balancesOnHold[_user][j] = 0;
+                    vaultPoolToken.decreaseOnHoldValue(_user, _normAmount);
                 }
             }
         }

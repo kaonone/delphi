@@ -1,0 +1,67 @@
+name: Security-checks
+
+on:
+  push:
+    branches: [ release-1.0 ]
+  pull_request:
+    branches: [ release-1.0 ]
+
+jobs:
+  slither:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v1.4.4
+        with:
+          node-version: '12'
+      - uses: actions/setup-python@v2
+      - name: Prepare environment
+        run:  |
+          npm install
+          pip3 install slither-analyzer
+      - name: Run slither
+        shell: bash
+        run: |
+          npm run sec:slither >slither_report.txt 2>&1 || true
+      - name: Store the report
+        uses: actions/upload-artifact@v2
+        with:
+          name: slither-report
+          path: ./slither_report.txt
+      - name: Check status
+        shell: bash
+        run: |
+          sh ./security/slither/run-slither-check.sh
+  echidna:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v1.4.4
+        with:
+          node-version: '12'
+      - uses: actions/setup-python@v2
+      - name: Prepare environment
+        run:  |
+          pip3 install slither-analyzer
+          npm install
+          wget "https://github.com/crytic/echidna/releases/download/v1.6.0/echidna-test-v1.6.0-Ubuntu-18.04.tar.gz"
+          tar -xf echidna-test-v1.6.0-Ubuntu-18.04.tar.gz
+          curl -o ./solc -fL https://github.com/ethereum/solidity/releases/download/v0.5.12/solc-static-linux
+          chmod u+x ./solc
+      - name: Prepare contracts
+        shell: bash
+        run: npm run sec:flattener
+      - name: Run echidna
+        shell: bash
+        run: |
+          export PATH=.:$PATH
+          sh ./security/echidna/run-echidna-analysis.sh >echidna_report.txt 2>&1 || true
+      - name: Store the report
+        uses: actions/upload-artifact@v2
+        with:
+          name: echidna-report
+          path: ./echidna_report.txt
+      - name: Check status
+        shell: bash
+        run: |
+          sh ./security/echidna/run-echidna-check.sh

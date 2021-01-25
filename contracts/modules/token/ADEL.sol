@@ -8,12 +8,12 @@ contract ADEL is ERC20Detailed, ERC20Mintable {
     string constant SYMBOL  = 'ADEL';
     uint8 constant DECIMALS = 18;
 
-    function initialize() public initializer {
+    function initialize() external initializer {
         ERC20Detailed.initialize(NAME, SYMBOL, DECIMALS);
         ERC20Mintable.initialize(_msgSender());
     }
 
-    function burn(uint256 amount) public onlyMinter {
+    function burn(uint256 amount) external onlyMinter {
         _burn(_msgSender(), amount);
     }
 }

@@ -58,7 +58,7 @@ contract RewardDistributionModule is Module, IPoolTokenBalanceChangeRecipient, A
         Module.initialize(_pool);
     }
 
-    function registerProtocol(address _protocol, address _poolToken) public onlyOwner {
+    function registerProtocol(address _protocol, address _poolToken) external onlyOwner {
         require(protocolInfo[_protocol].poolToken == address(0), "RewardDistributionModule: protocol already registered");
         require(poolTokenToProtocol[_poolToken] == address(0), "RewardDistributionModule: poolToken already registered");
 
@@ -90,7 +90,7 @@ contract RewardDistributionModule is Module, IPoolTokenBalanceChangeRecipient, A
     function protocolByPoolToken(address _poolToken) public view returns(address)  {
         return poolTokenToProtocol[_poolToken];
     }
-    function supportedPoolTokens() public view returns(address[] memory) {
+    function supportedPoolTokens() external view returns(address[] memory) {
         return registeredPoolTokens;
     }
     function supportedRewardTokens() public view returns(address[] memory) {
@@ -109,7 +109,7 @@ contract RewardDistributionModule is Module, IPoolTokenBalanceChangeRecipient, A
     /** 
      * @notice Distributes reward tokens. May be called by bot, if there was no deposits/withdrawals
      */
-    function distributeRewards() public {
+    function distributeRewards() external {
         for(uint256 i=0; i<registeredPoolTokens.length; i++) {
             distributeRewardIfRequired(poolTokenToProtocol[registeredPoolTokens[i]]);
         }
@@ -119,7 +119,7 @@ contract RewardDistributionModule is Module, IPoolTokenBalanceChangeRecipient, A
     //     distributeRewardIfRequired(_protocol);
     // }
 
-    function distributeRewardsForced(address _protocol) public onlyOwner {
+    function distributeRewardsForced(address _protocol) external onlyOwner {
         protocolInfo[_protocol].lastRewardDistributionTimestamp = now;
         distributeReward(_protocol);
     }
@@ -135,7 +135,7 @@ contract RewardDistributionModule is Module, IPoolTokenBalanceChangeRecipient, A
         return now.sub(lrd) > DISTRIBUTION_AGGREGATION_PERIOD;
     }
 
-    function withdrawReward() public returns(uint256[] memory) {
+    function withdrawReward() external returns(uint256[] memory) {
         return withdrawReward(supportedRewardTokens());
     }
 
@@ -153,7 +153,7 @@ contract RewardDistributionModule is Module, IPoolTokenBalanceChangeRecipient, A
     }
 
     function withdrawReward(address poolToken, address rewardToken) 
-    public operationAllowed(IAccessModule.Operation.Withdraw)
+    external operationAllowed(IAccessModule.Operation.Withdraw)
     returns(uint256){
         address user = _msgSender();
         updateRewardBalance(user);
@@ -193,7 +193,7 @@ contract RewardDistributionModule is Module, IPoolTokenBalanceChangeRecipient, A
     // }
 
 
-    function rewardBalanceOf(address user, address poolToken, address rewardToken) public view returns(uint256 amounts) {
+    function rewardBalanceOf(address user, address poolToken, address rewardToken) external view returns(uint256 amounts) {
         if(!userRewardsMigrated[user]){
             address[] memory rtkns = new address[](1);
             rtkns[0] = rewardToken;
@@ -255,7 +255,7 @@ contract RewardDistributionModule is Module, IPoolTokenBalanceChangeRecipient, A
     * @param user User address 
     * @param toDistribution Index of distribution next to the last one, which should be processed
     */
-    function updateRewardBalance(address user, uint256 toDistribution) public {
+    function updateRewardBalance(address user, uint256 toDistribution) external {
         _updateRewardBalance(user, toDistribution);
     }
 
@@ -267,7 +267,7 @@ contract RewardDistributionModule is Module, IPoolTokenBalanceChangeRecipient, A
         }
     }
 
-    function storedRewardBalance(address user, address poolToken, address rewardToken) public view 
+    function storedRewardBalance(address user, address poolToken, address rewardToken) external view 
     returns(uint256 nextDistribution, uint256 poolTokenShares, uint256 storedReward) {
         RewardBalance storage rb = rewardBalances[user];
         nextDistribution = rb.nextDistribution;
@@ -275,7 +275,7 @@ contract RewardDistributionModule is Module, IPoolTokenBalanceChangeRecipient, A
         storedReward = rb.rewardsByPT[poolToken].amounts[rewardToken];
     }
 
-    function rewardDistribution(uint256 num) public view 
+    function rewardDistribution(uint256 num) external view 
     returns(address poolToken, uint256 totalShares, address[] memory rewardTokens, uint256[] memory amounts){
         RewardTokenDistribution storage d = rewardDistributions[num];
         poolToken = d.poolToken;
@@ -288,7 +288,7 @@ contract RewardDistributionModule is Module, IPoolTokenBalanceChangeRecipient, A
         }
     }
 
-    function rewardDistributionCount() public view returns(uint256){
+    function rewardDistributionCount() external view returns(uint256){
         return rewardDistributions.length;
     }
 
