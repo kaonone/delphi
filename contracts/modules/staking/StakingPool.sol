@@ -123,9 +123,14 @@ contract StakingPool is StakingPoolBase {
         super.createStake(_address, _amount, _lockInDuration, _data);
     }
 
-    function withdrawStake(uint256 _amount, bytes memory _data) internal {
+    function unstake(uint256 _amount, bytes memory _data) public {
         _withdrawRewards(_msgSender());
-        super.withdrawStake(_amount, _data);
+        withdrawStake(_amount, _data);
+    }
+
+    function unstakeAllUnlocked(bytes memory _data) public returns (uint256) {
+        _withdrawRewards(_msgSender());
+        super.unstakeAllUnlocked(_data);
     }
 
 
