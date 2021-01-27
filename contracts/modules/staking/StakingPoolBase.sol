@@ -337,6 +337,20 @@ contract StakingPoolBase is Module, IERC900, CapperRole {
         return unstakeAllAmount;
     }
 
+    function unstakeAllUnlockedFast(bytes memory _data) public returns (uint256) {
+        uint256 unstakeAllAmount = 0;
+        uint256 personalStakeIndex = stakeHolders[_msgSender()].personalStakeIndex;
+
+        for (uint256 i = personalStakeIndex; i < stakeHolders[_msgSender()].personalStakes.length; i++) {
+            if (stakeHolders[_msgSender()].personalStakes[i].unlockedTimestamp <= block.timestamp) {
+                unstakeAllAmount = unstakeAllAmount.add(stakeHolders[_msgSender()].personalStakes[i].actualAmount);
+                withdrawStake(stakeHolders[_msgSender()].personalStakes[i].actualAmount, _data);
+            }
+        }
+
+        return unstakeAllAmount;
+    }
+
     /**
      * @notice Returns the current total of tokens staked for an address
      * @param _address address The address to query
@@ -464,6 +478,34 @@ contract StakingPoolBase is Module, IERC900, CapperRole {
         require(stakingToken.transfer(_msgSender(), _amount), "Unable to withdraw stake");
 
         emit Unstaked(personalStake.stakedFor, _amount, totalStakedFor(personalStake.stakedFor), _data);
+    }
+
+    function withdrawStakesFast(uint256 toIndex, uint256 _totalAmount, bytes memory _data) internal isUserCapEnabledForUnStakeFor(_totalAmount) {
+        StakeContract storage sc = stakeHolders[_msgSender()];
+        uint256 unstakeAmount = 0;
+        uint256 personalStakeIndex = sc.personalStakeIndex;
+        require(toIndex <= sc.personalStakes.length, "Wrong toIndex");
+
+        for (uint256 i = personalStakeIndex; i < toIndex; i++) {
+            if (sc.personalStakes[i].unlockedTimestamp <= block.timestamp) {
+                unstakeAmount = unstakeAmount.add(sc.personalStakes[i].actualAmount);
+                //withdrawStake(stakeHolders[_msgSender()].personalStakes[i].actualAmount, _data);
+
+                Stake storage personalStake = sc.personalStakes[i];
+                // Check that the current stake has unlocked & matches the unstake amount
+                require(personalStake.unlockedTimestamp <= block.timestamp, "The current stake hasn't unlocked yet");
+                require(personalStake.stakedFor == _msgSender(), "Fast withdraw stakes is not possible if staked for others");
+        
+                unstakeAmount = unstakeAmount.add(personalStake.actualAmount);
+                personalStake.actualAmount = 0;
+            }
+        }
+        require(unstakeAmount == _totalAmount, "Wrong unstake amount");
+        sc.personalStakeIndex = toIndex;
+        sc.totalStakedFor = sc.totalStakedFor.sub(unstakeAmount);
+        require(stakingToken.transfer(_msgSender(), unstakeAmount), "Unable to withdraw");
+        emit Unstaked(_msgSender(), unstakeAmount, sc.totalStakedFor, _data);
+
     }
 
     uint256[48] private ______gap;
