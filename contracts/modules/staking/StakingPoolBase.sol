@@ -138,7 +138,9 @@ contract StakingPoolBase is Module, IERC900, CapperRole {
 
     modifier isUserCapEnabledForUnStakeFor(uint256 unStake) {
         _;
-
+        checkAndUpdateCapForUnstakeFor(unStake);
+    }
+    function checkAndUpdateCapForUnstakeFor(uint256 unStake) internal {
         if (userCapEnabled) {
             uint256 cap = userCap[_msgSender()];
             cap = cap.add(unStake);
@@ -151,6 +153,7 @@ contract StakingPoolBase is Module, IERC900, CapperRole {
             emit UserCapChanged(_msgSender(), cap);
         }
     }
+
 
     modifier checkUserCapDisabled() {
         require(isUserCapEnabled() == false, "UserCapEnabled");
@@ -323,32 +326,22 @@ contract StakingPoolBase is Module, IERC900, CapperRole {
         withdrawStake(_amount, _data);
     }
 
+    // function unstakeAllUnlocked(bytes memory _data) public returns (uint256) {
+    //     uint256 unstakeAllAmount = 0;
+    //     uint256 personalStakeIndex = stakeHolders[_msgSender()].personalStakeIndex;
+
+    //     for (uint256 i = personalStakeIndex; i < stakeHolders[_msgSender()].personalStakes.length; i++) {
+    //         if (stakeHolders[_msgSender()].personalStakes[i].unlockedTimestamp <= block.timestamp) {
+    //             unstakeAllAmount = unstakeAllAmount.add(stakeHolders[_msgSender()].personalStakes[i].actualAmount);
+    //             withdrawStake(stakeHolders[_msgSender()].personalStakes[i].actualAmount, _data);
+    //         }
+    //     }
+
+    //     return unstakeAllAmount;
+    // }
+
     function unstakeAllUnlocked(bytes memory _data) public returns (uint256) {
-        uint256 unstakeAllAmount = 0;
-        uint256 personalStakeIndex = stakeHolders[_msgSender()].personalStakeIndex;
-
-        for (uint256 i = personalStakeIndex; i < stakeHolders[_msgSender()].personalStakes.length; i++) {
-            if (stakeHolders[_msgSender()].personalStakes[i].unlockedTimestamp <= block.timestamp) {
-                unstakeAllAmount = unstakeAllAmount.add(stakeHolders[_msgSender()].personalStakes[i].actualAmount);
-                withdrawStake(stakeHolders[_msgSender()].personalStakes[i].actualAmount, _data);
-            }
-        }
-
-        return unstakeAllAmount;
-    }
-
-    function unstakeAllUnlockedFast(bytes memory _data) public returns (uint256) {
-        uint256 unstakeAllAmount = 0;
-        uint256 personalStakeIndex = stakeHolders[_msgSender()].personalStakeIndex;
-
-        for (uint256 i = personalStakeIndex; i < stakeHolders[_msgSender()].personalStakes.length; i++) {
-            if (stakeHolders[_msgSender()].personalStakes[i].unlockedTimestamp <= block.timestamp) {
-                unstakeAllAmount = unstakeAllAmount.add(stakeHolders[_msgSender()].personalStakes[i].actualAmount);
-                withdrawStake(stakeHolders[_msgSender()].personalStakes[i].actualAmount, _data);
-            }
-        }
-
-        return unstakeAllAmount;
+        return withdrawStakes(_data);
     }
 
     /**
@@ -480,32 +473,36 @@ contract StakingPoolBase is Module, IERC900, CapperRole {
         emit Unstaked(personalStake.stakedFor, _amount, totalStakedFor(personalStake.stakedFor), _data);
     }
 
-    function withdrawStakesFast(uint256 toIndex, uint256 _totalAmount, bytes memory _data) internal isUserCapEnabledForUnStakeFor(_totalAmount) {
+    function withdrawStakes(bytes memory _data) internal returns (uint256){
         StakeContract storage sc = stakeHolders[_msgSender()];
         uint256 unstakeAmount = 0;
+        uint256 unstakedForOthers = 0;
         uint256 personalStakeIndex = sc.personalStakeIndex;
-        require(toIndex <= sc.personalStakes.length, "Wrong toIndex");
 
-        for (uint256 i = personalStakeIndex; i < toIndex; i++) {
-            if (sc.personalStakes[i].unlockedTimestamp <= block.timestamp) {
-                unstakeAmount = unstakeAmount.add(sc.personalStakes[i].actualAmount);
-                //withdrawStake(stakeHolders[_msgSender()].personalStakes[i].actualAmount, _data);
-
-                Stake storage personalStake = sc.personalStakes[i];
-                // Check that the current stake has unlocked & matches the unstake amount
-                require(personalStake.unlockedTimestamp <= block.timestamp, "The current stake hasn't unlocked yet");
-                require(personalStake.stakedFor == _msgSender(), "Fast withdraw stakes is not possible if staked for others");
-        
-                unstakeAmount = unstakeAmount.add(personalStake.actualAmount);
-                personalStake.actualAmount = 0;
+        uint256 i;
+        for (i = personalStakeIndex; i < sc.personalStakes.length; i++) {
+            Stake storage personalStake = sc.personalStakes[i];
+            if(personalStake.unlockedTimestamp > block.timestamp) break; //We've found last unlocked stake
+            
+            if(personalStake.stakedFor != _msgSender()){
+                //Handle unstake of staked for other address
+                stakeHolders[personalStake.stakedFor].totalStakedFor = stakeHolders[personalStake.stakedFor].totalStakedFor.sub(personalStake.actualAmount);
+                unstakedForOthers = unstakedForOthers.add(personalStake.actualAmount);
+                emit Unstaked(personalStake.stakedFor, personalStake.actualAmount, totalStakedFor(personalStake.stakedFor), _data);
             }
-        }
-        require(unstakeAmount == _totalAmount, "Wrong unstake amount");
-        sc.personalStakeIndex = toIndex;
-        sc.totalStakedFor = sc.totalStakedFor.sub(unstakeAmount);
-        require(stakingToken.transfer(_msgSender(), unstakeAmount), "Unable to withdraw");
-        emit Unstaked(_msgSender(), unstakeAmount, sc.totalStakedFor, _data);
 
+            unstakeAmount = unstakeAmount.add(personalStake.actualAmount);
+            personalStake.actualAmount = 0;
+        }
+        sc.personalStakeIndex = i;
+
+        uint256 unstakedForSender = unstakeAmount.sub(unstakedForOthers);
+        sc.totalStakedFor = sc.totalStakedFor.sub(unstakedForSender);
+        require(stakingToken.transfer(_msgSender(), unstakeAmount), "Unable to withdraw");
+        emit Unstaked(_msgSender(), unstakedForSender, sc.totalStakedFor, _data);
+
+        checkAndUpdateCapForUnstakeFor(unstakeAmount);
+        return unstakeAmount;
     }
 
     uint256[48] private ______gap;
