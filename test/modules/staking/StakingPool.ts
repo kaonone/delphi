@@ -3,6 +3,7 @@ import {
     StakingPoolContract,StakingPoolInstance,
     StakingPoolADELContract,StakingPoolADELInstance,
     FreeERC20Contract,FreeERC20Instance,
+    RewardVestingModuleContract, RewardVestingModuleInstance,
 } from "../../../types/truffle-contracts/index";
 
 
@@ -23,6 +24,7 @@ const FreeERC20 = artifacts.require("FreeERC20");
 
 const Pool = artifacts.require("Pool");
 const StakingPool  =  artifacts.require("StakingPool");
+const RewardVestingModule = artifacts.require("RewardVestingModule");
 
 contract("StakingPool", async ([owner, user, ...otherAccounts]) => {
 
@@ -30,6 +32,7 @@ contract("StakingPool", async ([owner, user, ...otherAccounts]) => {
     let pool:PoolInstance;
     let akro:FreeERC20Instance;
     let stakingPoolAkro:StakingPoolInstance;
+    let rewardVesting:RewardVestingModuleInstance;
 
 
     before(async () => {
@@ -44,6 +47,20 @@ contract("StakingPool", async ([owner, user, ...otherAccounts]) => {
         stakingPoolAkro = await StakingPool.new();
         await stakingPoolAkro.methods['initialize(address,address,uint256)'](pool.address, akro.address, '0');
         await pool.set('staking', stakingPoolAkro.address, false);
+
+        rewardVesting = await RewardVestingModule.new();
+        await rewardVesting.methods['initialize(address)'](pool.address);
+        await pool.set('reward', rewardVesting.address, false);
+        await stakingPoolAkro.setRewardVesting(rewardVesting.address);
+
+
+        //Prepare rewards
+        let rewardsAmount = web3.utils.toWei('1000', 'ether');
+        let now = Number(await time.latest());
+        await rewardVesting.registerRewardToken(stakingPoolAkro.address, akro.address, 0, {from:owner});
+        await akro.methods['mint(uint256)'](rewardsAmount, {from:owner});
+        await akro.approve(rewardVesting.address, rewardsAmount, {from:owner});
+        await rewardVesting.createEpoch(stakingPoolAkro.address, akro.address, String(now+50*7*24*60*60), rewardsAmount, {from:owner});
 
         //Save snapshot
         //snap = await Snapshot.create(web3.currentProvider);
@@ -61,6 +78,7 @@ contract("StakingPool", async ([owner, user, ...otherAccounts]) => {
             console.log(`Interation ${i}: staking ${web3.utils.fromWei(amount)} AKRO.`);
             await prepareTokenSpending(akro, user, stakingPoolAkro.address, amount);
             await stakingPoolAkro.stake(amount, "0x", {from:user});
+            await stakingPoolAkro.claimRewardsFromVesting({from:owner});
             await time.increase(7*24*60*60);
         }
     });
@@ -69,7 +87,7 @@ contract("StakingPool", async ([owner, user, ...otherAccounts]) => {
         let tx = await stakingPoolAkro.unstakeAllUnlocked("0x", {from:user});
         //console.log(tx);
         let gasUsed = tx.receipt.gasUsed;
-        expect(gasUsed).to.be.lt(100000);
+        expect(gasUsed).to.be.lt(300000);
     });
 
 
