@@ -73,8 +73,8 @@ contract("StakingPool", async ([owner, user, ...otherAccounts]) => {
     });
 
 
-    it('should stake AKRO 50 times', async () => {
-        for(let i=0; i<30; i++){
+    it('should stake AKRO 10 times', async () => {
+        for(let i=0; i<10; i++){
             let amount = w3random.interval(10, 20, 'ether');
             console.log(`Iteration ${i}: staking ${web3.utils.fromWei(amount)} AKRO.`);
             await prepareTokenSpending(akro, user, stakingPoolAkro.address, amount);
@@ -84,11 +84,11 @@ contract("StakingPool", async ([owner, user, ...otherAccounts]) => {
         }
     });
 
-    it('should withdraw all stakes with gas used < 100k', async () => {
+    it('should withdraw all stakes with gas used < 200k', async () => {
         let tx = await stakingPoolAkro.unstakeAllUnlocked("0x", {from:user});
         //console.log(tx);
         let gasUsed = tx.receipt.gasUsed;
-        expect(gasUsed).to.be.lt(300000);
+        expect(gasUsed).to.be.lt(200000);
     });
 
 
