@@ -55,11 +55,12 @@ contract("StakingPool", async ([owner, user, ...otherAccounts]) => {
 
 
         //Prepare rewards
-        let rewardsAmount = web3.utils.toWei('1000', 'ether');
+        let rewardsAmount = new BN(web3.utils.toWei('1000', 'ether'));
         let now = Number(await time.latest());
-        await rewardVesting.registerRewardToken(stakingPoolAkro.address, akro.address, 0, {from:owner});
-        await akro.methods['mint(uint256)'](rewardsAmount, {from:owner});
-        await akro.approve(rewardVesting.address, rewardsAmount, {from:owner});
+        await rewardVesting.registerRewardToken(stakingPoolAkro.address, akro.address, String(now - 7*24*60*60), {from:owner});
+        await akro.methods['mint(uint256)'](rewardsAmount.muln(2), {from:owner});
+        await akro.approve(rewardVesting.address, rewardsAmount.muln(2), {from:owner});
+        await rewardVesting.createEpoch(stakingPoolAkro.address, akro.address, String(now+2*7*24*60*60), rewardsAmount, {from:owner});
         await rewardVesting.createEpoch(stakingPoolAkro.address, akro.address, String(now+50*7*24*60*60), rewardsAmount, {from:owner});
 
         //Save snapshot
@@ -73,9 +74,9 @@ contract("StakingPool", async ([owner, user, ...otherAccounts]) => {
 
 
     it('should stake AKRO 50 times', async () => {
-        for(let i=0; i<50; i++){
+        for(let i=0; i<30; i++){
             let amount = w3random.interval(10, 20, 'ether');
-            console.log(`Interation ${i}: staking ${web3.utils.fromWei(amount)} AKRO.`);
+            console.log(`Iteration ${i}: staking ${web3.utils.fromWei(amount)} AKRO.`);
             await prepareTokenSpending(akro, user, stakingPoolAkro.address, amount);
             await stakingPoolAkro.stake(amount, "0x", {from:user});
             await stakingPoolAkro.claimRewardsFromVesting({from:owner});
