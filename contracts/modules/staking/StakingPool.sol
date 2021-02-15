@@ -32,6 +32,8 @@ contract StakingPool is StakingPoolBase {
     mapping(address=>RewardData) internal rewards;
     mapping(address=>UserRewardInfo) internal userRewards;
 
+    address public swapContract;
+
 
     modifier onlyRewardDistributionModule() {
         require(_msgSender() == getModuleAddress(MODULE_REWARD_DISTR), "StakingPool: calls allowed from RewardDistributionModule only");
@@ -147,6 +149,99 @@ contract StakingPool is StakingPoolBase {
                 emit RewardDistributionCreated(rt, distributionAmount, totalShares);
             }
         }
+    }
+
+    modifier swapEligible(address _user) {
+        require(swapContract != address(0), "Swap is disabled");
+        require(_msgSender() == swapContract, "Caller is not a swap contract");
+        require(_user != address(0), "Zero address");
+        _;
+    }
+
+    /**
+     * @notice Admin function to set the address of the ADEL/vAkro Swap contract
+     * @notice Default value is 0-address, which means, that swap is disabled 
+     * @param _swapContract Adel to vAkro Swap contract.
+     */
+    function setSwapContract(address _swapContract) external onlyOwner {
+        swapContract = _swapContract;
+    }
+
+    /**
+     * @notice Function which is alternative to "unstake" the ADEL token.
+     * @notice Though, instead of withdrawing the ADEL, the function sends it to the Swap contract.
+     * @notice Can be called ONLY by the Swap contract.
+     * @param _user User to withdraw the stake for.
+     * @param _amount Amount to withdaw.
+     * @param _data Data for the event.
+     */
+    function withdrawStakeForSwap(address _user, uint256 _amount, bytes calldata _data)
+            external
+            swapEligible(_user)
+    {
+        uint256 stakeIndex = stakeHolders[_user].personalStakeIndex;
+        Stake storage personalStake = stakeHolders[_user].personalStakes[stakeIndex];
+
+        // Check that the current stake has unlocked & matches the unstake amount
+        require(personalStake.unlockedTimestamp <= block.timestamp,
+                "The current stake hasn't unlocked yet");
+
+        require(personalStake.actualAmount == _amount,
+                "The unstake amount does not match the current stake");
+
+        // Transfer the staked tokens to swap contract
+        require(stakingToken.transfer(swapContract, _amount), "Cannot transfer to swap contract");
+
+
+        uint256 newStakedFor = stakeHolders[personalStake.stakedFor].totalStakedFor.sub(personalStake.actualAmount);
+        stakeHolders[personalStake.stakedFor].totalStakedFor = newStakedFor;
+        
+        personalStake.actualAmount = 0;
+        stakeHolders[_user].personalStakeIndex++;
+
+        totalStakedAmount = totalStakedAmount.sub(_amount);
+
+        emit Unstaked(personalStake.stakedFor, _amount,
+                      totalStakedFor(personalStake.stakedFor), _data);
+
+        //Copied from StakingPoolBase.sol
+        if(userCapEnabled){
+            uint256 cap = userCap[_user];
+            cap = cap.add(_amount);
+
+            if (cap > defaultUserCap) {
+                cap = defaultUserCap;
+            }
+
+            userCap[_user] = cap;
+            emit UserCapChanged(_user, cap);
+        }
+    }
+
+    /**
+     * @notice Function which is alternative to "claiming" ADEL rewards.
+     * @notice Though, instead of claiming the ADEL, the function sends it to the Swap contract.
+     * @notice Can be called ONLY by the Swap contract.
+     * @param _user User to withdraw the stake for.
+     * @param _token Token to get the rewards (can be only ADEL).
+     */
+    function withdrawRewardForSwap(address _user, address _token) external swapEligible(_user) {
+        UserRewardInfo storage uri = userRewards[_user];
+        RewardData storage rd = rewards[_token];
+
+        require(rd.distributions.length > 0, "No distributions"); //No distributions = nothing to do
+
+        uint256 rwrds = rewardBalanceOf(_user, _token);
+
+        require(rwrds > 0, "No rewards to swap");
+
+        uri.nextDistribution[_token] = rd.distributions.length;
+
+        rewards[_token].unclaimed = rewards[_token].unclaimed.sub(rwrds);
+
+        IERC20(_token).transfer(swapContract, rwrds);
+
+        emit RewardWithdraw(_user, _token, rwrds);
     }
 
 }
