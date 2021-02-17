@@ -176,50 +176,14 @@ contract StakingPool is StakingPoolBase {
      * @notice Though, instead of withdrawing the ADEL, the function sends it to the Swap contract.
      * @notice Can be called ONLY by the Swap contract.
      * @param _user User to withdraw the stake for.
-     * @param _amount Amount to withdaw.
      * @param _data Data for the event.
      */
-    function withdrawStakeForSwap(address _user, uint256 _amount, bytes calldata _data)
+    function withdrawStakeForSwap(address _user, bytes calldata _data)
             external
             swapEligible(_user)
+            returns(uint256)
     {
-        uint256 stakeIndex = stakeHolders[_user].personalStakeIndex;
-        Stake storage personalStake = stakeHolders[_user].personalStakes[stakeIndex];
-
-        // Check that the current stake has unlocked & matches the unstake amount
-        require(personalStake.unlockedTimestamp <= block.timestamp,
-                "The current stake hasn't unlocked yet");
-
-        require(personalStake.actualAmount == _amount,
-                "The unstake amount does not match the current stake");
-
-        // Transfer the staked tokens to swap contract
-        require(stakingToken.transfer(swapContract, _amount), "Cannot transfer to swap contract");
-
-
-        uint256 newStakedFor = stakeHolders[personalStake.stakedFor].totalStakedFor.sub(personalStake.actualAmount);
-        stakeHolders[personalStake.stakedFor].totalStakedFor = newStakedFor;
-        
-        personalStake.actualAmount = 0;
-        stakeHolders[_user].personalStakeIndex++;
-
-        totalStakedAmount = totalStakedAmount.sub(_amount);
-
-        emit Unstaked(personalStake.stakedFor, _amount,
-                      totalStakedFor(personalStake.stakedFor), _data);
-
-        //Copied from StakingPoolBase.sol
-        if(userCapEnabled){
-            uint256 cap = userCap[_user];
-            cap = cap.add(_amount);
-
-            if (cap > defaultUserCap) {
-                cap = defaultUserCap;
-            }
-
-            userCap[_user] = cap;
-            emit UserCapChanged(_user, cap);
-        }
+        return super.withdrawStakes(_msgSender(), _user, _data);
     }
 
     /**
@@ -229,7 +193,9 @@ contract StakingPool is StakingPoolBase {
      * @param _user User to withdraw the stake for.
      * @param _token Token to get the rewards (can be only ADEL).
      */
-    function withdrawRewardForSwap(address _user, address _token) external swapEligible(_user) {
+    function withdrawRewardForSwap(address _user, address _token) external swapEligible(_user) 
+        returns(uint256)
+    {
         UserRewardInfo storage uri = userRewards[_user];
         RewardData storage rd = rewards[_token];
 
@@ -246,6 +212,6 @@ contract StakingPool is StakingPoolBase {
         IERC20(_token).transfer(swapContract, rwrds);
 
         emit RewardWithdraw(_user, _token, rwrds);
+        return rwrds;
     }
-
 }

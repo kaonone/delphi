@@ -343,7 +343,7 @@ contract StakingPoolBase is Module, IERC900, CapperRole  {
   // }
 
   function unstakeAllUnlocked(bytes memory _data) public returns (uint256) {
-      return withdrawStakes(_data);
+      return withdrawStakes(_msgSender(), _msgSender(), _data);
   }
 
   /**
@@ -502,8 +502,8 @@ contract StakingPoolBase is Module, IERC900, CapperRole  {
       _data);
   }
 
-  function withdrawStakes(bytes memory _data) internal returns (uint256){
-      StakeContract storage sc = stakeHolders[_msgSender()];
+  function withdrawStakes(address _transferTo, address _unstakeFor, bytes memory _data) internal returns (uint256){
+      StakeContract storage sc = stakeHolders[_unstakeFor];
       uint256 unstakeAmount = 0;
       uint256 unstakedForOthers = 0;
       uint256 personalStakeIndex = sc.personalStakeIndex;
@@ -513,7 +513,7 @@ contract StakingPoolBase is Module, IERC900, CapperRole  {
           Stake storage personalStake = sc.personalStakes[i];
           if(personalStake.unlockedTimestamp > block.timestamp) break; //We've found last unlocked stake
             
-          if(personalStake.stakedFor != _msgSender()){
+          if(personalStake.stakedFor != _unstakeFor){
               //Handle unstake of staked for other address
               stakeHolders[personalStake.stakedFor].totalStakedFor = stakeHolders[personalStake.stakedFor].totalStakedFor.sub(personalStake.actualAmount);
               unstakedForOthers = unstakedForOthers.add(personalStake.actualAmount);
@@ -527,8 +527,9 @@ contract StakingPoolBase is Module, IERC900, CapperRole  {
 
       uint256 unstakedForSender = unstakeAmount.sub(unstakedForOthers);
       sc.totalStakedFor = sc.totalStakedFor.sub(unstakedForSender);
-      require(stakingToken.transfer(_msgSender(), unstakeAmount), "Unable to withdraw");
-      emit Unstaked(_msgSender(), unstakedForSender, sc.totalStakedFor, _data);
+      totalStakedAmount = totalStakedAmount.sub(unstakeAmount);
+      require(stakingToken.transfer(_transferTo, unstakeAmount), "Unable to withdraw");
+      emit Unstaked(_unstakeFor, unstakedForSender, sc.totalStakedFor, _data);
 
       checkAndUpdateCapForUnstakeFor(unstakeAmount);
       return unstakeAmount;
