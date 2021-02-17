@@ -243,7 +243,7 @@ contract StakingPoolBase is Module, IERC900, CapperRole  {
    */
   function getPersonalStakeUnlockedTimestamps(address _address) external view returns (uint256[] memory) {
     uint256[] memory timestamps;
-    (timestamps, , ) = getPersonalStakes(_address);
+    (timestamps,,) = getPersonalStakes(_address);
 
     return timestamps;
   }
@@ -256,7 +256,7 @@ contract StakingPoolBase is Module, IERC900, CapperRole  {
    */
   function getPersonalStakeActualAmounts(address _address) external view returns (uint256[] memory) {
     uint256[] memory actualAmounts;
-    (, actualAmounts, ) = getPersonalStakes(_address);
+    (,actualAmounts,) = getPersonalStakes(_address);
 
     return actualAmounts;
   }
@@ -443,10 +443,19 @@ contract StakingPoolBase is Module, IERC900, CapperRole  {
     }
 
     stakeHolders[_address].totalStakedFor = stakeHolders[_address].totalStakedFor.add(_amount);
-    stakeHolders[_msgSender()].personalStakes.push(Stake(block.timestamp.add(_lockInDuration), _amount, _address));
+    stakeHolders[_msgSender()].personalStakes.push(
+      Stake(
+        block.timestamp.add(_lockInDuration),
+        _amount,
+        _address)
+      );
 
     totalStakedAmount = totalStakedAmount.add(_amount);
-    emit Staked(_address, _amount, totalStakedFor(_address), _data);
+    emit Staked(
+      _address,
+      _amount,
+      totalStakedFor(_address),
+      _data);
   }
 
   /**
@@ -455,27 +464,42 @@ contract StakingPoolBase is Module, IERC900, CapperRole  {
    *  stake at personalStakeIndex.
    * @param _data bytes optional data to include in the Unstake event
    */
-  function withdrawStake(uint256 _amount, bytes memory _data) internal isUserCapEnabledForUnStakeFor(_amount) {
-      Stake storage personalStake = stakeHolders[_msgSender()].personalStakes[stakeHolders[_msgSender()].personalStakeIndex];
+  function withdrawStake(
+    uint256 _amount,
+    bytes memory _data)
+    internal isUserCapEnabledForUnStakeFor(_amount)
+  {
+    Stake storage personalStake = stakeHolders[_msgSender()].personalStakes[stakeHolders[_msgSender()].personalStakeIndex];
 
-      // Check that the current stake has unlocked & matches the unstake amount
-      require(personalStake.unlockedTimestamp <= block.timestamp, "The current stake hasn't unlocked yet");
+    // Check that the current stake has unlocked & matches the unstake amount
+    require(
+      personalStake.unlockedTimestamp <= block.timestamp,
+      "The current stake hasn't unlocked yet");
 
-      require(personalStake.actualAmount == _amount, "The unstake amount does not match the current stake");
+    require(
+      personalStake.actualAmount == _amount,
+      "The unstake amount does not match the current stake");
 
-      stakeHolders[personalStake.stakedFor].totalStakedFor = stakeHolders[personalStake.stakedFor].totalStakedFor.sub(personalStake.actualAmount);
+    // Transfer the staked tokens from this contract back to the sender
+    // Notice that we are using transfer instead of transferFrom here, so
+    //  no approval is needed beforehand.
+    require(
+      stakingToken.transfer(_msgSender(), _amount),
+      "Unable to withdraw stake");
 
-      personalStake.actualAmount = 0;
-      stakeHolders[_msgSender()].personalStakeIndex++;
+    stakeHolders[personalStake.stakedFor].totalStakedFor = stakeHolders[personalStake.stakedFor]
+      .totalStakedFor.sub(personalStake.actualAmount);
 
-      totalStakedAmount = totalStakedAmount.sub(_amount);
+    personalStake.actualAmount = 0;
+    stakeHolders[_msgSender()].personalStakeIndex++;
 
-      // Transfer the staked tokens from this contract back to the sender
-      // Notice that we are using transfer instead of transferFrom here, so
-      //  no approval is needed beforehand.
-      require(stakingToken.transfer(_msgSender(), _amount), "Unable to withdraw stake");
+    totalStakedAmount = totalStakedAmount.sub(_amount);
 
-      emit Unstaked(personalStake.stakedFor, _amount, totalStakedFor(personalStake.stakedFor), _data);
+    emit Unstaked(
+      personalStake.stakedFor,
+      _amount,
+      totalStakedFor(personalStake.stakedFor),
+      _data);
   }
 
   function withdrawStakes(bytes memory _data) internal returns (uint256){
