@@ -222,17 +222,17 @@ contract StakingPoolBase is Module, IERC900, CapperRole  {
   }
 
   function setCoeffScore(uint256 coeff) public onlyCapper {
-      coeffScore = coeff;
+    coeffScore = coeff;
 
-      emit CoeffScoreUpdated(coeff);
+    emit CoeffScoreUpdated(coeff);
   }
 
-  function isUserCapEnabled() public view returns (bool) {
-      return userCapEnabled;
+  function isUserCapEnabled() public view returns(bool) {
+    return userCapEnabled;
   }
 
-  function iStakingCapEnabled() public view returns (bool) {
-      return stakingCapEnabled;
+  function iStakingCapEnabled() public view returns(bool) {
+    return stakingCapEnabled;
   }
 
   /**
@@ -242,10 +242,10 @@ contract StakingPoolBase is Module, IERC900, CapperRole  {
    * @return uint256[] array of timestamps
    */
   function getPersonalStakeUnlockedTimestamps(address _address) external view returns (uint256[] memory) {
-      uint256[] memory timestamps;
-      (timestamps, , ) = getPersonalStakes(_address);
+    uint256[] memory timestamps;
+    (timestamps, , ) = getPersonalStakes(_address);
 
-      return timestamps;
+    return timestamps;
   }
 
   /**
@@ -255,20 +255,20 @@ contract StakingPoolBase is Module, IERC900, CapperRole  {
    * @return uint256[] array of actualAmounts
    */
   function getPersonalStakeActualAmounts(address _address) external view returns (uint256[] memory) {
-      uint256[] memory actualAmounts;
-      (, actualAmounts, ) = getPersonalStakes(_address);
+    uint256[] memory actualAmounts;
+    (, actualAmounts, ) = getPersonalStakes(_address);
 
-      return actualAmounts;
+    return actualAmounts;
   }
 
-  function getPersonalStakeTotalAmount(address _address) public view returns (uint256) {
-      uint256[] memory actualAmounts;
-      (, actualAmounts, ) = getPersonalStakes(_address);
-      uint256 totalStake;
-      for (uint256 i = 0; i < actualAmounts.length; i++) {
-          totalStake = totalStake.add(actualAmounts[i]);
-      }
-      return totalStake;
+  function getPersonalStakeTotalAmount(address _address) public view returns(uint256) {
+    uint256[] memory actualAmounts;
+    (,actualAmounts,) = getPersonalStakes(_address);
+    uint256 totalStake;
+    for(uint256 i=0; i <actualAmounts.length; i++) {
+      totalStake = totalStake.add(actualAmounts[i]);
+    }
+    return totalStake;
   }
 
   /**
@@ -278,10 +278,10 @@ contract StakingPoolBase is Module, IERC900, CapperRole  {
    * @return address[] array of amounts
    */
   function getPersonalStakeForAddresses(address _address) external view returns (address[] memory) {
-      address[] memory stakedFor;
-      (, , stakedFor) = getPersonalStakes(_address);
+    address[] memory stakedFor;
+    (,,stakedFor) = getPersonalStakes(_address);
 
-      return stakedFor;
+    return stakedFor;
   }
 
   /**
@@ -290,8 +290,12 @@ contract StakingPoolBase is Module, IERC900, CapperRole  {
    * @param _amount uint256 the amount of tokens to stake
    * @param _data bytes optional data to include in the Stake event
    */
-  function stake(uint256 _amount, bytes memory _data) public nonReentrant isUserCapEnabledForStakeFor(_amount) {
-      createStake(_msgSender(), _amount, defaultLockInDuration, _data);
+  function stake(uint256 _amount, bytes memory _data) public isUserCapEnabledForStakeFor(_amount) {
+    createStake(
+      _msgSender(),
+      _amount,
+      defaultLockInDuration,
+      _data);
   }
 
   /**
@@ -301,12 +305,12 @@ contract StakingPoolBase is Module, IERC900, CapperRole  {
    * @param _amount uint256 the amount of tokens to stake
    * @param _data bytes optional data to include in the Stake event
    */
-  function stakeFor(
-      address _user,
-      uint256 _amount,
-      bytes memory _data
-  ) public nonReentrant checkUserCapDisabled {
-      createStake(_user, _amount, defaultLockInDuration, _data);
+  function stakeFor(address _user, uint256 _amount, bytes memory _data) public checkUserCapDisabled {
+    createStake(
+      _user,
+      _amount,
+      defaultLockInDuration,
+      _data);
   }
 
   /**
@@ -319,7 +323,9 @@ contract StakingPoolBase is Module, IERC900, CapperRole  {
    * @param _data bytes optional data to include in the Unstake event
    */
   function unstake(uint256 _amount, bytes memory _data) public {
-      withdrawStake(_amount, _data);
+    withdrawStake(
+      _amount,
+      _data);
   }
 
   // function unstakeAllUnlocked(bytes memory _data) public returns (uint256) {
@@ -346,7 +352,7 @@ contract StakingPoolBase is Module, IERC900, CapperRole  {
    * @return uint256 The number of tokens staked for the given address
    */
   function totalStakedFor(address _address) public view returns (uint256) {
-      return stakeHolders[_address].totalStakedFor;
+    return stakeHolders[_address].totalStakedFor;
   }
 
   /**
@@ -355,7 +361,7 @@ contract StakingPoolBase is Module, IERC900, CapperRole  {
    * @return uint256 The number of tokens staked for the given address
    */
   function totalScoresFor(address _address) public view returns (uint256) {
-      return stakeHolders[_address].totalStakedFor.mul(coeffScore).div(10**18);
+    return stakeHolders[_address].totalStakedFor.mul(coeffScore).div(10**18);
   }
 
   /**
@@ -363,8 +369,8 @@ contract StakingPoolBase is Module, IERC900, CapperRole  {
    * @return uint256 The number of tokens staked in the contract
    */
   function totalStaked() public view returns (uint256) {
-      //return stakingToken.balanceOf(address(this));
-      return totalStakedAmount;
+    //return stakingToken.balanceOf(address(this));
+    return totalStakedAmount;
   }
 
   /**
@@ -372,7 +378,7 @@ contract StakingPoolBase is Module, IERC900, CapperRole  {
    * @return address The address of the ERC20 token used for staking
    */
   function token() public view returns (address) {
-      return address(stakingToken);
+    return address(stakingToken);
   }
 
   /**
@@ -381,7 +387,7 @@ contract StakingPoolBase is Module, IERC900, CapperRole  {
    * @return bool Whether or not the optional history functions are implemented
    */
   function supportsHistory() public pure returns (bool) {
-      return false;
+    return false;
   }
 
   /**
@@ -390,30 +396,31 @@ contract StakingPoolBase is Module, IERC900, CapperRole  {
    * @return (uint256[], uint256[], address[])
    *  timestamps array, actualAmounts array, stakedFor array
    */
-  function getPersonalStakes(address _address)
-      public
-      view
-      returns (
-          uint256[] memory,
-          uint256[] memory,
-          address[] memory
-      )
+  function getPersonalStakes(
+    address _address
+  )
+    public view
+    returns(uint256[] memory, uint256[] memory, address[] memory)
   {
-      StakeContract storage stakeContract = stakeHolders[_address];
+    StakeContract storage stakeContract = stakeHolders[_address];
 
-      uint256 arraySize = stakeContract.personalStakes.length - stakeContract.personalStakeIndex;
-      uint256[] memory unlockedTimestamps = new uint256[](arraySize);
-      uint256[] memory actualAmounts = new uint256[](arraySize);
-      address[] memory stakedFor = new address[](arraySize);
+    uint256 arraySize = stakeContract.personalStakes.length - stakeContract.personalStakeIndex;
+    uint256[] memory unlockedTimestamps = new uint256[](arraySize);
+    uint256[] memory actualAmounts = new uint256[](arraySize);
+    address[] memory stakedFor = new address[](arraySize);
 
-      for (uint256 i = stakeContract.personalStakeIndex; i < stakeContract.personalStakes.length; i++) {
-          uint256 index = i - stakeContract.personalStakeIndex;
-          unlockedTimestamps[index] = stakeContract.personalStakes[i].unlockedTimestamp;
-          actualAmounts[index] = stakeContract.personalStakes[i].actualAmount;
-          stakedFor[index] = stakeContract.personalStakes[i].stakedFor;
-      }
+    for (uint256 i = stakeContract.personalStakeIndex; i < stakeContract.personalStakes.length; i++) {
+      uint256 index = i - stakeContract.personalStakeIndex;
+      unlockedTimestamps[index] = stakeContract.personalStakes[i].unlockedTimestamp;
+      actualAmounts[index] = stakeContract.personalStakes[i].actualAmount;
+      stakedFor[index] = stakeContract.personalStakes[i].stakedFor;
+    }
 
-      return (unlockedTimestamps, actualAmounts, stakedFor);
+    return (
+      unlockedTimestamps,
+      actualAmounts,
+      stakedFor
+    );
   }
 
   /**
@@ -424,20 +431,22 @@ contract StakingPoolBase is Module, IERC900, CapperRole  {
    * @param _data bytes optional data to include in the Stake event
    */
   function createStake(
-      address _address,
-      uint256 _amount,
-      uint256 _lockInDuration,
-      bytes memory _data
-  ) internal canStake(_msgSender(), _amount) {
-      if (!stakeHolders[_msgSender()].exists) {
-          stakeHolders[_msgSender()].exists = true;
-      }
+    address _address,
+    uint256 _amount,
+    uint256 _lockInDuration,
+    bytes memory _data)
+    internal
+    canStake(_msgSender(), _amount)
+  {
+    if (!stakeHolders[_msgSender()].exists) {
+      stakeHolders[_msgSender()].exists = true;
+    }
 
-      stakeHolders[_address].totalStakedFor = stakeHolders[_address].totalStakedFor.add(_amount);
-      stakeHolders[_msgSender()].personalStakes.push(Stake(block.timestamp.add(_lockInDuration), _amount, _address));
+    stakeHolders[_address].totalStakedFor = stakeHolders[_address].totalStakedFor.add(_amount);
+    stakeHolders[_msgSender()].personalStakes.push(Stake(block.timestamp.add(_lockInDuration), _amount, _address));
 
-      totalStakedAmount = totalStakedAmount.add(_amount);
-      emit Staked(_address, _amount, totalStakedFor(_address), _data);
+    totalStakedAmount = totalStakedAmount.add(_amount);
+    emit Staked(_address, _amount, totalStakedFor(_address), _data);
   }
 
   /**
@@ -501,5 +510,5 @@ contract StakingPoolBase is Module, IERC900, CapperRole  {
       return unstakeAmount;
   }
 
-  uint256[48] private ______gap;
+  uint256[49] private ______gap;
 }
