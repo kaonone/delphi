@@ -130,7 +130,7 @@ contract StakingPool is StakingPoolBase {
 
     function unstakeAllUnlocked(bytes memory _data) public returns (uint256) {
         _withdrawRewards(_msgSender());
-        super.unstakeAllUnlocked(_data);
+        return super.unstakeAllUnlocked(_data);
     }
 
     function _claimRewardsFromVesting() internal {
