@@ -979,11 +979,11 @@
       }
     },
     "StakingPool": {
-      "address": "0x9365aeF9c514CD3E15b81C0aC79B54274c34a555",
-      "constructorCode": "6080604052613e80806100136000396000f3fe",
-      "bodyBytecodeHash": "e2881eb0fa29aaf49a661adb8274ea4b50c083aec6ea2f0f952004815331c618",
-      "localBytecodeHash": "109c833ec1a28761032e62b8c30ad6067b7bd763ee451da51c7ff8d7af6d2552",
-      "deployedBytecodeHash": "109c833ec1a28761032e62b8c30ad6067b7bd763ee451da51c7ff8d7af6d2552",
+      "address": "0xC96E075C203C74128ccd7C7Cb4bEB438A9670D5a",
+      "constructorCode": "608060405261410d806100136000396000f3fe",
+      "bodyBytecodeHash": "095dcd72a086aed031a5a8d532dab7dd225b5ab8d45b35b532461171a9f87bf9",
+      "localBytecodeHash": "32adf06269b6529c77897f1238eade839446ab4fba365b7eb08a4397832e9940",
+      "deployedBytecodeHash": "32adf06269b6529c77897f1238eade839446ab4fba365b7eb08a4397832e9940",
       "types": {
         "t_bool": {
           "id": "t_bool",
@@ -1014,7 +1014,7 @@
           "members": [
             {
               "label": "bearer",
-              "astId": 36853,
+              "astId": 36984,
               "type": "t_mapping<t_bool>",
               "src": "150:32:132"
             }
@@ -1033,25 +1033,25 @@
           "members": [
             {
               "label": "totalStakedFor",
-              "astId": 21930,
+              "astId": 21946,
               "type": "t_uint256",
               "src": "1994:22:94"
             },
             {
               "label": "personalStakeIndex",
-              "astId": 21932,
+              "astId": 21948,
               "type": "t_uint256",
               "src": "2026:26:94"
             },
             {
               "label": "personalStakes",
-              "astId": 21935,
+              "astId": 21951,
               "type": "t_array:dyn<t_struct<StakingPoolBase.Stake>>",
               "src": "2062:22:94"
             },
             {
               "label": "exists",
-              "astId": 21937,
+              "astId": 21953,
               "type": "t_bool",
               "src": "2094:11:94"
             }
@@ -1064,19 +1064,19 @@
           "members": [
             {
               "label": "unlockedTimestamp",
-              "astId": 21923,
+              "astId": 21939,
               "type": "t_uint256",
               "src": "1524:25:94"
             },
             {
               "label": "actualAmount",
-              "astId": 21925,
+              "astId": 21941,
               "type": "t_uint256",
               "src": "1559:20:94"
             },
             {
               "label": "stakedFor",
-              "astId": 21927,
+              "astId": 21943,
               "type": "t_address",
               "src": "1589:17:94"
             }
@@ -1191,7 +1191,7 @@
           "contract": "Initializable",
           "path": "@openzeppelin\\upgrades\\contracts\\Initializable.sol",
           "label": "initialized",
-          "astId": 38923,
+          "astId": 39054,
           "type": "t_bool",
           "src": "757:24:149"
         },
@@ -1199,7 +1199,7 @@
           "contract": "Initializable",
           "path": "@openzeppelin\\upgrades\\contracts\\Initializable.sol",
           "label": "initializing",
-          "astId": 38925,
+          "astId": 39056,
           "type": "t_bool",
           "src": "876:25:149"
         },
@@ -1207,7 +1207,7 @@
           "contract": "Initializable",
           "path": "@openzeppelin\\upgrades\\contracts\\Initializable.sol",
           "label": "______gap",
-          "astId": 38987,
+          "astId": 39118,
           "type": "t_array:50<t_uint256>",
           "src": "1982:29:149"
         },
@@ -1215,7 +1215,7 @@
           "contract": "Ownable",
           "path": "@openzeppelin\\contracts-ethereum-package\\contracts\\ownership\\Ownable.sol",
           "label": "_owner",
-          "astId": 37856,
+          "astId": 37987,
           "type": "t_address",
           "src": "526:22:140"
         },
@@ -1223,13 +1223,13 @@
           "contract": "Ownable",
           "path": "@openzeppelin\\contracts-ethereum-package\\contracts\\ownership\\Ownable.sol",
           "label": "______gap",
-          "astId": 37969,
+          "astId": 38100,
           "type": "t_array:50<t_uint256>",
           "src": "2471:29:140"
         },
         {
           "contract": "Module",
-          "path": "..\\..\\..\\D\\projects\\akropolis\\savings-pool\\contracts\\common\\Module.sol",
+          "path": "..\\..\\..\\..\\D\\projects\\akropolis\\_old_2020\\savings-pool\\contracts\\common\\Module.sol",
           "label": "pool",
           "astId": 43,
           "type": "t_address",
@@ -1239,7 +1239,7 @@
           "contract": "CapperRole",
           "path": "@openzeppelin\\contracts-ethereum-package\\contracts\\access\\roles\\CapperRole.sol",
           "label": "_cappers",
-          "astId": 36950,
+          "astId": 37081,
           "type": "t_struct<Roles.Role>",
           "src": "327:27:133"
         },
@@ -1247,125 +1247,125 @@
           "contract": "CapperRole",
           "path": "@openzeppelin\\contracts-ethereum-package\\contracts\\access\\roles\\CapperRole.sol",
           "label": "______gap",
-          "astId": 37050,
+          "astId": 37181,
           "type": "t_array:50<t_uint256>",
           "src": "1193:29:133"
         },
         {
           "contract": "StakingPoolBase",
-          "path": "..\\..\\..\\D\\projects\\akropolis\\savings-pool\\contracts\\modules\\staking\\StakingPoolBase.sol",
+          "path": "..\\..\\..\\..\\D\\projects\\akropolis\\_old_2020\\savings-pool\\contracts\\modules\\staking\\StakingPoolBase.sol",
           "label": "stakingToken",
-          "astId": 21915,
+          "astId": 21931,
           "type": "t_address",
           "src": "706:18:94"
         },
         {
           "contract": "StakingPoolBase",
-          "path": "..\\..\\..\\D\\projects\\akropolis\\savings-pool\\contracts\\modules\\staking\\StakingPoolBase.sol",
+          "path": "..\\..\\..\\..\\D\\projects\\akropolis\\_old_2020\\savings-pool\\contracts\\modules\\staking\\StakingPoolBase.sol",
           "label": "defaultLockInDuration",
-          "astId": 21917,
+          "astId": 21933,
           "type": "t_uint256",
           "src": "789:36:94"
         },
         {
           "contract": "StakingPoolBase",
-          "path": "..\\..\\..\\D\\projects\\akropolis\\savings-pool\\contracts\\modules\\staking\\StakingPoolBase.sol",
+          "path": "..\\..\\..\\..\\D\\projects\\akropolis\\_old_2020\\savings-pool\\contracts\\modules\\staking\\StakingPoolBase.sol",
           "label": "stakeHolders",
-          "astId": 21921,
+          "astId": 21937,
           "type": "t_mapping<t_struct<StakingPoolBase.StakeContract>>",
           "src": "1179:53:94"
         },
         {
           "contract": "StakingPoolBase",
-          "path": "..\\..\\..\\D\\projects\\akropolis\\savings-pool\\contracts\\modules\\staking\\StakingPoolBase.sol",
+          "path": "..\\..\\..\\..\\D\\projects\\akropolis\\_old_2020\\savings-pool\\contracts\\modules\\staking\\StakingPoolBase.sol",
           "label": "userCapEnabled",
-          "astId": 21940,
+          "astId": 21956,
           "type": "t_bool",
           "src": "2118:26:94"
         },
         {
           "contract": "StakingPoolBase",
-          "path": "..\\..\\..\\D\\projects\\akropolis\\savings-pool\\contracts\\modules\\staking\\StakingPoolBase.sol",
+          "path": "..\\..\\..\\..\\D\\projects\\akropolis\\_old_2020\\savings-pool\\contracts\\modules\\staking\\StakingPoolBase.sol",
           "label": "userCap",
-          "astId": 21944,
+          "astId": 21960,
           "type": "t_mapping<t_uint256>",
           "src": "2151:42:94"
         },
         {
           "contract": "StakingPoolBase",
-          "path": "..\\..\\..\\D\\projects\\akropolis\\savings-pool\\contracts\\modules\\staking\\StakingPoolBase.sol",
+          "path": "..\\..\\..\\..\\D\\projects\\akropolis\\_old_2020\\savings-pool\\contracts\\modules\\staking\\StakingPoolBase.sol",
           "label": "defaultUserCap",
-          "astId": 21946,
+          "astId": 21962,
           "type": "t_uint256",
           "src": "2269:29:94"
         },
         {
           "contract": "StakingPoolBase",
-          "path": "..\\..\\..\\D\\projects\\akropolis\\savings-pool\\contracts\\modules\\staking\\StakingPoolBase.sol",
+          "path": "..\\..\\..\\..\\D\\projects\\akropolis\\_old_2020\\savings-pool\\contracts\\modules\\staking\\StakingPoolBase.sol",
           "label": "stakingCapEnabled",
-          "astId": 21948,
+          "astId": 21964,
           "type": "t_bool",
           "src": "2304:29:94"
         },
         {
           "contract": "StakingPoolBase",
-          "path": "..\\..\\..\\D\\projects\\akropolis\\savings-pool\\contracts\\modules\\staking\\StakingPoolBase.sol",
+          "path": "..\\..\\..\\..\\D\\projects\\akropolis\\_old_2020\\savings-pool\\contracts\\modules\\staking\\StakingPoolBase.sol",
           "label": "stakingCap",
-          "astId": 21950,
+          "astId": 21966,
           "type": "t_uint256",
           "src": "2339:25:94"
         },
         {
           "contract": "StakingPoolBase",
-          "path": "..\\..\\..\\D\\projects\\akropolis\\savings-pool\\contracts\\modules\\staking\\StakingPoolBase.sol",
+          "path": "..\\..\\..\\..\\D\\projects\\akropolis\\_old_2020\\savings-pool\\contracts\\modules\\staking\\StakingPoolBase.sol",
           "label": "vipUserEnabled",
-          "astId": 21952,
+          "astId": 21968,
           "type": "t_bool",
           "src": "2371:26:94"
         },
         {
           "contract": "StakingPoolBase",
-          "path": "..\\..\\..\\D\\projects\\akropolis\\savings-pool\\contracts\\modules\\staking\\StakingPoolBase.sol",
+          "path": "..\\..\\..\\..\\D\\projects\\akropolis\\_old_2020\\savings-pool\\contracts\\modules\\staking\\StakingPoolBase.sol",
           "label": "isVipUser",
-          "astId": 21956,
+          "astId": 21972,
           "type": "t_mapping<t_bool>",
           "src": "2403:41:94"
         },
         {
           "contract": "StakingPoolBase",
-          "path": "..\\..\\..\\D\\projects\\akropolis\\savings-pool\\contracts\\modules\\staking\\StakingPoolBase.sol",
+          "path": "..\\..\\..\\..\\D\\projects\\akropolis\\_old_2020\\savings-pool\\contracts\\modules\\staking\\StakingPoolBase.sol",
           "label": "totalStakedAmount",
-          "astId": 21958,
+          "astId": 21974,
           "type": "t_uint256",
           "src": "2451:34:94"
         },
         {
           "contract": "StakingPoolBase",
-          "path": "..\\..\\..\\D\\projects\\akropolis\\savings-pool\\contracts\\modules\\staking\\StakingPoolBase.sol",
+          "path": "..\\..\\..\\..\\D\\projects\\akropolis\\_old_2020\\savings-pool\\contracts\\modules\\staking\\StakingPoolBase.sol",
           "label": "coeffScore",
-          "astId": 21960,
+          "astId": 21976,
           "type": "t_uint256",
           "src": "2492:25:94"
         },
         {
           "contract": "StakingPoolBase",
-          "path": "..\\..\\..\\D\\projects\\akropolis\\savings-pool\\contracts\\modules\\staking\\StakingPoolBase.sol",
+          "path": "..\\..\\..\\..\\D\\projects\\akropolis\\_old_2020\\savings-pool\\contracts\\modules\\staking\\StakingPoolBase.sol",
           "label": "_guardCounter",
-          "astId": 21962,
+          "astId": 21978,
           "type": "t_uint256",
           "src": "2524:29:94"
         },
         {
           "contract": "StakingPoolBase",
-          "path": "..\\..\\..\\D\\projects\\akropolis\\savings-pool\\contracts\\modules\\staking\\StakingPoolBase.sol",
+          "path": "..\\..\\..\\..\\D\\projects\\akropolis\\_old_2020\\savings-pool\\contracts\\modules\\staking\\StakingPoolBase.sol",
           "label": "______gap",
-          "astId": 23093,
+          "astId": 23224,
           "type": "t_array:48<t_uint256>",
-          "src": "18344:29:94"
+          "src": "20329:29:94"
         },
         {
           "contract": "StakingPool",
-          "path": "..\\..\\..\\D\\projects\\akropolis\\savings-pool\\contracts\\modules\\staking\\StakingPool.sol",
+          "path": "..\\..\\..\\..\\D\\projects\\akropolis\\_old_2020\\savings-pool\\contracts\\modules\\staking\\StakingPool.sol",
           "label": "rewardVesting",
           "astId": 21385,
           "type": "t_address",
@@ -1373,7 +1373,7 @@
         },
         {
           "contract": "StakingPool",
-          "path": "..\\..\\..\\D\\projects\\akropolis\\savings-pool\\contracts\\modules\\staking\\StakingPool.sol",
+          "path": "..\\..\\..\\..\\D\\projects\\akropolis\\_old_2020\\savings-pool\\contracts\\modules\\staking\\StakingPool.sol",
           "label": "registeredRewardTokens",
           "astId": 21388,
           "type": "t_array:dyn<t_address>",
@@ -1381,7 +1381,7 @@
         },
         {
           "contract": "StakingPool",
-          "path": "..\\..\\..\\D\\projects\\akropolis\\savings-pool\\contracts\\modules\\staking\\StakingPool.sol",
+          "path": "..\\..\\..\\..\\D\\projects\\akropolis\\_old_2020\\savings-pool\\contracts\\modules\\staking\\StakingPool.sol",
           "label": "rewards",
           "astId": 21392,
           "type": "t_mapping<t_struct<StakingPool.RewardData>>",
@@ -1389,7 +1389,7 @@
         },
         {
           "contract": "StakingPool",
-          "path": "..\\..\\..\\D\\projects\\akropolis\\savings-pool\\contracts\\modules\\staking\\StakingPool.sol",
+          "path": "..\\..\\..\\..\\D\\projects\\akropolis\\_old_2020\\savings-pool\\contracts\\modules\\staking\\StakingPool.sol",
           "label": "userRewards",
           "astId": 21396,
           "type": "t_mapping<t_struct<StakingPool.UserRewardInfo>>",
@@ -1407,21 +1407,21 @@
             "contract": "CapperRole",
             "path": "@openzeppelin\\contracts-ethereum-package\\contracts\\access\\roles\\CapperRole.sol",
             "label": "_cappers",
-            "astId": 36950,
+            "astId": 37081,
             "type": "t_struct<Roles.Role>",
             "src": "327:27:133"
           },
           {
             "contract": "StakingPoolBase",
-            "path": "..\\..\\..\\D\\projects\\akropolis\\savings-pool\\contracts\\modules\\staking\\StakingPoolBase.sol",
+            "path": "..\\..\\..\\..\\D\\projects\\akropolis\\_old_2020\\savings-pool\\contracts\\modules\\staking\\StakingPoolBase.sol",
             "label": "stakeHolders",
-            "astId": 21921,
+            "astId": 21937,
             "type": "t_mapping<t_struct<StakingPoolBase.StakeContract>>",
             "src": "1179:53:94"
           },
           {
             "contract": "StakingPool",
-            "path": "..\\..\\..\\D\\projects\\akropolis\\savings-pool\\contracts\\modules\\staking\\StakingPool.sol",
+            "path": "..\\..\\..\\..\\D\\projects\\akropolis\\_old_2020\\savings-pool\\contracts\\modules\\staking\\StakingPool.sol",
             "label": "rewards",
             "astId": 21392,
             "type": "t_mapping<t_struct<StakingPool.RewardData>>",
@@ -1429,48 +1429,14 @@
           },
           {
             "contract": "StakingPool",
-            "path": "..\\..\\..\\D\\projects\\akropolis\\savings-pool\\contracts\\modules\\staking\\StakingPool.sol",
+            "path": "..\\..\\..\\..\\D\\projects\\akropolis\\_old_2020\\savings-pool\\contracts\\modules\\staking\\StakingPool.sol",
             "label": "userRewards",
             "astId": 21396,
             "type": "t_mapping<t_struct<StakingPool.UserRewardInfo>>",
             "src": "1066:55:93"
           }
         ],
-        "storageDiff": [
-          {
-            "action": "replace",
-            "updated": {
-              "index": 20,
-              "contract": "StakingPoolBase",
-              "path": "..\\..\\..\\D\\projects\\akropolis\\savings-pool\\contracts\\modules\\staking\\StakingPoolBase.sol",
-              "label": "_guardCounter",
-              "astId": 21962,
-              "type": "t_uint256",
-              "src": "2524:29:94"
-            },
-            "original": {
-              "index": 20,
-              "contract": "StakingPoolBase",
-              "path": "..\\..\\..\\D\\projects\\akropolis\\savings-pool\\contracts\\modules\\staking\\StakingPoolBase.sol",
-              "label": "______gap",
-              "astId": 15340,
-              "type": "t_array:49<t_uint256>",
-              "src": "17105:29:79"
-            }
-          },
-          {
-            "action": "insert",
-            "updated": {
-              "index": 21,
-              "contract": "StakingPoolBase",
-              "path": "..\\..\\..\\D\\projects\\akropolis\\savings-pool\\contracts\\modules\\staking\\StakingPoolBase.sol",
-              "label": "______gap",
-              "astId": 23093,
-              "type": "t_array:48<t_uint256>",
-              "src": "18344:29:94"
-            }
-          }
-        ]
+        "storageDiff": []
       }
     },
     "CompoundProtocol_DAI": {
@@ -6763,7 +6729,7 @@
       {
         "address": "0x6887DF2f4296e8B772cb19479472A16E836dB9e0",
         "version": "1.0.0",
-        "implementation": "0x9365aeF9c514CD3E15b81C0aC79B54274c34a555",
+        "implementation": "0xC96E075C203C74128ccd7C7Cb4bEB438A9670D5a",
         "admin": "0x7B27e0dAED14F0DFA17aa8a23f39c5dbF6FaAF12",
         "kind": "Upgradeable"
       }
