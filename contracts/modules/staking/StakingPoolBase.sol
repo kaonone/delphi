@@ -498,6 +498,7 @@ contract StakingPoolBase is Module, IERC900, CapperRole {
 
         uint256 unstakedForSender = unstakeAmount.sub(unstakedForOthers);
         sc.totalStakedFor = sc.totalStakedFor.sub(unstakedForSender);
+        totalStakedAmount = totalStakedAmount.sub(unstakeAmount);
         require(stakingToken.transfer(_msgSender(), unstakeAmount), "Unable to withdraw");
         emit Unstaked(_msgSender(), unstakedForSender, sc.totalStakedFor, _data);
 
