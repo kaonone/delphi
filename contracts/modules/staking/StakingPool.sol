@@ -176,14 +176,22 @@ contract StakingPool is StakingPoolBase {
      * @notice Though, instead of withdrawing the ADEL, the function sends it to the Swap contract.
      * @notice Can be called ONLY by the Swap contract.
      * @param _user User to withdraw the stake for.
+     * @param _token Adel address.
      * @param _data Data for the event.
      */
-    function withdrawStakeForSwap(address _user, bytes calldata _data)
+    function withdrawStakeForSwap(address _user, address _token, bytes calldata _data)
             external
             swapEligible(_user)
             returns(uint256)
     {
-        return super.withdrawStakes(_msgSender(), _user, _data);
+        uint256 returnValue = 0;
+        for(uint256 i = 0; i < registeredRewardTokens.length; i++) {
+            uint256 rwrds = withdrawRewardForSwap(_user, registeredRewardTokens[i]);
+            if (_token == registeredRewardTokens[i]) {
+                returnValue += rwrds;
+            }
+        }
+        return returnValue + super.withdrawStakes(_msgSender(), _user, _data);
     }
 
     /**
@@ -193,7 +201,7 @@ contract StakingPool is StakingPoolBase {
      * @param _user User to withdraw the stake for.
      * @param _token Token to get the rewards (can be only ADEL).
      */
-    function withdrawRewardForSwap(address _user, address _token) external swapEligible(_user) 
+    function withdrawRewardForSwap(address _user, address _token) public swapEligible(_user) 
         returns(uint256)
     {
         UserRewardInfo storage uri = userRewards[_user];
