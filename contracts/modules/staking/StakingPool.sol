@@ -32,6 +32,8 @@ contract StakingPool is StakingPoolBase {
     mapping(address=>RewardData) internal rewards;
     mapping(address=>UserRewardInfo) internal userRewards;
 
+    address public swapContract;
+
 
     modifier onlyRewardDistributionModule() {
         require(_msgSender() == getModuleAddress(MODULE_REWARD_DISTR), "StakingPool: calls allowed from RewardDistributionModule only");
@@ -121,11 +123,15 @@ contract StakingPool is StakingPoolBase {
         super.createStake(_address, _amount, _lockInDuration, _data);
     }
 
-    function withdrawStake(uint256 _amount, bytes memory _data) internal {
+    function unstake(uint256 _amount, bytes memory _data) public {
         _withdrawRewards(_msgSender());
-        super.withdrawStake(_amount, _data);
+        withdrawStake(_amount, _data);
     }
 
+    function unstakeAllUnlocked(bytes memory _data) public returns (uint256) {
+        _withdrawRewards(_msgSender());
+        return super.unstakeAllUnlocked(_data);
+    }
 
     function _claimRewardsFromVesting() internal {
         rewardVesting.claimRewards();
@@ -149,4 +155,73 @@ contract StakingPool is StakingPoolBase {
         }
     }
 
+    modifier swapEligible(address _user) {
+        require(swapContract != address(0), "Swap is disabled");
+        require(_msgSender() == swapContract, "Caller is not a swap contract");
+        require(_user != address(0), "Zero address");
+        _;
+    }
+
+    /**
+     * @notice Admin function to set the address of the ADEL/vAkro Swap contract
+     * @notice Default value is 0-address, which means, that swap is disabled 
+     * @param _swapContract Adel to vAkro Swap contract.
+     */
+    function setSwapContract(address _swapContract) external onlyOwner {
+        swapContract = _swapContract;
+    }
+
+    /**
+     * @notice Function which is alternative to "unstake" the ADEL token.
+     * @notice Though, instead of withdrawing the ADEL, the function sends it to the Swap contract.
+     * @notice Can be called ONLY by the Swap contract.
+     * @param _user User to withdraw the stake for.
+     * @param _token Adel address.
+     * @param _data Data for the event.
+     */
+    function withdrawStakeForSwap(address _user, address _token, bytes calldata _data)
+            external
+            swapEligible(_user)
+            returns(uint256)
+    {
+        uint256 returnValue = 0;
+        for(uint256 i = 0; i < registeredRewardTokens.length; i++) {
+            uint256 rwrds = withdrawRewardForSwap(_user, registeredRewardTokens[i]);
+            if (_token == registeredRewardTokens[i]) {
+                returnValue += rwrds;
+            }
+        }
+        return returnValue + super.withdrawStakes(_msgSender(), _user, _data);
+    }
+
+    /**
+     * @notice Function which is alternative to "claiming" ADEL rewards.
+     * @notice Though, instead of claiming the ADEL, the function sends it to the Swap contract.
+     * @notice Can be called ONLY by the Swap contract.
+     * @param _user User to withdraw the stake for.
+     * @param _token Token to get the rewards (can be only ADEL).
+     */
+    function withdrawRewardForSwap(address _user, address _token) public swapEligible(_user) 
+        returns(uint256)
+    {
+        UserRewardInfo storage uri = userRewards[_user];
+        RewardData storage rd = rewards[_token];
+
+        require(rd.distributions.length > 0, "No distributions"); //No distributions = nothing to do
+
+        uint256 rwrds = rewardBalanceOf(_user, _token);
+
+        if (rwrds == 0) {
+            return 0;
+        }
+
+        uri.nextDistribution[_token] = rd.distributions.length;
+
+        rewards[_token].unclaimed = rewards[_token].unclaimed.sub(rwrds);
+
+        IERC20(_token).transfer(swapContract, rwrds);
+
+        emit RewardWithdraw(_user, _token, rwrds);
+        return rwrds;
+    }
 }
