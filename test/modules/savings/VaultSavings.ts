@@ -921,6 +921,8 @@ contract('VaultSavings', async([ _, owner, user1, user2, user3, defiops, protoco
             await dai.approve(vaultSavings.address, 50, { from: user2 });
             await (<any> vaultSavings).methods['deposit(address,address[],uint256[])'](
                 vaultProtocol.address, [dai.address], [50], { from: user2 });
+
+            await dai.approve(strategy.address, 10000, {from: protocolStub});
         });
 
         afterEach(async() => {
@@ -1003,8 +1005,189 @@ contract('VaultSavings', async([ _, owner, user1, user2, user3, defiops, protoco
         });
 
 
-        it('Deposit with some users earned yield', async() => {
-            // TODO
+        it('Deposit/Withdraw with some users earned yield', async() => {
+            //user1 80
+            //user2 50
+            const initialAmounts = {
+                user1: 80,
+                user2: 50
+            }
+
+            let addDeposits = {
+                one: 30,
+                two: 30
+            }
+
+            let addWithdrawals = {
+                one: 10,
+                two: 10
+            }
+
+            let yieldStub = {
+                one: 26,
+                two: 26,
+                three: 26
+            }
+        //Move initial deposit to protocol
+            await vaultSavings.handleOperatorActions(vaultProtocol.address, strategy.address, ZERO_ADDRESS, { from: defiops });
+
+            let totalSupply = await poolToken.totalSupply();
+            let poolUser1 = await poolToken.balanceOf(user1);
+            let poolUser2 = await poolToken.balanceOf(user2);
+
+            expect(totalSupply.toNumber(), "Incorrect amount of LP tokens minted").to.equal(initialAmounts.user1 + initialAmounts.user2);
+            expect(poolUser1.toNumber(), "Incorrect intial amount of LP tokens for User1").to.equal(initialAmounts.user1);
+            expect(poolUser2.toNumber(), "Incorrect intial amount of LP tokens for User2").to.equal(initialAmounts.user2);
+
+            //Add yield to the protocol
+            await dai.transfer(protocolStub, yieldStub.one, { from: owner });
+
+        //First additional deposit from user1
+            await dai.approve(vaultSavings.address, addDeposits.one, { from: user1 });
+            await (<any> vaultSavings).methods['deposit(address,address[],uint256[])'](vaultProtocol.address, [dai.address], [addDeposits.one], { from: user1 });
+
+            //No distributions yet - no pool tokens for yield
+            totalSupply = await poolToken.totalSupply();
+            poolUser1 = await poolToken.balanceOf(user1);
+            poolUser2 = await poolToken.balanceOf(user2);
+            let distrUser1 = await poolToken.distributionBalanceOf(user1);
+            let distrUser2 = await poolToken.distributionBalanceOf(user2);
+
+            expect(totalSupply.toNumber(), "Incorrect amount of LP tokens minted (2)").to.equal(initialAmounts.user1 + initialAmounts.user2 + addDeposits.one);
+            expect(poolUser1.toNumber(), "Incorrect amount of LP tokens for User1 (2)").to.equal(initialAmounts.user1 + addDeposits.one);
+            expect(distrUser1.toNumber(), "Incorrect distribution amount for User1 (2)").to.equal(initialAmounts.user1);
+            expect(poolUser2.toNumber(), "Incorrect amount of LP tokens for User2 (2)").to.equal(initialAmounts.user2);
+            expect(distrUser2.toNumber(), "Incorrect distribution amount for User2 (2)").to.equal(initialAmounts.user2);
+
+            //Add yield to the protocol
+            await dai.transfer(protocolStub, yieldStub.two, { from: owner });
+
+        //Resolve deposit
+            await vaultSavings.handleOperatorActions(vaultProtocol.address, strategy.address, ZERO_ADDRESS, { from: defiops });
+            
+            totalSupply = await poolToken.totalSupply();
+            poolUser1 = await poolToken.balanceOf(user1);
+            poolUser2 = await poolToken.balanceOf(user2);
+            distrUser1 = await poolToken.distributionBalanceOf(user1);
+            distrUser2 = await poolToken.distributionBalanceOf(user2);
+
+            let poolAmount = await poolToken.balanceOf(poolToken.address);
+
+            let unclaimedUser1 = await poolToken.calculateUnclaimedDistributions(user1);
+            let unclaimedUser2 = await poolToken.calculateUnclaimedDistributions(user2);
+            //LP tokens calculation
+            //user1: 80 (initial) + 30 (add - don't participate in yield) + 16 (one yield) + 16(two yield) = 142
+            //user2: 50 (initial) + 10 (one yield) + 10 (two yield) = 70
+            let totalSupplyCalc1 = initialAmounts.user1 + initialAmounts.user2 + addDeposits.one + yieldStub.one + yieldStub.two;
+
+            //Yield calculation:
+            // one: 26, two: 26
+            // user1: 80 working tokens + 30 on-hold -> 80 / 130 from yield -> 16 + 16 LP from yield
+            // user2: 50 working tokens  -> 50 / 130 from yield -> 10 + 10 LP from yield
+            
+            let yieldOne = {
+                user1: 16 + 16,
+                user2: 10 + 10
+            }
+            //First distribution from the operation action
+            let distrOne = await poolToken.distributions(0);
+            expect(distrOne[1].toNumber(), "Incorrect supply for the first distribution").to.equal(initialAmounts.user1 + initialAmounts.user2);
+            expect(distrOne[0].toNumber(), "Incorrect yield for the first distribution").to.equal(yieldStub.one + yieldStub.two);
+
+            //User1 gets claim from the first distribution, because on-hold amount was changed -> distribution balance was changed
+            let poolTokensUser1 = initialAmounts.user1 + addDeposits.one + yieldOne.user1;
+
+            expect(totalSupply.toNumber(), "Incorrect amount of LP tokens minted (3)").to.equal(totalSupplyCalc1);
+            expect(poolAmount.toNumber(), "Incorrect amount of LP tokens on pool (3)").to.equal(yieldOne.user2);
+
+            expect(poolUser1.toNumber(), "Incorrect amount of LP tokens for User1 (3)").to.equal(poolTokensUser1);
+            expect(distrUser1.toNumber(), "Incorrect distribution amount for User1 (3)").to.equal(poolTokensUser1); //Now all tokens are working
+            expect(unclaimedUser1.toNumber(), "Incorrect unclaimed amount of LP tokens for User1 (3)").to.equal(0);
+            expect(poolUser2.toNumber(), "Incorrect amount of LP tokens for User2 (3)").to.equal(initialAmounts.user2);
+            expect(distrUser2.toNumber(), "Incorrect distribution amount for User2 (3)").to.equal(initialAmounts.user2); //Except unclaimed yield
+            expect(unclaimedUser2.toNumber(), "Incorrect unclaimed amount of LP tokens for User2 (3)").to.equal(yieldOne.user2);
+
+
+            //Add yield to the protocol
+            await dai.transfer(protocolStub, yieldStub.three, { from: owner });
+            await blockTimeTravel(await poolToken.DISTRIBUTION_AGGREGATION_PERIOD());
+
+        //Withdraw by user1 after distribution period
+            await vaultSavings.withdraw(vaultProtocol.address, [dai.address], [10], false, { from: user1 });
+            await vaultSavings.handleOperatorActions(vaultProtocol.address, strategy.address, ZERO_ADDRESS, { from: defiops });
+
+            //First distribution from the operation action
+            let distrTwo = await poolToken.distributions(1);
+            let distrTwoSupply = distrOne[1].add(distrOne[0]).toNumber() + unclaimedUser2.toNumber(); //Unclaimed included
+            expect(distrTwo[1].toNumber(), "Incorrect supply for the second distribution").to.equal(distrTwoSupply);
+            expect(distrTwo[0].toNumber(), "Incorrect yield for the second distribution").to.equal(yieldStub.three);
+
+            totalSupply = await poolToken.totalSupply();
+            poolUser1 = await poolToken.balanceOf(user1);
+            poolUser2 = await poolToken.balanceOf(user2);
+            distrUser1 = await poolToken.distributionBalanceOf(user1);
+            distrUser2 = await poolToken.distributionBalanceOf(user2);
+            poolAmount = await poolToken.balanceOf(poolToken.address);
+
+            let totalSupplyCalc2 = totalSupplyCalc1 + yieldStub.three - addWithdrawals.one;
+            //Distribution was created (since distribution balance changed for user1)
+            //Claims are not sent to user2 since his balance was not changed
+            let poolAmountCalc2 = unclaimedUser2.toNumber() + yieldStub.three;
+
+            unclaimedUser1 = await poolToken.calculateUnclaimedDistributions(user1);
+            unclaimedUser2 = await poolToken.calculateUnclaimedDistributions(user2);
+
+            //Yield calculation:
+            // three: 26 yield
+            // user1: 110 from deposit + 32 from yield - 10 from withdraw = 132 LP tokens
+            // user2: 50 from deposit + 20 unclaied on pool token contract = 70 LP tokens
+            // total: 202 LP tokens
+            // Yield for user1: 132 / 202 = 16 (with rouding)
+            // Yield for user2: 70 / 202 = 9 (with rounding)
+            let yieldTwo = {
+                user1: 16,
+                user2: 9
+            }
+
+            expect(totalSupply.toNumber(), "Incorrect amount of LP tokens minted (4)").to.equal(totalSupplyCalc2);
+            expect(poolAmount.toNumber(), "Incorrect amount of LP tokens on pool (4)").to.equal(poolAmountCalc2);
+
+            expect(poolUser1.toNumber(), "Incorrect amount of LP tokens for User1 (4)").to.equal(poolTokensUser1 - addWithdrawals.one);
+            expect(distrUser1.toNumber(), "Incorrect distribution amount for User1 (4)").to.equal(poolTokensUser1 - addWithdrawals.one); //The newest withdrawal ignored
+            expect(unclaimedUser1.toNumber(), "Incorrect unclaimed amount of LP tokens for User1 (4)").to.equal(yieldTwo.user1);
+            expect(poolUser2.toNumber(), "Incorrect amount of LP tokens for User2 (4)").to.equal(initialAmounts.user2);
+            expect(distrUser2.toNumber(), "Incorrect distribution amount for User2 (4)").to.equal(initialAmounts.user2); //Except unclaimed
+            expect(unclaimedUser2.toNumber(), "Incorrect unclaimed amount of LP tokens for User2 (4)").to.equal(yieldOne.user2 + yieldTwo.user2);//All unclaimed
+
+
+
+            //Add yield to the protocol
+            await dai.transfer(protocolStub, 26, { from: owner });
+        //Deposit by user1 before distribution period
+            await dai.approve(vaultSavings.address, addDeposits.two, { from: user1 });
+            await (<any> vaultSavings).methods['deposit(address,address[],uint256[])'](vaultProtocol.address, [dai.address], [addDeposits.two], { from: user1 });
+
+            totalSupply = await poolToken.totalSupply();
+            poolUser1 = await poolToken.balanceOf(user1);
+            poolUser2 = await poolToken.balanceOf(user2);
+            distrUser1 = await poolToken.distributionBalanceOf(user1);
+            distrUser2 = await poolToken.distributionBalanceOf(user2);
+            poolAmount = await poolToken.balanceOf(poolToken.address);
+
+            unclaimedUser1 = await poolToken.calculateUnclaimedDistributions(user1);
+            unclaimedUser2 = await poolToken.calculateUnclaimedDistributions(user2);
+
+            poolTokensUser1 = initialAmounts.user1 + addDeposits.one + yieldOne.user1 - addWithdrawals.one;
+
+            expect(totalSupply.toNumber(), "Incorrect amount of LP tokens minted (5)").to.equal(totalSupplyCalc2 + addDeposits.two);
+
+            //Since distribution amount changed - user gets all unclaimed
+            expect(poolUser1.toNumber(), "Incorrect amount of LP tokens for User1 (5)").to.equal(poolTokensUser1 + addDeposits.two + yieldTwo.user1);
+            expect(distrUser1.toNumber(), "Incorrect distribution amount for User1 (5)").to.equal(poolTokensUser1 + yieldTwo.user1); //Without on-hold
+            expect(unclaimedUser1.toNumber(), "Incorrect unclaimed amount of LP tokens for User1 (5)").to.equal(0);
+            expect(poolUser2.toNumber(), "Incorrect amount of LP tokens for User2 (5)").to.equal(initialAmounts.user2); //Unchanged
+            expect(distrUser2.toNumber(), "Incorrect distribution amount for User2 (5)").to.equal(initialAmounts.user2); //Except unclaimed
+            expect(unclaimedUser2.toNumber(), "Incorrect unclaimed amount of LP tokens for User2 (5)").to.equal(yieldOne.user2 + yieldTwo.user2);//All unclaimed
         });
     });
 
@@ -1346,6 +1529,89 @@ contract('VaultSavings', async([ _, owner, user1, user2, user3, defiops, protoco
             //Unchanged yield for user2
             unclaimedTokens = await poolToken.calculateUnclaimedDistributions(user2, { from: owner });
             expect(unclaimedTokens.toNumber(), 'No yield for user (2)').to.equal(10);
+        });
+
+        it('Correct distribution for the new user (after several distributions)', async() => {
+            //Deposited 80 by user1 and 50 by user2
+
+            //Operator action
+            await vaultSavings.handleOperatorActions(vaultProtocol.address, strategy.address, ZERO_ADDRESS, { from: defiops })
+
+        //First distribution (adfter additional deposit)
+            //Yield
+            await dai.transfer(protocolStub, 26, { from: owner });
+            
+            //Deposit again
+            await dai.approve(vaultSavings.address, 50, { from: user1 });
+            await (<any> vaultSavings).methods['deposit(address,address[],uint256[])'](vaultProtocol.address, [dai.address], [50], { from: user1 });
+            await dai.approve(vaultSavings.address, 50, { from: user2 });
+            await (<any> vaultSavings).methods['deposit(address,address[],uint256[])'](vaultProtocol.address, [dai.address], [50], { from: user2 });
+
+            // Operator action
+            await vaultSavings.handleOperatorActions(vaultProtocol.address, strategy.address, ZERO_ADDRESS, { from: defiops });
+
+            //Distribution was created
+            //User1: 80 (deposited) + 50 (new) + 80/130 * 26 = 16 of new yield
+            //User2: 50 (deposited) + 50 (new) + 50/130 * 26 = 10 of new yield
+
+        //Create second distribution
+            //Yield
+            await dai.transfer(protocolStub, 128, { from: owner });
+
+            //Distribute yield
+            await blockTimeTravel(await poolToken.DISTRIBUTION_AGGREGATION_PERIOD());
+            await vaultSavings.distributeYield(vaultProtocol.address, {from:defiops});
+
+            //Second distribution
+            //User1: 130 (deposited) + 16 of previous yield + 146/256 * 128 = 73
+            //User2: 100 (deposited) + 10 of previous yield + 110/256 * 128 = 55
+
+        //Deposit from new user
+
+            //New user deposit
+            await dai.approve(vaultSavings.address, 60, { from: user3 });
+            await (<any> vaultSavings).methods['deposit(address,address[],uint256[])'](vaultProtocol.address, [dai.address], [60], { from: user3 });
+
+            let distrNum = await poolToken.nextDistributions(user3);
+            expect(distrNum.toNumber(), "Incorrect distribution number").to.equal(2); //The next after 2 distributions (starting with 0)
+
+            let unclaimed = await poolToken.calculateUnclaimedDistributions(user3);
+            expect(unclaimed.toNumber(), "Should not have unclaimed tokens").to.equal(0);
+
+            let distrTokens = await poolToken.distributionBalanceOf(user3);
+            expect(distrTokens.toNumber(), "Should not have distribution balance yet").to.equal(0); //Tokens are on-hold
+
+            //operatorAction
+            await vaultSavings.handleOperatorActions(vaultProtocol.address, strategy.address, ZERO_ADDRESS, { from: defiops });
+ 
+            distrNum = await poolToken.nextDistributions(user3);
+            expect(distrNum.toNumber(), "Incorrect distribution number (2)").to.equal(2); //The next after 2 distributions (starting with 0)
+
+            unclaimed = await poolToken.calculateUnclaimedDistributions(user3);
+            expect(unclaimed.toNumber(), "Should not have unclaimed tokens (2)").to.equal(0);
+
+            distrTokens = await poolToken.distributionBalanceOf(user3);
+            expect(distrTokens.toNumber(), "Incorrect distribution balance").to.equal(60); //Deposit is on strategy now
+
+        //Create the third distribution
+            //Yield
+            await dai.transfer(protocolStub, 148, { from: owner });
+
+            //Distribute yield
+            await blockTimeTravel(await poolToken.DISTRIBUTION_AGGREGATION_PERIOD());
+            await vaultSavings.distributeYield(vaultProtocol.address, {from:defiops});
+
+            //Third distribution
+            //Supply for distribution: 219 + 165 + 60 = 444
+            //User1: 130 (deposited) + (73 + 16) of previous yield + 219/444 * 148 = 73
+            //User2: 100 (deposited) + (55 + 10) of previous yield + 165/444 * 148 = 55
+            //User3: 60 (deposited) +                              + 60/444 * 148 = 20
+
+            distrNum = await poolToken.nextDistributions(user3);
+            expect(distrNum.toNumber(), "Incorrect distribution number (3)").to.equal(2);
+
+            unclaimed = await poolToken.calculateUnclaimedDistributions(user3);
+            expect(unclaimed.toNumber(), "Incorrect unclaimed amount").to.equal(20); //Calculated yield for user3
         });
 
     });
