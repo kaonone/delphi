@@ -12,4 +12,6 @@ interface IAccessModule {
      * @param sender Sender of transaction
      */
     function isOperationAllowed(Operation operation, address sender) external view returns(bool);
+
+    function getMaxGasLeft(Operation operation) external view returns(uint256);
 }
